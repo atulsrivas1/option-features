@@ -1,0 +1,269 @@
+{
+  "schema": "r26-original-hand-scenarios1",
+  "state": "design_candidate_not_canonical_wire_not_executed_not_frozen",
+  "author": "/root/r26_independent_fixture_design",
+  "independence": "Original synthetic arithmetic and causal witnesses authored without production implementation, kernel imports or numerical generator execution.",
+  "temporal_profile": "option-origin-context1",
+  "package_topology": {"new_flow_package_version":"0.1.0a1","contracts_distribution":"option-flow-contracts","contracts_import":"option_flow_contracts","features_distribution":"option-flow-features","features_import":"option_flow_features","io_distribution":"option-flow-io","io_import":"option_flow_io","workers_distribution":"option-flow-workers","workers_import":"option_flow_workers","closed_runtime_inventory":["option-flow-contracts","option-flow-features","option-flow-io","option-flow-workers","duckdb==1.5.6"],"no_flow_runtime_dependency_on":["R25 packages","python-flint"],"R25_regression":"Original six-distribution cohort qualified separately with original source/artifacts/verifier unchanged."},
+  "rational_notation": "Literal N/D strings below are hand-design shorthand; eventual native wire uses reduced numerator/denominator canonical integer-string objects.",
+  "defaults": {
+    "currency": "XTS",
+    "underlying": "SYNTH-U",
+    "session": "S10",
+    "action_basis": "synthetic-unadjusted1",
+    "deliverable": "scalar-payoff-unit1",
+    "window_ns": [10, 20],
+    "cutoff_ns": 20,
+    "population": "complete_explicit_members",
+    "source_positions": "Explicit strict certified order, never lexical IDs as a causal witness.",
+    "signing": "Each scenario declares exactly one profile. Any supplied side is known by original A unless scenario says otherwise."
+  },
+  "scenarios": [
+    {
+      "id": "F01-mixed-multiplier-rollup",
+      "profile": "option-observed-side1",
+      "inputs": {"executions": [
+        {"id":"a","contract":"A","right":"call","expiry":"e1","event":11,"A":11,"price":"2","quantity":"3","multiplier":"100","side":"buy"},
+        {"id":"b","contract":"A","right":"call","expiry":"e1","event":12,"A":12,"price":"1.5","quantity":"2","multiplier":"100","side":"sell"},
+        {"id":"c","contract":"B","right":"put","expiry":"e1","event":13,"A":13,"price":"4","quantity":"1","multiplier":"100","side":"buy"},
+        {"id":"d","contract":"C","right":"put","expiry":"e2","event":14,"A":14,"price":"2","quantity":"1","multiplier":"50","side":"unknown"}
+      ]},
+      "expected_available": {"flow.trade_count":"4/1","flow.contracts":"7/1","flow.share_equivalent":"650/1","flow.premium":"1400/1","flow.buy_proxy_premium":"1000/1","flow.sell_proxy_premium":"300/1","flow.unknown_premium":"100/1","flow.signed_execution_premium":"700/1","flow.known_sign_imbalance":"7/13","flow.total_premium_imbalance":"1/2","flow.unknown_premium_share":"1/14","flow.sign_event_coverage":"3/4","flow.sign_premium_coverage":"13/14","flow.right_positive_premium":"600/1","flow.right_negative_premium":"700/1","flow.net_directional_premium":"-100/1","flow.call_premium":"900/1","flow.put_premium":"500/1","flow.put_call_premium_ratio":"5/9","flow.contract_hhi":"1/2","flow.contract_top_share":"9/14","flow.expiry_hhi":"85/98","flow.expiry_top_share":"13/14"},
+      "expected_evidence": {"premium_by_contract":{"A":"900","B":"400","C":"100"},"premium_by_expiry":{"e1":"1300","e2":"100"},"signs":{"a":1,"b":-1,"c":1,"d":0},"complete":true,"unknown_count":1,"availability_at_least":14}
+    },
+    {
+      "id":"F02-complete-empty",
+      "inputs":{"executions":[],"expected_members":[],"complete":true},
+      "expected":{"additive_outputs":"available 0/1","ratio_hhi_top_outputs":"undefined/zero_denominator with null value","event_coverage":{"observed":0,"expected":0,"ratio":null,"complete":true},"per_cluster_rows":0},
+      "discriminator":"Complete empty is neither unavailable nor coverage1."
+    },
+    {
+      "id":"F03-incomplete-population",
+      "inputs":{"expected_members":["a","b"],"observed_members_at_K20":["a"],"a":{"price":"2","quantity":"1","multiplier":"100","event":11,"A":11,"known":11},"b_retained_in_snapshot":{"price":"1","quantity":"1","multiplier":"100","event":14,"A":25,"known":25},"complete":false},
+      "expected":{"complete_population_outputs":"unavailable/incomplete_population, null values","evidence_partial_premium":"200/1","event_coverage":{"observed_count":1,"expected_count":null,"ratio":null,"complete":false},"no_complete_hhi":"Never available1; incomplete certificate cannot establish a denominator2."}
+    },
+    {
+      "id":"F04-unknown-population",
+      "inputs":{"executions":[],"capture":"unknown"},
+      "expected":{"complete_population_outputs":"unavailable/incomplete_population","expected_count":null,"coverage_ratio":null},
+      "discriminator":"Unknown expected size is not complete empty."
+    },
+    {
+      "id":"F05-one-unknown-side",
+      "profile":"option-observed-side1",
+      "inputs":{"execution":{"price":"2","quantity":"1","multiplier":"50","side":"unknown","right":"call"}},
+      "expected_available":{"flow.premium":"100/1","flow.unknown_premium":"100/1","flow.signed_execution_premium":"0/1","flow.sign_event_coverage":"0/1","flow.sign_premium_coverage":"0/1","flow.unknown_premium_share":"1/1","flow.total_premium_imbalance":"0/1","flow.contract_hhi":"1/1"},
+      "expected_undefined":{"flow.known_sign_imbalance":"zero_denominator"}
+    },
+    {
+      "id":"F06-zero-price-versus-empty",
+      "profile":"option-observed-side1",
+      "inputs":{"execution":{"price":"0","quantity":"2","multiplier":"50","side":"buy","right":"call"}},
+      "expected_available":{"flow.trade_count":"1/1","flow.contracts":"2/1","flow.share_equivalent":"100/1","flow.premium":"0/1","flow.sign_event_coverage":"1/1"},
+      "expected_undefined":{"flow.sign_premium_coverage":"zero_denominator","flow.contract_hhi":"zero_denominator","flow.put_call_premium_ratio":"zero_denominator"}
+    },
+    {
+      "id":"F07-exact-tiny-large-premium",
+      "inputs":{"executions":[{"id":"large","price":"9007199254740993","quantity":"1","multiplier":"1"},{"id":"tiny","price":"0.000000000000000001","quantity":"1","multiplier":"1"}]},
+      "expected_available":{"flow.premium":"9007199254740993000000000000000001/1000000000000000000"},
+      "discriminator":"Preserve the unit above2^53 and the separate10^-18 addition; do not binary-round either."
+    },
+    {
+      "id":"F08-half-open-window",
+      "profile":"option-observed-side1",
+      "inputs":{"executions":[{"id":"before","event":9,"premium":"100"},{"id":"start","event":10,"premium":"200"},{"id":"inside","event":19,"premium":"300"},{"id":"end","event":20,"premium":"400"}]},
+      "expected_available":{"flow.trade_count":"2/1","flow.premium":"500/1"},
+      "expected_evidence":{"active_members":["start","inside"],"outside_members":["before","end"]}
+    },
+    {
+      "id":"F09-group-ties-and-merge",
+      "inputs":{"groups":{"A":"200","B":"200","C":"100"}},
+      "expected":{"total":"500/1","hhi":"9/25","top_share":"2/5","all_top_ids":["A","B"],"merge":"Disjoint partition totals recombine before squaring; averaging chunk HHIs forbidden."}
+    },
+    {
+      "id":"F10-quote-midpoint-exact",
+      "profile":"option-quote-midpoint1",
+      "inputs":{"quote":{"event":12,"known":12,"bid":"1","ask":"3"},"executions_at_15_A15_prices":["2","2.5","1.5","2.0000005","3.5"]},
+      "expected":{"signs":[0,1,-1,1,1],"reasons":["quote_midpoint","quote_above_midpoint","quote_below_midpoint","quote_above_midpoint","quote_above_midpoint"],"last_outside_spread":true,"no_epsilon":true}
+    },
+    {
+      "id":"F11-latest-locked-crossed-no-fallback",
+      "profile":"option-quote-midpoint1",
+      "inputs":{"older_quote":{"event":11,"known":11,"bid":"1","ask":"3"},"latest_variants":[{"event":14,"known":14,"bid":"2","ask":"2"},{"event":14,"known":14,"bid":"3","ask":"2"}],"trade":{"event":15,"A":15,"price":"2.5"}},
+      "expected":{"signs":[0,0],"reasons":["quote_locked","quote_crossed"],"selected":"latest in each variant, never older convenient quote"}
+    },
+    {
+      "id":"F12-quote-causal-age-ties",
+      "profile":"option-quote-midpoint1",
+      "inputs":{"trade":{"event":15,"A":15,"price":"2.5"},"quote_age_limit":3,"variants":["event12 known12 bid1 ask3 strict-prior witness","event11 known11 bid1 ask3 strict-prior witness","event14 known16 bid2 ask4","event15 known15 bid1 ask3 no comparable order","event15 known15 bid1 ask3 explicit strict-before order","event15 known15 bid1 ask3 after-trade order"]},
+      "expected":{"signs":[1,0,0,0,1,0],"reasons":["quote_above_midpoint","quote_stale","quote_future","quote_order_unknown","quote_above_midpoint","quote_order_unknown"]}
+    },
+    {
+      "id":"F13-tick-own-carry-partitions",
+      "profile":"option-tick1",
+      "inputs":{"same_partition_prices":["100","100","101","101","99","99"],"each_A":"Knows precisely its certified preceding context.","interleaved_other_contract_price":"102","seed":null},
+      "expected":{"signs":[0,0,1,1,-1,-1],"other_contract_sign":0,"new_session_first_sign":0,"quote_or_observed_sign_does_not_seed_tick":true}
+    },
+    {
+      "id":"F14-tick-seed-boundary",
+      "profile":"option-tick1",
+      "inputs":{"target":{"price":"100","event":10,"A":10},"complete_retained_historical_tape":[{"id":"seed-a","price":"101","event":8,"A":8,"known":8},{"id":"seed-b","price":"100","event":9,"A":9,"known":9}],"context_certificate_variants":["complete matching prefix known10","same certificate only known11"]},
+      "expected":{"signs":[-1,0],"reasons":["tick_carried","tick_seed_unavailable"],"no_opaque_sign_seed":true,"prewindow_roots_excluded_from_window_totals":true}
+    },
+    {
+      "id":"F15-correction-admitted-later-sign",
+      "profile":"option-tick1",
+      "inputs":{"window":[0,31],"roots":[{"id":"a","event":10,"A":10,"price":"100"},{"id":"b","event":20,"A":20,"price":"101"},{"id":"c","event":30,"A":30,"price":"101"}],"replacement":{"target":"b","known":25,"price":"100"},"cutoff":35},
+      "expected":{"signs_at_K35":{"a":0,"b":0,"c":1},"c_sign_at_K24_not_requested":"Not available before root c is known.","c_context_prices_at_A30":["100","100"],"c_without_replacement_sign":1,"correction_effect":"b changes from up to equal-unknown; c remains up but reason changes carried to up."}
+    },
+    {
+      "id":"F16-correction-flips-later-sign",
+      "profile":"option-tick1",
+      "inputs":{"window":[0,31],"roots":[{"id":"a","event":10,"A":10,"price":"100"},{"id":"b","event":20,"A":20,"price":"101"},{"id":"c","event":30,"A":30,"price":"101"}],"replacement":{"target":"b","known":25,"price":"102"},"cutoff":35},
+      "expected":{"signs":{"a":0,"b":1,"c":-1},"before_correction_c_sign":1,"c_reason":"tick_down","availability_at_least":30,"correction_dependency_known":25},
+      "discriminator":"Recompute c's context atA30; subtracting revised premium alone leaves wrong sign."
+    },
+    {
+      "id":"F17-late-correction-does-not-leak",
+      "profile":"option-tick1",
+      "inputs":{"roots":[{"id":"a","event":10,"A":10,"price":"100"},{"id":"b","event":20,"A":20,"price":"101"},{"id":"c","event":30,"A":30,"price":"101"}],"replacement":{"target":"b","known":35,"price":"102"},"window":[0,31],"cutoff":40},
+      "expected":{"signs":{"a":0,"b":1,"c":1},"b_current_price":"102","c_context_b_price":"101","c_reason":"tick_carried","availability_at_least":35},
+      "discriminator":"Do not sweep revised b price102 into c whose original A30 cannot know correction35."
+    },
+    {
+      "id":"F18-late-cancel-preserves-old-context",
+      "profile":"option-tick1",
+      "inputs":{"roots":[{"id":"a","event":10,"A":10,"price":"100"},{"id":"b","event":20,"A":20,"price":"101"},{"id":"c","event":40,"A":40,"price":"101"}],"cancel":{"target":"a","known":30},"window_start":0,"window_end_by_cut":{"25":21,"35":21,"45":41},"cuts":[25,35,45]},
+      "expected":{"K25":{"active":["a","b"],"signs":{"a":0,"b":1}},"K35":{"active":["b"],"signs":{"b":1}},"K45":{"active":["b","c"],"signs":{"b":1,"c":0}},"c_context_at_A40":["b"],"b_context_at_A20":["a"]},
+      "discriminator":"Keep cancelled a in entire ledger for b's historical context; c sees cancellation and reconstructs b as initial-unknown."
+    },
+    {
+      "id":"F19-late-quote-correction-and-target-price",
+      "profile":"option-quote-midpoint1",
+      "inputs":{"quote":{"id":"q","event":12,"known":12,"bid":"1","ask":"3"},"quote_replace":{"known":16,"bid":"2","ask":"4"},"trade":{"event":15,"A":15,"price":"2"},"target_price_replace":{"known":17,"price":"2.5"},"window":[10,16],"cutoff":18},
+      "expected":{"uncorrected_target_sign":0,"corrected_target_sign":1,"historic_midpoint":"2/1","quote_revision_known16_excluded":true,"corrected_result_availability_at_least":17,"historic_context_cutoff":15},
+      "discriminator":"Corrected price is not sell against revised quote midpoint3."
+    },
+    {
+      "id":"F20-revision-idempotence-invalid-chains",
+      "inputs":{"valid_adapter_normalization":"Explicit adapter preunion dedup of identical observations before constructing typed snapshot; receipt records deduplicated_count1.","invalid_variants":["typed snapshot repeats identical execution_id/revision_id bytes","same ID changed bytes","replace unknown target","cancel unknown target","fork two successors of one revision","revision cycle","replace after cancel","cross-partition target","replace changes root event or A","known-at regresses or revision position fails strict increase"]},
+      "expected":{"valid_adapter_normalization":"One economic contribution after explicit dedup; strict canonical synthetic mapping itself has deduplicated_count0.","duplicate_typed_or_changed_identity":"FlowValidationError/identity_conflict","unknown_target":"FlowValidationError/missing_identity","invalid_chain":"FlowValidationError/invalid_correction; no results/checkpoint/publication"}
+    },
+    {
+      "id":"F21-cluster-adjacent-gap",
+      "profile":"option-quote-midpoint1",
+      "inputs":{"same_contract_quote_sign":true,"events":[10,15,20],"premiums":["100","200","300"],"quantities":["1","2","3"],"gap_limit":5,"window":[10,21],"cutoff":21,"venues":["V1","V2","V1"]},
+      "expected":{"cluster_members":[["e10","e15","e20"]],"execution.cluster_premium":["600/1"],"execution.cluster_trade_count":["3/1"],"execution.cluster_contracts":["6/1"],"execution.cluster_span_ns":["10/1"],"execution.cluster_venue_count":["2/1"],"execution.cluster_coverage":"1/1"},
+      "discriminator":"Inclusive adjacent gap permits total span10 greater than limit5."
+    },
+    {
+      "id":"F22-cluster-breaks-and-unknown-coverage",
+      "profile":"option-quote-midpoint1",
+      "inputs":{"ordered_members":[{"id":"a","event":10,"quote":"q1","sign":1,"premium":"100"},{"id":"b","event":11,"quote":"q1","sign":0,"premium":"100"},{"id":"c","event":12,"quote":"q1","sign":1,"premium":"200"},{"id":"d","event":13,"quote":"q2","sign":1,"premium":"200"},{"id":"e","event":14,"quote":"q2","sign":-1,"premium":"300"},{"id":"f","event":20,"quote":"q2","sign":-1,"premium":"100"}],"gap_limit":5,"window":[10,21],"cutoff":21},
+      "expected":{"cluster_members":[["a"],["c"],["d"],["e"],["f"]],"cluster_premiums":["100/1","200/1","200/1","300/1","100/1"],"execution.cluster_coverage":"9/10","unknown_member":"b breaks run; cannot bridge a to c"}
+    },
+    {
+      "id":"F23-cluster-unsupported-and-missing-venue",
+      "inputs":{"variants":["tick profile selected with cluster output","observed-side profile selected with cluster output","quote cluster contains member missing admitted venue reference"]},
+      "expected":{"first_two":"One unsupported/unsupported_profile null-cluster row per selected per-cluster feature/group; other supported scalar flow outputs still calculated.","missing_venue":"Cluster premium/count remain available; cluster venue_count unavailable/missing_venue_reference."}
+    },
+    {
+      "id":"F24-baseline-even-median-mad",
+      "inputs":{"prior_complete_matched_values":["2","4","6","8"],"current":"11","minimum_prior_windows":4,"target_session":10,"prior_sessions":[6,7,8,9],"all_prior_known_by_cutoff":true},
+      "expected":{"median":"5/1","absolute_deviations":["3/1","1/1","1/1","3/1"],"MAD":"2/1","relative":"11/5","robust_z":"5000/2471","scale":"7413/5000"},
+      "discriminator":"Explicit minimum4 allows this arithmetic witness; it does not qualify a minimum20 request."
+    },
+    {
+      "id":"F25-baseline-zero-and-zero-current",
+      "inputs":{"variants":[{"prior":["5","5","5","5"],"current":"10"},{"prior":["0","0","0","0"],"current":"0"},{"prior":["2","4","6","8"],"current":"0"}],"minimum_prior_windows":4},
+      "expected":{"variants":[{"relative":"2/1","robust_z":"undefined/zero_mad"},{"relative":"undefined/zero_denominator","robust_z":"undefined/zero_mad"},{"relative":"0/1","robust_z":"-12500/7413"}]}
+    },
+    {
+      "id":"F26-baseline-membership-admission",
+      "inputs":{"expected_prior_sessions":[6,7,8,9],"target_session":10,"minimum":4,"invalid_or_missing_variants":["slot8 absent","slot8 incomplete","slot8 only known after requestK","slot8 replaced with current session10","slot8 replaced with future session11","slot8 wrong horizon/session policy/currency/basis","only3 complete matched slots with declared minimum4"]},
+      "expected":{"missing_or_incomplete_or_null_selected_metric_declared_slot":"unavailable/incomplete_baseline","absent_baseline_target_list":"unavailable/missing_baseline","present_future_known_slot":"unavailable/future_reference; no borrowing later revision","current_future_session":"FlowValidationError/identity_mismatch","wrong_horizon_currency_action_policy_group_windowwidth_or_overlapping_slot_binding":"FlowValidationError/identity_mismatch","three_valid":"unavailable/insufficient_history when declared three slots are all complete and minimum4","no_mean_substitution":true,"no_skip_to_last_available":true}
+    },
+    {
+      "id":"F27-dte-otm-separated-reference-populations",
+      "inputs":{"base":"F01","A":{"civil_DTE":2,"strike":"110","spot":"100"},"B":{"civil_DTE":3,"strike":"90","spot":"100"},"C":{"civil_DTE":1,"spot":null},"short_dte_max_days":2},
+      "expected_available":{"flow.short_dte_premium_share":"5/7","flow.dte_reference_coverage":"1/1","flow.short_dte_known_reference_share":"5/7","flow.short_dte_observed_lower_share":"5/7","flow.otm_reference_coverage":"13/14","flow.otm_known_reference_share":"1/1","flow.otm_observed_lower_share":"13/14"},
+      "expected_unavailable":{"flow.otm_premium_share":"missing_spot_reference"},
+      "expected_evidence":{"total_premium":"1400/1","DTE_known_premium":"1400/1","short_DTE_premium":"1000/1","OTM_known_premium":"1300/1","OTM_premium":"1300/1"}
+    },
+    {
+      "id":"F28-dte-boundaries-atm-request-parameter",
+      "inputs":{"DTE_values":[-1,0,2,3],"short_max_variants":[0,2,3],"OTM_pairs":[{"right":"call","strike":"100","spot":"100"},{"right":"put","strike":"100","spot":"100"},{"right":"call","strike":"101","spot":"100"},{"right":"put","strike":"99","spot":"100"}]},
+      "expected":{"short_masks":[[false,true,false,false],[false,true,true,false],[false,true,true,true]],"otm_flags":[false,false,true,true],"negative_DTE":"Not short; preserve exclusion/reference diagnostics as frozen contract specifies."}
+    },
+    {
+      "id":"F29-spot-causality-coverage",
+      "inputs":{"trade":{"event":15,"A":15},"max_spot_age":3,"spot_variants":[{"event":12,"known":12},{"event":11,"known":11},{"event":14,"known":16},{"event":16,"known":16}]},
+      "expected":{"admissible":[true,false,false,false],"invalid_reasons":[null,"stale_reference","future_reference","future_reference"],"DTE_only":"Unaffected when admitted civil references are complete; never require spot for DTE-only output."}
+    },
+    {
+      "id":"F30-checkpoint-full-prefix-restore",
+      "inputs":{"base":"F18","prefix":{"cutoff":25,"ledger":["a-new","b-new"],"retained":"All definitions/source-order/population/policy/reference/baseline bindings and exact fact bytes."},"suffix":["cancel-a-known30","c-new-known40"],"restore_cutoff":45},
+      "expected":{"restored_active":["b","c"],"restored_signs":{"b":1,"c":0},"windows":"K25 prefix[0,21); K45 restored[0,41), each end<=K; new applicable population certificate has new immutable ID.","same_invocation_full_bytes":"Restore results equal direct evaluate_flow of exact merged snapshot/request with SAME input_checkpoint_sha256; direct/worker/stored bytes equal within this invocation.","flat_batch_comparison":"Economic value/status/coverage/sign and causal operand projection equal; ordinary flat batch has null input checkpoint, so full result/publication/work/input-lineage bytes intentionally differ.","historical_prefix_economics":"K25 generation unchanged.","mode":"bounded full-prefix replay, not incremental/live"}
+    },
+    {
+      "id":"F31-checkpoint-invalid-prefix",
+      "inputs":{"invalid_variants":["prefix retains a digest but omits cancelled-a original bytes needed by b context","prefix fact bytes changed after checkpoint hash","different temporal/sign policy","different group/basis/calendar/baseline binding","suffix revises absent target","earlier restore cutoff","overlapping suffix ID changed bytes","retained ledger exceeds frozen fact/byte bound"]},
+      "expected":{"all":"Whole-request structural/resource rejection; no successful checkpoint/output generation.","omitted_ancestor_or_suffix_target":"FlowValidationError/missing_identity","changed_bytes_with_retained_old_digest":"FlowValidationError/digest_mismatch","policy_formula_mismatch":"FlowValidationError/identity_mismatch","changed_shared_group_basis_calendar_baseline_identity":"FlowValidationError/identity_conflict","cursor_regression_mismatch_or_future_carried_fact":"FlowValidationError/checkpoint_cut_mismatch","same_identity_changed_suffix":"FlowValidationError/identity_conflict","exceeds_bound":"FlowValidationError/resource_limit"}
+    },
+    {
+      "id":"F32-chronological-cut-replay",
+      "inputs":{"base":"F18","increasing_cuts":[25,35,45],"ledger_prefixes":"Only facts and revisions known at each cut, including retained original roots."},
+      "expected":{"cut_results":"Same complete outputs/evidence as direct evaluation of SAME immutable full snapshot and each exact request; cut cursors/known-at select visibility, full snapshot identity remains fixed.","window_end_by_cut":{"25":21,"35":21,"45":41},"later_cut":"Must not overwrite25/35 generations.","decreasing_cutoff_or_cursors":"FlowValidationError/checkpoint_cut_mismatch","checkpoint_eligibility":"Emit output checkpoint only when cut cursors equal full snapshot cursors AND every carried fact/revision/certificate known_at<=K; otherwise output_checkpoint=null without discarding future ledger."}
+    },
+    {
+      "id":"F33-retry-conflict-and-atomic-publication",
+      "inputs":{"same_content_retry":"Same canonical input/request/result identities.","changed_content_same_generation":"Different replacement price under immutable generation key.","cancel_before_commit":"Cancellation checked before atomic publication."},
+      "expected":{"same_content_retry":"Identical full canonical bytes/readback, no duplicate generation rows.","changed_content_same_generation":"Conflict, old stored generation preserved.","cancel_before_commit":"No partial result/checkpoint visible.","postcommit_cancel":"Previously committed generation remains readable; not falsely rolled back."},
+      "scope":"Integration design expectations only; no worker or DuckDB execution occurred."
+    },
+    {
+      "id":"F34-structural-resource-boundaries",
+      "inputs":{"invalid_variants":["negative price","zero or negative contracts","nonpositive multiplier","float rather than exact decimal/integer wire string","noncanonical trailing decimal zeros","timestamp outside0..2^63-1","19fractional digits","39significant decimal digits","129digit input integer","257digit reduced intermediate/result","100001totalfacts","129groups","33baseline slots","request exceeds16MiB"]},
+      "expected":{"all":"Whole-request admission rejection; no partial numeric rows or publication.","negative_price_nonpositive_quantity_or_multiplier_outofrange_timestamp":"FlowValidationError/invalid_scalar","float_typed_instead_of_exact":"FlowValidationError/type_mismatch","noncanonical_decimal_wire":"FlowValidationError/noncanonical","decimal_precision_or_integer_size_or_collection_or_wire_or_intermediate_exceeds_limit":"FlowValidationError/resource_limit","priority":"Envelope bytes first; then closed shapes/types; local scalar/bounds; collection identity/references; correction/causality; request/baseline compatibility; numerical evaluation. Each negative variant is independently materialized; no assumed error priority from combining defects."}
+    },
+    {
+      "id":"F35-metadata-complete-result-parity",
+      "inputs":{"base":"F01","selection":"All applicable native scalar output IDs.","runs":["pure direct","installed worker","stored readback","identical retry","chronological replay","full-prefix restore"]},
+      "expected":{"parity":"All full native result bytes match when canonical request/lineage/input/input-checkpoint identities are equal; compare exact pair, status, reason, units, quality, coverage, feature/formula/profile, source/policy/request/input/context/revision/baseline/checkpoint bindings, windows/cutoff, maximal availability and ordered contribution hashes.","sorting":"group_id then output_id then cluster_id, null first; unique keys.","cross_generation_or_restore_lineage":"Different K/request/input/context/input-checkpoint identities must not be forced byte-equal; compare hand expected economics plus each generation's independently specified identities.","complete_empty_cluster_only":"Valid actual publication with result_count0 and exact selected request/evidence binding; never invent scalar rows to force nonempty."},
+      "unresolved":"Literal expected SHA256 identities await independently reviewed canonical encoding; no invented hash literals."
+    },
+    {
+      "id":"F36-equity-consumer-participation-reserved",
+      "inputs":{"option_base":"F01","supplied_synthetic_equity_shares":"100","supplied_synthetic_equity_turnover":"2000"},
+      "expected_arithmetic":{"cross.share_equivalent_participation":"13/2","cross.premium_turnover_participation":"7/10"},
+      "expected_integration":"Not qualified without actual compatible accepted equity producer/artifact/source/population bindings. Missing operand is unavailable, complete zero denominator undefined, mixed basis/currency/future operand rejected or unavailable per frozen producer boundary.",
+      "gate":"EQ190 remains gated by actual EQ153/EQ158 producer integration; these arithmetic witnesses cannot close it."
+    },
+    {
+      "id":"F37-lag-pair-membership-reserved",
+      "inputs":{"buckets":[1,2,3,4],"option_exact":["1","2","3","4"],"equity_exact":["8","2","4","6"],"all_complete":true},
+      "expected_arithmetic":{"positive_one":{"pairs":[[1,2],[2,3],[3,4]],"n":3,"r":"1"},"zero":{"pairs":[[1,1],[2,2],[3,3],[4,4]],"n":4,"r":"-1/5"},"negative_one":{"pairs":[[2,1],[3,2],[4,3]],"n":3,"cross_centered":"-4/1","x_centered_square_sum":"2/1","y_centered_square_sum":"56/3","r_symbolic":"-sqrt(3/7)"}},
+      "variants":{"missing_equity_bucket3":"At lag+1 only2pairs; undefined/insufficient_pairs, never fillzero.","option_all7":"Undefined/zero_variance.","positive_lag_availability":"At least latest actual paired equity-bucket availability; no origin-time prediction claim."},
+      "gate":"No generic Pearson kernel or rendering tolerance specified here; bind actual EQ153 producer contract later."
+    },
+    {
+      "id":"F38-modes-and-regression-boundary",
+      "inputs":{"modes":["complete_ordered_batch","chronological_cut_replay","bounded_full_prefix_checkpoint_restore","incremental_live","fully_restated_all_history_signing","hybrid_quote_tick"]},
+      "expected":{"supported_first_three":"Require actual complete identity/value/status/evidence parity once implemented.","last_three":"Unsupported, never reported implemented or qualified.","R25":"Existing R25 Python APIs and original canonical bytes unchanged; execute literal released-regression fixtures after implementation admission."}
+    },
+    {
+      "id":"F39-complete-certificate-future-member",
+      "authorship":"Coordinator-requested independent hand expectation after fresh independent review identified future-member coverage leakage; no production result supplied or consulted.",
+      "profile":"option-observed-side1",
+      "inputs":{"window":[10,20],"cutoff":20,"certificate":{"complete":true,"known":20,"expected_execution_ids":["a","b"]},"a":{"event":12,"known":12,"A":12,"position":1,"price":"2","quantity":"1","multiplier":"100","side":"buy","side_known":12},"b_future_known_variant":{"event":14,"known":25,"A":25,"position":2,"price":"1","quantity":"1","multiplier":"100"},"b_future_position_variant":{"event":14,"known":15,"A":15,"position":2,"price":"1","quantity":"1","multiplier":"100","request_cut_cursor":1,"snapshot_cursor":2},"both_variants":"All roots retained in supplied snapshot. Actual same-stream context certificate for a is complete and known by12; no future record is needed for a's supplied observed buy."},
+      "expected":{"selected_complete_population_trade_count_premium_hhi":"unavailable/incomplete_population; null values, never available1/200/1","coverage":{"population_complete":false,"expected_count":null,"observed_count":1,"eligible_count":1,"signed_count":1,"unknown_sign_count":0},"evidence_partial_premium":"200/1","b_exclusion":"future_known in both variants: no revision visible under request knowledge/cursor cut; no unlisted future_position reason.","output_checkpoint":null,"no_future_zero":"Declared complete certificate cannot turn not-yet-visible expected member b into known zero or erase it from expected coverage."},
+      "known_cancel_excluded_countercase":{"b":"Present and K-visible cancellation or excluded regular revision, rather than unknown/future root.","expected":"Then explicit complete certificate may certify the selected eligible set containing only a: expected=observed=eligible1, population_complete=true; complete-window premium200/1 and HHI1/1 available. Preserve b's actual cancellation/exclusion evidence."}
+    },
+    {
+      "id":"F40-selected-root-signing-boundary-after-cutoff",
+      "authorship":"Coordinator-requested hand semantic admission witness following actual independent contract review; no production output consulted.",
+      "inputs":{"selected_active_root":{"event":10,"known":10,"A":30,"price":"2","quantity":"1","multiplier":"100"},"window":[0,15],"request_cut_cursor":"Includes this root position.","cutoff_variants":[20,30],"other_inputs":"Valid complete group/population/definition/source-order/reference facts and certificate, with all needed knowledge admitted at each control cut."},
+      "expected":{"K20":{"exception_class":"FlowValidationError","code":"identity_mismatch","path":"/request/knowledge_cutoff_ns","phase":"Semantic request admission before numerical or historical-context evaluation.","results":null,"output_checkpoint":null},"K30_control":"Guard admits selected root A30 atK30; evaluate normally under the selected supported profile and all other independently admitted facts.","unselected_future_root_control":"A snapshot may retain roots with future signing A when they are not selected active group/window/cursor-visible executions at this cut; this guard is not a global ban on future ledger context."}
+    }
+  ]
+}
