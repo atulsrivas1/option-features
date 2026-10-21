@@ -367,6 +367,49 @@
         "retained_context_seed": "The original-definition rule also applies to pre-window/context roots; window selection does not hide invalid origin."
       },
       "discriminator": "Future multiplier/right/strike cannot justify current economic premium; separate civil/spot future eligibility does not waive original definition causality."
+    },
+    {
+      "id": "F43-context-members-and-dimensional-operands",
+      "independence": "Original coordinator hand metadata witness, independently reviewed before adoption; no production output consulted.",
+      "inputs": {
+        "observed": "Original root execution e at position1 with original reference r; supplied side known by A.",
+        "quote": "Earlier causal quotes q0 and q1; complete applicable context, q1 is selected latest state.",
+        "tick": "One certified eligible predecessor e0/reference r0 at position0; target original reference r1 at position1.",
+        "partitions": {
+          "A": "900",
+          "B": "400",
+          "C": "100"
+        }
+      },
+      "expected": {
+        "observed_context_record_types_ids": [
+          "flow_execution:e",
+          "flow_reference:r"
+        ],
+        "quote_context_record_types_ids": [
+          "flow_quote:q1",
+          "flow_reference:r"
+        ],
+        "quote_unselected_q0_in_context": false,
+        "tick_context_record_types_ids": [
+          "flow_execution:e0",
+          "flow_reference:r0",
+          "flow_reference:r1"
+        ],
+        "duplicate_reference_anchor": "Use minimum associated original root position then record type; one entry per immutable record identity.",
+        "contract_hhi_numerator": "980000/1",
+        "contract_hhi_denominator": "1960000/1",
+        "contract_hhi_operand_unit": "group_currency_squared",
+        "contract_hhi_value": "1/2",
+        "contract_hhi_result_unit": "ratio",
+        "sign_event_numerator_unit": "executions",
+        "known_sign_imbalance_operands_unit": "group_currency"
+      },
+      "controls": {
+        "invalid_latest_quote": "Still binds q1 and gives its actual closed unknown reason; no fallback to q0.",
+        "missing_or_incomplete_quote_context": "Only original root reference in context records; separate certificate digest as available, no invented selected quote."
+      },
+      "limitation": "Symbolic record labels define membership/order; materialization must independently construct complete exact records and actual hashes."
     }
   ]
 }
