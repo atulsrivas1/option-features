@@ -264,6 +264,73 @@
       "authorship":"Coordinator-requested hand semantic admission witness following actual independent contract review; no production output consulted.",
       "inputs":{"selected_active_root":{"event":10,"known":10,"A":30,"price":"2","quantity":"1","multiplier":"100"},"window":[0,15],"request_cut_cursor":"Includes this root position.","cutoff_variants":[20,30],"other_inputs":"Valid complete group/population/definition/source-order/reference facts and certificate, with all needed knowledge admitted at each control cut."},
       "expected":{"K20":{"exception_class":"FlowValidationError","code":"identity_mismatch","path":"/request/knowledge_cutoff_ns","phase":"Semantic request admission before numerical or historical-context evaluation.","results":null,"output_checkpoint":null},"K30_control":"Guard admits selected root A30 atK30; evaluate normally under the selected supported profile and all other independently admitted facts.","unselected_future_root_control":"A snapshot may retain roots with future signing A when they are not selected active group/window/cursor-visible executions at this cut; this guard is not a global ban on future ledger context."}
+    },
+    {
+      "id": "F41-negative-calendar-dte-reference-only",
+      "profile": "option-observed-side1",
+      "inputs": {
+        "window_ns": [
+          10,
+          20
+        ],
+        "cutoff_ns": 20,
+        "execution": {
+          "id": "a",
+          "event": 11,
+          "A": 11,
+          "known": 11,
+          "position": 1,
+          "price": "2",
+          "quantity": "1",
+          "multiplier": "100",
+          "right": "call",
+          "strike": "100",
+          "side": "buy"
+        },
+        "reference": {
+          "expiry_ordinal": 9,
+          "civil_ordinal": 10,
+          "civil_instant_ns": 11,
+          "civil_known_at_ns": 11,
+          "calendar_id": "SYNTH-CAL",
+          "calendar_revision": "1",
+          "spot": "90",
+          "spot_event_ns": 10,
+          "spot_known_at_ns": 10,
+          "spot_position": 0,
+          "same_stream": true,
+          "definition_known_at_ns": 0,
+          "effective_from_ns": 0
+        },
+        "complete": true
+      },
+      "expected_available": {
+        "flow.premium": "200/1",
+        "flow.trade_count": "1/1",
+        "flow.contracts": "1/1",
+        "flow.dte_reference_coverage": "0/1",
+        "flow.short_dte_observed_lower_share": "0/1",
+        "flow.otm_premium_share": "1/1"
+      },
+      "expected_unavailable": {
+        "flow.short_dte_premium_share": "missing_dte_reference"
+      },
+      "expected_undefined": {
+        "flow.short_dte_known_reference_share": "zero_denominator"
+      },
+      "expected_evidence": {
+        "eligible_count": 1,
+        "dte_eligible_count": 0,
+        "otm_eligible_count": 1,
+        "execution_exclusions": [],
+        "quality_flags": [
+          "partial_dte_coverage"
+        ],
+        "diagnostics_include": [
+          "missing_dte_reference"
+        ]
+      },
+      "discriminator": "Negative civil DTE invalidates only DTE reference, not supplied regular economic population; effective interval mismatch remains a separate structural rejection."
     }
   ]
 }

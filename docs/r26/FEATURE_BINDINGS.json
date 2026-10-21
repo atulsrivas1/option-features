@@ -58,7 +58,8 @@
     "baseline_metric_nullability": "contracts_trade_count_premium_independent_null_selected_metric_incomplete_baseline",
     "minimum_prior_windows": "explicit_request_integer_1_through_32_no_implicit_20",
     "dte": "calendar_ordinals_inclusive_0_through_explicit_max",
-    "otm": "call_strike_gt_spot_put_strike_lt_spot_ATM_false"
+    "otm": "call_strike_gt_spot_put_strike_lt_spot_ATM_false",
+    "negative_calendar_dte": "DTE_reference_only_ineligible_missing_dte_reference; retain_regular_totals_signs_and_independent_OTM; no_execution_exclusion"
   },
   "residuals": [
     {"id":"fully_restated_signing","owner":"EQ188","disposition":"revised economic facts against original per-root context selected; fully restated all-history signing remains unsupported and is not claimed source parity"},
