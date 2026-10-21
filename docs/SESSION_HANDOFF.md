@@ -1,3 +1,7 @@
+## Published R25 update — October 21, 2026
+
+Owner-approved `v0.1.0a1` GitHub prereleases are published and actual tag/tree plus all twelve downloaded-asset checksums have been verified. See [published release acceptance](R25_RELEASE.md). The qualification checkpoint below predates publication; its UNRELEASED wording records that earlier state and its build-source identities remain unchanged. The live Project governs final lifecycle status. Final acceptance-documentation merge precedes Done/issue and milestone closure. No further runtime qualification or owner publication approval is pending.
+
 ## Current R25 qualification handoff — October 21, 2026
 
 [Current exact-source local qualification](R25_LOCAL_QUALIFICATION.md) is the evidence summary.
