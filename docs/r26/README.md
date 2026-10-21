@@ -1,5 +1,7 @@
 # R26 option flow contracts
 
+Run the [pure flow example](../../examples/r26/README.md) with installed contracts/features packages and original synthetic inputs.
+
 R26 adds option-native flow, activity and execution calculations in the existing three option repositories. Canonical scope remains [E34 #533](https://github.com/atulsrivas1/equity-features/issues/533), with all seven delivery stories retained. The owner approved independent native admission under [GOV038 #592](https://github.com/atulsrivas1/equity-features/issues/592); actual EQ153/EQ158 producers still gate EQ190 integration and full R26 acceptance. Local validation and independent review govern merges; hosted CI is optional.
 
 The normative packet consists of [mathematics](MATHEMATICS.md), [feature bindings](FEATURE_BINDINGS.json), [typed boundaries](FLOW_CONTRACT.md), [compatibility](COMPATIBILITY.json), [independent scenarios](INDEPENDENT_FIXTURE_CASES.json) and [fixture construction protocol](FIXTURE_PROTOCOL.md). Freeze authority is the coordinator's externally recorded exact reviewed commit, not mutable status text inside its own commit. Forty-four scenarios are definitions; materialized independent fixtures, executed tests and qualified artifacts remain separate evidence.
