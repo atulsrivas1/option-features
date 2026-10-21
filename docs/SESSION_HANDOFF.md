@@ -1,3 +1,34 @@
+## R25 library source candidate — October 20, 2026
+
+Fresh layer author `/root/r25_library_implementation` authored the two independently
+packaged distributions under `packages/option-contracts` and `packages/features`
+on `codex/r25-library-implementation`, based on frozen9403854ff37a7c0b5dbc57c142893a1ce0a262e4.
+The source includes frozen records, closed explicit schemas, bounded structural
+admission/canonical identities, six reference/quote-count/breadth outputs, pure
+evaluator, explicit supplied projection, original BSM endpoints/interior Greeks,
+bounded Arb certificates and certified bisection/rescue probes. Independent
+review and coordinator source review are in progress; source presence is not
+proof of correctness, a numerical pass, merge or release acceptance.
+
+Authored unit/qualification tests remain unexecuted. The mandatory independent
+wire-fixture consumer fails if its reviewed artifact/SHA256 is absent; the actual
+wire-identical80/140digit fixture artifact has not been generated. Full family
+work is explicit in `docs/NUMERICAL_QUALIFICATION_PLAN.md`. API/install restrictions
+and exact module boundaries are in `docs/CONTRACTS_API.md` and `docs/FEATURES_API.md`.
+Both packages include the public Apache LICENSE, controlled-staging source marker
+package-data declarations, exact experimental dependencies and Python3.12 bounds.
+No source marker, wheel, installed compatibility or native licensing qualification
+is fabricated from those declarations.
+
+Checks performed were Python AST parsing, TOML source parsing and whitespace only;
+the exact source receipt/hashes are recorded for coordinator review separately.
+No option module/native import, test/typecheck, numerical/oracle execution,
+build/install, benchmark or database action ran. No commit/push is authorized yet.
+Preserve the EQ142 execution reservation and all other layer ownership. Next:
+resolve fresh independent source findings; coordinator reviews actual final diff;
+then separately admit/record exact local runtime/build/install/numerical evidence
+when the reservation permits, before any implementation merge or completion claim.
+
 ## R25 active continuation: method, oracle and grants — October 20, 2026
 
 Owner observed no agents running after the previous source-design handoff. Coordinator resumed actual C04 method selection, independent oracle source and concrete three-layer authoring preparation with fresh agents, then fresh independent method/oracle review. Selected method option-arb-bsm1/version1 uses python-flint0.9.0, exact rational inputs and five bounded Arb precision tiers; method/numerical/boundary source reconciled. Independent mpmath1.3.0 oracle source has not executed; unit mismatch corrected and rational demonstration versus actual binary64 wire target identity is explicit. Review/execution statements remain separate.
