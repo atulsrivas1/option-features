@@ -1,6 +1,6 @@
-# R25 local qualification — current draft
+# R25 local qualification — technical validation complete
 
-Checkpoint: October 21, 2026. **UNRELEASED; release acceptance remains open.** Local builds/tests are merge evidence; hosted CI is optional. This report records observed component qualification separately from integration and release gates. Source-independent package behavior and mathematical contracts are unchanged by this documentation reconciliation.
+Checkpoint: October 21, 2026. **UNRELEASED; technical validation passed, with final documentation and publication acceptance still open.** Local builds/tests are merge evidence; hosted CI is optional. This report records observed component qualification separately from integration and release gates. Source-independent package behavior and mathematical contracts are unchanged by this documentation reconciliation.
 
 ## Qualified source and fixture identity
 
@@ -24,7 +24,7 @@ Implementation source is merged, while release stories remain open: library main
 | Absolute delta, gamma; foundation price, signed delta, vega, rho, theta | [Forward model](../packages/features/src/option_features/model.py), [EQ183](https://github.com/atulsrivas1/equity-features/issues/528) |
 | Implied volatility | [Inverse solver](../packages/features/src/option_features/inverse.py), [EQ184](https://github.com/atulsrivas1/equity-features/issues/529) |
 
-This traces nine selected matrix outputs plus five foundation outputs, not the whole future option matrix. Six source stories are in Test. [EQ187 acceptance is In progress](https://github.com/atulsrivas1/equity-features/issues/532#issuecomment-6308139253), not complete.
+This traces nine selected matrix outputs plus five foundation outputs, not the whole future option matrix. Six source stories are in Test. [EQ187 acceptance is in Code review](https://github.com/atulsrivas1/equity-features/issues/532#issuecomment-6308139253), pending final documentation and lifecycle reconciliation.
 
 ## Reproduce independent fixture consumption
 
@@ -59,11 +59,11 @@ The first Linux isolation harness aborted before tests because its preflight inc
 
 ## Integration, portable artifacts and browser evidence
 
-All four frozen five-scenario integration harnesses passed (Windows/Linux, original/rebuilt forms). The broader golden 111-case batch plus 111-case replay reports passed Linux original/rebuilt forms and Windows original wheels. **Windows rebuilt-sdist broad golden integration is still running and remains a mandatory gate**; no four-cohort broad integration completion is inferred.
+All four frozen five-scenario integration harnesses passed (Windows/Linux, original/rebuilt forms). The broader golden integration passed all four cohorts: 111 batch/retry cases and 111 replay cases per cohort, with successful complete Publication readback. The last Windows rebuilt-sdist integration and its direct/stored comparison both exited zero.
 
-A separate freshly reviewed direct/stored comparison now establishes full all-field parity for three cohorts: Linux original/rebuilt and Windows original. Fresh pure `evaluate` plus `encode_results` over all 111 cases/378 rows produced byte-identical complete payloads to each saved worker/readback payload, with completed-commit digest/count binding and fresh cohort verification. The retained `THREE_COHORT_FULL_PAYLOAD_PARITY.json` records these results. This is stronger than the integration harness's expected-field subset checks; the independent oracle consumer remains separate numerical proof. Windows rebuilt-sdist full payload parity remains pending, so no four-cohort claim is made.
+A separate freshly reviewed direct/stored comparison establishes full all-field parity for every cohort. Fresh pure `evaluate` plus `encode_results` over all 111 cases/378 rows produced byte-identical complete payloads to each saved worker/readback payload, with completed-commit digest/count binding and fresh cohort verification. The coordinator then compared all four completed reports: full canonical result payloads match across Windows and Linux original/rebuilt forms. The retained final `FOUR_COHORT_FULL_PAYLOAD_PARITY.json` has SHA256 `8e4f3d677bc60378dc38402aba724e48bcb7aeb2bb3d2db8ee7334fcf4946a9f`. Its private path-bearing receipts are not published here. This full-payload check complements the integration harness's expected-field checks; the independent oracle consumer remains separate numerical proof.
 
-Both portable v2 bundles passed fresh download, two-form installation, installed verification and five stored scenarios/45 rows on their own platform. Final wrapper ZIPs changed documentation only and preserve validated inputs: Windows SHA256 `3da16fc3ce5265da930f6a8e0cb0360bf541f5ebddf2d96dd98b91bcde4b5037`, Linux SHA256 `1f59147f0d806bdada80bfbf3193e0dfaed6d2772db930087583d34bed82c551`. Final coordinator/fresh-reviewer wrapper review remains pending. These hashes identify candidate local bundles, not a published release or automatic source-trust proof.
+Both portable v2 bundles passed fresh download, two-form installation, installed verification and five stored scenarios/45 rows on their own platform. Final wrapper ZIPs changed documentation only and preserve validated inputs: `R25-0.1.0a1-windows-amd64.zip` SHA256 `3da16fc3ce5265da930f6a8e0cb0360bf541f5ebddf2d96dd98b91bcde4b5037`, `R25-0.1.0a1-linux-x86_64.zip` SHA256 `1f59147f0d806bdada80bfbf3193e0dfaed6d2772db930087583d34bed82c551`. Fresh independent reviewer `/root/r25_final_source_review` approved exact ZIP members, checksums, privacy and the documentation-only delta: all 46 Windows and 42 Linux execution/metadata/notice files match the validated v2 inputs byte for byte. This static review does not claim a new numerical execution or publication approval. These hashes identify candidate local bundles, not a published release or automatic source-trust proof.
 
 The external coordinator portable-manifest trust digests are supplied separately from bundle-controlled claims:
 
@@ -76,9 +76,9 @@ The external coordinator portable-manifest trust digests are supplied separately
 
 The coordinator actually inspected the browser demo through CUA: five stored-result tables/45 rows, plus a supplemental all-14-output price/IV round trip. Supplied sigma `0.2` returned IV `0.20000000001164153`. Screenshots and local evidence are retained for the stored demo and round trip. Complete Result parity was checked explicitly; this demonstration is integration evidence, not a separate independent numerical oracle.
 
-## Remaining acceptance gates
+## Final documentation and publication steps
 
-Finish and inspect Windows rebuilt-sdist broad golden integration, complete final cross-platform canonical-byte comparison and final wrapper review, then reconcile release evidence and story acceptance. Source PRs are merged; six source stories remain Test and EQ187 is In progress. R25 remains UNRELEASED. Registry/tag/release publication is not approved by this report. Preserve historical receipts, source identities and owner publication boundaries.
+Local technical gates passed: both platform build/install suites, independent numerical fixtures, layer isolation, tamper rejection, all four broad batch/replay integrations, complete cross-platform payload parity, portable installation checks, static final-wrapper review and actual browser inspection. Source PRs are merged; six source stories remain Test and EQ187 is in Code review at this documentation checkpoint. Publish independently reviewed final documentation and reconcile actual acceptance/lifecycle evidence before moving eligible stories to Ready to release. R25 remains UNRELEASED. Owner approval is still required for release publication; this report does not authorize registry/tag/release creation. Preserve historical receipts and original artifact source identities.
 
 ## Superseded checkpoints and resource ownership
 
