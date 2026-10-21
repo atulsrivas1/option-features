@@ -1,3 +1,103 @@
+## R25 lower-bound IV correction candidate — October 21, 2026
+
+Cross-schema review aligned the consumer with all four independently reviewed
+Vega-interval fields: low/high plus the exact empirical uncertainty label and
+relative padding1e-58, without claiming rigorous interval proof. The independent
+admissible candidate sigma low/high interval is also checked for ordered
+nonnegative bounds and candidate membership. Seven focused assertion tests passed,
+including rejected metadata/padding/domain mutations. Log:
+`.git/r25-iv-regression-20261021/consumer-full-interval-schema-tests.log`.
+No production mathematics or independent expectations changed in this QA fix.
+
+The first admitted full wire-fixture development run retained one failure
+(iv-tail compared Vega at returned candidate against oracle-root point Vega)
+and two errors (noncanonical trailing-zero Decimal quote strings). The coordinator
+assigned canonical-wire repairs and independently derived candidate-Vega intervals
+to the separate fixture author; this production author did not change goldens.
+The consumer now prefers an independently supplied ordered nonnegative
+oracle_vega_interval and retains the original point tolerance when no interval
+exists. Six focused consumer assertion tests passed using synthetic structural
+probes, including in/out-of-range and unchanged fallback tolerances. No production
+solver tolerance or conditioning rule was changed. Failed full-run logs remain
+intact; no full rerun until a new independently reviewed artifact is admitted.
+
+Additional coordinator-approved metadata clarification: complete admitted empty
+quote plans/activity populations return undefined empty status plus Coverage0/0,
+declared ID, True completeness and event_count/population_member. Unavailable
+prerequisites still return coverage=None. The production author changed only
+the two empty branches in reference.py and added a separate test_empty_coverage.py;
+three focused source-development tests passed, including absent/future/incomplete
+certificate and plan/population distinctions. No independent goldens or normative
+files were edited. Separate command/hash receipt and log are retained in the
+private development environment; new wheel/full fixture evidence remains pending.
+
+Coordinator reported the EQ142 reservation safely released and authorized scoped
+runtime work. The production omission was derived from MODEL_PROFILE's Vega
+conditioning rule: exact lower-bound available IV previously omitted Vega and
+conditioning evidence. Shared rigorous conditioning now handles lower-bound and
+interior candidates; uncertified evidence remains unknown. The new independently
+derived call/put ITM boundary regression requires Vega0, ill_conditioned=True,
+sigma0, zero residual/width/iterations and both boundary/conditioning flags.
+
+The qualification consumer now checks full Coverage/null, required/absent/unfixed
+solver evidence, independently fixed fields and optional-if-present constraints,
+Vega/conditioning, root containment and both convergence criteria. It checks
+separate structural exception cases and binds the combined cases/exception cases
+digest to the externally pinned artifact. Independent generator/goldens were not
+modified by this production author; only their expected-field format was consulted.
+
+Fresh isolated Windows CPython3.12.10 source-development run:29 feature tests and4
+consumer assertion-engine tests passed with no skips. python-B explicitly loaded
+the modified features/src; unchanged contracts/flint wheels were installed into
+the private `.git/r25-iv-regression-20261021` environment. Original qualification
+attempt02 artifacts were read only. Logs and exact command/source/environment
+receipt are retained in that private directory. This is development evidence,
+not installed evidence for a rebuilt feature wheel or the reviewed full fixture
+artifact. The29-feature/4-consumer development receipt records the actual dirty
+checkout base13bc788d343e35a6fd55ad0c265022c8562fc892 and inverse.py SHA256
+f0555bdc6a1af9dd0aa2fac2d05d1890b9466570a1b274f9f500e5d5a854d30c.
+The later3-empty-coverage receipt records the actual dirty checkout base
+61a7c934122a5686554794777382cda83d0259f8 and reference.py SHA256
+6e1083b9290384bfe53998ffd5d047b242532d21f0721a25a62f1a681a5b0957.
+These are separate historical runs; neither used28fa4c7699b09d2f81661237270f52329356b6cb
+as its actual execution base. Each private receipt preserves its own complete
+tested-source hashes; this later handoff correction does not rewrite those
+historical receipt bytes. No commit/push until coordinator actual-diff review
+and fresh independent review. Next independently review this correction, then
+create a new controlled artifact cohort and run complete fixture/integration
+qualification. Preserve original failed and successful attempt receipts.
+
+## R25 library source candidate — October 20, 2026
+
+Fresh layer author `/root/r25_library_implementation` authored the two independently
+packaged distributions under `packages/option-contracts` and `packages/features`
+on `codex/r25-library-implementation`, based on frozen9403854ff37a7c0b5dbc57c142893a1ce0a262e4.
+The source includes frozen records, closed explicit schemas, bounded structural
+admission/canonical identities, six reference/quote-count/breadth outputs, pure
+evaluator, explicit supplied projection, original BSM endpoints/interior Greeks,
+bounded Arb certificates and certified bisection/rescue probes. Independent
+review and coordinator source review are in progress; source presence is not
+proof of correctness, a numerical pass, merge or release acceptance.
+
+Authored unit/qualification tests remain unexecuted. The mandatory independent
+wire-fixture consumer fails if its reviewed artifact/SHA256 is absent; the actual
+wire-identical80/140digit fixture artifact has not been generated. Full family
+work is explicit in `docs/NUMERICAL_QUALIFICATION_PLAN.md`. API/install restrictions
+and exact module boundaries are in `docs/CONTRACTS_API.md` and `docs/FEATURES_API.md`.
+Both packages include the public Apache LICENSE, controlled-staging source marker
+package-data declarations, exact experimental dependencies and Python3.12 bounds.
+No source marker, wheel, installed compatibility or native licensing qualification
+is fabricated from those declarations.
+
+Checks performed were Python AST parsing, TOML source parsing and whitespace only;
+the exact source receipt/hashes are recorded for coordinator review separately.
+No option module/native import, test/typecheck, numerical/oracle execution,
+build/install, benchmark or database action ran. No commit/push is authorized yet.
+Preserve the EQ142 execution reservation and all other layer ownership. Next:
+resolve fresh independent source findings; coordinator reviews actual final diff;
+then separately admit/record exact local runtime/build/install/numerical evidence
+when the reservation permits, before any implementation merge or completion claim.
+
 ## R25 active continuation: method, oracle and grants — October 20, 2026
 
 Owner observed no agents running after the previous source-design handoff. Coordinator resumed actual C04 method selection, independent oracle source and concrete three-layer authoring preparation with fresh agents, then fresh independent method/oracle review. Selected method option-arb-bsm1/version1 uses python-flint0.9.0, exact rational inputs and five bounded Arb precision tiers; method/numerical/boundary source reconciled. Independent mpmath1.3.0 oracle source has not executed; unit mismatch corrected and rational demonstration versus actual binary64 wire target identity is explicit. Review/execution statements remain separate.
