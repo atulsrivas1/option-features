@@ -105,7 +105,7 @@ def _sign_steps(snapshot, root, selected, policy, policy_hash, refs, executions,
             reason = 'quote_missing' if method == 'option-quote-midpoint1' else 'tick_seed_unavailable'
             diagnostics.add('incomplete_context')
         elif method == 'option-quote-midpoint1':
-            candidates = []
+            candidates = []; cancelled_candidates = []
             for identity, chain in sorted(quotes.items()):
                 qroot = chain[0]
                 revision = select_revision(chain,A,cursors)
@@ -113,10 +113,16 @@ def _sign_steps(snapshot, root, selected, policy, policy_hash, refs, executions,
                     and identity in certificate.expected_root_ids
                     and qroot.event_ns >= certificate.session_start_ns
                     and qroot.position < root.position and qroot.event_ns <= root.event_ns
-                    and revision is not None and revision.kind != 'cancel'):
-                    candidates.append((qroot.position,revision))
+                    and revision is not None):
+                    if revision.kind=='cancel':cancelled_candidates.append((qroot.position,revision))
+                    else:candidates.append((qroot.position,revision))
                 yield None
             quote = max(candidates,key=lambda x:x[0])[1] if candidates else None
+            winner_position=quotes[quote.quote_id][0].position if quote is not None else None
+            for position,cancelled_quote in cancelled_candidates:
+                if winner_position is None or position>winner_position:
+                    clocks.append(cancelled_quote.known_at_ns)
+                yield None
             if quote is None:
                 future=False
                 for identity,chain in quotes.items():
@@ -162,8 +168,12 @@ def _sign_steps(snapshot, root, selected, policy, policy_hash, refs, executions,
                     and predecessor_reference.known_at_ns <= A
                     and all(getattr(predecessor_reference,f)==getattr(reference,f) for f in definition_fields)
                     and eroot.stream_id == root.stream_id and eroot.position < root.position
-                    and revision is not None and revision.kind != 'cancel' and revision.condition == 'regular'):
-                    candidates.append((eroot.position,revision))
+                    and revision is not None):
+                    # An admitted removal/exclusion changes reconstruction of the
+                    # prefix even though it is absent from F43 operand membership.
+                    clocks.append(revision.known_at_ns)
+                    if revision.kind!='cancel' and revision.condition=='regular':
+                        candidates.append((eroot.position,revision))
                 yield None
             last_price = None; carry = 'unknown'
             for position, previous in sorted(candidates):
@@ -309,12 +319,18 @@ def _finish_cluster_steps(current,policy_hash):
     return record,tuple(current)
 
 
+def _cluster_partition(entry,policy_hash):
+    root,selected,reference,*_=entry
+    return (root.contract_id,root.session_id,root.stream_id,reference.underlying_id,
+            reference.currency,reference.action_basis_id,reference.right,reference.strike,
+            reference.multiplier,reference.expiry_ordinal,policy_hash)
+
+
 def _clusters_steps(entries,policy,policy_hash):
     clusters=[];current=[];key=None
-    for entry in sorted(entries,key=lambda e:(e[0].contract_id,e[0].session_id,e[0].stream_id,e[0].position)):
+    for entry in sorted(entries,key=lambda e:_cluster_partition(e,policy_hash)+(e[0].position,)):
         root,selected,reference,premium,witness,*_=entry
-        newkey=(root.contract_id,root.session_id,root.stream_id,reference.currency,reference.action_basis_id,
-                witness.quote_id,witness.quote_revision_id,witness.sign)
+        newkey=_cluster_partition(entry,policy_hash)+(witness.quote_id,witness.quote_revision_id,witness.sign)
         if witness.sign=='unknown' or witness.quote_id is None:
             if current:clusters.append((yield from _finish_cluster_steps(current,policy_hash)))
             current=[];key=None

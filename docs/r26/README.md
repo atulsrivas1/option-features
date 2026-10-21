@@ -2,6 +2,8 @@
 
 Run the [pure flow example](../../examples/r26/README.md) with installed contracts/features packages and original synthetic inputs.
 
+The [supplemental regressions](SUPPLEMENTAL_REGRESSIONS.md) provide independently audited original synthetic definition/selection-clock fixtures, portable regeneration and an installed conformance checker. [Current qualification](LOCAL_QUALIFICATION.md) distinguishes corrected source checks from superseded artifacts and pending installed acceptance.
+
 October21 actual evidence is summarized in [local qualification](LOCAL_QUALIFICATION.md): four installed component cohorts, both original-wheel integrations and an inspected stored-output browser view have passed. Remaining queued native checks and the unexecuted pure example are explicit. R26 remains UNRELEASED, with equity/full-acceptance/publication gates retained. The original source-packet language below preserves its historical scope; future-gate wording there does not erase later executed evidence.
 
 R26 adds option-native flow, activity and execution calculations in the existing three option repositories. Canonical scope remains [E34 #533](https://github.com/atulsrivas1/equity-features/issues/533), with all seven delivery stories retained. The owner approved independent native admission under [GOV038 #592](https://github.com/atulsrivas1/equity-features/issues/592); actual EQ153/EQ158 producers still gate EQ190 integration and full R26 acceptance. Local validation and independent review govern merges; hosted CI is optional.

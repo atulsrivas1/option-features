@@ -275,6 +275,14 @@ def flow_validate_results(results, request=None):
         pointer = f'/results/{index}'
         if row.output_id not in OUTPUT_UNITS or row.unit != OUTPUT_UNITS[row.output_id]:
             fail('identity_mismatch', pointer + '/unit')
+        if row.output_id in ('cross.share_equivalent_participation',
+                             'cross.premium_turnover_participation','cross.lag_correlation'):
+            for field,expected in (('status','unsupported'),('reason','equity_integration_unqualified'),
+                                   ('value',None),('numerator',None),('denominator',None)):
+                if getattr(row,field)!=expected:
+                    fail('identity_mismatch',pointer+'/'+field)
+            if row.evidence.required_producer_ids!=('EQ153','EQ158'):
+                fail('identity_mismatch',pointer+'/evidence/required_producer_ids')
         if row.status not in reasons or row.reason not in reasons[row.status]:
             fail('invalid_scalar', pointer + '/reason')
         if (row.status == 'available') != (row.value is not None):
