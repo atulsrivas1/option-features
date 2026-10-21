@@ -1,0 +1,291 @@
+{
+  "schema_version": 1,
+  "fixture_set_id": "r25-independent-design-1",
+  "state": "source_only_design_not_executed_not_accepted",
+  "oracle_policy": "Exact rational arithmetic, payoff identities or analytic expressions derived independently of implementation; no production routine may generate expected values.",
+  "expression_language": "Documentary mathematics only, not executable syntax. Phi and phi denote the standard normal CDF and density. Rational strings denote exact values.",
+  "operand_shape": "Semantic fixture templates, not canonical wire records. Civil ordinals, shorthand r/q/sigma/S/K/T, eligibility booleans and count summaries require explicit typed Definition/Request/Snapshot records and certified bindings before executable acceptance; diagnostic outputs and unit probes are not initial API output IDs.",
+  "status_contract": ["available", "missing_input", "ineligible_input", "invalid_input", "unsupported_profile", "not_applicable", "undefined", "nonidentifiable_inverse", "bracket_exceeded", "iteration_limit", "numerical_failure"],
+  "common_provenance": {
+    "source": "original_synthetic_fixture_design",
+    "definition_revision": "synthetic-definition-1",
+    "underlying_id": "SYN-UNDERLYING-1",
+    "contract_id": "SYN-OPTION-1",
+    "currency": "USD",
+    "basis": "synthetic-unadjusted-scalar-1",
+    "known_at_rule": "Every admitted operand and definition revision must have known_at_ns <= request.knowledge_cutoff_ns. Each fixture supplies explicit event/effective/known-at clocks in its later wire instantiation; none may be filled using execution time.",
+    "units": "S, K, bid, ask and model price are USD per underlying payoff unit; multiplier is payoff units per contract; option quantity is contracts."
+  },
+  "cases": [
+    {
+      "id": "IF-PRICE-EXPIRY-CALL",
+      "conformance_case": "PRICE01",
+      "operands": {"side": "call", "S": "110", "K": "100", "valuation_ns": "0", "fixing_ns": "0"},
+      "expected": [
+        {"output": "pricing.price", "status": "available", "reason": "ok", "exact": "10", "origin": "computed"},
+        {"output": "volatility.implied_volatility", "status": "nonidentifiable_inverse", "reason": "terminal_price", "value": null}
+      ],
+      "derivation": "max(110-100,0)=10. Expiry payoff is independent of sigma.",
+      "evidence_class": "manually_derived_exact"
+    },
+    {
+      "id": "IF-PRICE-EXPIRY-PUT-OTM",
+      "conformance_case": "PRICE01",
+      "operands": {"side": "put", "S": "110", "K": "100", "valuation_ns": "0", "fixing_ns": "0"},
+      "expected": [{"output": "pricing.price", "status": "available", "reason": "ok", "exact": "0", "origin": "computed"}],
+      "derivation": "max(100-110,0)=0 is an observed available zero payoff.",
+      "evidence_class": "manually_derived_exact"
+    },
+    {
+      "id": "IF-PRICE-ZERO-SIGMA-PUT",
+      "conformance_case": "PRICE02",
+      "operands": {"side": "put", "S": "90", "K": "100", "r": "0", "q": "0", "sigma": "0", "T": "1"},
+      "expected": [{"output": "pricing.price", "status": "available", "reason": "ok", "exact": "10", "origin": "computed"}],
+      "derivation": "A=90, B=100; max(B-A,0)=10. This fixture asserts price only; Greek limits require their separately reviewed contract.",
+      "evidence_class": "manually_derived_exact"
+    },
+    {
+      "id": "IF-PRICE-ZERO-SIGMA-CALL-OTM",
+      "conformance_case": "PRICE02",
+      "operands": {"side": "call", "S": "90", "K": "100", "r": "0", "q": "0", "sigma": "0", "T": "1"},
+      "expected": [{"output": "pricing.price", "status": "available", "reason": "ok", "exact": "0", "origin": "computed"}],
+      "derivation": "max(A-B,0)=max(-10,0)=0; no small-volatility numerical approximation is the oracle.",
+      "evidence_class": "manually_derived_exact"
+    },
+    {
+      "id": "IF-PRICE-SMOOTH-ANALYTIC",
+      "conformance_case": "DELTA01",
+      "operands": {"side": "put", "S": "100", "K": "100", "r": "0", "q": "0", "sigma": "2", "T": "1"},
+      "expected": [
+        {"output": "pricing.price", "status": "available", "reason": "ok", "analytic": "100*(2*Phi(1)-1)", "origin": "computed"},
+        {"output": "greeks.signed_delta", "status": "available", "reason": "ok", "analytic": "Phi(1)-1", "origin": "computed"},
+        {"output": "greeks.delta", "status": "available", "reason": "ok", "analytic": "1-Phi(1)", "origin": "computed"},
+        {"output": "greeks.gamma", "status": "available", "reason": "ok", "analytic": "phi(1)/200", "origin": "computed"}
+      ],
+      "derivation": "d1=1, d2=-1; normal symmetry yields the price expression. Put signed delta is negative; the inventory delta is its absolute projection. Gamma denominator is S*sigma*sqrt(T)=200.",
+      "evidence_class": "manually_derived_analytic_expression_decimal_evaluation_pending"
+    },
+    {
+      "id": "IF-TIME-SAME-DAY",
+      "conformance_case": "TIME01",
+      "operands": {"valuation_ns": "0", "fixing_ns": "3600000000000", "valuation_civil_ordinal": "719163", "expiry_civil_ordinal": "719163", "civil_binding": "synthetic-UTC-certified-1"},
+      "expected": [
+        {"output": "contract.dte", "status": "available", "reason": "ok", "exact": "0"},
+        {"output": "model.time_years", "status": "available", "reason": "ok", "exact": "1/8760"}
+      ],
+      "derivation": "One hour is 3600/(365*86400)=1/8760 model years; both instants lie on 1970-01-01 UTC, civil ordinal719163, giving zero days. The adapter must independently certify this binding during executable fixture instantiation.",
+      "evidence_class": "manually_derived_exact"
+    },
+    {
+      "id": "IF-TIME-CIVIL-DIFFERENCE",
+      "conformance_case": "TIME01",
+      "operands": {"valuation_civil_ordinal": "740000", "expiry_civil_ordinal": "740003", "civil_binding": "synthetic-UTC-certified-1"},
+      "expected": [{"output": "contract.dte", "status": "available", "reason": "ok", "exact": "3"}],
+      "derivation": "740003-740000=3; an instant or ceil(T*365) cannot replace the certified civil difference.",
+      "evidence_class": "manually_derived_exact"
+    },
+    {
+      "id": "IF-TIME-NO-BINDING",
+      "conformance_case": "TIME02",
+      "operands": {"expiry_date_only": "synthetic-date", "fixing_ns": null, "civil_binding": null},
+      "expected": [{"output": "contract.dte", "status": "missing_input", "reason": "missing_civil_binding", "value": null}],
+      "derivation": "No certified pair of civil dates exists; do not construct a timezone or midnight convention.",
+      "evidence_class": "semantic_contract_case"
+    },
+    {
+      "id": "IF-REF-MONEYNESS",
+      "conformance_case": "REF01",
+      "operands": {"S": "80", "K": "100"},
+      "expected": [{"output": "contract.moneyness", "status": "available", "reason": "ok", "exact": "5/4"}],
+      "derivation": "Named strike/spot convention K/S=100/80=5/4, independent of option side.",
+      "evidence_class": "manually_derived_exact"
+    },
+    {
+      "id": "IF-UNIT-MULTIPLIER",
+      "conformance_case": "UNIT01",
+      "operands": {"quantity_contracts": "3", "scalar_multiplier": "10", "price_per_payoff_unit": "2"},
+      "expected": [
+        {"output": "contract.multiplier", "status": "available", "reason": "ok", "exact": "10"},
+        {"output": "price.per_contract_projection", "status": "available", "reason": "ok", "exact": "20"},
+        {"output": "value.position_projection", "status": "available", "reason": "ok", "exact": "60"},
+        {"output": "quantity_contracts_roundtrip", "status": "available", "reason": "ok", "exact": "3"}
+      ],
+      "derivation": "2*10=20 USD per contract and 20*3=60 USD. The last three entries are unit/transport probes, not additional matrix features.",
+      "evidence_class": "manually_derived_exact"
+    },
+    {
+      "id": "IF-QUOTE-LOCKED",
+      "conformance_case": "QUOTE01",
+      "operands": {"bid": "2", "ask": "2", "eligible_at_cutoff": true},
+      "expected": [{"output": "liquidity.spread_bps", "status": "available", "reason": "ok", "exact": "0"}],
+      "derivation": "(2-2)/((2+2)/2)*10000=0 with strictly positive midpoint.",
+      "evidence_class": "manually_derived_exact"
+    },
+    {
+      "id": "IF-QUOTE-POSITIVE-SPREAD",
+      "conformance_case": "QUOTE01",
+      "operands": {"bid": "1", "ask": "3", "eligible_at_cutoff": true},
+      "expected": [{"output": "liquidity.spread_bps", "status": "available", "reason": "ok", "exact": "10000"}],
+      "derivation": "(3-1)/((3+1)/2)*10000=10000 basis points.",
+      "evidence_class": "manually_derived_exact"
+    },
+    {
+      "id": "IF-QUOTE-CROSSED",
+      "conformance_case": "QUOTE02",
+      "operands": {"bid": "3", "ask": "1", "eligible_at_cutoff": true},
+      "expected": [{"output": "liquidity.spread_bps", "status": "invalid_input", "reason": "crossed_quote", "value": null}],
+      "derivation": "bid>ask violates quote eligibility; a negative computed spread cannot be published as valid.",
+      "evidence_class": "semantic_contract_case"
+    },
+    {
+      "id": "IF-QUOTE-ZERO-MIDPOINT",
+      "conformance_case": "QUOTE02",
+      "operands": {"bid": "0", "ask": "0", "eligible_at_cutoff": true},
+      "expected": [{"output": "liquidity.spread_bps", "status": "undefined", "reason": "zero_midpoint", "value": null}],
+      "derivation": "Midpoint=0 makes the ratio undefined; a locked quote alone is insufficient for zero spread.",
+      "evidence_class": "semantic_contract_case"
+    },
+    {
+      "id": "IF-COVERAGE-PER-CONTRACT",
+      "conformance_case": "CHAIN01",
+      "operands": {"population_kind": "expected_quote_samples_for_one_contract", "contract_id": "SYN-OPTION-1", "expected_sample_ids": ["t0", "t1", "t2", "t3"], "eligible_observed_sample_ids": ["t0", "t2", "t3"], "window": "explicit synthetic frozen window"},
+      "expected": [{"output": "quality.quote_coverage", "status": "available", "reason": "ok", "exact": "3/4"}],
+      "derivation": "Three unique eligible observed expected samples / four unique expected samples =3/4. This is sample-count coverage for one contract, neither time coverage nor a chain-member ratio.",
+      "evidence_class": "manually_derived_exact"
+    },
+    {
+      "id": "IF-COVERAGE-OBSERVED-ZERO",
+      "conformance_case": "CHAIN01",
+      "operands": {"population_kind": "expected_quote_samples_for_one_contract", "expected_count": "4", "eligible_observed_count": "0", "population_complete": true},
+      "expected": [{"output": "quality.quote_coverage", "status": "available", "reason": "ok", "exact": "0"}],
+      "derivation": "Known complete observation accounting with no eligible samples gives 0/4=0. Missing population metadata is a different case.",
+      "evidence_class": "manually_derived_exact"
+    },
+    {
+      "id": "IF-COVERAGE-EMPTY",
+      "conformance_case": "CHAIN01",
+      "operands": {"expected_count": "0", "eligible_observed_count": "0", "population_complete": true},
+      "expected": [{"output": "quality.quote_coverage", "status": "undefined", "reason": "empty_sampling_plan", "value": null}],
+      "derivation": "0/0 is undefined, not zero or full coverage.",
+      "evidence_class": "semantic_contract_case"
+    },
+    {
+      "id": "IF-SUPPLIED-ABS-DELTA",
+      "conformance_case": "DELTA01",
+      "operands": {"supplied_signed_delta": "-3/5", "supplied_unit": "per_underlying_payoff_unit", "producer_model": "synthetic-producer-model-1", "producer_revision": "1", "producer_known_at_ns": "7", "knowledge_cutoff_ns": "8", "r": null, "q": null, "sigma": null},
+      "expected": [
+        {"output": "greeks.signed_delta", "status": "available", "reason": "ok", "exact": "-3/5", "origin": "supplied"},
+        {"output": "greeks.delta", "status": "available", "reason": "ok", "exact": "3/5", "origin": "computed", "projection_of": "supplied greeks.signed_delta"},
+        {"output": "pricing.price", "status": "missing_input", "reason": "missing_carry", "value": null}
+      ],
+      "derivation": "abs(-3/5)=3/5. The explicit projection is a mathematical probe pending its admitted origin policy; it is not automatic fallback in one Request. Instantiate supplied-only signed-delta checks and computed-only price checks as separate requests under the initial uniform origin policy. Projection provenance preserves the supplied producer/model and cannot become computed BSM by relabelling.",
+      "evidence_class": "manually_derived_exact"
+    },
+    {
+      "id": "IF-SUPPLIED-GAMMA-INDEPENDENT",
+      "conformance_case": "READY01",
+      "operands": {"supplied_gamma": "1/100", "producer_model": "synthetic-producer-model-1", "producer_known_at_ns": "7", "knowledge_cutoff_ns": "8", "gamma_unit": "per_USD_underlying_payoff_unit", "r": null, "q": null, "sigma": null},
+      "expected": [
+        {"output": "greeks.gamma", "status": "available", "reason": "ok", "exact": "1/100", "origin": "supplied"},
+        {"output": "pricing.price", "status": "missing_input", "reason": "missing_carry", "value": null}
+      ],
+      "derivation": "No model pricing operands are required to preserve an otherwise admitted supplied gamma fact. Producer identity, units and clocks remain attached. Instantiate supplied-only gamma and computed-only price as separate requests under the initial uniform origin policy. The computed price expects missing_carry with missing_rate and missing_volatility also recorded as quality flags after all other required facts are explicitly supplied.",
+      "evidence_class": "semantic_contract_case"
+    },
+    {
+      "id": "IF-PIT-FUTURE-REVISION",
+      "conformance_case": "PIT01",
+      "operands": {"knowledge_cutoff_ns": "10", "revisions": [{"id": "v1", "known_at_ns": "9", "effective_ns": "1", "scalar_multiplier": "10"}, {"id": "v2", "known_at_ns": "11", "effective_ns": "1", "scalar_multiplier": "20"}]},
+      "expected": [{"output": "contract.multiplier", "status": "available", "reason": "ok", "exact": "10", "definition_revision": "v1"}],
+      "derivation": "v2 is not known at cutoff even though backdated effective_ns is1. A historical replay at cutoff10 remains bound to v1.",
+      "evidence_class": "semantic_contract_case"
+    },
+    {
+      "id": "IF-IV-LOWER-BOUND",
+      "conformance_case": "IV02",
+      "operands": {"side": "put", "S": "90", "K": "100", "r": "0", "q": "0", "T": "1", "selected_price": "10"},
+      "expected": [{"output": "volatility.implied_volatility", "status": "available", "reason": "ok", "exact": "0", "boundary": "exact_lower_bound"}],
+      "derivation": "The quote equals exact lower bound max(100-90,0)=10. This exact boundary case does not license tolerance-based clamping of outside prices.",
+      "evidence_class": "manually_derived_exact"
+    },
+    {
+      "id": "IF-IV-OUTSIDE-BOUND",
+      "conformance_case": "IV01",
+      "operands": {"side": "put", "S": "90", "K": "100", "r": "0", "q": "0", "T": "1", "selected_price": "9"},
+      "expected": [{"output": "volatility.implied_volatility", "status": "invalid_input", "reason": "price_out_of_bounds", "value": null}],
+      "derivation": "9<lower10. This is invalid input, not iteration exhaustion or bracket failure.",
+      "evidence_class": "manually_derived_exact"
+    },
+    {
+      "id": "IF-IV-UPPER-ASYMPTOTE",
+      "conformance_case": "IV03",
+      "operands": {"side": "call", "S": "100", "K": "100", "r": "0", "q": "0", "T": "1", "selected_price": "100"},
+      "expected": [{"output": "volatility.implied_volatility", "status": "nonidentifiable_inverse", "reason": "upper_asymptote", "value": null}],
+      "derivation": "Upper bound A=100 is approached as sigma tends to infinity; a finite solver cap is not an IV solution.",
+      "evidence_class": "manually_derived_analytic_expression_decimal_evaluation_pending"
+    },
+    {
+      "id": "IF-IV-CAP-ANALYTIC",
+      "conformance_case": "IV04",
+      "operands": {"side": "call", "S": "100", "K": "100", "r": "0", "q": "0", "T": "1", "selected_price_analytic": "100*(2*Phi(1)-1)", "max_sigma": "1"},
+      "expected": [{"output": "volatility.implied_volatility", "status": "bracket_exceeded", "reason": "sigma_cap", "value": null, "mathematical_root_exact": "2"}],
+      "derivation": "The smooth analytic price is attained at sigma2; strict positive vega makes it exceed the price at cap1. Decimal quote instantiation and tolerance-margin qualification remain pending.",
+      "evidence_class": "manually_derived_analytic_expression_decimal_evaluation_pending"
+    }
+  ],
+  "chain_score_proposal": {
+    "model_id": "option-chain-breadth1",
+    "status": "coordinator_proposal_pending_independent_contract_review",
+    "formula": "100*A/N",
+    "definition": "N is the distinct frozen expected contract population. A counts its distinct members with at least one eligible positive-quantity trade in [start,end) and an eligible current quote at valuation. Complete certified trade and quote source coverage for the entire population/window is required; apply causal revisions/cancellations and cutoff before membership selection.",
+    "private_parity_claim": false,
+    "cases": [
+      {
+        "id": "IF-CHAIN-BREADTH-ONE",
+        "conformance_case": "CHAIN01",
+        "operands": {"expected_contract_ids": ["c1", "c2", "c3", "c4"], "eligible_active_contract_ids": ["c1"], "certified_complete_source_coverage": true},
+        "expected": {"output": "chain.activity", "status": "available", "reason": "ok", "exact": "25", "model_id": "option-chain-breadth1"},
+        "derivation": "100*1/4=25. The score is a breadth percentage, not a raw count or sum.",
+        "evidence_class": "manually_derived_exact_proposed_formula"
+      },
+      {
+        "id": "IF-CHAIN-BREADTH-ZERO",
+        "conformance_case": "CHAIN01",
+        "operands": {"expected_count": "4", "eligible_active_count": "0", "certified_complete_source_coverage": true},
+        "expected": {"output": "chain.activity", "status": "available", "reason": "ok", "exact": "0", "model_id": "option-chain-breadth1"},
+        "derivation": "100*0/4=0 only with certified complete coverage.",
+        "evidence_class": "manually_derived_exact_proposed_formula"
+      },
+      {
+        "id": "IF-CHAIN-BREADTH-PARTIAL",
+        "conformance_case": "CHAIN01",
+        "operands": {"expected_count": "4", "observed_active_count": "1", "certified_complete_source_coverage": false},
+        "expected": {"output": "chain.activity", "status": "ineligible_input", "reason": "incomplete_source", "value": null, "model_id": "option-chain-breadth1"},
+        "derivation": "A partial source cannot prove the numerator, even with a known frozen denominator; no partial score or zero imputation.",
+        "evidence_class": "semantic_contract_case_proposed_formula"
+      },
+      {
+        "id": "IF-CHAIN-BREADTH-EMPTY",
+        "conformance_case": "CHAIN01",
+        "operands": {"expected_count": "0", "eligible_active_count": "0", "certified_complete_source_coverage": true},
+        "expected": {"output": "chain.activity", "status": "undefined", "reason": "empty_population", "value": null, "model_id": "option-chain-breadth1"},
+        "derivation": "100*0/0 is undefined.",
+        "evidence_class": "semantic_contract_case_proposed_formula"
+      },
+      {
+        "id": "IF-CHAIN-BREADTH-CAUSAL-DEDUP",
+        "conformance_case": "PIT01",
+        "operands": {"expected_contract_ids": ["c1", "c2", "c3", "c4"], "window_ns": ["0", "10"], "valuation_ns": "10", "knowledge_cutoff_ns": "10", "current_eligible_quote_contracts": ["c1", "c2", "c3", "c4"], "positive_quantity_trade_records": [{"contract_id": "c1", "trade_id": "t1", "event_ns": "2", "known_at_ns": "3", "state": "active"}, {"contract_id": "c1", "trade_id": "t1b", "event_ns": "3", "known_at_ns": "4", "state": "active"}, {"contract_id": "c2", "trade_id": "t2", "event_ns": "4", "known_at_ns": "11", "state": "active"}, {"contract_id": "c3", "trade_id": "t3", "event_ns": "10", "known_at_ns": "10", "state": "active"}], "certified_complete_source_coverage_at_cutoff": true},
+        "expected": {"output": "chain.activity", "status": "available", "reason": "ok", "exact": "25", "eligible_active_contract_ids": ["c1"], "model_id": "option-chain-breadth1"},
+        "derivation": "Distinct trades t1/t1b on c1 contribute one member; t2 is future-known at cutoff and t3 lies at excluded end10. A=1, N=4. Exact duplicate row identities are a separate atomic boundary error, not a valid source input. Coverage certification describes the source available at cutoff and never licenses a future-known record.",
+        "evidence_class": "manually_derived_exact_proposed_formula"
+      }
+    ]
+  },
+  "not_accepted_as_goldens": [
+    "Any textbook decimal price/Greek/IV copied without independently checked inputs, units and precision.",
+    "Any expected value generated by the production pricing/IV function under test.",
+    "chain.activity uses a proposed original breadth score pending independent contract review; no private source parity or acceptance is claimed.",
+    "Exact status/reason and field naming remain subject to reviewed canonical boundary binding before fixture acceptance."
+  ]
+}

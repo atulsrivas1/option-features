@@ -20,7 +20,7 @@
     {
       "id": "PIT01",
       "scenario": "Reference known after cutoff or revised later",
-      "expected": "Exclude future revision; preserve original result identity on historical replay."
+      "expected": "Exclude future revision from causal numerical selection. Identical frozen snapshot/request replay preserves full result/work identity. An expanded source snapshot has a new content identity even when as-of value/status/selected dependency evidence stay invariant; do not claim whole-snapshot hashes remain unchanged."
     },
     {
       "id": "READY01",
@@ -45,7 +45,7 @@
     {
       "id": "DELTA01",
       "scenario": "Ordinary put with signed negative model delta",
-      "expected": "Absolute-delta projection is abs of signed derivative; canonical sign retained."
+      "expected": "Matrix greeks.delta is abs(signed derivative). Additional greeks.signed_delta retains the negative put derivative; their output IDs and units are distinct."
     },
     {
       "id": "IV01",

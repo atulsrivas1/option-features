@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "status": "draft_reference_pins_not_install_lock",
+  "status": "proposed_contract_choices_not_frozen_not_install_lock",
   "implementation_admitted": false,
   "owner_gate": {
     "decision": "independent_r25_progression_approved",
@@ -64,12 +64,9 @@
   },
   "artifact_evidence": "Canonical R17_ACCEPTANCE_INPUTS.json contains OS-specific six-distribution archive hashes; availability and exact selected option composition must be requalified. Adapter/sink archives are not in that cohort. No registry availability is assumed.",
   "package_dependency_directions": {
-    "option-feature-contracts": [
-      "equity-feature-contracts (qualified public contract subset only)"
-    ],
+    "option-feature-contracts": [],
     "option-features": [
-      "option-feature-contracts",
-      "equity-features (selected compatible public calculations)"
+      "option-feature-contracts"
     ],
     "option-feature-io": [
       "option-feature-contracts"
@@ -109,5 +106,28 @@
       "decision": "Exact new package/source/artifact/platform compatibility and immutable run lock; no new artifacts built."
     }
   ],
-  "independent_version_policy": "Exact alpha dependency pins after qualification; stable SemVer ranges only for explicitly tested support; data/model/schema/formula versions recorded independently."
+  "independent_version_policy": "Exact alpha dependency pins after qualification; stable SemVer ranges only for explicitly tested support; data/model/schema/formula versions recorded independently.",
+  "equity_dependency_policy": "Reference sources are not installed dependencies. Add selected actual public equity producer only with qualified exact package/artifact pins; equity never depends on options.",
+  "proposed_decisions": {
+    "R25-C01": "Option-owned canonical records/option-json1/option-generation1; no old equity schema widening",
+    "R25-C02": "Option-owned bounded sequential snapshot/replay execution; independent R25 qualification",
+    "R25-C03": "Original option-chain-breadth1 activity score and option-quote-count1 per-contract sampling ratio; no private parity claim",
+    "R25-C04": "European scalar BSM with explicit Greek/IV endpoints and error budgets; concrete forward-error method/enclosure qualification remains open before numerical admission",
+    "R25-C05": "Exact new package artifacts and platforms qualified after implementation, before release; source references alone are not a lock"
+  },
+  "independent_review_passed": false,
+  "qualification_gates": {
+    "before_parallel_implementation": [
+      "independently_reviewed_frozen_contracts",
+      "independent_fixture_definition_review",
+      "concrete_numerical_method_and_resource_protocol"
+    ],
+    "before_release": [
+      "executed_independent_numerical_fixtures",
+      "built_installed_exact_artifact_cohort",
+      "actual_supported_platform_evidence",
+      "direct_worker_stored_parity",
+      "browser_demo"
+    ]
+  }
 }
