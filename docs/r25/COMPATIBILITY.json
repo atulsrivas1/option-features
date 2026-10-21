@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "status": "draft_reference_pins_not_install_lock",
+  "implementation_admitted": false,
+  "owner_gate": {
+    "decision": "independent_r25_progression_approved",
+    "decision_date": "2026-10-20",
+    "r17_issue": 475,
+    "r17_status": "Done",
+    "r17_reference_requires_r25_compatibility": true,
+    "supersedes_blanket_prerequisites": [
+      "EQ146",
+      "EQ143",
+      "EQ144"
+    ],
+    "implementation_requirements": [
+      "reviewed_frozen_r25_contracts",
+      "compatible_interface_choices",
+      "reviewed_story_readiness"
+    ],
+    "release_requirements": [
+      "EQ185_transport_storage_conformance",
+      "EQ186_executor_resource_retry_cancellation_qualification",
+      "EQ187_exact_artifacts_windows_linux_numerical_integration_acceptance"
+    ],
+    "preserve_active_r18_ownership_and_reserved_resources": true,
+    "requirements_passed": false
+  },
+  "candidate_new_packages": {
+    "option-feature-contracts": {
+      "proposed_version": "0.1.0a1",
+      "artifact_sha256": null,
+      "qualified": false
+    },
+    "option-features": {
+      "proposed_version": "0.1.0a1",
+      "artifact_sha256": null,
+      "qualified": false
+    },
+    "option-feature-io": {
+      "proposed_version": "0.1.0a1",
+      "artifact_sha256": null,
+      "qualified": false
+    },
+    "option-feature-workers": {
+      "proposed_version": "0.1.0a1",
+      "artifact_sha256": null,
+      "qualified": false
+    }
+  },
+  "reference_sources": {
+    "core_package_source": "b1f5445eb9799b73753e413669b94166997fc468",
+    "core_documented_delivery": "c7010a0a7b8ad290d1fe9f10bc1528ea09b3885b",
+    "io": "18d86761aa3eebb7414e51e8fa2aba089717b5eb",
+    "workers": "231349aaf2bf1b9ec21f45807382ca9c6522520c"
+  },
+  "accepted_reference_versions": {
+    "equity-feature-contracts": "0.0.4a4",
+    "equity-features": "0.0.4a4",
+    "equity-features-intraday": "0.1.0a3",
+    "equity-feature-io-contracts": "0.1.0a2",
+    "equity-feature-io-sdk": "0.1.0a2",
+    "equity-feature-workers": "0.1.0a14"
+  },
+  "artifact_evidence": "Canonical R17_ACCEPTANCE_INPUTS.json contains OS-specific six-distribution archive hashes; availability and exact selected option composition must be requalified. Adapter/sink archives are not in that cohort. No registry availability is assumed.",
+  "package_dependency_directions": {
+    "option-feature-contracts": [
+      "equity-feature-contracts (qualified public contract subset only)"
+    ],
+    "option-features": [
+      "option-feature-contracts",
+      "equity-features (selected compatible public calculations)"
+    ],
+    "option-feature-io": [
+      "option-feature-contracts"
+    ],
+    "option-feature-workers": [
+      "option-features",
+      "option-feature-io"
+    ],
+    "equity-features": [
+      "equity-feature-contracts"
+    ]
+  },
+  "blocked_decisions": [
+    {
+      "id": "R25-C01",
+      "owner": "EQ182/EQ185",
+      "decision": "Option-native units/identity/result/codec/storage boundary versus reviewed shared extension; old exact wire cannot be assumed compatible."
+    },
+    {
+      "id": "R25-C02",
+      "owner": "EQ186",
+      "decision": "Qualified execution registration/manifest/multi-identity extension or option-owned execution shell, resource/cancellation/retry/publication contracts; EQ186 independently qualifies the chosen R25 execution path without blanket EQ143/EQ144/EQ146 acceptance."
+    },
+    {
+      "id": "R25-C03",
+      "owner": "EQ214/EQ182",
+      "decision": "Original permitted chain activity score versus raw summary; named source identity remains blocked until exact score contract."
+    },
+    {
+      "id": "R25-C04",
+      "owner": "EQ182/EQ183/EQ184",
+      "decision": "Supported model/deliverable/time profile, Greek limiting cases and independent numeric error/solver acceptance budgets."
+    },
+    {
+      "id": "R25-C05",
+      "owner": "EQ187",
+      "decision": "Exact new package/source/artifact/platform compatibility and immutable run lock; no new artifacts built."
+    }
+  ],
+  "independent_version_policy": "Exact alpha dependency pins after qualification; stable SemVer ranges only for explicitly tested support; data/model/schema/formula versions recorded independently."
+}

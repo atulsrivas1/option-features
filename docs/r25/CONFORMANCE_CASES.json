@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "status": "declarative_cases_not_executed_or_numerically_accepted",
+  "cases": [
+    {
+      "id": "REF01",
+      "scenario": "Same underlying/strike/expiry, different exercise/deliverable",
+      "expected": "Distinct contract IDs/admission; European computation never silently admits American/composite profile."
+    },
+    {
+      "id": "TIME01",
+      "scenario": "DTE0, valuation before same-day fixing",
+      "expected": "Positive model T remains possible; DTE and ACT365F are distinct."
+    },
+    {
+      "id": "TIME02",
+      "scenario": "Date-only expiry, missing timezone/fixing binding",
+      "expected": "Unavailable/unsupported convention; no midnight or timezone default."
+    },
+    {
+      "id": "PIT01",
+      "scenario": "Reference known after cutoff or revised later",
+      "expected": "Exclude future revision; preserve original result identity on historical replay."
+    },
+    {
+      "id": "READY01",
+      "scenario": "Supplied gamma valid, IV/r/q absent",
+      "expected": "Supplied gamma ready with provenance; pricing/IV unavailable independently."
+    },
+    {
+      "id": "UNIT01",
+      "scenario": "Option quantity3, multiplier10, price2 per payoff unit",
+      "expected": "Quantity remains3contracts; explicitly named per-contract price20 and total60; multiply once."
+    },
+    {
+      "id": "PRICE01",
+      "scenario": "T0, call S110 K100",
+      "expected": "Payoff10 per underlying unit; IV nonidentifiable; Greek kink policy separate."
+    },
+    {
+      "id": "PRICE02",
+      "scenario": "sigma0 Tpositive r=q=0, put S90 K100",
+      "expected": "Deterministic price10; undefined limiting derivatives are not invented."
+    },
+    {
+      "id": "DELTA01",
+      "scenario": "Ordinary put with signed negative model delta",
+      "expected": "Absolute-delta projection is abs of signed derivative; canonical sign retained."
+    },
+    {
+      "id": "IV01",
+      "scenario": "Quote strictly outside model bounds",
+      "expected": "Invalid price, not ordinary solver exhaustion."
+    },
+    {
+      "id": "IV02",
+      "scenario": "Quote at lower bound, Tpositive",
+      "expected": "Zero-volatility boundary handled explicitly under frozen tolerance contract."
+    },
+    {
+      "id": "IV03",
+      "scenario": "Quote at upper asymptote",
+      "expected": "No finite IV; do not return configured max_sigma as a root."
+    },
+    {
+      "id": "IV04",
+      "scenario": "Valid root beyond configured search ceiling",
+      "expected": "bracket_exceeded rather than false claim of no mathematical root."
+    },
+    {
+      "id": "IV05",
+      "scenario": "Tiny vega with small price residual but wide vol bracket",
+      "expected": "Not accepted solely by residual; require uncertainty/bracket condition."
+    },
+    {
+      "id": "QUOTE01",
+      "scenario": "Valid locked quote with positive midpoint",
+      "expected": "Observed zero spread; not missing."
+    },
+    {
+      "id": "QUOTE02",
+      "scenario": "Crossed, one-sided, stale or zero midpoint",
+      "expected": "Distinct ineligible/unavailable/undefined cases; no invented quote."
+    },
+    {
+      "id": "CHAIN01",
+      "scenario": "Partial declared chain, missing volume and observed zero OI",
+      "expected": "Completeness/absence/zero preserved; raw counts do not establish activity score."
+    },
+    {
+      "id": "WIRE01",
+      "scenario": "Option contracts and separate underlying identity encoded as equity shares/single ID",
+      "expected": "Reject lossy adaptation; require option-native or proved extended interface."
+    },
+    {
+      "id": "SINK01",
+      "scenario": "Retry same key/digest then same key/different content",
+      "expected": "Idempotent acknowledgement only for equal content; conflict for changed content."
+    },
+    {
+      "id": "WORK01",
+      "scenario": "Cancel/fault after computation before publication",
+      "expected": "No published-success claim; receipt/readback governs recovery."
+    },
+    {
+      "id": "DEP01",
+      "scenario": "New incompatible equity dependency or schema under same option version",
+      "expected": "Reject cohort; requalify and release a new immutable consuming version."
+    },
+    {
+      "id": "MODE01",
+      "scenario": "Request update/restore/merge before qualified support",
+      "expected": "Explicit unsupported mode; replay/batch presence does not imply persistent state support."
+    }
+  ]
+}
