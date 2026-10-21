@@ -288,6 +288,31 @@ class ReviewReworkTests(unittest.TestCase):
                 self.assertEqual(row.available_at_ns,value.known_at_ns)
                 self.assertNotIn('median',operands)
 
+    def test_known_missing_baseline_precedes_other_future_slot(self):
+        snapshot,request=tape(references=(reference('A'),),K=20,end=11,
+                              output_ids=('activity.relative_volume',))
+        request=replace(request,window_start_ns=10,
+                        baseline_targets=(FlowBaselineTarget('g',('s1','s2')),))
+        policy=flow_record_digest('flow_policy',request.policy)
+        known=FlowBaseline('known','g','s1',1,'horizon',0,1,7,policy,'c'*64,'XTS','basis',
+                           None,None,None,('e'*64,),True,'b')
+        future=replace(known,baseline_id='future',slot_id='s2',session_ordinal=2,
+                       window_start_ns=1,window_end_ns=2,known_at_ns=30,contracts=FlowRational(4,1))
+        for value in (known,replace(known,known_at_ns=9,complete=False,contracts=FlowRational(2,1))):
+            with self.subTest(complete=value.complete):
+                current=replace(snapshot,baselines=(value,future),
+                                populations=(replace(snapshot.populations[0],window_start_ns=10),))
+                row=evaluate_flow(current,request)[0]
+                operands={operand.name:operand.value for operand in row.evidence.operands}
+                self.assertEqual((row.status,row.reason,row.value),('unavailable','incomplete_baseline',None))
+                self.assertEqual(operands['baseline_count'],FlowRational(0,1))
+                self.assertEqual(row.available_at_ns,value.known_at_ns)
+                self.assertNotIn('median',operands)
+                self.assertTrue({'incomplete_baseline','future_reference'} <= set(row.evidence.diagnostics))
+                self.assertEqual(row.evidence.baseline_slot_ids,('s1','s2'))
+                for baseline in (value,future):
+                    self.assertIn(flow_record_digest('flow_baseline',baseline),row.dependency_record_sha256s)
+
     def test_sign_failure_diagnostics_distinguish_normal_classifications(self):
         root=execution('a','A',10,'2')
         cases=[]

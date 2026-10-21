@@ -477,8 +477,8 @@ def _evaluate_steps(snapshot,request,input_checkpoint_sha256=None):
                     causes=[]
                     if not slots:causes.append('missing_baseline')
                     if any(b is None for b in selected_baselines):causes.append('incomplete_baseline')
-                    if any(b is not None and b.known_at_ns>request.knowledge_cutoff_ns for b in selected_baselines):causes.append('future_reference')
                     if any(b is not None and (not b.complete or getattr(b,metric) is None) for b in selected_baselines):causes.append('incomplete_baseline')
+                    if any(b is not None and b.known_at_ns>request.knowledge_cutoff_ns for b in selected_baselines):causes.append('future_reference')
                     if slots and len(slots)<policy.minimum_matched_prior_windows:causes.append('insufficient_history')
                     diagnostics.update(causes)
                     if causes:status,reason='unavailable',causes[0]
