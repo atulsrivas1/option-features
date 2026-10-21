@@ -1,3 +1,17 @@
+# Calculation API and qualification checkpoint
+
+`option-features==0.1.0a1` exposes `option_features.evaluate(snapshot, request)` and returns ordered immutable results. Nine selected matrix outputs plus five foundation pricing/Greek outputs retain their frozen units, model, causal admission, status, provenance, coverage and solver-evidence contracts. Only batch snapshots and replay of independent snapshots are admitted; no fetching, file/database access, credentials, clock reads or scheduling occurs in kernels.
+
+## Current evidence — October 21, 2026
+
+The original runtime hold is released. Both exact-source supported-platform component suites and reviewed successor fixtures have now executed successfully against original-wheel and original-sdist-built-wheel forms. These replace earlier source-only/unexecuted descriptions as current component evidence. Both final-wheel tamper suites passed seven rejection cases after verified computation; each platform also passed 172 additional methods in six package-layer isolation environments. See [current local qualification](R25_LOCAL_QUALIFICATION.md) for source commits, 216 methods per platform, fixture identity, artifact admission and remaining integration/browser gates. Source PRs are now merged with qualified source trees preserved. Four five-scenario integration harnesses passed; broad golden integration passed both Linux forms and Windows original wheels, with Windows rebuilt-sdist still mandatory/running. The stored browser demo and supplemental all-14-output price/IV round trip were actually inspected. Final byte comparison/wrapper review/acceptance remain open. **R25 remains UNRELEASED.**
+
+The API still uses supplied spot without an unused equity dependency, independently packaged contracts and exact `python-flint==0.9.0`. Numerical work has one exclusive owner and one native thread; foreign context/process mutation is outside the admitted runtime. Source review, independent expectations and rigorous production enclosures remain distinct kinds of evidence.
+
+## Historical source-authoring and correction record
+
+The dated development runs and source-authoring restrictions below are preserved. Their statements that tests/fixtures were not run or qualification remained pending describe those earlier snapshots; the current report above governs qualification status.
+
 # Calculation source candidate
 
 Independent Vega assertions may provide an `oracle_vega_interval` over all
