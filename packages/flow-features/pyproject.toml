@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "option-flow-features"
+version = "0.1.0a1"
+requires-python = ">=3.12,<3.13"
+description = "Exact source-independent option flow flow-features"
+license = {file = "LICENSE"}
+dependencies = ["option-flow-contracts==0.1.0a1"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+option_flow_features = ["_build_identity.json"]

@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "option-flow-contracts"
+version = "0.1.0a1"
+requires-python = ">=3.12,<3.13"
+description = "Exact source-independent option flow flow-contracts"
+license = {file = "LICENSE"}
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+option_flow_contracts = ["_build_identity.json"]
