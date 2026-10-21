@@ -16,3 +16,7 @@ No initial package versions are published here. No historical adapter/worker is 
 ## EQ182 design packet
 
 The current source candidate adds [decisions](DESIGN_DECISIONS.md), [nine feature bindings and residuals](FEATURE_BINDINGS.json), [native boundary specification](BOUNDARY_CONTRACT.md), [numerical qualification protocol](NUMERICAL_ACCEPTANCE.md), [independent fixture definitions](INDEPENDENT_FIXTURES.json) and [oracle protocol](FIXTURE_PROTOCOL.md). These documents and analytical expectations are proposed for independent review, not an executed fixture suite or frozen contract. A concrete forward-error method/qualification and actual local execution remain open before the affected numerical implementation can be accepted.
+
+## Concrete method and source-authoring continuation
+
+C04 now selects [option-arb-bsm1/version1](NUMERICAL_METHOD.md) with bounded Arb enclosures; the independent [oracle source](ORACLE_IMPLEMENTATION.md) uses mpmath and remains unexecuted. [Implementation admission](IMPLEMENTATION_PLAN.md) separates frozen-interface source authoring from producer integration/merge/release proof. [Manifest](CONTRACT_MANIFEST.json) pins the source definitions; coordinator exact-commit review/admission evidence on EQ182 determines the actual source-authoring freeze. Earlier candidate statements that method selection remained open describe the prior8ee545e snapshot; implementation/artifact/numerical qualification remains genuinely open.
