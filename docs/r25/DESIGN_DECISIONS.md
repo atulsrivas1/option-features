@@ -37,3 +37,7 @@ Select [option-arb-bsm1/version1](NUMERICAL_METHOD.md), exact python-flint==0.9.
 ## Explicit record-hash domains
 
 Independent exact-wire fixture preparation found the hash formula named `record_type` without enumerating its individual-record literals. The coordinator clarification in BOUNDARY_CONTRACT explicitly freezes the existing schema names so independent producers need not infer them from implementation. Historical source freeze9403854 remains retained; the amended manifest records the changed boundary bytes. This is a source-contract clarification, not a numerical execution or artifact acceptance claim.
+
+## Admitted empty coverage and computed model identity
+
+Independent wire fixture review exposed optional-metadata ambiguity. The coordinator selects explicit complete zero/zero Coverage for an admitted empty sampling/population set while keeping the undefined value null; missing or unadmitted completeness retains null coverage. This preserves known population evidence without inventing observations. Branch dependencies stop at failed prerequisites and exclude members outside an empty population. Selected computed model facts identify option-bsm1; synthetic provenance remains in InputBinding, while supplied producer identities stay intact. These metadata/admission clarifications require independent contract review and matching source/tests, not numerical tolerance changes.
