@@ -410,6 +410,26 @@
         "missing_or_incomplete_quote_context": "Only original root reference in context records; separate certificate digest as available, no invented selected quote."
       },
       "limitation": "Symbolic record labels define membership/order; materialization must independently construct complete exact records and actual hashes."
+    },
+    {
+      "id": "F44-reduced-rational-limit-vs-bounded-scratch",
+      "inputs": {
+        "max_integer_digits": 3,
+        "operands": [
+          "99/100",
+          "100/99",
+          "999/998",
+          "-999/998"
+        ]
+      },
+      "expected": {
+        "cross_cancel_multiply": "99/100 * 100/99 = 1/1",
+        "denominator_gcd_add": "999/998 + 999/998 = 999/499",
+        "opposite_sign_cancel": "999/998 + -999/998 = 0/1",
+        "true_reduced_overflow": "999/1 + 2/1 raises resource_limit before result/publication",
+        "semantic_integer_overflow": "A count accumulator1001 atD3 is not transient rational scratch; raises resource_limit."
+      },
+      "resource_proof": "Already-D-bounded rational components imply multiplication crossproducts at most2D digits and addition scratch at most2D+1; pre-prove before allocation, gcd-reduce and enforce D before reuse. No arbitrary-growth scratch."
     }
   ]
 }

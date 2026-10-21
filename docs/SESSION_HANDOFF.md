@@ -1,3 +1,7 @@
+## R26 bounded exact-arithmetic clarification — October 21, 2026
+
+Independent source review found a contradiction between reduced-rational bounds and raw implementation cross-products. The reviewed resolution keeps all reduced components and semantic integer accumulators within the selected D-digit cap while permitting statically proven single-operation scratch up to2D+1 digits, gcd-reduced and checked before reuse. F44 supplies multiplication/addition/cancellation and true-overflow controls. Forty-four definitions now exist. Exact amended freeze precedes this repair; native source review and new tests remain active, no artifact or release qualification implied.
+
 ## R26 exact metadata clarification — October 21, 2026
 
 Independent fixture construction exposed ambiguity in context-digest membership and dimensional ratio operands. The coordinator selected minimal actual economic context (observed root execution/reference; selected quote/reference; swept tick predecessors/references), with explicit deduplication/order. HHI numerator/denominator retain squared-currency units while result stays ratio. F43 supplies hand membership/unit witnesses;43 scenario definitions now exist. Exact reviewed amended source must be externally frozen before affected metadata implementation and full expected-result materialization. Seven concrete library source-review concerns are being corrected; prior green development receipts remain limited historical evidence. I/O semantic repair passed31development tests, while full installed/native/runtime acceptance remains open.
