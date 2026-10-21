@@ -331,6 +331,42 @@
         ]
       },
       "discriminator": "Negative civil DTE invalidates only DTE reference, not supplied regular economic population; effective interval mismatch remains a separate structural rejection."
+    },
+    {
+      "id": "F42-original-definition-known-after-boundary",
+      "inputs": {
+        "execution": {
+          "event_ns": 11,
+          "known_at_ns": 11,
+          "signing_boundary_ns": 11,
+          "price": "2",
+          "quantity": "1",
+          "reference_id": "ref-A"
+        },
+        "reference": {
+          "known_at_ns": 12,
+          "multiplier": "100",
+          "strike": "100",
+          "right": "call"
+        },
+        "window": [
+          10,
+          20
+        ],
+        "cutoff": 20
+      },
+      "expected": {
+        "exception_class": "FlowValidationError",
+        "code": "identity_mismatch",
+        "path": "/snapshot/executions/{actual_index}/reference_id",
+        "phase": "Snapshot semantic admission before economic evaluation."
+      },
+      "controls": {
+        "root_boundary_12": "Definition known12 is admitted at own A12; premium200/1 with availability at least12 when other facts valid.",
+        "unreferenced_future_definition": "Definition known30 not referenced by any execution root is retained without rejecting otherwise valid request.",
+        "retained_context_seed": "The original-definition rule also applies to pre-window/context roots; window selection does not hide invalid origin."
+      },
+      "discriminator": "Future multiplier/right/strike cannot justify current economic premium; separate civil/spot future eligibility does not waive original definition causality."
     }
   ]
 }
