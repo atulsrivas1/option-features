@@ -3,11 +3,28 @@
   "status": "draft_reference_pins_not_install_lock",
   "implementation_admitted": false,
   "owner_gate": {
+    "decision": "independent_r25_progression_approved",
+    "decision_date": "2026-10-20",
     "r17_issue": 475,
     "r17_status": "Done",
-    "r18_issue": 480,
-    "r18_status": "Backlog",
-    "must_recheck_before_ready": true
+    "r17_reference_requires_r25_compatibility": true,
+    "supersedes_blanket_prerequisites": [
+      "EQ146",
+      "EQ143",
+      "EQ144"
+    ],
+    "implementation_requirements": [
+      "reviewed_frozen_r25_contracts",
+      "compatible_interface_choices",
+      "reviewed_story_readiness"
+    ],
+    "release_requirements": [
+      "EQ185_transport_storage_conformance",
+      "EQ186_executor_resource_retry_cancellation_qualification",
+      "EQ187_exact_artifacts_windows_linux_numerical_integration_acceptance"
+    ],
+    "preserve_active_r18_ownership_and_reserved_resources": true,
+    "requirements_passed": false
   },
   "candidate_new_packages": {
     "option-feature-contracts": {
@@ -74,7 +91,7 @@
     {
       "id": "R25-C02",
       "owner": "EQ186",
-      "decision": "Qualified execution registration/manifest/multi-identity extension, resource/cancellation/retry/publication contracts; R18 gate remains."
+      "decision": "Qualified execution registration/manifest/multi-identity extension or option-owned execution shell, resource/cancellation/retry/publication contracts; EQ186 independently qualifies the chosen R25 execution path without blanket EQ143/EQ144/EQ146 acceptance."
     },
     {
       "id": "R25-C03",

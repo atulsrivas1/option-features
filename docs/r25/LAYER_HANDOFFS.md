@@ -1,6 +1,6 @@
 # R25 layer handoffs before implementation
 
-These handoffs prepare three fresh implementation workers; they do not launch runtime authoring. Coordinator resolves/amends contracts and pins their reviewed hashes before handing off. Read GOV037 and the current EQ146 acceptance evidence first.
+These handoffs prepare three fresh implementation workers; they do not launch runtime authoring. Coordinator resolves/amends contracts and pins their reviewed hashes before handing off. Read GOV037 and the revised coordinator agreement first. Owner approved independent R25 progression; the former blanket R18/EQ146 and EQ143/EQ144 acceptance wait is superseded. R17/EQ141 remains the accepted reference, with exact R25 compatibility still to qualify. Preserve active R18 ownership and reserved resource windows.
 
 ## Libraries — option-features
 
@@ -14,7 +14,7 @@ Existing efio-json1/a4 exact codecs and efio-duckdb1 six-table schema do not adm
 
 ## Workers — option-feature-workers
 
-EQ186 composes option-native requests, adapter inputs, selected library calls and sink commits. Existing WorkItem/TaskManifest admission, codec and core dispatcher are closed. The supplied path requires one instrument for every input row and cannot represent an option and distinct underlying by relabelling them. The calculate callback is a candidate seam, not proof that a new manifest/transport is accepted. EQ143/144/146 remain delivery prerequisites; exact reusable public extension versus option-owned execution shell is an unresolved coordinator decision before authoring.
+EQ186 composes option-native requests, adapter inputs, selected library calls and sink commits. Existing WorkItem/TaskManifest admission, codec and core dispatcher are closed. The supplied path requires one instrument for every input row and cannot represent an option and distinct underlying by relabelling them. The calculate callback is a candidate seam, not proof that a new manifest/transport is accepted. EQ143/144/146 acceptance is no longer a blanket R25 delivery prerequisite. Exact reusable public extension versus option-owned execution shell remains an unresolved coordinator decision before authoring. EQ186 must independently qualify the chosen request/manifest admission, bounded execution, resource accounting, retry/cancellation and publication behavior; it cannot claim EQ143/144 or R18 accepted by substitution.
 
 One resource owner accounts for CPU/memory/I/O/backend threads and bounded in-flight work. Existing logical reservation limits are not hard RSS enforcement or fine IV cancellation. Preserve per-contract ordered events and exact populations; independent reference, supplied-Greek and price/IV branches do not wait for unrelated facts. Retry identity binds package/config/model/input/source and callback implementation, not just a task name. A changed result under the same key conflicts. Serialize sink ownership and distinguish calculation completion from published visibility; cancellation/recovery never fabricates success.
 

@@ -1,6 +1,6 @@
 # Candidate mathematical profile: option-bsm1
 
-Status: draft before EQ182 admission. EQ146 remains unaccepted; no implementation, numerical fixture execution or legacy parity is claimed. The coordinator must resolve the listed open contracts and obtain independent contract/fixture review before freezing this profile.
+Status: draft before EQ182 admission. Owner approved independent R25 progression without blanket R18/EQ146 or EQ143/EQ144 acceptance; no implementation, numerical fixture execution or legacy parity is claimed. R25 contract/compatibility, executor/resource and numerical/integrated qualification remain required. The coordinator must resolve the listed open contracts and obtain independent contract/fixture review before freezing this profile.
 
 ## Scope and operands
 

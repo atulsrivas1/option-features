@@ -1,6 +1,6 @@
 # R25 contract preparation
 
-Owner selected R25 after agreeing dedicated option repositories and independent versioned equity dependencies. [GOV037 #581](https://github.com/atulsrivas1/equity-features/issues/581), [E33 #526](https://github.com/atulsrivas1/equity-features/issues/526). These are source-only draft contracts, not frozen implementation admission or a package release. EQ146/R18 and reviewed story prerequisites still gate implementation; all seven implementation stories remain Backlog.
+Owner selected R25 after agreeing dedicated option repositories and independent versioned equity dependencies. [GOV037 #581](https://github.com/atulsrivas1/equity-features/issues/581), [E33 #526](https://github.com/atulsrivas1/equity-features/issues/526). These are source-only draft contracts, not frozen implementation admission or a package release. Owner approved independent R25 progression, superseding the blanket R18/EQ146 and EQ143/EQ144 acceptance wait. Reviewed frozen R25 contracts, compatible interface choices and story readiness gate implementation; R25 executor/resource, artifact/platform, numerical and integration qualification remain mandatory. All seven implementation stories remain Backlog and no qualification is claimed passed.
 
 | Track | Repository | Existing stories |
 | --- | --- | --- |
