@@ -1,5 +1,11 @@
 # Option features
 
+R25 `v0.1.0a1` is [published and readback verified](docs/R25_RELEASE.md). Older R25 UNRELEASED/qualification wording below is preserved as historical evidence; the current R26 candidate remains unreleased.
+
+## R26 native flow candidate — October 21, 2026
+
+The optional `option-flow-contracts==0.1.0a1` (`option_flow_contracts`) and `option-flow-features==0.1.0a1` (`option_flow_features`) add44 typed native flow/activity/execution outputs in a separate pure closure. See the [R26 API and scope](docs/r26/README.md), [formulas](docs/r26/MATHEMATICS.md), [output/profile bindings](docs/r26/FEATURE_BINDINGS.json), [strict typed codecs/status/evidence](docs/r26/FLOW_CONTRACT.md), [compatibility and supported modes](docs/r26/COMPATIBILITY.json), [synthetic pure example](examples/r26/README.md) and [actual local qualification](docs/r26/LOCAL_QUALIFICATION.md). The full flow runtime additionally contains `option-flow-io==0.1.0a1`, `option-flow-workers==0.1.0a1` and DuckDB1.5.6. R26 remains UNRELEASED; three reserved cross-market outputs remain unsupported pending qualified equity producers. Original R25 APIs below retain their own historical qualification/release records.
+
 Pure option calculations and typed contracts for caller-supplied facts. Calculations do not fetch data, read files/databases, access credentials, schedule jobs or publish outputs.
 
 **R25 / 0.1.0a1 is UNRELEASED and under qualification.** Implementation/source review does not establish release acceptance. Final numerical fixtures, rebuilt artifact qualification, integration and an inspected stored-output browser demo remain gates. See [release notes](docs/R25_RELEASE_NOTES.md) and [R25 acceptance](https://github.com/atulsrivas1/equity-features/issues/532). No PyPI publication is claimed.

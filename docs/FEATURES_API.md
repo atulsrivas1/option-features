@@ -1,5 +1,9 @@
 # Calculation API and qualification checkpoint
 
+## Separate R26 flow API
+
+`option-flow-features==0.1.0a1` exports `option_flow_features.evaluate_flow`, `replay_flow`, `make_flow_checkpoint` and `restore_flow`, using only the new `option-flow-contracts==0.1.0a1` and standard library. These support batch, genuine chronological cuts and bounded full-prefix restore; they do not alter the original API below. Flow results retain exact rational numerator/denominator, units, status/reason, causal availability and typed evidence/dependencies. Discover [scope/API](r26/README.md), [mathematics](r26/MATHEMATICS.md), [output/profile bindings](r26/FEATURE_BINDINGS.json), [closed signatures and codecs](r26/FLOW_CONTRACT.md), [compatibility/mode/resource gates](r26/COMPATIBILITY.json), [usable synthetic example](../examples/r26/README.md) and [completed versus pending qualification](r26/LOCAL_QUALIFICATION.md). Three reserved EQ190 outputs return unsupported/equity_integration_unqualified until actual equity integration is accepted. R26 remains UNRELEASED.
+
 `option-features==0.1.0a1` exposes `option_features.evaluate(snapshot, request)` and returns ordered immutable results. Nine selected matrix outputs plus five foundation pricing/Greek outputs retain their frozen units, model, causal admission, status, provenance, coverage and solver-evidence contracts. Only batch snapshots and replay of independent snapshots are admitted; no fetching, file/database access, credentials, clock reads or scheduling occurs in kernels.
 
 ## Current evidence — October 21, 2026

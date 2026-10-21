@@ -1,5 +1,9 @@
 # Contracts source bootstrap
 
+## Separate R26 flow contracts
+
+`option-flow-contracts==0.1.0a1` exports immutable `option_flow_contracts` records, explicit `encode_flow_*`/`decode_flow_*` codecs, validation and domain-separated identities. Closed `option-flow-json1` wires and `option-flow-record1` hashes are separate from the R25 domains below; old and new transports do not silently compose. Result values/operands use exact `FlowRational` values with typed units/status/evidence, and snapshots carry explicit causal references/populations. The [R26 typed boundary](r26/FLOW_CONTRACT.md) is the normative API; see also [discovery](r26/README.md), [mathematics](r26/MATHEMATICS.md), [bindings](r26/FEATURE_BINDINGS.json), [compatibility](r26/COMPATIBILITY.json), [synthetic example](../examples/r26/README.md) and [actual qualification](r26/LOCAL_QUALIFICATION.md). The pure calculation closure adds only `option-flow-features==0.1.0a1`; the full runtime additionally needs flow I/O/workers and DuckDB1.5.6. R26 is UNRELEASED with actual EQ190 producer integration gated. The original contracts described below remain unchanged.
+
 This source implements independently packaged `option-feature-contracts==0.1.0a1`
 under `packages/option-contracts`. It uses only the Python standard library and
 imports no numerical backend, I/O package or worker package. Source authoring is
