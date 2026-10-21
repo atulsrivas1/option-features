@@ -88,8 +88,19 @@ def base(side='call', S='100', K='100', rate=0.0, carry=0.0, sigma=0.25, years=1
     return snap, req
 
 
+def canonical_decimal_text(text):
+    if text is None:return None
+    original=Decimal(text)
+    if not original.is_finite():raise ValueError('finite exact quote required')
+    result=format(original,'f')
+    if '.' in result:result=result.rstrip('0').rstrip('.')
+    if original==0:result='0'
+    if Fraction(Decimal(result))!=Fraction(original):raise ArithmeticError('quote canonicalization changed economic value')
+    return result
+
+
 def quote(bid, ask):
-    return dict(contract_id='OPT',sample_id=None,bid=bid,ask=ask,currency='USD',
+    return dict(contract_id='OPT',sample_id=None,bid=canonical_decimal_text(bid),ask=canonical_decimal_text(ask),currency='USD',
                 price_basis='per_underlying_payoff_unit',event_ns=NOW,known_at_ns=NOW,sequence=0,
                 revision_id='quote-1',input_binding_id='original-synthetic')
 
@@ -183,6 +194,62 @@ def artifact_cases(contexts, oracle):
         oracle.agree(high,high.mpf(contexts[0].nstr(vegas[0],82)),vegas[1],'1e-60','0','independent IV Vega')
         return dict(quality_flags=sorted(set(extra)|({'ill_conditioned'} if decisions[0] else set())),
                     ill_conditioned=decisions[0],oracle_vega=high.nstr(vegas[1],65,strip_zeros=False))
+
+    def iv_candidate_vega_interval(snapshot,request,wanted):
+        """Empirical oracle enclosure for every solver-admissible candidate.
+
+        |c-root| <= a+b*c and c>=0 gives
+        max(0,(root-a)/(1+b)) <= c <= (root+a)/(1-b).
+        Apply root empirical uncertainty before this transformation. Vega's
+        interior extrema solve d1*d2=0, giving sqrt(2*abs(m)/T), where
+        m=log(S/K)+(r-q)*T. No observed production candidate enters this path.
+        """
+        d=snapshot['definitions'][0];cfg=request['solver']
+        facts={row['kind']:row['value'] for row in snapshot['model_facts']}
+        results=[]
+        for ctx in contexts:
+            root=ctx.mpf(wanted['oracle_decimal']);uncertainty=ctx.mpf(wanted['oracle_uncertainty'])
+            S,K,r,q,T=[oracle.rational(ctx,x) for x in (snapshot['spots'][0]['value'],d['strike'],rational_text(facts['rate']),
+                rational_text(facts['carry']),rational_text(Fraction(d['fixing_ns']-NOW,YEAR_NS)))]
+            a=oracle.rational(ctx,rational_text(cfg['vol_abs_tol']));b=oracle.rational(ctx,rational_text(cfg['vol_rel_tol']))
+            if b>=1:raise ArithmeticError('candidate interval requires volatility relative tolerance below1')
+            if root==0:
+                # Analytically certified lower-bound rule returns sigma exactly0,
+                # not an arbitrary near-zero point from the iterative solver.
+                cmin=cmax=ctx.mpf(0)
+            else:
+                cmin=max(ctx.mpf(0),(root-uncertainty-a)/(1+b))
+                cmax=(root+uncertainty+a)/(1-b)
+            A=S*ctx.exp(-q*T);m=ctx.log(S/K)+(r-q)*T
+            def vega_at(sigma):
+                if sigma==0:
+                    return A*ctx.sqrt(T)/ctx.sqrt(2*ctx.pi) if S==K and r==q else ctx.mpf(0)
+                d1=(m+sigma*sigma*T/2)/(sigma*ctx.sqrt(T))
+                return A*ctx.exp(-d1*d1/2)*ctx.sqrt(T)/ctx.sqrt(2*ctx.pi)
+            critical=ctx.sqrt(2*abs(m)/T)
+            probes=[cmin,cmax]
+            if cmin<critical<cmax:probes.append(critical)
+            values=[vega_at(c) for c in probes]
+            vmin,vmax=min(values),max(values)
+            # Outward empirical padding is much larger than the retained-digit
+            # formatting error. It is not a rigorous transcendental enclosure.
+            padding=max(abs(vmin),abs(vmax))*ctx.mpf('1e-58')
+            vlo=max(ctx.mpf(0),vmin-padding);vhi=vmax+padding
+            target=oracle.rational(ctx,rational_text(Fraction(Decimal(snapshot['quotes'][0]['bid']))))
+            pbudget=oracle.rational(ctx,rational_text(cfg['price_abs_tol']))+oracle.rational(ctx,rational_text(cfg['price_rel_tol']))*abs(target)
+            product_low=vlo*(a+b*cmin);product_high=vhi*(a+b*cmax)
+            if product_high<=pbudget:decision=True
+            elif product_low>pbudget:decision=False
+            else:raise ArithmeticError('conditioning not stable over admissible candidate interval')
+            results.append((cmin,cmax,vlo,vhi,decision))
+        for index,label in enumerate(('candidate-low','candidate-high','vega-low','vega-high')):
+            oracle.agree(high,high.mpf(contexts[0].nstr(results[0][index],82)),results[1][index],'1e-60','0',label+' precision agreement')
+        if results[0][4]!=results[1][4]:raise ArithmeticError('interval conditioning changes across precision')
+        cmin,cmax,vlo,vhi,decision=results[1]
+        return dict(oracle_vega_interval=dict(low=high.nstr(vlo,65,strip_zeros=False),high=high.nstr(vhi,65,strip_zeros=False),
+                    uncertainty_kind='empirical_two_precision_plus_outward_relative_padding',relative_padding='1e-58'),
+                    admissible_candidate_sigma_interval=dict(low=high.nstr(cmin,65,strip_zeros=False),high=high.nstr(cmax,65,strip_zeros=False)),
+                    ill_conditioned=decision)
 
     inventory=[('atm','100','100',0.0,0.0,2.0,1),('carry','103','97',0.03,0.01,0.25,Fraction(3,2)),
                ('negative','91','109',-0.02,-0.03,0.4,2),('short','101','100',0.01,0.0,0.3,Fraction(1,365)),
@@ -599,6 +666,9 @@ def artifact_cases(contexts, oracle):
                 assessment=iv_condition_flags(case['snapshot_payload'],case['request_payload'],roots,wanted['quality_flags'])
                 assertions.update(ill_conditioned=assessment['ill_conditioned'],oracle_vega=assessment['oracle_vega'],
                     require_sigma_contains_oracle=True,require_both_convergence_criteria=True)
+                interval=iv_candidate_vega_interval(case['snapshot_payload'],case['request_payload'],wanted)
+                if interval['ill_conditioned']!=assessment['ill_conditioned']:raise ArithmeticError('root and interval conditioning disagree')
+                assertions.update(interval)
     return cases
 
 
