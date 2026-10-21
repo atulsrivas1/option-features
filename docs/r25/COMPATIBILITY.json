@@ -1,7 +1,6 @@
 {
   "schema_version": 1,
-  "status": "draft_reference_pins_not_install_lock",
-  "implementation_admitted": false,
+  "status": "source_authoring_contract_candidate_selected_methods_not_runtime_lock",
   "owner_gate": {
     "decision": "independent_r25_progression_approved",
     "decision_date": "2026-10-20",
@@ -35,12 +34,20 @@
     "option-features": {
       "proposed_version": "0.1.0a1",
       "artifact_sha256": null,
-      "qualified": false
+      "qualified": false,
+      "proposed_runtime_dependencies": [
+        "option-feature-contracts==0.1.0a1",
+        "python-flint==0.9.0"
+      ]
     },
     "option-feature-io": {
       "proposed_version": "0.1.0a1",
       "artifact_sha256": null,
-      "qualified": false
+      "qualified": false,
+      "proposed_runtime_dependencies": [
+        "option-feature-contracts==0.1.0a1",
+        "duckdb==1.5.6"
+      ]
     },
     "option-feature-workers": {
       "proposed_version": "0.1.0a1",
@@ -64,12 +71,9 @@
   },
   "artifact_evidence": "Canonical R17_ACCEPTANCE_INPUTS.json contains OS-specific six-distribution archive hashes; availability and exact selected option composition must be requalified. Adapter/sink archives are not in that cohort. No registry availability is assumed.",
   "package_dependency_directions": {
-    "option-feature-contracts": [
-      "equity-feature-contracts (qualified public contract subset only)"
-    ],
+    "option-feature-contracts": [],
     "option-features": [
-      "option-feature-contracts",
-      "equity-features (selected compatible public calculations)"
+      "option-feature-contracts"
     ],
     "option-feature-io": [
       "option-feature-contracts"
@@ -82,7 +86,57 @@
       "equity-feature-contracts"
     ]
   },
-  "blocked_decisions": [
+  "independent_version_policy": "Exact alpha dependency pins after qualification; stable SemVer ranges only for explicitly tested support; data/model/schema/formula versions recorded independently.",
+  "equity_dependency_policy": "Reference sources are not installed dependencies. Add selected actual public equity producer only with qualified exact package/artifact pins; equity never depends on options.",
+  "proposed_decisions": {
+    "R25-C01": "Option-owned canonical records/option-json1/option-generation1; no old equity schema widening",
+    "R25-C02": "Option-owned bounded sequential snapshot/replay execution; independent R25 qualification",
+    "R25-C03": "Original option-chain-breadth1 activity score and option-quote-count1 per-contract sampling ratio; no private parity claim",
+    "R25-C04": "Selected option-arb-bsm1/version1 via python-flint==0.9.0, exact rational inputs and five bounded precision tiers; actual implementation/artifact/numerical/context/platform qualification remains required",
+    "R25-C05": "Exact new package artifacts and platforms qualified after implementation, before release; source references alone are not a lock"
+  },
+  "qualification_gates": {
+    "before_parallel_implementation": [
+      "independently_reviewed_frozen_contracts",
+      "independent_fixture_definition_review",
+      "concrete_numerical_method_and_resource_protocol"
+    ],
+    "before_release": [
+      "executed_independent_numerical_fixtures",
+      "built_installed_exact_artifact_cohort",
+      "actual_supported_platform_evidence",
+      "direct_worker_stored_parity",
+      "browser_demo"
+    ]
+  },
+  "production_numerical_backend": {
+    "distribution": "python-flint",
+    "version": "0.9.0",
+    "method_id": "option-arb-bsm1",
+    "method_version": "1",
+    "artifact_sha256": null,
+    "qualified": false,
+    "scope": "native ball arithmetic; preserve wheel bundled licenses, exact wheels/native versions qualified before runtime acceptance"
+  },
+  "oracle_dependency": {
+    "distribution": "mpmath",
+    "version": "1.3.0",
+    "artifact_sha256": null,
+    "qualified": false,
+    "scope": "independent fixture tooling; not a production numerical dependency"
+  },
+  "source_authoring_policy": "After independent exact-source contract/method/fixture review, coordinator may freeze an immutable manifest commit and grant the selected three source tracks. Producer integration/merge/release and protected runtime gates remain.",
+  "io_storage_backend": {
+    "distribution": "duckdb",
+    "version": "1.5.6",
+    "artifact_sha256": null,
+    "qualified": false
+  },
+  "runtime_implementation_qualified": false,
+  "release_accepted": false,
+  "source_authoring_admission": "Coordinator exact-commit grant after independent review and immutable contract-manifest freeze; numerical implementation merges still require actual local validation.",
+  "independent_review_evidence": "Exact source/method/oracle approvals and actual coordinator freeze/grants are recorded on EQ182 and linked PR; no runtime acceptance from this manifest.",
+  "implementation_qualification_gates": [
     {
       "id": "R25-C01",
       "owner": "EQ182/EQ185",
@@ -108,6 +162,5 @@
       "owner": "EQ187",
       "decision": "Exact new package/source/artifact/platform compatibility and immutable run lock; no new artifacts built."
     }
-  ],
-  "independent_version_policy": "Exact alpha dependency pins after qualification; stable SemVer ranges only for explicitly tested support; data/model/schema/formula versions recorded independently."
+  ]
 }

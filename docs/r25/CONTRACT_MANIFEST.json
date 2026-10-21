@@ -1,0 +1,25 @@
+{
+  "manifest_version": "r25-source-contract1",
+  "scope": "immutable source-authoring contract definitions; admission requires independently reviewed exact commit and coordinator grant",
+  "contract_version": "option-canonical1",
+  "method_id": "option-arb-bsm1",
+  "method_version": "1",
+  "normative_files": {
+    "BOUNDARY_CONTRACT.md": "4e6c7cc78a92ad15941ac90558ba47bd416f936137605620c130959668c8a635",
+    "MODEL_PROFILE.md": "612673932aff8c7bd585b64f6a7eb4bb85225397d1ffed78c30996aa30be8420",
+    "NUMERICAL_METHOD.md": "b489e29f3519cc1b8e9afa9373c8d58ecfd0a5368a33c21cf9af8da2c3c99d29",
+    "NUMERICAL_ACCEPTANCE.md": "30d56b9aa82dd93bdd99dbd0978f90d21c5599b808ecf1e150491565a1adae45",
+    "FEATURE_BINDINGS.json": "513cc4ef852d70724714676d5a17ba164edd1072d03a49f058c898f74b332a88",
+    "INDEPENDENT_FIXTURES.json": "bef60ce094c80790d56650f771832e84e9f13894367d089b493c5acc5deb6708",
+    "FIXTURE_PROTOCOL.md": "90c690d27ddb5d34ceba1ca18bf40d8f549f87b60637079a263133e71d10f0b7",
+    "IMPLEMENTATION_PLAN.md": "14452b50a258d467d12090d4b7e217a139660eaa379db7e6d89514d173764004"
+  },
+  "independent_oracle_source": {
+    "path": "tools/generate_r25_oracle.py",
+    "sha256": "380aa91c48166301d3476c8b5537d2e5603aa1f43273478ed12fa57429c94fdc"
+  },
+  "runtime_qualified": false,
+  "artifact_qualified": false,
+  "platform_qualified": false,
+  "release_accepted": false
+}

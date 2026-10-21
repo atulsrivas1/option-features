@@ -1,0 +1,232 @@
+{
+  "schema_version": 1,
+  "contract_version": "option-canonical1",
+  "status": "proposed_for_independent_review_not_frozen",
+  "feature_count": 9,
+  "features": [
+    {
+      "id": "contract.dte",
+      "owner": "EQ214",
+      "scope": "contract",
+      "unit": "calendar_days",
+      "formula": "expiry_ordinal - valuation_ordinal under the same certified civil binding",
+      "requires": [
+        "definition",
+        "valuation_civil_binding"
+      ],
+      "model_independent": true,
+      "status": "proposed_contract_not_implemented",
+      "supported_candidate_modes": [
+        "batch_snapshot",
+        "replay_of_independent_snapshots"
+      ],
+      "incremental_mode_qualified": false,
+      "legacy_numerical_parity_qualified": false
+    },
+    {
+      "id": "contract.moneyness",
+      "owner": "EQ214",
+      "scope": "contract",
+      "unit": "strike_spot_ratio",
+      "formula": "strike / causal_positive_spot",
+      "requires": [
+        "definition",
+        "spot"
+      ],
+      "model_independent": true,
+      "status": "proposed_contract_not_implemented",
+      "supported_candidate_modes": [
+        "batch_snapshot",
+        "replay_of_independent_snapshots"
+      ],
+      "incremental_mode_qualified": false,
+      "legacy_numerical_parity_qualified": false
+    },
+    {
+      "id": "contract.multiplier",
+      "owner": "EQ214",
+      "scope": "contract",
+      "unit": "underlying_units_per_contract",
+      "formula": "admitted scalar multiplier; no default 100",
+      "requires": [
+        "definition"
+      ],
+      "model_independent": true,
+      "status": "proposed_contract_not_implemented",
+      "supported_candidate_modes": [
+        "batch_snapshot",
+        "replay_of_independent_snapshots"
+      ],
+      "incremental_mode_qualified": false,
+      "legacy_numerical_parity_qualified": false
+    },
+    {
+      "id": "liquidity.spread_bps",
+      "owner": "EQ214",
+      "scope": "contract",
+      "unit": "bps",
+      "formula": "10000*(ask-bid)/((ask+bid)/2), positive midpoint, nonnegative noncrossed quote",
+      "requires": [
+        "quote",
+        "quote_eligibility"
+      ],
+      "model_independent": true,
+      "status": "proposed_contract_not_implemented",
+      "supported_candidate_modes": [
+        "batch_snapshot",
+        "replay_of_independent_snapshots"
+      ],
+      "incremental_mode_qualified": false,
+      "legacy_numerical_parity_qualified": false
+    },
+    {
+      "id": "quality.quote_coverage",
+      "owner": "EQ214",
+      "scope": "contract",
+      "unit": "ratio",
+      "formula": "distinct eligible observed sampling slots / independently declared expected sampling slots for one contract/window",
+      "requires": [
+        "quote_sampling_plan",
+        "quote_samples",
+        "complete_ingestion_binding"
+      ],
+      "model_independent": true,
+      "formula_version": "option-quote-count1",
+      "status": "proposed_contract_not_implemented",
+      "supported_candidate_modes": [
+        "batch_snapshot",
+        "replay_of_independent_snapshots"
+      ],
+      "incremental_mode_qualified": false,
+      "legacy_numerical_parity_qualified": false
+    },
+    {
+      "id": "chain.activity",
+      "owner": "EQ214",
+      "scope": "underlying",
+      "unit": "score",
+      "formula": "100*A/N, N=frozen expected contract count, A=distinct expected contracts with an eligible positive-size trade in [start,end) and eligible causal current quote",
+      "requires": [
+        "chain_population",
+        "trades",
+        "quotes",
+        "complete_trade_quote_population_bindings"
+      ],
+      "model_independent": true,
+      "formula_version": "option-chain-breadth1",
+      "status": "proposed_contract_not_implemented",
+      "supported_candidate_modes": [
+        "batch_snapshot",
+        "replay_of_independent_snapshots"
+      ],
+      "incremental_mode_qualified": false,
+      "legacy_numerical_parity_qualified": false
+    },
+    {
+      "id": "greeks.delta",
+      "owner": "EQ183",
+      "scope": "contract",
+      "unit": "absolute_delta",
+      "formula": "abs(dV/dS), never the signed derivative under this matrix identity",
+      "requires": [
+        "definition",
+        "spot",
+        "rate",
+        "carry",
+        "sigma"
+      ],
+      "model_independent": false,
+      "status": "proposed_contract_not_implemented",
+      "supported_candidate_modes": [
+        "batch_snapshot",
+        "replay_of_independent_snapshots"
+      ],
+      "incremental_mode_qualified": false,
+      "legacy_numerical_parity_qualified": false
+    },
+    {
+      "id": "greeks.gamma",
+      "owner": "EQ183",
+      "scope": "contract",
+      "unit": "inverse_currency",
+      "formula": "d2V/dS2 per underlying payoff unit",
+      "requires": [
+        "definition",
+        "spot",
+        "rate",
+        "carry",
+        "sigma"
+      ],
+      "model_independent": false,
+      "status": "proposed_contract_not_implemented",
+      "supported_candidate_modes": [
+        "batch_snapshot",
+        "replay_of_independent_snapshots"
+      ],
+      "incremental_mode_qualified": false,
+      "legacy_numerical_parity_qualified": false
+    },
+    {
+      "id": "volatility.implied_volatility",
+      "owner": "EQ184",
+      "scope": "contract",
+      "unit": "annual_decimal_volatility",
+      "formula": "bounded inverse of admitted model price, no supplied sigma dependency",
+      "requires": [
+        "definition",
+        "spot",
+        "rate",
+        "carry",
+        "eligible_quote",
+        "solver_config"
+      ],
+      "model_independent": false,
+      "status": "proposed_contract_not_implemented",
+      "supported_candidate_modes": [
+        "batch_snapshot",
+        "replay_of_independent_snapshots"
+      ],
+      "incremental_mode_qualified": false,
+      "legacy_numerical_parity_qualified": false
+    }
+  ],
+  "additional_foundation_outputs": [
+    "pricing.price",
+    "greeks.signed_delta",
+    "greeks.vega",
+    "greeks.rho",
+    "greeks.theta"
+  ],
+  "counting_rule": "Foundation outputs, aliases, schemas and supplied pass-through are not extra delivered matrix feature producers.",
+  "supplied_origin": "Selected supplied metrics are independently admitted with exact actual unit/model/formula/source; supplied signed delta requires explicit abs projection for greeks.delta. Never relabel supplied metrics computed BSM.",
+  "score_profile": "option-chain-breadth1 is an original declared activity breadth score, not a reconstruction or equivalence claim for private scanner/score algorithms. Unqualified legacy parity stays a residual.",
+  "coverage_profile": "option-quote-count1 is a per-contract declared sampling-slot ratio; not chain coverage, update count, continuous-time coverage, or inferred availability.",
+  "residuals": [
+    {
+      "owner": "EQ182/EQ183",
+      "requirement": "American/Bermudan, adjusted or composite deliverables, discrete cash dividends, nonvanilla/stochastic profiles and fixing/payment lags",
+      "disposition": "unsupported_profile by initial BSM model; no matrix coverage claim for these profiles; explicit producer qualification required before adding support"
+    },
+    {
+      "owner": "EQ182/EQ187",
+      "requirement": "Incremental/update/restore/merge execution",
+      "disposition": "not admitted by snapshot/replay profile; source mode declarations do not prove update semantics or a delivered implementation"
+    },
+    {
+      "owner": "EQ214/EQ182",
+      "requirement": "Historical/private chain-score equivalence and time-weighted quote coverage",
+      "disposition": "unqualified; original breadth/count definitions do not silently satisfy distinct source-defined algorithms"
+    },
+    {
+      "owner": "EQ185/EQ187",
+      "requirement": "Historical N-drive dataset/schema/rights and output path",
+      "disposition": "not admitted; clearly synthetic development inputs first; keep historical source DB separate from output"
+    },
+    {
+      "owner": "EQ187",
+      "requirement": "Numerical fixture execution, exact artifacts, supported platforms and direct/worker/stored/browser evidence",
+      "disposition": "future execution acceptance; no evidence claimed by contract publication"
+    }
+  ],
+  "new_definition_policy": "Original library definitions are explicit new formula versions, not a claim of private producer equivalence. Independent contract review and supported profile admission precede implementation; unresolved legacy profile/mode/parity requirements remain owned."
+}
