@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "contract_version": "option-flow-formulas1",
+  "status": "original_normative_candidate_not_frozen_not_implemented",
+  "named_feature_count": 6,
+  "native_numeric_representation": "reduced_exact_rational_canonical_integer_strings",
+  "named_features": [
+    {"id":"flow.net_directional_premium","owner":"EQ189","unit":"group_currency","profile":"option-right-adjusted-premium1","formula":"sum(P where right_adjusted_sign=1)-sum(P where right_adjusted_sign=-1)","requires":["complete_execution_population","exact_premium","selected_sign_profile","right"],"source_formula_reference":"option-flow-v1","source_parity_qualified":false,"residual_ids":["direction_is_proxy","sign_source_variants"]},
+    {"id":"flow.short_dte_premium_share","owner":"EQ215","unit":"ratio","profile":"option-calendar-short-dte1","formula":"short_dte_premium/total_premium; requires all eligible execution civil references","requires":["complete_execution_population","causal_civil_expiry_bindings","short_dte_max_days"],"source_formula_reference":"option-flow-v1","source_parity_qualified":false,"residual_ids":["joint_reference_variant","source_policy_presets"]},
+    {"id":"flow.otm_premium_share","owner":"EQ215","unit":"ratio","profile":"option-spot-otm1","formula":"otm_premium/total_premium; requires all eligible execution strike/right/causal spot references","requires":["complete_execution_population","exact_strike_right","causal_compatible_spot","max_spot_age_ns"],"source_formula_reference":"option-flow-v1","source_parity_qualified":false,"residual_ids":["joint_reference_variant","source_policy_presets"]},
+    {"id":"activity.relative_volume","owner":"EQ215","unit":"ratio","profile":"option-prior-median1","formula":"current_contracts/median(all declared complete matched prior contract-volume slots)","requires":["complete_execution_population","prior_slot_identities","minimum_matched_prior_windows","compatible_complete_prior_contracts"],"source_formula_reference":"option-activity-v1","source_parity_qualified":false,"residual_ids":["baseline_zero_sentinels","source_policy_presets"]},
+    {"id":"activity.premium_robust_z","owner":"EQ215","unit":"mad_z","profile":"option-prior-premium-mad1","formula":"(current_premium-prior_premium_median)/((7413/5000)*prior_premium_MAD); MAD0 undefined","requires":["complete_execution_population","prior_slot_identities","minimum_matched_prior_windows","compatible_complete_prior_premium"],"source_formula_reference":"option-activity-v1","source_parity_qualified":false,"residual_ids":["baseline_zero_sentinels","source_policy_presets"]},
+    {"id":"execution.cluster_premium","owner":"EQ215","unit":"group_currency","profile":"option-quote-cluster1","formula":"sum exact premiums per maximal disjoint same-contract/session/quote/sign adjacent-gap cluster","requires":["complete_execution_population","option-quote-midpoint1","causal_order","cluster_max_adjacent_gap_ns"],"source_formula_reference":"option-execution-v1","source_parity_qualified":false,"residual_ids":["cluster_max_span_variant","cluster_repeated_print_variant","cluster_rounded_premium_variant"]}
+  ],
+  "additional_typed_measures": {
+    "EQ189": ["flow.trade_count","flow.contracts","flow.share_equivalent","flow.premium","flow.buy_proxy_premium","flow.sell_proxy_premium","flow.unknown_premium","flow.signed_execution_premium","flow.known_sign_imbalance","flow.total_premium_imbalance","flow.unknown_premium_share","flow.sign_event_coverage","flow.sign_premium_coverage","flow.right_positive_premium","flow.right_negative_premium","flow.call_premium","flow.put_premium","flow.put_call_premium_ratio","flow.contract_hhi","flow.expiry_hhi","flow.contract_top_share","flow.expiry_top_share"],
+    "EQ215": ["execution.cluster_trade_count","execution.cluster_contracts","execution.cluster_span_ns","execution.cluster_venue_count","execution.cluster_coverage","activity.contracts_median","activity.trade_count_median","activity.premium_median","activity.premium_mad","activity.relative_trade_count","flow.dte_reference_coverage","flow.short_dte_known_reference_share","flow.short_dte_observed_lower_share","flow.otm_reference_coverage","flow.otm_known_reference_share","flow.otm_observed_lower_share"],
+    "EQ190_reserved_pending_producers": ["cross.share_equivalent_participation","cross.premium_turnover_participation","cross.lag_correlation"]
+  },
+  "native_output_count": 44,
+  "reserved_cross_output_count": 3,
+  "reserved_output_bindings": [
+    {"id":"cross.share_equivalent_participation","owner":"EQ190","unit":"ratio","profile":"option-equity-participation1","formula_version":"option-flow-formulas1","formula":"option_share_equivalent/qualified_equity_shares","current_status":"unsupported","current_reason":"equity_integration_unqualified","current_value":null,"current_numerator":null,"current_denominator":null,"required_producer_ids":["EQ153","EQ158"],"available_numeric_contract_frozen":false},
+    {"id":"cross.premium_turnover_participation","owner":"EQ190","unit":"ratio","profile":"option-equity-participation1","formula_version":"option-flow-formulas1","formula":"option_premium/qualified_equity_dollar_turnover","current_status":"unsupported","current_reason":"equity_integration_unqualified","current_value":null,"current_numerator":null,"current_denominator":null,"required_producer_ids":["EQ153","EQ158"],"available_numeric_contract_frozen":false},
+    {"id":"cross.lag_correlation","owner":"EQ190","unit":"ratio","profile":"option-equity-lag-consumer1","formula_version":"option-flow-formulas1","formula":"qualified_EQ153_Pearson_over_option_t_equity_t_plus_k_pairs","current_status":"unsupported","current_reason":"equity_integration_unqualified","current_value":null,"current_numerator":null,"current_denominator":null,"required_producer_ids":["EQ153","EQ158"],"available_numeric_contract_frozen":false}
+  ],
+  "unit_groups": {
+    "executions": ["flow.trade_count","execution.cluster_trade_count","activity.trade_count_median"],
+    "contracts": ["flow.contracts","execution.cluster_contracts","activity.contracts_median"],
+    "payoff_units": ["flow.share_equivalent"],
+    "group_currency": ["flow.premium","flow.buy_proxy_premium","flow.sell_proxy_premium","flow.unknown_premium","flow.signed_execution_premium","flow.right_positive_premium","flow.right_negative_premium","flow.net_directional_premium","flow.call_premium","flow.put_premium","execution.cluster_premium","activity.premium_median","activity.premium_mad"],
+    "ratio": ["flow.known_sign_imbalance","flow.total_premium_imbalance","flow.unknown_premium_share","flow.sign_event_coverage","flow.sign_premium_coverage","flow.put_call_premium_ratio","flow.contract_hhi","flow.expiry_hhi","flow.contract_top_share","flow.expiry_top_share","execution.cluster_coverage","activity.relative_volume","activity.relative_trade_count","flow.dte_reference_coverage","flow.short_dte_known_reference_share","flow.short_dte_observed_lower_share","flow.short_dte_premium_share","flow.otm_reference_coverage","flow.otm_known_reference_share","flow.otm_observed_lower_share","flow.otm_premium_share"],
+    "mad_z": ["activity.premium_robust_z"],
+    "nanoseconds": ["execution.cluster_span_ns"],
+    "venues": ["execution.cluster_venue_count"]
+  },
+  "supported_candidate_modes": ["complete_ordered_batch","chronological_cut_replay","bounded_full_prefix_checkpoint_restore"],
+  "incremental_live_mode_qualified": false,
+  "r25_bytes_or_interfaces_modified": false,
+  "profiles": {
+    "temporal": "option-origin-context1",
+    "economic_revision_cutoff": "request_K",
+    "historic_context_cutoff": "immutable_per_root_signing_A_from_full_ledger_not_K_active_set",
+    "causal_stream": "single_shared_stream_only_cross_stream_witness_unsupported",
+    "observed_side_context": "immutable_original_root_side_semantics_and_known_at_at_A",
+    "expected_member_closure": "any_declared_root_without_K_and_cursor_visible_revision_makes_population_incomplete_expected_count_null",
+    "economic_availability_field": "value_and_status_only_not_retrospective_full_packet_availability",
+    "fully_restated_all_history_signing": "unsupported",
+    "sign": ["option-quote-midpoint1","option-tick1","option-observed-side1"],
+    "hybrid_sign": "unsupported",
+    "exact_midpoint_tie": "unknown",
+    "locked_market": "unknown",
+    "tick_equal_price": "carry_prior_nonzero_same_partition_else_unknown",
+    "cluster_gap": "inclusive_adjacent_gap_transitive",
+    "baseline_median": "exact_middle_or_mean_of_middle_pair",
+    "baseline_mad_scale": {"numerator":"7413","denominator":"5000"},
+    "baseline_missing_declared_slot": "unavailable_not_skip",
+    "baseline_metric_nullability": "contracts_trade_count_premium_independent_null_selected_metric_incomplete_baseline",
+    "minimum_prior_windows": "explicit_request_integer_1_through_32_no_implicit_20",
+    "dte": "calendar_ordinals_inclusive_0_through_explicit_max",
+    "otm": "call_strike_gt_spot_put_strike_lt_spot_ATM_false"
+  },
+  "residuals": [
+    {"id":"fully_restated_signing","owner":"EQ188","disposition":"revised economic facts against original per-root context selected; fully restated all-history signing remains unsupported and is not claimed source parity"},
+    {"id":"direction_is_proxy","owner":"EQ188","disposition":"original labelled right-adjusted sign convention; customer intent/dealer exposure not claimed"},
+    {"id":"sign_source_variants","owner":"EQ188","disposition":"exact midpoint/locked unknown distinct from epsilon midpoint, locked ask, paired-side-only and inside-spread unknown variants; source-by-source parity unresolved, not silently covered"},
+    {"id":"joint_reference_variant","owner":"EQ188","disposition":"independent DTE and OTM reference populations selected; source joint-reference variant remains distinct uncovered variant"},
+    {"id":"baseline_zero_sentinels","owner":"EQ188","disposition":"zero median/MAD undefined selected; finite-extreme/infinity/sentinel variants not claimed compatible"},
+    {"id":"source_policy_presets","owner":"EQ188","disposition":"request-bound minima/ages/short-DTE/gap policies selected; no private preset copied; screens remain R29 scope"},
+    {"id":"cluster_max_span_variant","owner":"EQ188","disposition":"adjacent-gap quote-aligned disjoint profile selected; max-span-from-first/overlap source variants remain separate uncovered capabilities"},
+    {"id":"cluster_repeated_print_variant","owner":"EQ188","disposition":"exact repeated-price/quantity grouping is not temporal clustering; uncovered variant retained for explicit matrix reconciliation"},
+    {"id":"cluster_rounded_premium_variant","owner":"EQ188","disposition":"four-decimal premium grouping is not exact temporal clustering; uncovered variant retained for explicit matrix reconciliation"},
+    {"id":"equity_producers","owner":"EQ190","disposition":"actual compatible EQ153/EQ158 and selected EQ159 producers/artifacts/integration remain release gates; no duplicated equity arithmetic or all-unsupported completion"},
+    {"id":"correlation_rendering","owner":"EQ190","disposition":"Pearson arithmetic/numeric rendering belongs to actual accepted EQ153 producer; consumer output reserved until exact compatibility contract is independently frozen"}
+  ],
+  "release_acceptance": {"full_R26_includes_EQ190":true,"actual_equity_integration_required":true,"native_independent_admission_is_not_full_release_acceptance":true,"private_source_numerical_parity":false,"runtime_or_artifact_qualification_claimed":false,"residuals_must_be_reconciled_before_full_matrix_coverage_claim":true}
+}

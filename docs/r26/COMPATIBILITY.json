@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "status": "proposed_exact_source_contract_not_frozen_or_runtime_qualified",
+  "release": "R26",
+  "contract_owner": "EQ188",
+  "packaging_amendment": {
+    "decision": "four_new_optional_flow_distributions_in_existing_three_repositories",
+    "supersedes": "bump_existing_R25_distributions_to_0.2.0a1",
+    "reason": "R25 output embeds actual 0.1.0a1 package versions; changing installed metadata while preserving bytes would misreport provenance and flow-only arithmetic would inherit unnecessary flint",
+    "old_R25_source_metadata_entrypoints_verifier_artifacts_untouched": true,
+    "R25_runtime_import_dependency": false,
+    "flint_runtime_dependency": false,
+    "candidate_GitHub_tag": "flow-v0.1.0a1",
+    "publication_authorized": false
+  },
+  "owner_admission": {
+    "decision_date": "2026-10-21",
+    "decision": "independent_option_native_tracks_with_real_equity_integration_gates",
+    "record": "https://github.com/atulsrivas1/equity-features/issues/592",
+    "source_authoring_requires": ["coordinator_review", "fresh_independent_contract_math_fixture_review", "exact_commit_manifest_freeze", "explicit_layer_handoffs"],
+    "blanket_R18_delivery_wait_removed_for_native_tracks_only": true,
+    "runtime_reservation_inherited_from_R25": false,
+    "full_R26_still_requires_EQ190": true,
+    "preserve_other_owners_and_resources": true
+  },
+  "distribution_candidates": {
+    "option-flow-contracts": {"version":"0.1.0a1","import":"option_flow_contracts","repository":"option-features","directory":"packages/flow-contracts","role":"contracts","requires":[],"artifact_sha256":null,"qualified":false},
+    "option-flow-features": {"version":"0.1.0a1","import":"option_flow_features","repository":"option-features","directory":"packages/flow-features","role":"calculations","requires":["option-flow-contracts==0.1.0a1"],"artifact_sha256":null,"qualified":false},
+    "option-flow-io": {"version":"0.1.0a1","import":"option_flow_io","repository":"option-feature-io","directory":"packages/flow-io","role":"io","requires":["option-flow-contracts==0.1.0a1","duckdb==1.5.6"],"artifact_sha256":null,"qualified":false},
+    "option-flow-workers": {"version":"0.1.0a1","import":"option_flow_workers","repository":"option-feature-workers","directory":"packages/flow-workers","role":"workers","requires":["option-flow-contracts==0.1.0a1","option-flow-features==0.1.0a1","option-flow-io==0.1.0a1"],"artifact_sha256":null,"qualified":false}
+  },
+  "native_candidates": {
+    "duckdb": {"version":"1.5.6","upstream_source_commit":"802a345bb627435d2a05d63cb74454fa98b60b5e","scope":"separate_flow_output_sink","upstream_native_reproducible_build_claim":false,"artifact_sha256":null,"qualified_for_new_cohort":false}
+  },
+  "supported_candidate_environments": {
+    "python_requires": ">=3.12,<3.13",
+    "platform_ids": ["win-amd64", "linux-x86_64"],
+    "qualification_forms": ["original_wheel", "original_sdist_rebuilt_wheel"],
+    "exact_python_patch_and_OS_recorded_per_run": true,
+    "one_platform_does_not_qualify_another": true,
+    "runtime_installers_excluded": true,
+    "runtime_bytecode_generation": false,
+    "source_tree_imports_allowed": false
+  },
+  "closed_flow_cohort": {
+    "cohort_version": "option-flow-cohort1",
+    "exact_inventory": {"option-flow-contracts":"0.1.0a1","option-flow-features":"0.1.0a1","option-flow-io":"0.1.0a1","option-flow-workers":"0.1.0a1","duckdb":"1.5.6"},
+    "extra_distribution_policy": "reject_in_runtime_including_pip_and_build_tools",
+    "artifact_roles": {"option-flow-contracts":"contracts","option-flow-features":"calculations","option-flow-io":"io","option-flow-workers":"workers","duckdb":"dependency"},
+    "mixed_R25_R26_distribution_versions": "reject",
+    "arbitrary_future_versions": "reject",
+    "R25_option_cohort1_verifier_inventory": "unchanged_exact_0.1.0a1_six_distribution_profile",
+    "R25_worker_use_inside_new_cohort": "not_admitted_by_old_verifier; retained_pure_record_API_and_wire_regressions_do_not_certify_old_execution_cohort",
+    "externally_anchored_trust": true,
+    "actual_artifact_lock": null
+  },
+  "flow_verifier_contract": {
+    "module": "option_flow_workers.verification",
+    "public_API": ["flow_qualification_manifest_digest(manifest)", "verify_flow_installed(cohort, wheel_paths, environment_receipt_path, manifest, trusted_manifest_sha256)"],
+    "manifest_type": {
+      "FlowQualificationSource": ["distribution:str", "version:str", "source_commit:40lowerhex", "wheel_sha256:64lowerhex", "source_reference:str", "build_receipt_path:str", "build_receipt_sha256:64lowerhex"],
+      "FlowQualificationManifest": ["manifest_version:literal(option-flow-qualification1)", "artifacts:tuple[FlowQualificationSource,...]"],
+      "FlowInstalledVerification": ["cohort_sha256:64lowerhex", "worker_wheel_sha256:64lowerhex", "qualification_manifest_sha256:64lowerhex", "checked_files:int", "evidence_path:str"]
+    },
+    "manifest_digest": "SHA256(UTF8('option-flow-qualification1\\n') || canonical_JSON(asdict(manifest)))",
+    "manifest_is_not_self_authorizing": true,
+    "trust_anchor_source": "coordinator independently reviewed out-of-band manifest SHA256, not the data producer or manifest's own claim",
+    "complete_checks": ["exact five-distribution inventory, roles and versions", "exact current interpreter patch/platform", "five exact admitted wheel archive hashes", "all own source commits/build receipts/embedded R26 build markers", "native upstream source/artifact identity and bundled notices", "installed RECORD hash/size and wheel member bytes", "complete installed file inventory excluding only explicitly reviewed installer bookkeeping", "import origin resolves inside the expected installed distribution", "reject unlisted .py/.pyc/native files, linked paths, source-tree shadowing and extra distributions", "environment receipt exactly matches actual installed distribution set/artifact metadata", "manifest source/role/version/wheel/build receipt identity matches selected cohort"],
+    "repeat_policy": "fresh verification on each execute and immediately before publication; cached success cannot authorize changed files or evidence",
+    "qualification_required_tampering": ["installed module", "wheel archive", "RECORD", "source receipt", "module origin", "extra .py", "extra .pyc"],
+    "verification_is_not": ["upstream authorship proof", "native reproducible build", "mathematical correctness", "resource availability"],
+    "qualified": false
+  },
+  "schema_versions": {
+    "snapshot":"option-flow-canonical1", "request":"option-flow-request1", "result":"option-flow-result1", "checkpoint":"option-flow-checkpoint1", "wire":"option-flow-json1", "record_hash_domain":"option-flow-record1", "work_hash_domain":"option-flow-work1", "generation":"option-flow-generation1", "cohort":"option-flow-cohort1", "policy":"r26-flow-policy1", "formulas":"option-flow-formulas1", "temporal_profile":"option-origin-context1"
+  },
+  "R25_compatibility_required": ["old Python record/function names and exact signatures", "old canonical bytes and domain hashes for released fixtures", "old strict option-json1 accepted/rejected cases", "old option-generation1 exact schema remains unchanged", "old worker option-cohort1 verifier closed inventory remains unchanged", "new flow records rejected by old entry points", "old records rejected by new flow decoder", "old R25 source, manifests, metadata, entrypoints, artifacts and result bytes untouched; regression uses original closed R25 cohort"],
+  "resource_candidate": {"workers":1,"inflight":1,"io_slots":1,"backend_threads":1,"logical_task_bytes_min":268435456,"max_wire_bytes":16777216,"max_records":100000,"max_groups":128,"max_streams":128,"max_baselines_per_group":32,"max_outputs":64,"max_result_rows":8192,"max_replay_cuts":128,"max_input_integer_digits":128,"max_intermediate_and_result_integer_digits":256,"max_decimal_significant_digits":38,"max_decimal_scale":18,"memory_enforcement_claim":"logical admission only, not RSS or native allocation enforcement","runtime_admitted":false},
+  "mode_candidates": ["batch","chronological_cut_replay","checkpoint_restore"],
+  "unsupported_modes": ["incremental","live","parallel_partition_execution","restated_all_history_context"],
+  "checkpoint_contract": {"full_bounded_prior_ledger_and_ancestors":true,"digest_only_state":false,"restoration":"validate identity then recompute entire retained prefix plus supplied suffix","per_cut_checkpoint_requires_snapshot_cursor_equality":true,"history_truncation":false,"optimized_incremental_claim":false},
+  "equity_integration_gate": {"EQ190_required_producers":["EQ153","EQ158"],"EQ159_required_if_shared_quote_dynamics_selected":true,"accepted_artifact_pins":null,"runtime_dependency_added":false,"cyclic_dependency_permitted":false,"option_side_duplicate_equity_math_permitted":false,"cross_output_policy_until_actual_integration":"unsupported/equity_integration_unqualified; not delivered EQ190 and not full R26 acceptance"},
+  "independent_oracle": {"native_rational_expectations":"independent literal tapes and exact integer/rational derivations without production imports","R25_oracle_tooling":"mpmath==1.3.0 in separate tooling environment if retained fixtures regenerated under independent review","oracle_is_runtime_dependency":false,"generated_or_executed":false},
+  "required_release_gates": ["reviewed exact source contracts and independent fixtures", "actual local builds/tests on each declared platform/form", "isolated contracts/calculation/io install closures", "fresh full worker closed-cohort verification and tamper rejection", "all selected native exact values/status/coverage/evidence direct-wire-worker-stored byte parity", "genuine chronological cut replay and bounded full-ledger restore/correction equivalence", "atomic result/checkpoint publication, retry/conflict/crash/cancellation/corruption readback", "measured bounded balanced/hot-entity workload resource/copy/wire/io/elapsed evidence without unmeasured speed claims", "retained R25 source/metadata/artifact byte isolation and original-cohort API/bytes/numerical regression", "actual compatible EQ153/EQ158 producer integration for EQ190", "actual synthetic or licensed stored-output browser demo", "fresh independent PR and final acceptance reviews", "owner-approved publication followed by actual tag/assets/readback"],
+  "hosted_CI_required": false,
+  "runtime_qualified": false,
+  "full_release_accepted": false,
+  "package_publication_authorized_by_this_file": false
+}

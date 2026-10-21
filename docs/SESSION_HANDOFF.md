@@ -1,3 +1,7 @@
+## R26 reviewed-contract preparation — October 21, 2026
+
+R25 is published and completed in the canonical Project. R26 E34/EQ188 contract design is In progress. The owner explicitly extended independent admission to native R26 tracks while retaining EQ190 actual EQ153/EQ158 integration and full release scope. See [the contract packet](r26/README.md). Four new optional flow distributions preserve original R25 package provenance; the earlier existing-package0.2 proposal is superseded. Forty independent scenarios and canonical construction rules are defined; no implementation, materialized fixtures, runtime qualification or release is claimed yet. Exact reviewed-commit freeze must be recorded externally before fresh layer implementation. Active EF1/R18 ownership remains protected; future runtime work needs a new bounded coordinator grant.
+
 ## Published R25 update — October 21, 2026
 
 Owner-approved `v0.1.0a1` GitHub prereleases are published and actual tag/tree plus all twelve downloaded-asset checksums have been verified. See [published release acceptance](R25_RELEASE.md). The qualification checkpoint below predates publication; its UNRELEASED wording records that earlier state and its build-source identities remain unchanged. The live Project governs final lifecycle status. Final acceptance-documentation merge precedes Done/issue and milestone closure. No further runtime qualification or owner publication approval is pending.
