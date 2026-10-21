@@ -1,3 +1,7 @@
+## Owner clarification: local merge evidence — October 20, 2026
+
+The owner reaffirmed that local builds and local test runs provide merge validation. This supersedes older mandatory hosted-CI wording: GitHub Actions completion is not an acceptance or merge prerequisite. Retain independent review, appropriate exact-commit local checks, build/install evidence where applicable, numerical fixtures and integration/release gates. Documentation-only changes use relevant local source/document checks; do not invent package builds for them. Record actual commands, source commit, environment and results. Do not claim unexecuted local checks or infer validation of another platform from a local run. Any actual repository protection conflict must be reported separately; it does not redefine this agreement. Existing ownership/resource reservations remain protected.
+
 # R25 preparation handoff
 
 October 20, 2026. Owner selected first option release and dedicated repository homes. option-features owns: Canonical option identity, units, timing, result/error/model contracts and pure numerical packages. Selected equity calculations are consumed through qualified package dependencies. Equity calculations never import options.
