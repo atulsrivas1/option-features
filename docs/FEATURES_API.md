@@ -1,5 +1,44 @@
 # Calculation source candidate
 
+Independent Vega assertions may provide an `oracle_vega_interval` over all
+contract-admitted candidate volatilities. Its exact fields are low, high,
+uncertainty_kind and relative_padding. The consumer requires the empirical label
+`empirical_two_precision_plus_outward_relative_padding` and reviewed padding1e-58;
+these are not a rigorous enclosure claim. It checks ordered nonnegative bounds
+and candidate Vega membership. The optional admissible_candidate_sigma_interval
+has exact low/high fields and must contain the returned candidate within ordered
+nonnegative bounds. This does not substitute oracle-root point Vega for the
+returned candidate's Vega. Without a Vega interval the existing point comparison
+and frozen tolerance caps remain unchanged. Seven focused consumer assertion tests
+passed; full fixtures require a newly admitted reviewed artifact.
+
+The independently reviewed October21 coverage clarification preserves complete
+empty population metadata: after causal plan/population and required complete
+certificates are admitted, an undefined empty ratio carries Coverage0/0 with its
+declared ID, completeness=True and the actual sampling type. Missing/future/
+incomplete prerequisites retain coverage=None. Three focused source-development
+tests pass for empty quote plans, empty activity populations and unknown-versus-
+absent completeness, including negative admission variants.
+
+October 21 runtime correction candidate: exact lower-bound IV candidates now use
+the same rigorous Vega/conditioning inequality as interior candidates. An ITM
+sigma0 root has right-sigma Vega0 and is ill-conditioned under positive requested
+tolerances; both `lower_boundary` and `ill_conditioned` are retained. Uncertified
+Vega/conditioning remains unknown. A fresh Windows source-development environment
+passed29 feature tests, including an independently derived both-rights boundary
+regression, and4 fixture-consumer assertion tests. The changed feature source was
+imported explicitly; these runs do not qualify a rebuilt/installed feature wheel.
+
+The independent fixture consumer now checks full Coverage/null and explicit
+solver-evidence presence/conditional/fixed assertions, independent Vega and
+conditioning, bracket containment and both convergence criteria. Separate
+structural exception cases run through decoding and evaluation, preserving exact
+reason assertions only where independently fixed. The artifact's combined cases
+and exception cases SHA is recomputed; the externally pinned whole-artifact SHA
+remains the operator trust anchor. A digest-shaped review field alone does not
+authenticate an independent reviewer. Full reviewed-fixture execution and new
+exact-artifact qualification remain coordinator gates.
+
 `option-features==0.1.0a1` exposes `option_features.evaluate(snapshot, request)`.
 It returns ordered frozen Results and owns all nine R25 feature producers plus
 the five named foundation outputs. Source has been authored; implementation

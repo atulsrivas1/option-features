@@ -142,6 +142,23 @@ class EndpointTests(unittest.TestCase):
         self.assertEqual(tuple(r.value for r in results), (0.0, 0.0))
 
 class NumericalTests(unittest.TestCase):
+    def test_both_rights_exact_itm_lower_root_has_zero_vega_and_conditioning(self):
+        # At r=q0,T1,sigma0 an ITM payoff is locally unchanged by sigma:
+        # right-sigma Vega0. Positive tolerances therefore satisfy the frozen
+        # conditioning inequality exactly, for either option right.
+        for side, spot_value in (("call", "110"), ("put", "90")):
+            with self.subTest(right=side):
+                source = snapshot(definitions=(definition(right=side),), spots=(Spot("u", Decimal(spot_value), "USD", "basis", 0, 0, "1", "b"),), quotes=(quote("10", "10"),))
+                source = replace(source, model_facts=tuple(f for f in source.model_facts if f.kind != "volatility"))
+                result, = evaluate(source, request("volatility.implied_volatility"))
+                self.assertEqual((result.status, result.reason, result.value), ("available", "ok", 0.0))
+                self.assertEqual(result.quality_flags, ("ill_conditioned", "lower_boundary"))
+                evidence = result.solver_evidence
+                self.assertEqual((evidence.vega, evidence.ill_conditioned), (0.0, True))
+                self.assertEqual((evidence.boundary, evidence.converged, evidence.iterations), ("lower_boundary", True, 0))
+                self.assertEqual((evidence.sigma_low, evidence.sigma_high), (0.0, 0.0))
+                self.assertEqual((evidence.target_price_exact, evidence.worst_case_price_residual), (Decimal("10"), Decimal("0")))
+
     def test_zero_volatility_symbolic_kinks_and_one_sided_vega(self):
         outputs = ("pricing.price", "greeks.signed_delta", "greeks.gamma", "greeks.vega", "greeks.rho", "greeks.theta")
         for side in ("call", "put"):

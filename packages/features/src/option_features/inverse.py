@@ -38,6 +38,19 @@ def _price(operands, sigma, target, owner):
         raise failure
     return latest, 0
 
+def _conditioning(operands, sigma, target, config, owner):
+    """Certify the same Vega inequality for every available IV candidate."""
+    try:
+        certificate = forward(replace(operands, sigma=Fraction.from_float(sigma)), "greeks.vega", owner)
+        volatility_tolerance = Fraction.from_float(config.vol_abs_tol)+Fraction.from_float(config.vol_rel_tol)*abs(Fraction.from_float(sigma))
+        price_tolerance = Fraction.from_float(config.price_abs_tol)+Fraction.from_float(config.price_rel_tol)*abs(target)
+        maximum = max(abs(certificate.low), abs(certificate.high))
+        minimum = min(abs(certificate.low), abs(certificate.high)) if certificate.low*certificate.high > 0 else Fraction(0)
+        condition = True if maximum*volatility_tolerance <= price_tolerance else (False if minimum*volatility_tolerance > price_tolerance else None)
+        return certificate.value, condition
+    except NumericalFailure:
+        return None, None
+
 def solve(operands, target, config, converted, owner):
     """Target is exact rational midpoint; no supplied volatility is consumed."""
     iterations = 0
@@ -85,6 +98,7 @@ def solve(operands, target, config, converted, owner):
                     residual_point = 0.0 if candidate_price is not None and Fraction.from_float(candidate_price) == target else (_diagnostic(Fraction.from_float(candidate_price)-target) if candidate_price is not None else None)
                     worst_residual = exact_decimal(Fraction(0))
                     boundary = "lower_boundary"
+                    vega, ill_conditioned = _conditioning(operands, candidate, target, config, owner)
                     return result(0.0, "available", "ok", True)
                 if upper_exact is not None and target == upper_exact:
                     boundary = "upper_asymptote"
@@ -124,14 +138,7 @@ def solve(operands, target, config, converted, owner):
             point = certify(enclosed)
             candidate_price = point.value
             residual_point = _diagnostic(Fraction.from_float(point.value)-target)
-            try:
-                vega_certificate = forward(replace(operands, sigma=Fraction.from_float(sigma)), "greeks.vega", owner)
-                vega = vega_certificate.value
-                maximum = max(abs(vega_certificate.low), abs(vega_certificate.high))
-                minimum = min(abs(vega_certificate.low), abs(vega_certificate.high)) if vega_certificate.low*vega_certificate.high > 0 else Fraction(0)
-                ill_conditioned = True if maximum*volatility_tolerance <= price_tolerance else (False if minimum*volatility_tolerance > price_tolerance else None)
-            except NumericalFailure:
-                vega = ill_conditioned = None
+            vega, ill_conditioned = _conditioning(operands, sigma, target, config, owner)
             return True
 
         for index in range(config.max_iterations):

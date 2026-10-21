@@ -150,7 +150,8 @@ def quote_coverage(snapshot, request, definition):
         return Outcome(None, faults, records)
     expected = len(window.expected_sample_ids)
     if not expected:
-        return unavailable("undefined", "empty_sampling_plan", records)
+        return Outcome(None, (("undefined", "empty_sampling_plan"),), records,
+                       observed=0, expected=0, population_id=window.sampling_plan_id)
     observed = 0
     for sample_id in window.expected_sample_ids:
         quote = selection.quote(snapshot, request, definition.contract_id, sample_id)
@@ -192,7 +193,8 @@ def chain_activity(snapshot, request):
         return Outcome(None, tuple(faults), records)
     expected = len(window.expected_contract_ids)
     if not expected:
-        return unavailable("undefined", "empty_population", records)
+        return Outcome(None, (("undefined", "empty_population"),), records,
+                       observed=0, expected=0, population_id=window.population_id)
     traded = set()
     for trade_id in window.trade_ids:
         trade = selection.trade(snapshot, request, trade_id)
