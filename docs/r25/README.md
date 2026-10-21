@@ -1,3 +1,17 @@
+# R25 contracts and implementation
+
+## Current checkpoint — October 21, 2026
+
+Source-authoring contracts were independently reviewed and frozen at `9403854ff37a7c0b5dbc57c142893a1ce0a262e4`; the preparation-era proposed/not-implemented fields in retained draft documents are historical declarations, not current execution status. This reconciliation does not amend their normative mathematics, manifest or JSON bytes.
+
+Actual implementations now exist in all three dedicated repositories. Both Windows and Linux exact-source component/fixture qualification passed for original-wheel and original-sdist-rebuilt-wheel cohorts. Both final-wheel tamper suites and 172 additional layer-isolation methods per platform also passed. See [current local qualification](../R25_LOCAL_QUALIFICATION.md) for exact sources, fixture SHA, executed evidence and remaining gates. The original exclusive EQ142 hold is released without accepting the interrupted study or R18.
+
+Source PRs are merged with qualified source trees preserved; six source stories remain Test and EQ187 is in Code review. Four frozen five-scenario harnesses passed; broad golden integration passed all four Windows/Linux original/rebuilt cohorts, with 111 batch/retry cases and 111 replay cases each. Full direct/worker/stored byte parity also passed across all four cohorts for 111 cases/378 rows. The stored browser demo and all-14-output round trip were inspected; fresh independent static wrapper review passed. Technical validation is complete; final documentation publication, lifecycle reconciliation and owner release-publication approval remain. **R25 is UNRELEASED.** Actual Project/issue state, not dated preparation prose below, remains the execution-status authority. No scope, model, source-rights, package compatibility or registry-publication boundary is changed here.
+
+## Historical preparation and method-selection record
+
+The original draft narrative follows unchanged as history. Its Backlog/unexecuted/not-frozen statements describe preparation before the recorded source freeze and current qualification; do not use them to undo later reviewed admission.
+
 # R25 contract preparation
 
 Owner selected R25 after agreeing dedicated option repositories and independent versioned equity dependencies. [GOV037 #581](https://github.com/atulsrivas1/equity-features/issues/581), [E33 #526](https://github.com/atulsrivas1/equity-features/issues/526). These are source-only draft contracts, not frozen implementation admission or a package release. Owner approved independent R25 progression, superseding the blanket R18/EQ146 and EQ143/EQ144 acceptance wait. Reviewed frozen R25 contracts, compatible interface choices and story readiness gate implementation; R25 executor/resource, artifact/platform, numerical and integration qualification remain mandatory. EQ182 contract design is now In progress; the six dependent implementation/acceptance stories remain Backlog. No numerical qualification is claimed passed.
