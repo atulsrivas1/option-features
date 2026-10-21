@@ -5,7 +5,7 @@
   "method_id": "option-arb-bsm1",
   "method_version": "1",
   "normative_files": {
-    "BOUNDARY_CONTRACT.md": "4e6c7cc78a92ad15941ac90558ba47bd416f936137605620c130959668c8a635",
+    "BOUNDARY_CONTRACT.md": "823755c995f79321ef2389e34186fad8f514b37875c8ce121bed69b8fd85ff4e",
     "MODEL_PROFILE.md": "612673932aff8c7bd585b64f6a7eb4bb85225397d1ffed78c30996aa30be8420",
     "NUMERICAL_METHOD.md": "b489e29f3519cc1b8e9afa9373c8d58ecfd0a5368a33c21cf9af8da2c3c99d29",
     "NUMERICAL_ACCEPTANCE.md": "30d56b9aa82dd93bdd99dbd0978f90d21c5599b808ecf1e150491565a1adae45",
@@ -21,5 +21,12 @@
   "runtime_qualified": false,
   "artifact_qualified": false,
   "platform_qualified": false,
-  "release_accepted": false
+  "release_accepted": false,
+  "source_amendments": [
+    {
+      "id": "r25-record-domains1",
+      "supersedes_source_freeze": "9403854ff37a7c0b5dbc57c142893a1ce0a262e4",
+      "scope": "Explicit individual-record domain literals; no formula, field or implemented domain change. Independent review and coordinator publication required."
+    }
+  ]
 }

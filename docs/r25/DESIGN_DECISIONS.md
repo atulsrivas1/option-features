@@ -33,3 +33,7 @@ The official EQ142 timing reservation still lacks a terminal exit receipt at thi
 ## Concrete C04 selection and source-authoring gate
 
 Select [option-arb-bsm1/version1](NUMERICAL_METHOD.md), exact python-flint==0.9.0 with bounded precision and explicit numerical range limits. The separate mpmath==1.3.0 [oracle source](ORACLE_IMPLEMENTATION.md) is an unexecuted independent expected-value tool. DuckDB==1.5.6 is the candidate storage dependency; no artifact is yet qualified. The coordinator may freeze reviewed source definitions and grant the three source-authoring tracks under [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md); consumer producer edges still gate actual integration, merge and release evidence. The source-authoring baseline can be the reviewed immutable candidate commit while source/oracle runtime validation holds its draft PR unmerged. No local runtime is admitted during the exclusive study window and no unexecuted tool is claimed tested.
+
+## Explicit record-hash domains
+
+Independent exact-wire fixture preparation found the hash formula named `record_type` without enumerating its individual-record literals. The coordinator clarification in BOUNDARY_CONTRACT explicitly freezes the existing schema names so independent producers need not infer them from implementation. Historical source freeze9403854 remains retained; the amended manifest records the changed boundary bytes. This is a source-contract clarification, not a numerical execution or artifact acceptance claim.
