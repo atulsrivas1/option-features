@@ -3,7 +3,7 @@ from option_feature_contracts.variants1.canonical import (
     fail, record_digest, work_digest, cohort_digest, FORMULA, SCHEMA_RESULT, SCHEMA_GENERATION,
 )
 from option_feature_contracts.variants1.schema import validate_shape, validate_scalars
-from . import admission, concentration, flow, groups, integer_flow, joint, premium as P
+from . import admission, concentration, flow, groups, integer_flow, joint, span, premium as P
 from .context import Ctx, Deps, make_evidence
 from .numeric import NumericOverflow
 from .results import row as mkrow, receipt, aggregate, merge_evidence, sort_rows
@@ -49,6 +49,8 @@ def run_op(ctx, oi, op, done):
         return groups.parent_groups(ctx, oi, op)
     if kind == "joint_reference":
         return joint.joint(ctx, oi, op)
+    if kind == "span_at_anchor":
+        return span.span(ctx, oi, op)
     if kind == "concentration":
         return concentration.concentration(ctx, oi, op)
     if kind == "directional":

@@ -247,6 +247,23 @@ def stage6(ctx):
                 for rid in op["root_ids"]:
                     check_supplied(ctx, op, ctx.k_selected(rid))
     for o, op in enumerate(r["operations"]):
+        if op["kind"] == "span_at_anchor":
+            base = "%s/operations/%d" % (REQ, o)
+            for i, rid in enumerate(op["anchor_ids"]):
+                sel = ctx.k_selected(rid)
+                if sel is None:
+                    continue
+                if sel["kind"] == "cancel" or sel["condition"] != "regular" or sel["scope_id"] != op["scope_id"]:
+                    fail("identity_mismatch", "%s/anchor_ids/%d" % (base, i), 6)
+            ac = ctx.controls[op["asof_control_id"]]
+            bad = ac["kind"] != "asof" or ac["scope_id"] != op["scope_id"]
+            for rid in op["anchor_ids"]:
+                sel = ctx.k_selected(rid)
+                if sel is not None and ctx.new_rev(rid)["event_ns"] > ac["event_domain"]["start_ns"]:
+                    bad = True
+            if bad:
+                fail("identity_mismatch", base + "/asof_control_id", 6)
+    for o, op in enumerate(r["operations"]):
         if (op["kind"] == "directional" and op["profile"] == "i64-paired-call-put1") or \
                 (op["kind"] == "parent_groups") or \
                 (op["kind"] == "premium" and op["recipe"] == "checked-integer-products1"):
@@ -280,6 +297,13 @@ def stage7(ctx):
                         if not ctx.vis_A(ctx.controls[acid]["stamp"], a_ns):
                             fail("temporal_cut", "%s/references/%d/absence_control_ids/%d" % (
                                 SNAP, s["references"].index(ref), ci), 7)
+        if op["kind"] == "span_at_anchor":
+            for i, rid in enumerate(op["anchor_ids"]):
+                sel = ctx.k_selected(rid)
+                if sel is None:
+                    fail("temporal_cut", "%s/anchor_ids/%d" % (base, i), 7)
+                if sel["signing_A_ns"] > ctx.K:
+                    fail("temporal_cut", REQ + "/knowledge_K_ns", 7)
         if op["kind"] == "premium":
             for i, rid in enumerate(op["root_ids"]):
                 sel = ctx.k_selected(rid)
