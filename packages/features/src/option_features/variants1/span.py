@@ -2,6 +2,7 @@
 from option_feature_contracts.variants1.canonical import b2f, b64num, canonical_json, fail, span_id
 from . import numeric as N
 from . import premium as P
+from . import signing as S
 from .admission import interval_contains
 from .context import Deps, make_evidence
 from .flow import (Cap, capture_deps, definition_records, eligibility_block, exclusion_deps, sign_members)
@@ -151,7 +152,6 @@ def span(ctx, oi, op):
             controls += res["controls"]
         P.policy_scope_deps(ctx, deps, set(), op)
         unknown_sign, context_complete = [], True
-        from . import signing as S
         for r, sr, wt in signed:
             S.context_deps(ctx, sr, deps)
             if sr.control_id is not None:
