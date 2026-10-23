@@ -241,6 +241,7 @@ def stage6(ctx):
     AA.stage6(ctx)
     for o, op in enumerate(r["operations"]):
         base = "%s/operations/%d" % (REQ, o)
+        AA.stage6_request(ctx, o, op)
         if op["kind"] == "premium":
             for i, rid in enumerate(op["root_ids"]):
                 sel = ctx.k_selected(rid)

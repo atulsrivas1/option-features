@@ -160,15 +160,15 @@ def statistic(ctx, op, mid, unit, series, miss_reason, nslots):
                 "median": unav("median", reason), "metric_id": mid,
                 "quantiles": [{"probability": q, "value": unav("quantile", reason)} for q in qs],
                 "sample_slot_ids": list(ids), "samples": samples, "sorted_sample_bits": list(bits)}
-    if miss_reason is not None:
-        return mk(miss_reason)
-    if nslots == 0:
+    if nslots == 0 and miss_reason is None:
         return mk("empty_baseline")
     items = sorted(((b2f(v), i, sid) for i, (sid, v) in enumerate(series)),
                    key=lambda t: (t[0], 0 if (t[0] == 0.0 and math.copysign(1.0, t[0]) < 0) else 1, t[1]))
     vals = [t[0] for t in items]
     ids = [t[2] for t in items]
     bits = [f2b(v) for v in vals]
+    if miss_reason is not None:
+        return mk(miss_reason, len(vals), ids, bits)
     if len(vals) < op["minimum_samples"]:
         return mk("insufficient_history", len(vals), ids, bits)
     half = 0.5
@@ -230,6 +230,9 @@ def baseline(ctx, oi, op):
                     _bind(ctx, deps, ctx.controls[rid]["stamp"]["binding_id"], "baseline")
                 elif rtype == "variant_Definition":
                     _bind(ctx, deps, ctx.defs[rid]["stamp"]["binding_id"], "baseline")
+    if not any(d["record_type"] == "variant_Binding" for d in deps.d.values()):
+        for b in ctx.snap["bindings"]:
+            _bind(ctx, deps, b["binding_id"], "baseline")
     deps.add("variant_Scope", scope["scope_id"], ctx.rd("variant_Scope", scope), "policy", 0)
     for s in infos:
         sc = ctx.scopes[s.slot["scope_id"]]

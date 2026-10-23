@@ -3,6 +3,7 @@ from option_feature_contracts.variants1.canonical import b2f, fail, f2b, record_
 from . import numeric as N
 from .admission import _in_interval, interval_contains, SNAP, REQ
 
+
 RAW_FIELDS = ("definition_id", "reference_id", "reference_instant_ns", "event_day", "expiry_day", "strike", "spot",
               "calendar_id", "calendar_revision")
 
@@ -228,6 +229,8 @@ def stage6(ctx):
         base = "%s/%s/%d" % (SNAP, kind, i)
         frame = ctx.frames[rec["session_frame_id"]]
         binput = rec["bucket_input"]
+        if kind == "daily_observations":
+            daily_compat(ctx, i, rec, frame)
         if binput["kind"] == "raw":
             check_raw(ctx, kind, rec, binput, base + "/bucket_input", frame["full_session"])
         elif binput["kind"] == "qualified":
@@ -240,6 +243,10 @@ def stage6(ctx):
                     rec["contract_id"] not in c["expected_contract_ids"] or not c["complete"] or
                     c["event_domain"]["start_ns"] != c["event_domain"]["end_ns"]):
                 fail("identity_mismatch", base + "/bucket_input/control_id", 6)
+    for kind, i, rec in owners(ctx):
+        if kind == "daily_observations":
+            daily_admission(ctx, i, rec)
+    slot_checks(ctx)
     for i, f in enumerate(ctx.snap["session_frames"]):
         if f["frame_id"] not in selected(ctx)["frames"]:
             continue
@@ -249,6 +256,124 @@ def stage6(ctx):
         if (sc["session_day"] != f["session_day"] or c["kind"] != "session_boundary" or c["scope_id"] != f["scope_id"] or
                 c["event_domain"] != f["full_session"] or not c["complete"]):
             fail("identity_mismatch", base + "/boundary_control_id", 6)
+
+
+def daily_compat(ctx, i, o, frame):
+    base = "%s/daily_observations/%d" % (SNAP, i)
+    sc = ctx.scopes[o["scope_id"]]
+    if o["contract_id"] not in sc["contract_ids"]:
+        fail("identity_mismatch", base + "/contract_id", 6)
+    if o["session_day"] != sc["session_day"]:
+        fail("identity_mismatch", base + "/session_day", 6)
+    if frame["scope_id"] != o["scope_id"] or frame["session_day"] != o["session_day"]:
+        fail("identity_mismatch", base + "/session_frame_id", 6)
+    if o["session_interval"] != frame["full_session"]:
+        fail("identity_mismatch", base + "/session_interval", 6)
+
+
+def daily_admission(ctx, i, o):
+    base = "%s/daily_observations/%d" % (SNAP, i)
+    ops = [op for op in ctx.req["operations"] if op["kind"] == "baseline" and
+           any(o["observation_id"] in ctx.slots[sid]["observation_ids"] for sid in op["slot_ids"] if sid in ctx.slots)]
+    for op in ops:
+        if o["admission"]["basis"] != op["activity_basis"]:
+            fail("identity_mismatch", base + "/admission/basis", 6)
+    cid = o["admission"]["certificate_id"]
+    if cid is None:
+        return
+    cert = ctx.dcerts[cid]
+    ci = ctx.snap["daily_activity_certificates"].index(cert)
+    cb = "%s/daily_activity_certificates/%d" % (SNAP, ci)
+    core = cert["core"]
+    for fld in ("observation_id", "scope_id", "contract_id", "session_frame_id", "session_day", "right",
+                "observation_A_ns", "bucket_input"):
+        if core[fld] != o[fld]:
+            fail("identity_mismatch", "%s/core/%s" % (cb, fld), 6)
+    if core["basis"] != o["admission"]["basis"]:
+        fail("identity_mismatch", cb + "/core/basis", 6)
+    pr = cert["producer"]
+    if pr["producer_cohort_sha256"] != ctx.cohort:
+        fail("identity_mismatch", cb + "/producer/producer_cohort_sha256", 6)
+    if pr["output_record_sha256"] != ctx.rd("variant_DailyActivityCore", core):
+        fail("identity_mismatch", cb + "/producer/output_record_sha256", 6)
+    for fld in ("contracts", "trade_count", "premium"):
+        for sub in ("kind", "value", "reason"):
+            if core[fld][sub] != o[fld][sub]:
+                fail("identity_mismatch", "%s/%s/%s" % (base, fld, sub), 6)
+    if core["membership_complete"]:
+        for fld, cnt in (("contracts", "observed_positive_contracts"), ("trade_count", "observed_positive_trade_count")):
+            mi = o[fld]
+            if mi["kind"] == "present" and mi["value"] != f2b(N.rn_int(core[cnt])):
+                fail("identity_mismatch", "%s/%s/value" % (base, fld), 6)
+
+
+def slot_checks(ctx):
+    sel = selected(ctx)
+    for b, sl in enumerate(ctx.snap["baseline_slots"]):
+        if sl["slot_id"] not in sel["slots"]:
+            continue
+        if sl["session_day"] != ctx.scopes[sl["scope_id"]]["session_day"]:
+            fail("identity_mismatch", "%s/baseline_slots/%d/session_day" % (SNAP, b), 6)
+    seen = set()
+    for op in ctx.req["operations"]:
+        if op["kind"] != "baseline":
+            continue
+        for sid in op["slot_ids"]:
+            sl = ctx.slots.get(sid)
+            if sl is None:
+                continue
+            b = ctx.snap["baseline_slots"].index(sl)
+            for j, oid in enumerate(sl["observation_ids"]):
+                o = ctx.dailies[oid]
+                key = (o["contract_id"], o["session_day"])
+                if key in seen:
+                    fail("identity_conflict", "%s/baseline_slots/%d/observation_ids/%d" % (SNAP, b, j), 6)
+                seen.add(key)
+
+
+def stage6_request(ctx, o, op):
+    base = "%s/operations/%d" % (REQ, o)
+    if op["kind"] == "baseline":
+        for j, sid in enumerate(op["slot_ids"]):
+            if ctx.slots[sid]["session_day"] >= op["asof_day"]:
+                fail("identity_mismatch", "%s/slot_ids/%d" % (base, j), 6)
+    if op["kind"] == "baseline_consumer":
+        bop, cop = ctx.ops[op["baseline_op_id"]], ctx.ops[op["current_op_id"]]
+        if bop["kind"] != "baseline":
+            fail("identity_mismatch", base + "/baseline_op_id", 6)
+        if cop["kind"] != "current_activity":
+            fail("identity_mismatch", base + "/current_op_id", 6)
+        if not keys_compatible(ctx, bop, cop):
+            fail("identity_mismatch", base + "/baseline_op_id", 6)
+
+
+def keys_compatible(ctx, bop, cop):
+    from . import buckets as B
+    from .current import basis_of
+    bscope = ctx.scopes[bop["scope_id"]]
+    target = ctx.targets[cop["target_id"]]
+    cscope = ctx.scopes[target["scope_id"]]
+    bp = ctx.bpolicies[bop["bucket_policy_id"]]
+    tbp = ctx.bpolicies[target["bucket_policy_id"]]
+    if ctx.rd("variant_BucketPolicy", bp) != ctx.rd("variant_BucketPolicy", tbp):
+        return False
+    if bop["activity_basis"] != basis_of(cop) or bop["right"] != target["right"]:
+        return False
+    for fld in ("underlying_id", "currency", "action_basis_id", "deliverable_basis_id", "definition_basis_id",
+                "population_universe_id"):
+        if bscope[fld] != cscope[fld]:
+            return False
+    if bop["route"] == "contract-session1" and bscope["contract_ids"][0] != target["contract_id"]:
+        return False
+    if bop["asof_day"] > cscope["session_day"]:
+        return False
+    try:
+        bk = B.derive(ctx, target["target_id"], target["reference_A_ns"], target["right"], tbp, target["bucket_input"])
+    except N.NumericOverflow:
+        return True
+    if bk.ok and (bk.dte_key != bop["dte_bucket"] or bk.mon_key != bop["moneyness_bucket"]):
+        return False
+    return True
 
 
 # ------------------------------------------------------------------ stage 7
@@ -267,6 +392,11 @@ def stage7(ctx):
             c = ctx.controls[binput["control_id"]]
             if not ctx.vis_A(c["stamp"], a_ns):
                 fail("temporal_cut", base + "/control_id", 7)
+    for kind, i, rec in owners(ctx):
+        if kind == "daily_observations":
+            cid = rec["admission"]["certificate_id"]
+            if cid is not None and not ctx.vis_K(ctx.dcerts[cid]["stamp"]):
+                fail("temporal_cut", "%s/daily_observations/%d/admission/certificate_id" % (SNAP, i), 7)
     for i, f in enumerate(ctx.snap["session_frames"]):
         if f["frame_id"] not in selected(ctx)["frames"]:
             continue
