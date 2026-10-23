@@ -16,6 +16,7 @@ Per release, one unit = one contract x one layer:
 5. **Independent code review** (fresh read-only reviewer, own harness) for every PR including docs; coordinator also reads the real diff. Tiny docs/status PRs may use a Haiku reviewer plus a recompute script.
 6. **Merge** after approval (author merges own PR where permitted). Retire workers after the release; never reuse across releases.
 7. **Close**: evidence doc, Windows qualification, browser demo for the owner, retrospective in `docs/knowledge/LESSONS.md`.
+8. **Retrospective rule**: at release close write one covering quality (findings per unit), token usage (waste found), worker performance, code performance and other; every retrospective (quality, token usage, worker performance, code performance, other) must end with concrete changes to this skill and the working agreement, applied from the next release's first brief; the next retrospective reports for each change whether it was applied and whether it helped. Distil recurring items into the layer-brief checklist rather than growing a long log.
 No unit tests; layers are verified by manual runs. Report outcomes faithfully (failures with output, skipped steps stated).
 
 ## 2. Save re-reading the chat
@@ -47,3 +48,11 @@ Steps:
 - Quote Windows paths.
 - Private audit closure material is read-only, never copied; opaque ids only.
 - Option stories differ from equity; do not copy equity contracts or fixtures without re-deriving them.
+
+## Layer-brief checklist (put in every worker brief; extend only from retrospectives)
+- Verify cwd/repo first; touch only your repo and scratch folder.
+- Hash and line-ending check (LF vs CRLF) on every pinned source before comparing hashes.
+- No hardcoded ids, instruments or fixture-derived values in code, docs or commit text.
+- Haiku gets one correction round, then Sonnet. Coordinator spot-runs the layer before sending it to review.
+- Reports under 15 lines; no progress-poll messages (the harness notifies on completion).
+- Refusal/error inputs must be in the contract and fixtures before a layer is asked to implement them.
