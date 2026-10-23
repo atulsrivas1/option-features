@@ -268,6 +268,18 @@ def stage7(ctx):
         for fld in ("session_endpoint_control_id", "frontier_control_id", "asof_control_id"):
             if op.get(fld) is not None and not ctx.vis_K(ctx.controls[op[fld]]["stamp"]):
                 fail("temporal_cut", "%s/%s" % (base, fld), 7)
+        if op["kind"] == "joint_reference":
+            for cid in op["capture_ids"]:
+                for rid in ctx.controls[cid]["expected_root_ids"]:
+                    sel = ctx.k_selected(rid)
+                    if sel is None or sel["reference_id"] is None:
+                        continue
+                    a_ns = ctx.new_rev(rid)["signing_A_ns"]
+                    ref = ctx.refs[sel["reference_id"]]
+                    for ci, acid in enumerate(ref["absence_control_ids"]):
+                        if not ctx.vis_A(ctx.controls[acid]["stamp"], a_ns):
+                            fail("temporal_cut", "%s/references/%d/absence_control_ids/%d" % (
+                                SNAP, s["references"].index(ref), ci), 7)
         if op["kind"] == "premium":
             for i, rid in enumerate(op["root_ids"]):
                 sel = ctx.k_selected(rid)
