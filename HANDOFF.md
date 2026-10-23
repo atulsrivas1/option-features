@@ -9,12 +9,12 @@ Updated 2026-10-23. Read this, then STATUS.md, DECISIONS.md, the release coordin
 - Contained generation attempt 3 PASSED (2,466 rows, unqualified candidate); independent mechanical audit run, 9 failing checks all triaged as script limits/intentional (see COMPLETION3_AUDIT_ATTEMPT1.md and COMPLETION3_GENERATION_ATTEMPT1_FAILURE.md in work/r26-20261021).
 
 ## Done 2026-10-23 (this session)
-- Steps 1-2 DONE: N4 fixtures (variant-full-fixtures-completion4/obligations4_cases.py, 63 cases, reviews INDEPENDENT_N4_FIXTURE_REVIEW_01/02), manifest COMPLETION4_SOURCE_MANIFEST1.json, controller review, contained attempt 4 PASSED (2,554 rows, candidate4), audit audit-completion4-attempt1: 176 checks, 4 failing = auditor limits (COMPLETION4_AUDIT_ATTEMPT1.md). Run controller with ABSOLUTE paths.
-- Open contract gaps from N4 (OBLIGATIONS4_STATUS.md): rolling envelope member ids; DailyCore excluded candidate Results and incompatible-scope pointers; restore within-collection i>0; PR 12 lane control/overflow placement. These need contract text before freeze (4 N4 rolling cases stay unfrozen).
+- Fixture round, candidate4 run and audit DONE: N4 fixtures (variant-full-fixtures-completion4/obligations4_cases.py, 63 cases, reviews INDEPENDENT_N4_FIXTURE_REVIEW_01/02), manifest COMPLETION4_SOURCE_MANIFEST1.json, controller review, contained attempt 4 PASSED (2,554 rows, candidate4), audit audit-completion4-attempt1: 176 checks, 4 failing = auditor limits, sampled ids non-N4 (COMPLETION4_AUDIT_ATTEMPT1.md). Run controller with ABSOLUTE paths.
+- Open contract gaps from N4 (full list in OBLIGATIONS4_STATUS.md, also BOM stage1 defect order and restore K-vs-cursor order): rolling envelope member ids; DailyCore excluded candidate Results and incompatible-scope pointers; restore within-collection i>0; PR 12 lane control/overflow placement. These need contract text before freeze (4 N4 rolling cases stay unfrozen).
 
 ## Next (in order)
-3. Public copies of the edited clarifications (private drafts in variant-boundary-draft3) need an option-features docs PR + fresh reviewer; PR 12 text is the template.
-4. Coordinator freeze (after independent review; the owner may revise the pending rulings), then three fresh layer workers (library/I-O/workers) with path boundaries; R26 PRs #9/#5/#5 are stale.
+1. Merge PR 15 (public copies of the four edited clarifications + status) after review conditions are applied.
+2. Coordinator freeze (after independent review; the owner may revise the pending rulings), then three fresh layer workers (library/I-O/workers) with path boundaries; R26 PRs #9/#5/#5 are stale.
 
 ## Owner items (parked)
 - Coordinator rulings pending owner review (work/r26-20261021/COORDINATOR_RULINGS_20261022.md): partition by complete definition; group reason premium_unavailable; rolling cases unfrozen until clarification accepted; observed_series incomplete-slot is a contract gap.

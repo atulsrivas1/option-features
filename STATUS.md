@@ -1,7 +1,7 @@
-﻿# Status (newest first)
+# Status (newest first)
 
 ## 2026-10-23 - R26 candidate4 (N4 obligation fixtures) materialized and audited (mechanical)
-- New N4 fixtures (63 cases: BOM, restore, DailyCore scope, rolling, PR 12 amendments; 4 flagged undetermined) authored, reviewed twice (fixes applied), contained attempt 4 passed first run (85 s): 2,554 rows, completion3 rows unchanged. Auditor run: 176 checks, 4 failing, all auditor limits; no candidate defect. Still unfrozen: contract gaps listed in OBLIGATIONS4_STATUS.md, docs PR for edited clarifications, freeze, layer workers. Nothing released.
+- New N4 fixtures (63 cases: BOM, restore, DailyCore scope, rolling, PR 12 amendments; 4 flagged undetermined) authored, reviewed twice (fixes applied), contained attempt 4 passed first run (85 s): 2,554 rows, completion3 rows unchanged. Auditor run: 176 checks, 4 failing, all triaged as auditor limits (sampled ids); no candidate defect. Still unfrozen: contract gaps listed in OBLIGATIONS4_STATUS.md, docs PR for edited clarifications, freeze, layer workers. Nothing released.
 
 ## 2026-10-23 - R26 independent fixture candidate materialized (mechanical only)
 - Third contained run passed (70.9 s, lease released, empty child tree): 2,466 rows = representative 25, baseline 153, flow 174, flow-residual 45, wire 1,803, identity graphs 266; counts equal the hand census. Two earlier attempts failed safely and exposed real defects (W3 standalone inventory; identity-graph preimage regression), both fixed and re-reviewed. Index status unqualified_candidate; contract_frozen false.
@@ -15,4 +15,3 @@
 ## 2026-10-22 - earlier checkpoint (superseded above)
 - Fresh read-only reviews of the private completion3 fixture source rejected B3 (1 blocking: a bucket-key-mismatch case that does not mismatch) and F3 (2 blocking: no strike/right/expiry partition cases under one contract_id; flow_residual_cases.py unsealed). Correction authors were started; results need a fresh re-review.
 - Not done: W3 pending clarification reviews (UTF-8 BOM, restore pointer, DailyCore multi-Scope), root aggregator/controller, contained generation, independent audit, literal freeze, layer workers. Nothing released or published.
-
