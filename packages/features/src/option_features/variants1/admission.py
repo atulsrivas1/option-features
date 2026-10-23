@@ -76,9 +76,12 @@ def stage5(ctx):
             fail("missing_identity", base + "/original_revision_id", 5)
         if pr["quote_revision_id"] not in ctx.quotes:
             fail("missing_identity", base + "/quote_revision_id", 5)
+    from . import admission_act as AA
+    AA.stage5(ctx)
     # request
     for o, op in enumerate(r["operations"]):
         base = "%s/operations/%d" % (REQ, o)
+        AA.stage5_request(ctx, o, op)
         if op["kind"] == "premium":
             for i, rid in enumerate(op["root_ids"]):
                 if rid not in ctx.roots:
@@ -234,6 +237,8 @@ def stage6(ctx):
             fail("identity_mismatch", "%s/pairings/%d/root_id" % (SNAP, p), 6)
         if orig["kind"] != "new":
             fail("identity_mismatch", "%s/pairings/%d/original_revision_id" % (SNAP, p), 6)
+    from . import admission_act as AA
+    AA.stage6(ctx)
     for o, op in enumerate(r["operations"]):
         base = "%s/operations/%d" % (REQ, o)
         if op["kind"] == "premium":
@@ -276,6 +281,8 @@ def stage6(ctx):
 # ---------------------------------------------------------------- stage 7
 def stage7(ctx):
     s, r = ctx.snap, ctx.req
+    from . import admission_act as AA
+    AA.stage7(ctx)
     for o, op in enumerate(r["operations"]):
         base = "%s/operations/%d" % (REQ, o)
         for fld in ("capture_ids", "context_ids", "lane_prefix_ids"):
