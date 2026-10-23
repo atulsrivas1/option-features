@@ -1,27 +1,24 @@
 # Handoff (keep under 60 lines; update after every merge)
 
-Updated 2026-10-23. Read this, then STATUS.md, DECISIONS.md, the release coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md, owner-created).
+Updated 2026-10-23. Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
-## Where we are: R26 option flow (unreleased), fixture phase
-- Canonical roadmap/stories: equity-features issue 533 (R26 epic); draft PRs option-features #9, option-feature-io #5, option-feature-workers #5 (native 44-output candidate; stale, being reworked). EQ188/EQ189/EQ215 In progress (variant rework), EQ191/EQ192 Test, EQ190/EQ193 gated on real EQ153/EQ158.
-- Merged here: #10 (remove AGENTS/README), #11 (PROJECT-MEMORY/STATUS/DECISIONS), #12 (fixture-completion proposals: partition key, group reason, definition-basis pointer), #13 (status).
-- Private fixture source and evidence live outside any repo, in the owner's old workspace folder (Documents/ChatGPT/Equity Features/work/r26-20261021 under the owner's home; confirm the location with the owner if it has moved): variant-full-fixtures-completion3 (B3 153, F3 174, F4 45, W3 1803 cases; all reviewed, source-only).
-- Contained generation attempt 3 PASSED (2,466 rows, unqualified candidate); independent mechanical audit run, 9 failing checks all triaged as script limits/intentional (see COMPLETION3_AUDIT_ATTEMPT1.md and COMPLETION3_GENERATION_ATTEMPT1_FAILURE.md in work/r26-20261021).
+## Where we are: R26 option flow, layers merged, release not accepted
+- Merged: option-features #12 #15 (clarifications) #16 #18 #20 #22 (decisions) #17 (skill) #19 #21 (library); option-feature-io #7 (codec, stages 1-4/9); option-feature-workers #7 (checkpoint/restore, DuckDB storage, replay). Evidence: docs/r26-variants/R26_EVIDENCE.md; retro: docs/knowledge/RETRO_R26.md (PR 23 pending until merged).
+- Manual runs: owned frozen rows pass per layer (workers 76/76; I/O 0 mismatches); 28 fixture-defect rows excluded pending a corrected candidate5 (18 library triage, 10 I/O listed in DECISIONS; the 3 joint-output rows make it 13 for I/O).
+- Private fixtures/evidence: owner's work folder Documents/ChatGPT/Equity Features/work/r26-20261021 (candidate4 in variant-full-fixtures-completion4; freeze proposal + Addendum 1; reviews).
 
-## Done 2026-10-23 (this session)
-- Fixture round, candidate4 run and audit DONE: N4 fixtures (variant-full-fixtures-completion4/obligations4_cases.py, 63 cases, reviews INDEPENDENT_N4_FIXTURE_REVIEW_01/02), manifest COMPLETION4_SOURCE_MANIFEST1.json, controller review, contained attempt 4 PASSED (2,554 rows, candidate4), audit audit-completion4-attempt1: 176 checks, 4 failing = auditor limits, sampled ids non-N4 (COMPLETION4_AUDIT_ATTEMPT1.md). Run controller with ABSOLUTE paths.
-- Open contract gaps from N4 (full list in OBLIGATIONS4_STATUS.md, also BOM stage1 defect order and restore K-vs-cursor order): rolling envelope member ids; DailyCore excluded candidate Results and incompatible-scope pointers; restore within-collection i>0; PR 12 lane control/overflow placement. These need contract text before freeze (4 N4 rolling cases stay unfrozen).
-
-## Next (in order)
-1. Merge PR 15 (public copies of the four edited clarifications + status) after review conditions are applied.
-2. Coordinator freeze (after independent review; the owner may revise the pending rulings), then three fresh layer workers (library/I-O/workers) with path boundaries; R26 PRs #9/#5/#5 are stale.
+## Next
+1. Candidate5: regenerate the 28 excluded fixture rows (representative rows predate the quote-selector clarification) and replay all layers.
+2. Contract clarifications still needed: field_set missing/extra pointer, rolling envelope member ids, DailyCore excluded-candidate Results and scope pointers, restore i>0, PR 12 lane control/overflow placement, A>K temporal_cut order; N4 schema notes (bp vs bits, monetary_basis reverse direction).
+3. Close: Windows qualification, browser demo, owner acceptance; apply retro changes in the next release's first brief.
 
 ## Owner items (parked)
-- Coordinator rulings pending owner review (work/r26-20261021/COORDINATOR_RULINGS_20261022.md): partition by complete definition; group reason premium_unavailable; rolling cases unfrozen until clarification accepted; observed_series incomplete-slot is a contract gap.
-- Evidence comment posted on equity-features#533 with owner OK (https://github.com/atulsrivas1/equity-features/issues/533#issuecomment-6360812355).
+- Decide what the browser demo shows for a library release; when to run Windows qualification; release acceptance.
+- Close stale drafts option-features #9, option-feature-io #5, option-feature-workers #5 (not closed without OK).
+- Review decisions marked "pending owner review" in DECISIONS.md and the coordinator rulings (work/.../COORDINATOR_RULINGS_20261022.md).
+- Leftover worktrees under .claude/worktrees in the three repos can be removed (removal needs OK or manual cleanup).
 
 ## Gotchas
-- Controller: python -I -B, no PYTHONPATH, new output dir each attempt; after a failure move generated-completion-candidate3 aside before rerun. Lease file must read released.
-- Authors/reviewers are static: no Python execution; real defects only surface in contained runs (found 2 so far).
-- Source hashes pinned in COMPLETION3_SOURCE_MANIFEST1.json; any edit to fixture source or contracts requires re-pin and a new controller review JSON.
-- The skill text mentions a root HANDOFF.md and no-CI manual runs; docs/SESSION_HANDOFF.md is the older long R25/R26 history (read only if needed).
+- Controller runs need absolute paths; contained run via python -I -B, never reuse a failed attempt dir.
+- Add .gitignore for bytecode before any run; commit-then-remove leaks into branch history.
+- Fixture-vs-contract triage before bending code; Sonnet (not Haiku) for storage/restore work.
