@@ -34,7 +34,7 @@ Only observed timing: the contained run took 85 s. No profiling was done.
 
 - Leftover worktrees remain under .claude/worktrees in the three repos.
 - Scratch folders were left behind.
-- Bytecode was committed then removed (still in history on the I/O branch).
+- Bytecode was committed then removed (removed before squash merge, so not in main history; the same slip recurred in two layers).
 - PR-diff hygiene: review diffs for stray generated files before opening.
 
 ## Changes to the working agreement and skill
