@@ -1,0 +1,9 @@
+# DailyCore producer Scope input set
+
+2026-10-21. Coordinator proposal for fresh independent review. This makes the existing generated DailyCore proof input set finite when historical scopes differ. It changes no record fields, mathematics, readiness, scope compatibility or numerical clocks. Existing sealed documents remain unchanged; no freeze or implementation authority follows.
+
+For each generated DailyCore, section23's input type `Scope` means the sorted unique record digests of these actually consumed Scope records: the BaselineOp query Scope; its selected BaselineSlot aggregate historical Scope; and each candidate DailyObservation's own historical Scope used to establish that slot's include/exclude/missing population and compatibility. The same Scope contributes once when identities coincide. Include the Scope of an excluded candidate for every candidate observation in the slot's population whose include, exclude or missing status was determined for that slot; a contract with no observation contributes no Scope. Do not include unrelated slots, unselected observation populations or the entire retained Scope registry.
+
+The remaining exact DailyCore input records retain section23 and the pooled-control clarification's rules. Full-day/day/session/basis/universe/contract containment checks remain mandatory; adding a hash cannot make incompatible scopes compatible. Each consumed Scope is the already defined atemporal policy descriptor with dependency clock0, not a historical acquisition fact or an extra economic availability timestamp. Proof hashes use complete registered Scope records and sorted unique identities; Evidence uses the existing Scope/policy identity and clock rules.
+
+Independent full multi-day, multi-contract and excluded/missing-candidate literals must verify this exact set, deduplication, absence of unrelated scopes, preserved compatibility errors and unchanged numerical clocks before final packet freeze.
