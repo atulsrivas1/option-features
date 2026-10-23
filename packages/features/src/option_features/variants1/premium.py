@@ -154,6 +154,7 @@ def native_premium(ctx, op, recipe, rev):
     return {"core": core, "object": obj, "object_id": pr["output_record_sha256"], "deps": deps, "hashes": hashes,
             "controls": controls, "diag": diags, "status": prem["status"], "reason": prem["reason"],
             "rev": rev, "new_rev": new_rev, "premium": prem, "policy_hash": hp,
+            "right": definition["right"] if definition else None, "definition": definition,
             "known": max(d["known_at_ns"] for d in deps.d.values() if d["record_type"] in
                          ("variant_Execution", "variant_Definition", "variant_Control"))}
 

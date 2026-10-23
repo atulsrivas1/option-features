@@ -3,7 +3,7 @@ from option_feature_contracts.variants1.canonical import (
     fail, record_digest, work_digest, cohort_digest, FORMULA, SCHEMA_RESULT, SCHEMA_GENERATION,
 )
 from option_feature_contracts.variants1.schema import validate_shape, validate_scalars
-from . import admission, premium as P
+from . import admission, flow, integer_flow, premium as P
 from .context import Ctx, Deps, make_evidence
 from .numeric import NumericOverflow
 from .results import row as mkrow, receipt, aggregate, merge_evidence, sort_rows
@@ -45,6 +45,13 @@ def run_op(ctx, oi, op, done):
     kind = op["kind"]
     if kind == "premium":
         return run_premium(ctx, oi, op)
+    if kind == "directional":
+        if op["profile"] == "b64-session-BD1":
+            return flow.directional_b64(ctx, oi, op)
+        if op["profile"] == "b64-rolling-BD1":
+            return flow.directional_b64(ctx, oi, op, rolling=True)
+        if op["profile"] == "i64-paired-call-put1":
+            return integer_flow.directional_i64(ctx, oi, op)
     raise NotImplementedError(kind)
 
 

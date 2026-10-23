@@ -87,6 +87,13 @@ def stage5(ctx):
             for i, rid in enumerate(op["anchor_ids"]):
                 if rid not in ctx.roots:
                     fail("missing_identity", "%s/anchor_ids/%d" % (base, i), 5)
+        for fld in ("capture_ids", "context_ids", "lane_prefix_ids"):
+            for i, cid in enumerate(op.get(fld, ())):
+                if cid not in ctx.controls:
+                    fail("missing_identity", "%s/%s/%d" % (base, fld, i), 5)
+        for fld in ("session_endpoint_control_id", "frontier_control_id", "asof_control_id"):
+            if op.get(fld) is not None and op[fld] not in ctx.controls:
+                fail("missing_identity", "%s/%s" % (base, fld), 5)
     pa = r["producer_admission_sha256"]
     if pa is not None and ctx.admission is None:
         fail("missing_identity", REQ + "/producer_admission_sha256", 5)
@@ -112,6 +119,24 @@ def definition_ok(ctx, ex, d):
             d["definition_basis_id"] == sc["definition_basis_id"] and
             ctx.vis_A(d["stamp"], a_ns) and _in_interval(d["effective"], root_new["event_ns"]) and
             d["eligibility"] == "scalar_standard")
+
+
+def check_money(ctx, op):
+    """Checked-integer operations need one monetary basis; every selected raw integer scale must equal it."""
+    sc = ctx.scopes[op["scope_id"]]
+    if sc["monetary_basis"] is None:
+        fail("identity_mismatch", "%s/scopes/%d/monetary_basis" % (SNAP, ctx.snap["scopes"].index(sc)), 6)
+    roots = set()
+    if op["kind"] == "premium":
+        roots = set(op["root_ids"])
+    else:
+        for cid in op.get("capture_ids", ()):
+            roots.update(ctx.controls[cid]["expected_root_ids"])
+    want = sc["monetary_basis"]["scale"]
+    for e, ex in enumerate(ctx.snap["executions"]):
+        if ex["root_id"] in roots and ex["price"] is not None and ex["price"]["kind"] == "integer" and \
+                ex["price"]["scale"] != want:
+            fail("identity_mismatch", "%s/executions/%d/price/scale" % (SNAP, e), 6)
 
 
 def visible_justifies(ctx, ex, root_new, d, reason):
@@ -203,6 +228,12 @@ def stage6(ctx):
                     fail("identity_mismatch", base + "/definition_use/visible_definition_id", 6)
             elif vid is not None:
                 fail("identity_mismatch", base + "/definition_use/visible_definition_id", 6)
+    for p, pr in enumerate(s["pairings"]):
+        orig = ctx.execs[pr["original_revision_id"]]
+        if orig["root_id"] != pr["root_id"]:
+            fail("identity_mismatch", "%s/pairings/%d/root_id" % (SNAP, p), 6)
+        if orig["kind"] != "new":
+            fail("identity_mismatch", "%s/pairings/%d/original_revision_id" % (SNAP, p), 6)
     for o, op in enumerate(r["operations"]):
         base = "%s/operations/%d" % (REQ, o)
         if op["kind"] == "premium":
@@ -215,6 +246,11 @@ def stage6(ctx):
             if op["recipe"] == "qualified-supplied1":
                 for rid in op["root_ids"]:
                     check_supplied(ctx, op, ctx.k_selected(rid))
+    for o, op in enumerate(r["operations"]):
+        if (op["kind"] == "directional" and op["profile"] == "i64-paired-call-put1") or \
+                (op["kind"] == "parent_groups") or \
+                (op["kind"] == "premium" and op["recipe"] == "checked-integer-products1"):
+            check_money(ctx, op)
     pa = r["producer_admission_sha256"]
     if pa is not None and ctx.admission is not None and admission_hash(ctx.admission) != pa:
         fail("digest_mismatch", REQ + "/producer_admission_sha256", 6)
@@ -225,6 +261,13 @@ def stage7(ctx):
     s, r = ctx.snap, ctx.req
     for o, op in enumerate(r["operations"]):
         base = "%s/operations/%d" % (REQ, o)
+        for fld in ("capture_ids", "context_ids", "lane_prefix_ids"):
+            for i, cid in enumerate(op.get(fld, ())):
+                if not ctx.vis_K(ctx.controls[cid]["stamp"]):
+                    fail("temporal_cut", "%s/%s/%d" % (base, fld, i), 7)
+        for fld in ("session_endpoint_control_id", "frontier_control_id", "asof_control_id"):
+            if op.get(fld) is not None and not ctx.vis_K(ctx.controls[op[fld]]["stamp"]):
+                fail("temporal_cut", "%s/%s" % (base, fld), 7)
         if op["kind"] == "premium":
             for i, rid in enumerate(op["root_ids"]):
                 sel = ctx.k_selected(rid)
