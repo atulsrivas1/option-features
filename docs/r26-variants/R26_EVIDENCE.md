@@ -22,7 +22,7 @@ Public-safe summary. No fixture-derived values are reproduced here.
 ## Per-layer manual-run results
 
 - Library: B3 153/153, F3 174/174, F4 44/45, N4 30/31 library rows, representative 7 of 23 (16 excluded as fixture defects). An inventory follow-up added 43 record types (review: APPROVE).
-- I/O: final 0 mismatches. Codec 104, field 1502, wire 79, union 27 (+9 excluded), stage 7, output 6 (+3 excluded), BOM 19 (+1 excluded).
+- I/O: final 0 mismatches. Codec 104, field 1502, wire 79, union 27 (+9 excluded), stage 7, output 6 (+3 excluded, joint rows; see DECISIONS 2026-10-23 I/O triage), BOM 19 (+1 excluded).
 - Workers: all 76 owned rows pass, with storage on DuckDB, after a Sonnet continuation and a second review whose conditions were applied.
 
 ## Exclusions and why

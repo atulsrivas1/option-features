@@ -4,11 +4,11 @@
 
 - Fixtures (N4): two reviews; blocking findings were incoherent Control events and an unflagged inferred pointer.
 - Freeze review caught a false claim that no frozen row asserts a gap.
-- Static authoring found no runtime defects; they surfaced only in contained runs (attempt 4 passed first run after fixes from earlier attempts).
+- Static authoring found no runtime defects; they surfaced only in contained runs (attempts 1 and 2 failed on runtime defects; attempt 3 passed; attempt 4 passed on its first run).
 - Library: inventory gap found by I/O work (744 rows blocked); follow-up reviewed APPROVE.
 - I/O review: duplicate-key path order, scan order, bytecode committed in history.
 - Workers review: 8 gaps (inferred rules, missing CP0/CP1a/storage); a second review's conditions were applied.
-- Roughly 14 independent Sonnet/Haiku reviews; every layer had an independent harness.
+- About 14 independent Sonnet/Haiku reviews (approximate count); every layer had an independent harness.
 
 ## Token usage
 
