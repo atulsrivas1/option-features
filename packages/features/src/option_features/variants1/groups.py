@@ -98,12 +98,18 @@ def parent_groups(ctx, oi, op):
         lanes.setdefault(partition_key(res, res["sign"].side), []).append(res)
     emit = ctx.req["emit"]
     groups = []
-    for key in sorted(lanes):
+    all_complete = cap.complete
+    for cid in op["context_ids"]:
+        c = ctx.controls[cid]
+        deps.add("variant_Control", cid, ctx.rd("variant_Control", c), "context", c["stamp"]["known_at_ns"])
+        controls.append(cid)
+    for key in sorted(lanes, key=lambda k: tuple("" if x is None else str(x) for x in k)):
         side = key[-1]
         for a_ns, win in lane_windows(ctx, lanes[key], w):
             if not _emit_has(emit, a_ns):
                 continue
             complete = cap.complete and capture_covers(cap, a_ns, a_ns + w) and lane_covers(ctx, op, scope, a_ns)
+            all_complete = all_complete and complete
             anchor = win[0]
             parent = (a_ns, win, anchor)
             if "parent" in op["kinds"]:
@@ -129,14 +135,14 @@ def parent_groups(ctx, oi, op):
     rows, pairs = [], []
     for g in groups:
         ev = make_evidence(deps, g["_members"], g["_revs"], unknown_sign, [], list(cap.excluded), controls,
-                           capture_complete=cap.complete, context_complete=context_complete, eligibility=None)
+                           capture_complete=all_complete, context_complete=context_complete, eligibility=None)
         value = {k: v for k, v in g.items() if not k.startswith("_")}
         rows.append(mkrow(ctx, op, value["group_id"], "group", value, ev, [], ctx.snapshot_hash, ctx.request_hash))
         pairs.append((value["premium"]["status"], value["premium"]["reason"]))
     if not cap.complete:
         pairs.append(("unavailable", "incomplete_capture"))
     ev_op = make_evidence(deps, all_ids, all_revs, unknown_sign, [], list(cap.excluded), controls,
-                          capture_complete=cap.complete, context_complete=context_complete, eligibility=None)
+                          capture_complete=all_complete, context_complete=context_complete, eligibility=None)
     st, rs = aggregate(pairs)
     return receipt(op, len(rows), st, rs, ev_op), rows
 
