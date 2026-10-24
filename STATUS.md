@@ -1,5 +1,7 @@
 # Status (newest first)
 
+## 2026-10-23 - R26 variants1 released as unqualified prerelease (tag r26-variants1-prerelease in all three repos; owner chose to skip Windows qualification, browser demo and candidate5; 28 fixture-defect rows excluded; contract gaps open)
+
 ## 2026-10-23 - R26 candidate4 (N4 obligation fixtures) materialized and audited (mechanical)
 - New N4 fixtures (63 cases: BOM, restore, DailyCore scope, rolling, PR 12 amendments; 4 flagged undetermined) authored, reviewed twice (fixes applied), contained attempt 4 passed first run (85 s): 2,554 rows, completion3 rows unchanged. Auditor run: 176 checks, 4 failing, all triaged as auditor limits (sampled ids); no candidate defect. Still unfrozen: contract gaps listed in OBLIGATIONS4_STATUS.md, docs PR for edited clarifications, freeze, layer workers. Nothing released.
 
