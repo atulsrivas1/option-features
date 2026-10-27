@@ -18,16 +18,16 @@ Total bytes of the seven jsonl files: 199598350. 2573 rows in files (2273 non-gr
 
 Consumer filter: skip a row if `freeze_excluded` is true, or `contract_status == "UNDETERMINED_CONTRACT_GAP"`, or (obligations) `completeness != "complete"` (the 4 masked N4 rows have completeness "complete"; `freeze_excluded` catches them), or its id is in the section 3 list. Identity graphs: 296 of 300 carry `source_case_id`, always equal to the `IDENTITY4-` suffix and always mapping to a source row; the 4 mode graphs (IDENTITY4-batch, -chronological_cut_replay, -checkpoint_restore, -admission-extension) have neither the key nor a source row and are not excluded. Two equivalent methods, which agree on all 296: skip `IDENTITY4-<excluded case_id>` by prefix, or skip graphs whose `source_case_id` is excluded.
 
-## 2. Exclusions in the files (12, tagged freeze_excluded and UNDETERMINED_CONTRACT_GAP)
+## 2. Exclusions in the files (12: 6 rows tagged freeze_excluded and UNDETERMINED_CONTRACT_GAP, plus their 6 graphs excluded by filter)
 - flow-residual: F4-parent-capture-domain-misses-tail, F4-span-inclusive-endpoint-not-captured. Masked (non_asserted_subfields): Evidence.excluded_ids, Evidence.dependencies concerning the excluded root, Evidence.available_at_ns. Asserted: the root is not a member, incomplete capture, no new error code, population incomplete.
 - obligations: N4-roll-unresolved-below-lower-bound-with-known-r, N4-roll-unresolved-at-exclusive-lower-bound, N4-roll-unresolved-inside-window, N4-roll-unresolved-after-known-positive-endpoint. Masked: Evidence.excluded_ids, Evidence.available_at_ns.
-- identity graphs of those 6 (IDENTITY4-<case_id>): 6 (graphs hash every field, including masked ones).
+- identity graphs of those 6 rows (IDENTITY4-<case_id>): 6. The graphs carry no freeze_excluded tag; only the 6 rows are tagged. The graphs are excluded by the consumer filter (IDENTITY4- prefix or source_case_id), and stay excluded because graphs hash every field, including masked ones.
 Masked values are still emitted but unvalidated; nothing may assert them. No other row or graph references an excluded id (reviewer full-text check). Frozen but not library-run: 2 E-checkpoint rows (workers-owned).
 
 ## 3. Held rows tagged out of the freeze by id (9; coordinator ruling, record only, fixtures unchanged)
 UNDETERMINED_CONTRACT_GAP, resting on assumption 2 (a prior-day source Result gets Definition/context), which the product owner HELD; the private boundary text was not located. All in representative.jsonl; none has an identity graph (so 9 rows, 0 graphs):
 B-contract-session1-relative_contracts, B-contract-session1-relative_trades, B-contract-session1-premium_robust_z, B-pooled-divide-before-fold1-relative_contracts, B-pooled-divide-before-fold1-relative_trades, B-pooled-divide-before-fold1-premium_robust_z, B-pooled-fold-before-divide1-relative_contracts, B-pooled-fold-before-divide1-relative_trades, B-pooled-fold-before-divide1-premium_robust_z.
-They return by a later candidate or an explicit coordinator note if the text is found. The similarly named baseline rows (B3-integer-price-<same stems>, 9 rows with 9 graphs) are not tagged by this ruling and stay frozen.
+They return by a later candidate or an explicit coordinator note if the text is found. The 9 baseline.jsonl B3-integer-price-* rows and their 9 graphs share assumption 2 but are NOT tagged out: they stay in the frozen set (count unchanged at 2552) and are listed in section 4 as frozen subject to regeneration. Reason B3 differs from the held representative rows: the B3 rows were already frozen in the released candidate4/5 freezes (excluding them would regress an existing freeze), while the 9 representative rows are new in the frozen set and not previously frozen.
 
 ## 4. Frozen subject to regeneration (flagged; consumers must expect these ids may change)
 | case_id (graph IDENTITY4-<id> unless noted) | depends on |
@@ -36,13 +36,14 @@ They return by a later candidate or an explicit coordinator note if the text is 
 | N4-pr12-lane-interval-closed-end-at-anchor-covers-both-partitions, N4-pr12-lane-interval-ends-before-both-anchors, N4-pr12-lane-interval-open-end-at-anchor-does-not-cover | ruling 8 (per-partition lane binding deferred; interval coverage only); regenerate if binding lands |
 | N4-roll-tie-three-way-ordinals-reverse-of-ids, N4-roll-tie-with-older-positive-below-lower-bound | ruling 1 (tie order by event_ns, admission_ordinal) |
 | N4-zero-price-session-known-zero-root, N4-roll-zero-price-known-zero-inside-window, N4-roll-zero-price-complete-empty-all-known-zero, N4-roll-tie-with-known-zero-at-same-event-ns | ruling 7 and PRs 30/31 (+0.0 admitted via bz, exact zero gives branch ordinary); -0.0 stays rejected, P1 open |
+| B3-integer-price-{contract-session1, pooled-divide-before-fold1, pooled-fold-before-divide1}-{relative_contracts, relative_trades, premium_robust_z} (9 rows, 9 graphs IDENTITY4-<id>) | assumption 2 (Definition/context-only treatment of bucket-proof prior-day source Results with no Binding/context entry), HELD; same dependency as section 3; regenerate if the held ruling lands differently |
 
-10 rows and 9 graphs (19), none excluded. None of the 10 has independent semantic adjudication. Settled and off the list: N4-roll-two-positive-rows-tied-at-r (and graph), N4-bom-fefff-inside-json-string-is-ordinary-character, A-positive-current. The 9 W3-union unknown-tag rows still cite POST_R26 section 8 (draft); contract section 13 independently gives stage 3.
+Flagged total: 19 rows (10 + 9) and 18 graphs (9 + 9), none excluded. Reason B3 differs from the held representative rows: the B3 rows were already frozen in the released candidate4/5 freezes (excluding them would regress an existing freeze), while the 9 representative rows are new in the frozen set and not previously frozen. None of the 10 has independent semantic adjudication. Settled and off the list: N4-roll-two-positive-rows-tied-at-r (and graph), N4-bom-fefff-inside-json-string-is-ordinary-character, A-positive-current. The 9 W3-union unknown-tag rows still cite POST_R26 section 8 (draft); contract section 13 independently gives stage 3.
 
 ## 5. Partial rows and masks
 17 doc_phase / doc_checkpoint_phase rows (E-checkpoint 2, W3-restore 5, W3-admission 3, N4-restore 7) and 10 W3-storage-nullability rows: 27 partial in the workers layer; nothing may assert doc_phase. Rows with a non-empty non_asserted_subfields must not be asserted on those subfields (6 rows, all excluded). FEFF additive fields id_note and candidate6_check are documentation only.
 
-## 6. Evidence (replay of record at option-features ed3597d; option-feature-io 9f7b468; option-feature-workers 5f8b4d0; v3 harnesses, python -I -B, fresh output dirs, all exit 0)
+## 6. Evidence (final rerun of record: REPLAY_V3_AT_ED3597D.md, at option-features ed3597d; option-feature-io 9f7b468; option-feature-workers 5f8b4d0; v3 harnesses, python -I -B, fresh output dirs, all exit 0)
 | layer | rows | run | passed | failed | skipped | partial |
 |---|---|---|---|---|---|---|
 | library (4 files) | 397 | 393 | 393 | 0 | 4 | 0 |
@@ -51,7 +52,7 @@ They return by a later candidate or an explicit coordinator note if the text is 
 | N4 library rows | 44 | 40 | 40 | 0 | 4 | - |
 | N4 graph digests | 300 | 290 | 290 | 0 | 10 (6 excluded, 4 mode) | - |
 
-At the earlier commit a48ef1c (PR 30 only) the N4 rows were 36/40 and graphs 286/290: four exact-zero-price rows failed, fixed by PR 31. Graph evidence is DIGEST-LEVEL only; edge structure, frozen_guard, receipt selectors and reference_cohort are not evidenced and the 4 mode graphs are unevidenced. Mutation checks (one altered value per harness, each exit 1) show each harness can fail; they do not prove coverage. Mandatory non-claim stays: numeric, wire and earliest-error correctness is not claimed beyond the audit and these replays; the 10 new rows come from rulings and independent helpers, not from implementation code.
+At the earlier commit a48ef1c (PR 30 only) the N4 rows were 36/40 and graphs 286/290: four exact-zero-price rows failed, fixed by PR 31. Graph evidence is DIGEST-LEVEL only; edge structure, frozen_guard, receipt selectors and reference_cohort are not evidenced and the 4 mode graphs are unevidenced. Mutation checks (one altered value per harness, each exit 1; recorded in REPLAY_V3.md) show each harness can fail; they do not prove coverage. Mandatory non-claim stays: numeric, wire and earliest-error correctness is not claimed beyond the audit and these replays; the 10 new rows come from rulings and independent helpers, not from implementation code.
 
 Harness sha256: replay5_library_v3.py 8d28cba4e4c20e183e1dbd6fa29f8a1fb8bdb93e9a4993504bf5546e96dbaffc; replay5_library_n4_v3.py 6ad8e276494392d81929d86f5b08d1a50eadd9da155bc1b4e6b1c066289eeeed; replay5_library_n4_graphs_v3.py 976b457eeef327f10bee3623eb981841289face3ccfc0e320c844219ca668847; replay_io_c5_v3.py 8e24694f8891a756a63254b428de34d09eb74e18e6f3beaded04855c12515d53; replay_workers_c5_v3.py 6c721244b83c99a59154387b6f84722c5f4d2e12d61cc16c22a0ca7a6d3def73.
 
@@ -72,7 +73,7 @@ G1: 17 rows carry doc_phase / doc_checkpoint_phase, never asserted (closed by de
 Neither blocks the freeze; they block unmasking.
 
 ## 11. Rulings (decided, pending owner review)
-Controller deviations accepted; 2552 rows frozen; 9 held B rows tagged out by id; 19 flagged rows and graphs frozen subject to regeneration; -0.0 stays rejected pending P1; masks used instead of hardening guesses on 6 rows; graph evidence digest-level; post-release status as above.
+Controller deviations accepted; 2552 rows frozen; 9 held B rows tagged out by id; 19 flagged rows and 18 graphs frozen subject to regeneration; -0.0 stays rejected pending P1; masks used instead of hardening guesses on 6 rows; graph evidence digest-level; post-release status as above.
 
 ## 12. Next
 P1 to P3; private boundary text for the 9 held rows; contract wording for excluded_ids; workers restore code gaps (missing-stream, CP3 temporal order, K-regression placement, suffix checks) now that fixtures exist or need authoring; field_set pointer code gap; Windows qualification; browser demo.
