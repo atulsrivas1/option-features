@@ -1,10 +1,10 @@
 # Rolling no-r envelope and F4 exclusion evidence: contract sentences
 
-2026-10-27. Status: proposed, needs independent review and PO ratification. Docs only; no fixture, library or freeze change follows from this file alone.
+2026-10-27. Status: ratified by PO 2026-10-27 (Q1a Reading B, Q1b, Q2a/Q2b/Q2c), after independent review. Caveat: the order of excluded_ids is undecided by the contract and not asserted by fixtures. Docs only; no fixture, library or freeze change follows from this file alone.
 
 Purpose: give exact contract sentences so the 6 rows that candidate6 masks can be unmasked: the 4 N4-roll-unresolved rows (Q1) and the 2 F4 rows (Q2), plus their 4+2 IDENTITY4 graphs. Sources: DOCS_REVIEW_P2P3 and PO_RULING_REPRESENTATION (private work folder, r26-20261027), ROLLING_ENDPOINT_EVIDENCE_CLARIFICATION1, POST_R26_CLARIFICATIONS (2.2, 2.3) and CLARIFICATIONS2 (4A, 4B), FLOW_CONTRACT lines 111-113 (group-row dependency union at 113, available_at rule at 113), MATHEMATICS lines 35-37 and 115. Nothing was executed.
 
-## Q1a. Evidence.excluded_ids under the no-r envelope (needs PO choice; evidence favors B)
+## Q1a. Evidence.excluded_ids under the no-r envelope (ratified by PO 2026-10-27)
 
 Applies when any raw premium in the full session is unresolved or capture is incomplete, so r is not certified and M is empty ("an empty window means only the no-r envelope").
 
@@ -13,13 +13,13 @@ The clause under dispute: "Evidence.excluded_ids retains known-zero roots and fu
 ### Reading A (PO ruling): known-zero roots only
 - Argument: "outside M" is meaningful only against a certified M; unresolved raw premium "prevents certifying r and window membership"; unresolved and known-positive roots stay visible in premiums and witnesses.
 - Consequence for the 4 N4-roll-unresolved rows: excluded_ids is empty in all four (they contain no known-zero root); the unresolved and positive roots appear only in premiums and witnesses.
-- Exact sentence (needs PO choice): "When r is not certified (no-r envelope), M is empty and Evidence.excluded_ids contains known-zero roots only; no root is listed as outside M. Unresolved and known-positive roots appear in premiums and witnesses, not in excluded_ids."
+- Exact sentence (ratified by PO): "When r is not certified (no-r envelope), M is empty and Evidence.excluded_ids contains known-zero roots only; no root is listed as outside M. Unresolved and known-positive roots appear in premiums and witnesses, not in excluded_ids."
 - Cost: a special case; library behaviour per POST_R26 (code adds every root outside M) would be a conformance defect to fix; excluded_ids no longer equals "full-session roots minus member_ids".
 
 ### Reading B (literal): every full-session root
 - Argument: M is empty, so every full-session root is outside M. This keeps the single rule used by every frozen rolling row with a certified r: excluded_ids = known-zero and outside-M roots = all full-session roots not in member_ids. It adds no case and matches POST_R26 2.2 ("settled by clarification and code").
-- Consequence for the 4 rows: excluded_ids lists every full-session root (positive, known-zero and unresolved) in (event_ns, admission_ordinal) order; the expected values of the 4 rows and their graphs change and are regenerated (rows are not yet frozen).
-- Exact sentence (needs PO choice): "When r is not certified (no-r envelope), M is empty and Evidence.excluded_ids contains every full-session root, in (event_ns, admission_ordinal) order; member_ids and member_revision_ids are empty, and the roots' raw dispositions remain in premiums and witnesses."
+- Consequence for the 4 rows: excluded_ids lists every full-session root (positive, known-zero and unresolved); the expected values of the 4 rows and their graphs change and are regenerated (rows are not yet frozen).
+- Exact sentence (ratified by PO): "When r is not certified (no-r envelope), M is empty and Evidence.excluded_ids contains every full-session root; this listing is a membership statement (no root is in M), not a premium disposition. member_ids and member_revision_ids are empty, and the roots' raw dispositions remain in premiums and witnesses. The order of excluded_ids is not defined by the contract; the library's order is behaviour only and fixtures do not assert it."
 - Cost: excluded_ids then lists unresolved roots whose disposition is unknown; the sentence therefore states that this is a membership statement, not a premium disposition.
 
 ### Frozen-row evidence (read-only, candidate5/6 generated files)
@@ -27,18 +27,18 @@ The clause under dispute: "Evidence.excluded_ids retains known-zero roots and fu
 - Frozen certified-r rows (obligations.jsonl, N4-roll-excluded-positive-lower-endpoint and N4-roll-known-zero-inside-window, both UNFROZEN_CANDIDATE/complete in the generated file but ratified in the freeze): roots a,b,c; members [b,c] with excluded [a], and members [a,c] with excluded [b]. In both, excluded_ids equals full-session roots minus member_ids. The complete-empty rows do not discriminate (all roots known-zero); the certified-r rows and F3-D fit B.
 - Consequence of choosing A: it changes frozen row F3-D (excluded_ids ['a'] becomes []) and needs a library change. B changes no frozen row and needs no library change; only the 4 masked rows (not frozen) get new expected values.
 
-### Recommendation: Reading B (literal), needs PO choice; evidence favors B
+### Ratified: Reading B (literal), 2026-10-27; the PO withdrew its earlier known-zero-only ruling
 It is more consistent with the frozen rolling rows (one uniform rule: excluded = not in member_ids; the frozen complete-empty rows, where every root is known-zero, do not discriminate and are satisfied by both) and with "an empty window means only the no-r envelope" (empty M leaves no root inside it). Reading A needs the extra argument that "outside M" is unassertable, which the text never states for excluded_ids. If the PO keeps Reading A, its sentence is the minimum addition and the library fix is required. Either choice unmasks the same rows; they differ only in expected excluded_ids.
 
 ### Regenerated values under B (4 N4 rows and their 4 IDENTITY4 graphs)
-The graphs hash every field including excluded_ids, so under B the 4 IDENTITY4 graphs regenerate too, together with their rows. Roots are listed in (event_ns, admission_ordinal) order, as in each row's premiums:
+The graphs hash every field including excluded_ids, so under B the 4 IDENTITY4 graphs regenerate too, together with their rows. Rows are authored with root order equal to sorted id order, so the values are in sorted root order (order itself is not asserted):
 
 | Row | excluded_ids under B |
 |---|---|
 | N4-roll-unresolved-below-lower-bound-with-known-r | [a, b, c] |
 | N4-roll-unresolved-at-exclusive-lower-bound | [a, b, c] |
 | N4-roll-unresolved-inside-window | [a, b, c] |
-| N4-roll-unresolved-after-known-positive-endpoint | [b, c, a] |
+| N4-roll-unresolved-after-known-positive-endpoint | [a, b, c] |
 
 Under A all four stay [].
 
