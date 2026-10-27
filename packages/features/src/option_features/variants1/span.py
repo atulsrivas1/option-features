@@ -65,7 +65,7 @@ def _collect(ctx, op, scope, anchor_rev, asof_ns, w, cands, memo, expected, ctls
             d = P.definition_of(ctx, rev)
             if d is not None and (akey is None or partition_key(d) != akey):
                 continue
-        if rev["root_id"] != anchor_rev["root_id"] and rev["root_id"] not in expected and not all(
+        if rev["root_id"] != anchor_rev["root_id"] and not all(
                 _in_interval(c["event_domain"], new["event_ns"]) for c in ctls):
             memo.setdefault(("f4", anchor_rev["root_id"]), []).append(rev["root_id"])
             continue  # F4: neither expected nor captured; excluded below (exclusion dependency only)
