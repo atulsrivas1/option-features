@@ -2,23 +2,25 @@
 
 Updated 2026-10-27. Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
-## Where we are: R26 prerelease out (r26-variants1-prerelease); candidate5 phase A frozen as a post-release candidate (2026-10-27)
-- Freeze record: docs/r26-variants/CANDIDATE5_FREEZE_RECORD.md (2542 of 2554 rows, 12 excluded, 13-id regeneration watch list, gaps G1 to G6). PO accepted with conditions; independent review approve-with-conditions. Rulings decided, pending owner review.
-- Open code gaps: workers validate_restore (missing-stream, request immutability, CP3 temporal order, K-regression placement, suffix checks), library field_set pointer; fixtures first. Nothing new released.
-- R26 evidence: docs/r26-variants/R26_EVIDENCE.md; retro: docs/knowledge/RETRO_R26.md. Private work: owner's Documents/ChatGPT/Equity Features/work/r26-20261021 and r26-20261027 (candidate5).
+## Where we are: R26 prerelease out (r26-variants1-prerelease); candidate6 frozen as a post-release candidate (2026-10-27)
+- Freeze record: docs/r26-variants/CANDIDATE6_FREEZE_RECORD.md (supersedes the candidate5 record): 2573 rows in files, 12 excluded in the files, 9 held B rows tagged out by id, frozen 2552. Replay of record at ed3597d (PRs 30/31 merged): all layers pass, exit 0.
+- Flagged frozen-subject-to-regeneration: 10 rows and 9 graphs (zero-price, tie variants, lane-by-interval, accepted-restore). Masked and excluded: 2 F4 rows and 4 N4-roll-unresolved rows plus 6 graphs.
+- Gaps G1 to G8 are in the record; graph evidence is digest-level only. Rulings decided, pending owner review.
+- R26 evidence: docs/r26-variants/R26_EVIDENCE.md; retro: docs/knowledge/RETRO_R26.md. Private work: Documents/ChatGPT/Equity Features/work/r26-20261027.
 
 ## Next
-1. Contract clarifications for the regeneration-watch rows (POST_R26 2.4, Binding/context, FEFF pointer).
-2. Phase B fixtures for the S2 rulings.
-3. Workers and N4 harness hardening (G6 exit codes, phase exposure, nullability).
-4. Windows qualification (backlog, not a gate).
-5. Browser demo: stored-output DuckDB with provenance.
-6. Release notes must list the watch list and the controller's removed review gate.
+1. PO items P1 (-0.0 canonicalization or reject), P2 (F4 excluded_ids wording), P3 (N4 no-r envelope wording).
+2. Private boundary text for the 9 held B rows (assumption 2); they stay tagged out until found.
+3. Contract wording for excluded_ids so the 6 masked rows can be unmasked and regenerated.
+4. Workers restore code gaps (missing-stream, CP3 temporal order, K-regression placement, suffix checks): fixtures now exist or need authoring.
+5. Library field_set pointer code gap.
+6. Windows qualification (backlog, not a gate).
+7. Browser demo: stored-output DuckDB with provenance.
+8. Release notes must list flags, exclusions and the controller's removed review gate.
 
 ## Owner items (parked)
-- Release acceptance.
-- Review decisions marked "pending owner review" in DECISIONS.md and the coordinator rulings (work/.../COORDINATOR_RULINGS_20261022.md).
-- Leftover worktrees under .claude/worktrees in the three repos can be removed (removal needs OK or manual cleanup).
+- Release acceptance; review of decisions marked "pending owner review".
+- Leftover worktrees under .claude/worktrees in the three repos can be removed (needs OK or manual cleanup).
 
 ## Gotchas
 - Controller runs need absolute paths; contained run via python -I -B, never reuse a failed attempt dir.
