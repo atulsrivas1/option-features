@@ -38,3 +38,8 @@ No fixture row until item 1 is reviewed. Workers implement Q3 after review, and 
 ## Frozen rows changed
 
 None.
+
+## Review notes (2026-10-27, independent review of this PR)
+- Q1 pins only the order of cursor regression versus root A>K. The order of A>K versus the merge step (identity_conflict) is not verified: with A>K and no cursor regression, the current workers code (PR 8) runs the merge and may report identity_conflict where Q1's wording would give temporal_cut. Fixtures must not assert A>K versus merge until this is ruled.
+- Q2 supersedes the still-proposed POST_R26 section 6 sentence "temporal wins over K regression"; it is consistent with the frozen row W3-restore-knowledge-regression.
+- Q3 code and pointer are convention-only (checkpoint_cut_mismatch is the code of every restore cut failure); an index-free /request/cut_cursors pointer is not defined by any frozen row or text and remains a guess until the PO ratifies it. Q4 is a guess and remains a proposal only. No fixture or code may use Q3 or Q4 until the PO decides: Q3 (code, index-free pointer, report several dropped streams once or per stream) and Q4 (adopt at all, which code applies, whether identity_conflict or checkpoint_cut_mismatch wins for equal suffix positions).
