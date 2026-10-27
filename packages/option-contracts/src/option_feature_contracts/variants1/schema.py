@@ -1,7 +1,7 @@
 """Closed record inventory and stage 3 (shape) / stage 4 (scalar) validation.
 
 Type tokens: id hash text currency u i pos day bool bits bp(positive finite bits)
-bn(finite nonnegative bits) su/sp/si (canonical decimal integer strings: >=0, >0,
+bn(finite nonnegative bits) bz(+0.0 bits or positive finite; -0.0 rejected) su/sp/si (canonical decimal integer strings: >=0, >0,
 signed64); E:a|b enumeration; L:x literal; R:Name record; U:Name tagged union;
 prefix ? nullable, prefix [] array.
 """
@@ -106,7 +106,7 @@ RECORDS = {
     "MoneyBasis": "unit:L.currency_ticks currency:currency scale:sp",
     "Scope": "scope_id:id population_universe_id:id underlying_id:id contract_ids:[]id session_id:id session_day:day currency:currency action_basis_id:id deliverable_basis_id:id definition_basis_id:id clock_id:id partition_start_ns:u monetary_basis:?R.MoneyBasis",
     "RawIntegerPrice": "kind:L.integer ticks:sp scale:sp",
-    "RawBinary64Price": "kind:L.b64 bits:bp",
+    "RawBinary64Price": "kind:L.b64 bits:bz",
     "IntegerMultiplier": "kind:L.integer units:sp",
     "Binary64Multiplier": "kind:L.b64 bits:bp",
     "DefinitionAvailable": "kind:L.available definition_id:id",
@@ -243,7 +243,7 @@ _HASH = re.compile(r"^[0-9a-f]{64}$")
 _CUR = re.compile(r"^[A-Z]{3}$")
 _UINT = re.compile(r"^(0|[1-9][0-9]{0,18})$")
 _SINT = re.compile(r"^(0|-?[1-9][0-9]{0,18})$")
-_JSON_TYPES = {"id": str, "hash": str, "text": str, "currency": str, "bits": str, "bp": str, "bn": str,
+_JSON_TYPES = {"id": str, "hash": str, "text": str, "currency": str, "bits": str, "bp": str, "bn": str, "bz": str,
                "su": str, "sp": str, "si": str}
 _INT_TOKENS = ("u", "i", "pos", "day")
 
@@ -592,12 +592,14 @@ def _check_scalar(value, kind, path, stage):
         ok = 0 < value <= I64_MAX
     elif kind == "day":
         ok = 1 <= value <= 3652059
-    elif kind in ("bits", "bp", "bn"):
+    elif kind in ("bits", "bp", "bn", "bz"):
         ok = is_bits(value) and bits_finite(value)
         if ok and kind == "bp":
             ok = b2f(value) > 0
         elif ok and kind == "bn":
             ok = b2f(value) >= 0
+        elif ok and kind == "bz":
+            ok = value == "0000000000000000" or b2f(value) > 0
     elif kind == "su":
         ok = _UINT.match(value) is not None and int(value) <= I64_MAX
     elif kind == "sp":
