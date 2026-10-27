@@ -23,3 +23,4 @@
 
 ## Demo (tools/demo, synthetic only, prerelease)
 - `python -I -B tools/demo/export_demo.py OUT.duckdb [--evidence evidence.json] --out demo-export.json`, then open `tools/demo/demo.html` (file://, no network) and pick the JSON. Usage and the badge rules are in the export_demo.py header. The page embeds `tools/demo/sample/demo-export.json` (synthetic fixtures; rebuild with `sample/make_sample.py`). Variants1 sink only; no REAL badge exists; unknown provenance is UNVERIFIED. A gate for a qualified release, not for the prerelease.
+- Pin test for the exporter's re-implemented digests: `python -I -B tools/demo/test_canonical_pin.py` (contracts src defaults to packages/option-contracts/src; override with OPTION_CONTRACTS_SRC). SYNTHETIC means declared by the stored bindings, not independently verified.

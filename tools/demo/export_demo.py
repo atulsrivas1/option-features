@@ -19,7 +19,9 @@ standard library only); a failed check marks the run integrity=false and badge U
 of stopping the export.
 
 Provenance badge (computed here, never typed by hand; weakest claim by default):
-  SYNTHETIC   at least one binding and every binding mode is "synthetic"
+  SYNTHETIC   declared synthetic by the stored bindings (at least one binding, every mode field
+              "synthetic"); NOT independently verified: the digests are unkeyed, so a forged
+              database can carry the same declaration
   MIXED       bindings of both synthetic and other modes (warning)
   UNVERIFIED  everything else: non-synthetic bindings, no bindings, unknown mode, or an integrity
               failure. There is no REAL badge in this prerelease: REAL would need verified
@@ -146,7 +148,7 @@ def badge_for(bindings, integrity_ok):
         return "UNVERIFIED", ["no bindings stored; provenance unknown"]
     synth = [m == "synthetic" for m in modes]
     if all(synth):
-        return "SYNTHETIC", ["all %d binding(s) have mode synthetic" % len(modes)]
+        return "SYNTHETIC", ["declared synthetic by the stored bindings (%d binding(s), mode field); not independently verified" % len(modes)]
     if any(synth):
         return "MIXED", ["bindings of both synthetic and other modes; no verification evidence is read"]
     return "UNVERIFIED", ["non-synthetic binding mode(s) %s without verification evidence"

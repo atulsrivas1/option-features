@@ -106,7 +106,7 @@
    "provenance": {
     "badge": "SYNTHETIC",
     "reasons": [
-     "all 1 binding(s) have mode synthetic"
+     "declared synthetic by the stored bindings (1 binding(s), mode field); not independently verified"
     ]
    },
    "results": [
@@ -258,7 +258,7 @@
    "provenance": {
     "badge": "SYNTHETIC",
     "reasons": [
-     "all 1 binding(s) have mode synthetic"
+     "declared synthetic by the stored bindings (1 binding(s), mode field); not independently verified"
     ]
    },
    "results": [
@@ -410,7 +410,7 @@
    "provenance": {
     "badge": "SYNTHETIC",
     "reasons": [
-     "all 1 binding(s) have mode synthetic"
+     "declared synthetic by the stored bindings (1 binding(s), mode field); not independently verified"
     ]
    },
    "results": [

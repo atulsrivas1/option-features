@@ -48,7 +48,7 @@ dl{display:grid;grid-template-columns:max-content 1fr;gap:2px 12px;margin:4px 0}
 <h1>Variants1 stored-output demo</h1>
 <div class="banner" role="note"><strong>Unqualified prerelease. Synthetic fixtures only.</strong>
 This page shows stored integration evidence read from a variants1 output database. It is not real market data,
-not a numerical oracle and not a release certificate. Any run not badged SYNTHETIC makes no claim at all.</div>
+not a numerical oracle and not a release certificate. The SYNTHETIC badge means only that the stored bindings declare themselves synthetic; it is not independently verified, and a run not so declared makes no claim at all.</div>
 <div class="loader">
 <label for="file">Load a demo-export.json file</label>
 <input id="file" type="file" accept=".json,application/json">
@@ -174,7 +174,7 @@ not a numerical oracle and not a release certificate. Any run not badged SYNTHET
    "provenance": {
     "badge": "SYNTHETIC",
     "reasons": [
-     "all 1 binding(s) have mode synthetic"
+     "declared synthetic by the stored bindings (1 binding(s), mode field); not independently verified"
     ]
    },
    "results": [
@@ -326,7 +326,7 @@ not a numerical oracle and not a release certificate. Any run not badged SYNTHET
    "provenance": {
     "badge": "SYNTHETIC",
     "reasons": [
-     "all 1 binding(s) have mode synthetic"
+     "declared synthetic by the stored bindings (1 binding(s), mode field); not independently verified"
     ]
    },
    "results": [
@@ -478,7 +478,7 @@ not a numerical oracle and not a release certificate. Any run not badged SYNTHET
    "provenance": {
     "badge": "SYNTHETIC",
     "reasons": [
-     "all 1 binding(s) have mode synthetic"
+     "declared synthetic by the stored bindings (1 binding(s), mode field); not independently verified"
     ]
    },
    "results": [
@@ -550,7 +550,16 @@ function el(tag, attrs, kids) {
 }
 function short(s) { return typeof s === "string" && s.length > 14 ? s.slice(0, 12) + "..." : (s == null ? "-" : String(s)); }
 function hash(s) { return el("code", {text: short(s), title: s == null ? "" : String(s)}); }
-function badge(b) { var k = BADGES[b] ? b : "UNVERIFIED"; return el("span", {cls: "chip " + k, text: k}); }
+function derive(r) {
+  var bs = Array.isArray(r.bindings) ? r.bindings : [];
+  if (!(r.integrity && r.integrity.ok) || !bs.length) return "UNVERIFIED";
+  var s = bs.filter(function (b) { return b && b.mode === "synthetic"; }).length;
+  return s === bs.length ? "SYNTHETIC" : s ? "MIXED" : "UNVERIFIED";
+}
+function badge(r) {
+  var k = derive(r), t = k === "SYNTHETIC" ? "declared SYNTHETIC" : k;
+  return el("span", {cls: "chip " + k, text: t, title: "Declared by the stored bindings (mode field); not independently verified. File says: " + String(r.provenance && r.provenance.badge)});
+}
 function mark(cls, text) { return el("span", {cls: "chip " + cls, text: text}); }
 function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
 function say(text, isErr) {
@@ -574,6 +583,13 @@ function table(caption, heads, rows) {
 function integrity(run) {
   return run.integrity && run.integrity.ok ? mark("match", "verified") : mark("failc", "FAILED");
 }
+var KEYS = ["results_sha256", "canonical_sha256", "canonical_bytes"];
+function verdictOf(r) {
+  var ls = LAYERS.map(function (n) { return r.equality && r.equality.layers && r.equality.layers[n]; })
+    .filter(function (l) { return l && l.state === "present"; });
+  if (ls.length < 2) return "not_run";
+  return ls.every(function (l) { return KEYS.every(function (k) { return l[k] === ls[0][k]; }); }) ? "equal" : "differs";
+}
 function verdictMark(v) {
   return mark(v === "equal" ? "equal" : v === "differs" ? "differs" : "not_run",
               v === "equal" ? "equal" : v === "differs" ? "DIFFERS" : "not run");
@@ -582,12 +598,12 @@ function verdictMark(v) {
 function renderRuns(p) {
   clear(p);
   p.appendChild(el("h2", {text: "Runs (" + data.runs.length + ")"}));
-  p.appendChild(el("p", {text: "Provenance badge is computed by the exporter from the stored bindings; the default is the weakest claim."}));
+  p.appendChild(el("p", {text: "Badges are derived here from the stored binding modes and mean declared synthetic, not independently verified; the default is the weakest claim."}));
   p.appendChild(table("Stored runs", ["Run", "Provenance", "State", "Integrity", "Results", "Operations", "Bindings", "Publication", ""],
     data.runs.map(function (r, i) {
       var open = el("button", {type: "button", text: "Open results", "aria-label": "Open results for " + r.run_key});
       open.addEventListener("click", function () { selected = i; selectedBinding = null; show("results"); });
-      return [el("code", {text: r.run_key}), badge(r.provenance && r.provenance.badge), r.state, integrity(r),
+      return [el("code", {text: r.run_key}), badge(r), r.state, integrity(r),
               r.counts.objects, r.counts.operations, r.counts.bindings, hash(r.shas.publication), open];
     })));
   data.runs.forEach(function (r) {
@@ -615,7 +631,7 @@ function renderResults(p) {
   var r = data.runs[selected];
   p.appendChild(el("h2", {text: "Stored feature results per operation"}));
   runPicker(p, "results");
-  p.appendChild(el("p", {}, ["Provenance ", badge(r.provenance.badge), " ", integrity(r),
+  p.appendChild(el("p", {}, ["Provenance ", badge(r), " ", integrity(r),
     " Evidence count = members + excluded + controls; dependency count = Evidence.dependencies entries."]));
   var ops = {};
   r.operations.forEach(function (o) { ops[o.op_id] = o; });
@@ -666,10 +682,11 @@ function renderEquality(p) {
     LAYERS.forEach(function (n) {
       var l = r.equality.layers[n];
       if (l.state !== "present") { cells.push(mark("not_run", "not run")); return; }
-      var same = ref.state === "present" && ["results_sha256", "canonical_sha256", "canonical_bytes"].every(function (k) { return l[k] === ref[k]; });
+      if (ref.state !== "present") { cells.push(el("span", {}, [mark("not_run", "no baseline"), " ", hash(l.results_sha256)])); return; }
+      var same = KEYS.every(function (k) { return l[k] === ref[k]; });
       cells.push(el("span", {}, [mark(same ? "match" : "DIFFERS", same ? "match" : "DIFFERS"), " ", hash(l.results_sha256)]));
     });
-    cells.push(verdictMark(r.equality.verdict));
+    cells.push(verdictMark(verdictOf(r)));
     return cells;
   });
   p.appendChild(table("Equality per run", ["Run"].concat(LAYERS.map(function (n) { return LABEL[n]; }), ["Verdict"]), rows));
@@ -700,11 +717,26 @@ function renderAll() {
   renderResults(document.getElementById("p-results"));
   renderEquality(document.getElementById("p-equality"));
 }
-function load(doc, source) {
-  if (!doc || doc.schema !== "option-flow-demo-export1" || !Array.isArray(doc.runs)) {
-    say("This file is not a demo export (expected schema option-flow-demo-export1).", true);
-    return;
+function validate(doc) {
+  function obj(x) { return x && typeof x === "object" && !Array.isArray(x); }
+  if (!obj(doc) || doc.schema !== "option-flow-demo-export1") return "expected schema option-flow-demo-export1";
+  if (!Array.isArray(doc.runs) || !doc.runs.length) return "runs must be a non-empty array";
+  for (var i = 0; i < doc.runs.length; i++) {
+    var r = doc.runs[i], w = "run " + (i + 1) + ": ";
+    if (!obj(r) || typeof r.run_key !== "string") return w + "run_key";
+    if (!obj(r.counts) || !obj(r.shas) || !obj(r.integrity) || !obj(r.provenance)) return w + "counts, shas, integrity or provenance";
+    if (!Array.isArray(r.bindings) || !Array.isArray(r.operations) || !Array.isArray(r.results)) return w + "bindings, operations or results";
+    if (!r.bindings.every(obj) || !r.operations.every(obj) || !r.results.every(obj)) return w + "list entries must be objects";
+    if (!r.results.every(function (x) { return Array.isArray(x.dependency_binding_ids); })) return w + "dependency_binding_ids";
+    if (r.integrity.ok === false && !Array.isArray(r.integrity.errors)) return w + "integrity.errors";
+    if (!obj(r.equality) || !obj(r.equality.layers) || !LAYERS.every(function (n) { return obj(r.equality.layers[n]); })) return w + "equality layers";
+    if (r.cohort != null && (!obj(r.cohort) || !Array.isArray(r.cohort.artifacts))) return w + "cohort";
   }
+  return null;
+}
+function load(doc, source) {
+  var why = validate(doc);
+  if (why) { say("Not a valid demo export (" + why + "); the previous view is unchanged.", true); return; }
   data = doc; selected = 0; selectedBinding = null;
   document.getElementById("main").hidden = false;
   say("Loaded " + source + ": " + doc.runs.length + " run(s).", false);
