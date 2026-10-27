@@ -10,13 +10,13 @@ Applies when any raw premium in the full session is unresolved or capture is inc
 
 The clause under dispute: "Evidence.excluded_ids retains known-zero roots and full-session roots outside M". POST_R26 2.2 restates it as "known-zero roots, capture exclusions and every full-session root outside M".
 
-### Reading A (PO ruling): known-zero roots only
+### Reading A (earlier PO ruling, WITHDRAWN 2026-10-27): known-zero roots only
 - Argument: "outside M" is meaningful only against a certified M; unresolved raw premium "prevents certifying r and window membership"; unresolved and known-positive roots stay visible in premiums and witnesses.
 - Consequence for the 4 N4-roll-unresolved rows: excluded_ids is empty in all four (they contain no known-zero root); the unresolved and positive roots appear only in premiums and witnesses.
-- Exact sentence (ratified by PO): "When r is not certified (no-r envelope), M is empty and Evidence.excluded_ids contains known-zero roots only; no root is listed as outside M. Unresolved and known-positive roots appear in premiums and witnesses, not in excluded_ids."
+- Exact sentence (WITHDRAWN, not ratified; kept for the record): "When r is not certified (no-r envelope), M is empty and Evidence.excluded_ids contains known-zero roots only; no root is listed as outside M. Unresolved and known-positive roots appear in premiums and witnesses, not in excluded_ids."
 - Cost: a special case; library behaviour per POST_R26 (code adds every root outside M) would be a conformance defect to fix; excluded_ids no longer equals "full-session roots minus member_ids".
 
-### Reading B (literal): every full-session root
+### Reading B (literal, RATIFIED by PO 2026-10-27): every full-session root
 - Argument: M is empty, so every full-session root is outside M. This keeps the single rule used by every frozen rolling row with a certified r: excluded_ids = known-zero and outside-M roots = all full-session roots not in member_ids. It adds no case and matches POST_R26 2.2 ("settled by clarification and code").
 - Consequence for the 4 rows: excluded_ids lists every full-session root (positive, known-zero and unresolved); the expected values of the 4 rows and their graphs change and are regenerated (rows are not yet frozen).
 - Exact sentence (ratified by PO): "When r is not certified (no-r envelope), M is empty and Evidence.excluded_ids contains every full-session root; this listing is a membership statement (no root is in M), not a premium disposition. member_ids and member_revision_ids are empty, and the roots' raw dispositions remain in premiums and witnesses. The order of excluded_ids is not defined by the contract; the library's order is behaviour only and fixtures do not assert it."
