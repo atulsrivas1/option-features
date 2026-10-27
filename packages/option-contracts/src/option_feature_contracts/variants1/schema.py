@@ -278,10 +278,10 @@ def _check_record(value, name, path, stage):
         names = [f for f, _ in fields]
         for f in names:
             if f not in value:
-                fail("field_set", _ptr(path, f), 3)
+                fail("field_set", path, 3)
         for k in value:
             if k not in names:
-                fail("field_set", _ptr(path, k), 3)
+                fail("field_set", path, 3)
     for f, spec in fields:
         _check(value[f], spec, _ptr(path, f), stage)
     if stage == 4:
@@ -640,7 +640,7 @@ def _check_one(value, base, path, stage):
             return
         if "kind" not in value:
             if stage == 3:
-                fail("field_set", _ptr(path, "kind"), 3)
+                fail("field_set", path, 3)
             return
         k = value["kind"]
         if type(k) is not str:
