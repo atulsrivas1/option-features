@@ -1,6 +1,6 @@
 # F4 capture-edge cases: proposed contract sentences (items 1-3 of CANDIDATE9 UNDETERMINED)
 
-2026-10-27. Status: proposed, needs independent review and PO ratification. Docs only; no fixture, library or freeze change follows from this file alone. Nothing was executed; code read only (merged PR 35, commit 4e87bc6).
+2026-10-27. Status: ratified by PO 2026-10-27 (b, c-domain, c-completeness inferred); the narrower-rollup clause stays HELD. Docs only; no fixture, library or freeze change follows from this file alone. Nothing was executed; code read only (merged PR 35, commit 4e87bc6).
 
 Sources read: PUBLIC_SAFE_ROLLING_F4_EVIDENCE_CLARIFICATION2 (Q1a Reading B, Q1b, Q2a/Q2b/Q2c, ratified), PUBLIC_SAFE_POST_R26_CLARIFICATIONS2 section 4A (F4 recommended: not a member, excluded; contract silent), FLOW_CONTRACT line 113 (dependency union; available_at), MATHEMATICS lines 35-37 (closure, maximal contributing known-at) and 115, and the code: variants1/flow.py capture() lines 15-61, span.py _collect lines 52-76 and the excluded build at 134-137, current.py:39, integer_flow.py:22.
 
