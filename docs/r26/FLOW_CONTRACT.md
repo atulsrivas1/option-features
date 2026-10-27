@@ -2,7 +2,6 @@
 
 > **Superseded (distribution layout):** this candidate describes separate `option-flow-*` distributions. As released in R26, the implementation is the `variants1` subpackage (e.g. `option_features.variants1`) inside the existing R25 packages; no `option-flow-*` distributions exist. See DECISIONS.md and docs/r26-variants/R26_EVIDENCE.md. The text below is unchanged.
 
-
 Status: **proposed for independent review**, October 21, 2026, EQ188. This is an original public design, not implemented or frozen. Only a coordinator-recorded, independently reviewed exact commit may freeze it. [Mathematics](MATHEMATICS.md), [feature bindings](FEATURE_BINDINGS.json), [compatibility](COMPATIBILITY.json) and [independent fixture protocol](FIXTURE_PROTOCOL.md) are companion normative candidates. Conflicts between them block authoring; an implementation must not choose silently.
 
 Owner approved independent admission of option-native R26 tracks. Actual EQ153/EQ158 compatibility remains required for EQ190 and full R26 acceptance. This contract admits no equity producer, runtime resource reservation, dataset, package artifact or release. Existing equity/R18/EF1 ownership is preserved. Local exact-source validation and fresh independent review are required; hosted CI is optional.
