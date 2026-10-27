@@ -9,11 +9,10 @@ Updated 2026-10-27. Read this, then STATUS.md, DECISIONS.md, the coordinator ski
 - R26 evidence: docs/r26-variants/R26_EVIDENCE.md; retro: docs/knowledge/RETRO_R26.md. Private work: Documents/ChatGPT/Equity Features/work/r26-20261027.
 
 ## Next
-1. PO decisions: Q3 (missing-stream code/pointer, then workers fix and unmask) and Q4 (suffix rule).
-2. Assumption 2 boundary text for the 9 held B rows.
-3. Direct-API field_set fixture family (G9); F4/rolling edge-case fixtures (G10).
-4. Windows qualification, then browser demo (stored-output DuckDB with provenance).
-5. Release notes: consumer filter as runnable code, the 32 flagged ids with rulings, controller's missing independent review.
+1. Workers code: Q3 (checkpoint_cut_mismatch at /request/cut_cursors) and A>K before merge (in progress).
+2. Fixtures: missing-stream unmask, A>K plus merge, the 9 held B rows (assumption 2 now a PO product ruling), direct-API field_set, F4/rolling combinations.
+3. Replay v6 plus independent audit of the new rows.
+4. Windows qualification, browser demo, release notes (items in record section 10).
 
 ## Owner items (parked)
 - Release acceptance; review of decisions marked "pending owner review".

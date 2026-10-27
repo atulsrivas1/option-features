@@ -73,14 +73,25 @@ I/O stage-3 field_set: 789 pass (751 W3-field, 27 W3-union, 4 W3-wire, 7 W3-fiel
 ## 9. Controller and provenance
 Controller run_completion_candidate8.py sha256 603cab179e130157c41543400142930f3ae122fe56050a9adc81ae7b128775ca; manifest sha256 d4cf945cb239f3b6f2672f237f419feed092bfe06a01e79a84c23f7e5ce347e6. It is the candidate6 controller adapted: only docstring, containment module name, source dir and operation labels differ (the audit diff shows only name/path/hash changes). Deviations carried from candidates 5/6 and accepted by the coordinator: source-review approval gate removed (NO independent review of the controller), 6 source receipts removed, contract path restriction removed, manifest-name check relaxed, second in-validate scheduling-lock check removed, glob check of the 12-module set added. Attempt 1 failed on a defective row builder (partial output moved, not deleted, to a private stale folder); attempt 2 passed. Accepted risk: no independent controller review; release notes must disclose it.
 
-## 10. Release-notes items
-The consumer filter as runnable code; the flagged ids (32 rows, 20 graphs) with the ruling each depends on; the controller's missing independent review.
+## 10. Release-notes items (to publish with the release)
+1. The consumer filter as runnable code (section 2 rules).
+2. The 32 flagged rows and 20 graphs (section 4) with the ruling each depends on.
+3. Controller disclosure: no independent review of the controller (section 9).
+4. Plainly: the 12 new rows and the 6 unmasked rows have no independent semantic adjudication; the field_set parent pointer and the Q3 pointer are INFERRED.
+5. The 9 B3-integer-price baseline rows (frozen, flagged) are distinct from the 9 held B representative rows (tagged out) but share assumption 2.
+6. Graph evidence is digest-level only; the 4 mode graphs are unevidenced.
 
 ## 11. Post-release status and rulings (decided, pending owner review)
 Post-release fixture correction candidate for the next release. Controller deviations accepted (as candidate6); 9 held B rows stay tagged out (assumption 2 held); the missing-stream row stays excluded; 2575 rows frozen; flagged list 32 rows and 20 graphs frozen subject to regeneration; graph evidence digest-level.
 
-## 12. Open PO items
-1. Q3: missing-stream rejection code and pointer (proposed checkpoint_cut_mismatch at /request/cut_cursors; not ratified); blocks unmasking the excluded row and needs a workers code change.
-2. Q4: suffix-check rule (known-at half least supported); no row authored.
-3. Assumption 2 boundary text for the 9 held B rows.
-4. Next work: direct-API field_set fixture family, F4/rolling edge-case fixtures, Windows qualification, browser demo, release notes.
+## 12. PO decisions (candidate8 accepted with conditions; decided, pending owner review)
+- Q3 ratified (inferred): checkpoint_cut_mismatch at index-free /request/cut_cursors, first in CP3, several dropped streams give one error, worker translates to input_invalid. The missing-stream row unmasks only after the workers code lands and the replay passes.
+- Q4 held: no code, no fixture; equal stamped positions in a suffix stay identity_conflict.
+- A>K temporal_cut at /request/knowledge_K_ns wins over merge identity_conflict when there is no regression; workers must check A>K before the merge; fixture to be authored.
+- Assumption 2 ratified as a PRODUCT ruling, not derived from the private boundary text: Definition/context-only for bucket-proof prior-day source Results; Binding/context rejected for variants1. If reversed, the 18 flagged B3 rows/graphs and the 9 held rows are regenerated. The 9 held rows stay tagged out of this freeze and return in the next candidate after regeneration.
+
+## 13. Next
+1. Workers code: Q3 and A>K before merge (in progress).
+2. Fixtures: missing-stream unmask, A>K plus merge, the 9 held B rows, direct-API field_set family, F4/rolling combinations.
+3. Replay v6 plus independent audit of the new rows.
+4. Windows qualification, browser demo, release notes.
