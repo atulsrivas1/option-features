@@ -4,11 +4,11 @@ Updated 2026-10-23. Read this, then STATUS.md, DECISIONS.md, the coordinator ski
 
 ## Where we are: R26 released 2026-10-23 as unqualified prerelease (tag r26-variants1-prerelease, three repos)
 - Merged: option-features #12 #15 (clarifications) #16 #18 #20 #22 (decisions) #17 (skill) #19 #21 (library); option-feature-io #7 (codec, stages 1-4/9); option-feature-workers #7 (checkpoint/restore, DuckDB storage, replay). Evidence: docs/r26-variants/R26_EVIDENCE.md; retro: docs/knowledge/RETRO_R26.md (PR 23 pending until merged).
-- Manual runs: owned frozen rows pass per layer (workers 76/76; I/O 0 mismatches); 28 fixture-defect rows excluded pending a corrected candidate5 (18 library triage, 10 I/O listed in DECISIONS; the 3 joint-output rows make it 13 for I/O).
+- Manual runs: owned frozen rows pass per layer (workers 76/76; I/O 0 mismatches); 31 fixture-defect rows excluded pending a corrected candidate5: 18 library + 13 I/O (10 FEFF/unknown-tag + 3 joint-output); earlier "28" omitted the 3 joint rows.
 - Private fixtures/evidence: owner's work folder Documents/ChatGPT/Equity Features/work/r26-20261021 (candidate4 in variant-full-fixtures-completion4; freeze proposal + Addendum 1; reviews).
 
 ## Next
-1. Candidate5: regenerate the 28 excluded fixture rows (representative rows predate the quote-selector clarification) and replay all layers.
+1. Candidate5: regenerate the 31 excluded fixture rows (representative rows predate the quote-selector clarification) and replay all layers.
 2. Contract clarifications still needed: field_set missing/extra pointer, rolling envelope member ids, DailyCore excluded-candidate Results and scope pointers, restore i>0, PR 12 lane control/overflow placement, A>K temporal_cut order; N4 schema notes (bp vs bits, monetary_basis reverse direction).
 3. Close: Windows qualification, browser demo, owner acceptance; apply retro changes in the next release's first brief.
 

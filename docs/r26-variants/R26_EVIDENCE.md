@@ -17,7 +17,7 @@ Public-safe summary. No fixture-derived values are reproduced here.
 - Contained run (attempt 4) passed on its first run in 85 s, 2,554 rows.
 - Audit: 176 checks, 4 failing; the 4 are auditor limits, not fixture defects.
 - Freeze: 2,546 rows.
-- Excluded after freeze, pending a regenerated candidate5: 18 library-triage and 10 I/O-triage fixture-defect rows.
+- Excluded after freeze, pending a regenerated candidate5: 31 fixture-defect rows = 18 library-triage + 13 I/O-triage (FEFF 1 + unknown-tag 9 + joint-output 3). Earlier texts saying 10 I/O (or 28 total) omitted the 3 joint-output rows; DECISIONS 2026-10-23 I/O triage is authoritative. Overlap between the library and I/O sets was not re-verified. Separately, the freeze itself omits 8 of 2,554 rows (4 undetermined rolling cases and their graphs).
 
 ## Per-layer manual-run results
 
