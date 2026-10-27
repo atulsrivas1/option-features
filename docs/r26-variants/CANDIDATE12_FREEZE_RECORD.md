@@ -1,6 +1,6 @@
 # R26 variants: candidate12 freeze record (public-safe)
 
-Status: candidate12 is recorded as a post-release candidate for the next release (2026-10-27), superseding the candidate11 freeze record for the fixtures it covers. R26 was released as r26-variants1-prerelease on 2026-10-23; this record corrects fixtures after that release. Coordinator rulings are "decided, pending owner review". Independent audit: candidate12 approve. Independent freeze review of candidate12: NOT done (condition 6 unmet; the coordinator freezes only after it is recorded). This PR is not final until merged. Row content and the private work folder are not published; this record carries hashes, counts, exclusions by id, flags, gaps and open items.
+Status: candidate12 is recorded as a post-release candidate for the next release (2026-10-27), superseding the candidate11 freeze record for the fixtures it covers. R26 was released as r26-variants1-prerelease on 2026-10-23; this record corrects fixtures after that release. Coordinator rulings are "decided, pending owner review". Independent audit: candidate12 approve. Independent freeze review of candidate12: done (approve-with-conditions, conditions applied; an independent re-run of the five v9 harnesses matched). This PR is not final until merged. Row content and the private work folder are not published; this record carries hashes, counts, exclusions by id, flags, gaps and open items.
 
 ## 1. Census
 | file | sha256 | bytes | in file | frozen |
@@ -82,4 +82,4 @@ Post-release fixture correction candidate for the next release (target r26-varia
 Q4 (suffix checks) held; narrower-rollup clause held. Owner items: PyPI wheel permission for Windows qualification (python-flint==0.9.0, duckdb==1.5.6, setuptools==80.9.0, win_amd64 cp312; sizes unverified), qualification scope, release acceptance and label, review of decisions pending owner review, worktree cleanup.
 
 ## 11. Conditions to freeze
-Met: hashes, counts, bytes re-read from disk; no structured exclusion key; replay of record on merged mains; harness hashes and mutation proof; controller deviations accepted; audit approve. Unmet: independent freeze review of candidate12 (not done). Non-blocking: earlier auditor tooling not re-run; Q4 and the narrower-rollup clause open. Candidate12 is not final until this PR is merged.
+Met: hashes, counts, bytes re-read from disk; no structured exclusion key; replay of record on merged mains; harness hashes and mutation proof; controller deviations accepted; audit approve. Independent freeze review: done (approve-with-conditions, conditions applied), condition 6 met. Non-blocking: earlier auditor tooling not re-run; Q4 and the narrower-rollup clause open. Candidate12 is not final until this PR is merged.
