@@ -3,7 +3,7 @@
 Updated 2026-10-27. Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
 ## Where we are: R26 prerelease out; candidate9 recorded as a post-release candidate for the next release (2026-10-27)
-- Freeze record: docs/r26-variants/CANDIDATE9_FREEZE_RECORD.md (supersedes candidate8): 2594 rows in files (2292 + 302 graphs), nothing excluded, frozen 2594. Missing-stream row unmasked (Q3 inferred); 9 held B rows returned under assumption 2 (PO product ruling). Replay v6 at option-features 6a81e65 / io e156963 / workers 8795f3e: all layers pass, exit 0; workers 32 partial pinned after a first run (independent recompute owed).
+- Freeze record: docs/r26-variants/CANDIDATE9_FREEZE_RECORD.md (supersedes candidate8): 2594 rows in files (2292 + 302 graphs), nothing excluded, frozen 2594. Missing-stream row unmasked (Q3 inferred); 9 held B rows returned under assumption 2 (PO product ruling). Replay v6 at option-features 6a81e65 / io e156963 / workers 8795f3e: all layers pass, exit 0; workers 32 partial pinned after a first run and independently recomputed by the freeze review.
 - Flagged frozen-subject-to-regeneration: 49 rows and 22 graphs. Gaps G1 to G21 in the record; graph evidence is digest-level only. Rulings decided, pending owner review.
 - Merged: option-features PRs 30-31, 33-39, io PR 8, workers PRs 8-9. PR 39 text still reads "proposed" though PO ratified (docs edit pending).
 - R26 evidence: docs/r26-variants/R26_EVIDENCE.md; retro: docs/knowledge/RETRO_R26.md. Private work: Documents/ChatGPT/Equity Features/work/r26-20261027 (FREEZE_PROPOSAL_CANDIDATE9.md).
@@ -23,4 +23,4 @@ Updated 2026-10-27. Read this, then STATUS.md, DECISIONS.md, the coordinator ski
 - Controller runs need absolute paths; contained run via python -I -B, never reuse a failed attempt dir.
 - Add .gitignore for bytecode before any run; commit-then-remove leaks into branch history.
 - Fixture-vs-contract triage before bending code; Sonnet (not Haiku) for storage/restore work.
-- Pinned counts learned from a first run (workers partial 32) must be recomputed from fixtures by a reviewer.
+- Pinned counts learned from a first run (workers partial 32) must be recomputed by a reviewer (done for 32 by the candidate9 freeze review).
