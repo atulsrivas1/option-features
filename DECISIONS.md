@@ -19,5 +19,5 @@
 - 2026-10-27: Browser demo shows stored-output DuckDB with provenance visible. Decided, pending owner review.
 - 2026-10-27: variants1 packaging stays; FLOW_CONTRACT is amended by a superseded note rather than rewritten. Decided, pending owner review.
 - 2026-10-27: Candidate5 and a freeze come before any new features. Decided, pending owner review.
-- 2026-10-27: Accepted candidate5 controller deviations: dropped independent-review gate, source receipts, contract-path restriction and second lock check; the hash-pinned manifest compensates. Decided, pending owner review.
+- 2026-10-27: Coordinator ruling: the coordinator acknowledges and accepts the candidate5 controller deviations (CANDIDATE5_RUN.md says the controller needs reviewer sign-off; CANDIDATE5_AUDIT.md calls them non-blocking, needing acknowledgment), on the audit's reasoning that the hash-pinned manifest compensates. Deviations listed by the audit: dropped independent source-review gate; dropped 6 source receipts; dropped contract-path restriction; dropped second scheduling-lock check; relaxed manifest-name check to 'beside controller'; added check that local *.py match the 12-module set. Decided, pending owner review.
 - 2026-10-27: The excluded fixture-row count is 31, not 28 (the 3 joint-output I/O rows were omitted earlier). Decided, pending owner review.
