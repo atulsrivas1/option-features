@@ -1,0 +1,467 @@
+{
+ "generated_by": "tools/demo/export_demo.py",
+ "note": "Synthetic prerelease demo of stored integration evidence; not real data, not a qualification.",
+ "runs": [
+  {
+   "bindings": [
+    {
+     "binding_id": "binding1",
+     "mode": "synthetic",
+     "rights": "Synthetic independent reference fixture only",
+     "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+     "source_id": "synthetic-full-reference",
+     "source_revision": "v2"
+    }
+   ],
+   "cohort": {
+    "artifacts": [
+     {
+      "distribution": "duckdb",
+      "role": "dependency",
+      "source_commit": "1111111111111111111111111111111111111111",
+      "version": "1.5.6",
+      "wheel_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "distribution": "option-flow-contracts",
+      "role": "contracts",
+      "source_commit": "2222222222222222222222222222222222222222",
+      "version": "0.1.0a1",
+      "wheel_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+     },
+     {
+      "distribution": "option-flow-features",
+      "role": "calculations",
+      "source_commit": "3333333333333333333333333333333333333333",
+      "version": "0.1.0a1",
+      "wheel_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+     },
+     {
+      "distribution": "option-flow-io",
+      "role": "io",
+      "source_commit": "4444444444444444444444444444444444444444",
+      "version": "0.1.0a1",
+      "wheel_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+     },
+     {
+      "distribution": "option-flow-workers",
+      "role": "workers",
+      "source_commit": "5555555555555555555555555555555555555555",
+      "version": "0.1.0a1",
+      "wheel_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+     }
+    ],
+    "candidate_id": "REFERENCE-full-fixtures2",
+    "platform_id": "REFERENCE-synthetic-platform"
+   },
+   "counts": {
+    "bindings": 1,
+    "objects": 2,
+    "operations": 1
+   },
+   "equality": {
+    "layers": {
+     "direct": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     },
+     "persisted": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     },
+     "replay": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     },
+     "worker": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     }
+    },
+    "verdict": "equal"
+   },
+   "integrity": {
+    "errors": [],
+    "ok": true
+   },
+   "operations": [
+    {
+     "dependency_count": 6,
+     "evidence_count": 2,
+     "object_count": 2,
+     "op_id": "premium1",
+     "ordinal": 0,
+     "reason": "ok",
+     "status": "available"
+    }
+   ],
+   "provenance": {
+    "badge": "SYNTHETIC",
+    "reasons": [
+     "all 1 binding(s) have mode synthetic"
+    ]
+   },
+   "results": [
+    {
+     "dependency_binding_ids": [
+      "binding1"
+     ],
+     "dependency_count": 5,
+     "evidence_count": 1,
+     "kind": "premium",
+     "object_id": "16992896c8f89ecc3e7723c93c6d838b70ecfe350c726acd0d4c6c0fa3b86313",
+     "op_id": "premium1",
+     "ordinal": 0,
+     "reason": "ok",
+     "scope_id": "scope1",
+     "status": "available",
+     "value": "{\"definition_use\": {\"definition_id\": \"definition1\", \"kind\": \"available\"}, \"multiplier\": \"0x3ff0000000000000 (1.0)\", \"premium\": {\"branch\": \"ordinary\", \"metric_id\": \"premium\", \"monetary_basis\": null, \"reason\": \"ok\", \"status\": \"available\", \"unit\": \"currency\", \"value\": \"0x4000000000000000 (2.0)\"}, \"producer\": {\"formula_id\": \"b64-price-products1\", \"input_record_sha256s\": [\"a141b91a4466484972e1de18b301d..."
+    },
+    {
+     "dependency_binding_ids": [
+      "binding1"
+     ],
+     "dependency_count": 5,
+     "evidence_count": 1,
+     "kind": "premium",
+     "object_id": "46fad7a28d0a283fbd7b29b304ab3e0ac025235dced817acc93f74a18211b8b8",
+     "op_id": "premium1",
+     "ordinal": 1,
+     "reason": "ok",
+     "scope_id": "scope1",
+     "status": "available",
+     "value": "{\"definition_use\": {\"definition_id\": \"definition1\", \"kind\": \"available\"}, \"multiplier\": \"0x3ff0000000000000 (1.0)\", \"premium\": {\"branch\": \"ordinary\", \"metric_id\": \"premium\", \"monetary_basis\": null, \"reason\": \"ok\", \"status\": \"available\", \"unit\": \"currency\", \"value\": \"0x4000000000000000 (2.0)\"}, \"producer\": {\"formula_id\": \"b64-price-products1\", \"input_record_sha256s\": [\"a141b91a4466484972e1de18b301d..."
+    }
+   ],
+   "run_key": "REFERENCE-W3-mode-replay-0",
+   "shas": {
+    "cohort": "b360c38dcf0ad00bd238015db341e76de1441f5ff2a26b8bfe3acf2ad823a917",
+    "input_checkpoint": null,
+    "output_checkpoint": "f36a179d9659cc12470d1a036cc8a2a7a9db79601403a0d97f9e5bdd0e355f43",
+    "publication": "aa0c61309f88c81473460065f9ffa8afd1cc509f820881fb507162d65523816e",
+    "request": "0f9e4800422840dca5f02d278f34a5da457206b6a64f1bd3e16cd061503f2ca2",
+    "results": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+    "snapshot": "c8f03137bf240e86fe3e1eb1cc47d9d53e60c9b440ab7c9af39475afd0e43e09",
+    "work": "c00a8ecb73bc9bfbb4c5fd3fe951c1e85516dd8c3444d3b6fa7b14a0f240c552"
+   },
+   "state": "committed"
+  },
+  {
+   "bindings": [
+    {
+     "binding_id": "binding1",
+     "mode": "synthetic",
+     "rights": "Synthetic independent reference fixture only",
+     "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+     "source_id": "synthetic-full-reference",
+     "source_revision": "v2"
+    }
+   ],
+   "cohort": {
+    "artifacts": [
+     {
+      "distribution": "duckdb",
+      "role": "dependency",
+      "source_commit": "1111111111111111111111111111111111111111",
+      "version": "1.5.6",
+      "wheel_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "distribution": "option-flow-contracts",
+      "role": "contracts",
+      "source_commit": "2222222222222222222222222222222222222222",
+      "version": "0.1.0a1",
+      "wheel_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+     },
+     {
+      "distribution": "option-flow-features",
+      "role": "calculations",
+      "source_commit": "3333333333333333333333333333333333333333",
+      "version": "0.1.0a1",
+      "wheel_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+     },
+     {
+      "distribution": "option-flow-io",
+      "role": "io",
+      "source_commit": "4444444444444444444444444444444444444444",
+      "version": "0.1.0a1",
+      "wheel_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+     },
+     {
+      "distribution": "option-flow-workers",
+      "role": "workers",
+      "source_commit": "5555555555555555555555555555555555555555",
+      "version": "0.1.0a1",
+      "wheel_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+     }
+    ],
+    "candidate_id": "REFERENCE-full-fixtures2",
+    "platform_id": "REFERENCE-synthetic-platform"
+   },
+   "counts": {
+    "bindings": 1,
+    "objects": 2,
+    "operations": 1
+   },
+   "equality": {
+    "layers": {
+     "direct": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "2f557068ab8db965f3abdf66d6a265da9831b27c3c135d0127aaa8961aa0e2d8",
+      "results_sha256": "f3e887fd7b29b374a79f82e804ea3d6290206f0cb892d2e4f5f55cd2fd31819f",
+      "state": "present"
+     },
+     "persisted": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "2f557068ab8db965f3abdf66d6a265da9831b27c3c135d0127aaa8961aa0e2d8",
+      "results_sha256": "f3e887fd7b29b374a79f82e804ea3d6290206f0cb892d2e4f5f55cd2fd31819f",
+      "state": "present"
+     },
+     "replay": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "2f557068ab8db965f3abdf66d6a265da9831b27c3c135d0127aaa8961aa0e2d8",
+      "results_sha256": "f3e887fd7b29b374a79f82e804ea3d6290206f0cb892d2e4f5f55cd2fd31819f",
+      "state": "present"
+     },
+     "worker": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "2f557068ab8db965f3abdf66d6a265da9831b27c3c135d0127aaa8961aa0e2d8",
+      "results_sha256": "f3e887fd7b29b374a79f82e804ea3d6290206f0cb892d2e4f5f55cd2fd31819f",
+      "state": "present"
+     }
+    },
+    "verdict": "equal"
+   },
+   "integrity": {
+    "errors": [],
+    "ok": true
+   },
+   "operations": [
+    {
+     "dependency_count": 6,
+     "evidence_count": 2,
+     "object_count": 2,
+     "op_id": "premium1",
+     "ordinal": 0,
+     "reason": "ok",
+     "status": "available"
+    }
+   ],
+   "provenance": {
+    "badge": "SYNTHETIC",
+    "reasons": [
+     "all 1 binding(s) have mode synthetic"
+    ]
+   },
+   "results": [
+    {
+     "dependency_binding_ids": [
+      "binding1"
+     ],
+     "dependency_count": 5,
+     "evidence_count": 1,
+     "kind": "premium",
+     "object_id": "16992896c8f89ecc3e7723c93c6d838b70ecfe350c726acd0d4c6c0fa3b86313",
+     "op_id": "premium1",
+     "ordinal": 0,
+     "reason": "ok",
+     "scope_id": "scope1",
+     "status": "available",
+     "value": "{\"definition_use\": {\"definition_id\": \"definition1\", \"kind\": \"available\"}, \"multiplier\": \"0x3ff0000000000000 (1.0)\", \"premium\": {\"branch\": \"ordinary\", \"metric_id\": \"premium\", \"monetary_basis\": null, \"reason\": \"ok\", \"status\": \"available\", \"unit\": \"currency\", \"value\": \"0x4000000000000000 (2.0)\"}, \"producer\": {\"formula_id\": \"b64-price-products1\", \"input_record_sha256s\": [\"a141b91a4466484972e1de18b301d..."
+    },
+    {
+     "dependency_binding_ids": [
+      "binding1"
+     ],
+     "dependency_count": 5,
+     "evidence_count": 1,
+     "kind": "premium",
+     "object_id": "46fad7a28d0a283fbd7b29b304ab3e0ac025235dced817acc93f74a18211b8b8",
+     "op_id": "premium1",
+     "ordinal": 1,
+     "reason": "ok",
+     "scope_id": "scope1",
+     "status": "available",
+     "value": "{\"definition_use\": {\"definition_id\": \"definition1\", \"kind\": \"available\"}, \"multiplier\": \"0x3ff0000000000000 (1.0)\", \"premium\": {\"branch\": \"ordinary\", \"metric_id\": \"premium\", \"monetary_basis\": null, \"reason\": \"ok\", \"status\": \"available\", \"unit\": \"currency\", \"value\": \"0x4000000000000000 (2.0)\"}, \"producer\": {\"formula_id\": \"b64-price-products1\", \"input_record_sha256s\": [\"a141b91a4466484972e1de18b301d..."
+    }
+   ],
+   "run_key": "REFERENCE-W3-mode-replay-1",
+   "shas": {
+    "cohort": "b360c38dcf0ad00bd238015db341e76de1441f5ff2a26b8bfe3acf2ad823a917",
+    "input_checkpoint": null,
+    "output_checkpoint": "3495215f4657baee79f58078547a2d88f98a6628218b55a87d26f3ac9be55ece",
+    "publication": "79103096fd3437015e7731851ee352b393702bf1b0909faa730145941937565d",
+    "request": "525f30e41625d5025df8df73efcbde6f912ad4bcdc7a454cf439025683b69ea7",
+    "results": "f3e887fd7b29b374a79f82e804ea3d6290206f0cb892d2e4f5f55cd2fd31819f",
+    "snapshot": "c8f03137bf240e86fe3e1eb1cc47d9d53e60c9b440ab7c9af39475afd0e43e09",
+    "work": "cf1e99093ac6db906ab5d3d7e151f967eb7138a8b8b41f73be0bc567616eb24e"
+   },
+   "state": "committed"
+  },
+  {
+   "bindings": [
+    {
+     "binding_id": "binding1",
+     "mode": "synthetic",
+     "rights": "Synthetic independent reference fixture only",
+     "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+     "source_id": "synthetic-full-reference",
+     "source_revision": "v2"
+    }
+   ],
+   "cohort": {
+    "artifacts": [
+     {
+      "distribution": "duckdb",
+      "role": "dependency",
+      "source_commit": "1111111111111111111111111111111111111111",
+      "version": "1.5.6",
+      "wheel_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "distribution": "option-flow-contracts",
+      "role": "contracts",
+      "source_commit": "2222222222222222222222222222222222222222",
+      "version": "0.1.0a1",
+      "wheel_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+     },
+     {
+      "distribution": "option-flow-features",
+      "role": "calculations",
+      "source_commit": "3333333333333333333333333333333333333333",
+      "version": "0.1.0a1",
+      "wheel_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+     },
+     {
+      "distribution": "option-flow-io",
+      "role": "io",
+      "source_commit": "4444444444444444444444444444444444444444",
+      "version": "0.1.0a1",
+      "wheel_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+     },
+     {
+      "distribution": "option-flow-workers",
+      "role": "workers",
+      "source_commit": "5555555555555555555555555555555555555555",
+      "version": "0.1.0a1",
+      "wheel_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+     }
+    ],
+    "candidate_id": "REFERENCE-full-fixtures2",
+    "platform_id": "REFERENCE-synthetic-platform"
+   },
+   "counts": {
+    "bindings": 1,
+    "objects": 2,
+    "operations": 1
+   },
+   "equality": {
+    "layers": {
+     "direct": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     },
+     "persisted": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     },
+     "replay": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     },
+     "worker": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     }
+    },
+    "verdict": "equal"
+   },
+   "integrity": {
+    "errors": [],
+    "ok": true
+   },
+   "operations": [
+    {
+     "dependency_count": 6,
+     "evidence_count": 2,
+     "object_count": 2,
+     "op_id": "premium1",
+     "ordinal": 0,
+     "reason": "ok",
+     "status": "available"
+    }
+   ],
+   "provenance": {
+    "badge": "SYNTHETIC",
+    "reasons": [
+     "all 1 binding(s) have mode synthetic"
+    ]
+   },
+   "results": [
+    {
+     "dependency_binding_ids": [
+      "binding1"
+     ],
+     "dependency_count": 5,
+     "evidence_count": 1,
+     "kind": "premium",
+     "object_id": "16992896c8f89ecc3e7723c93c6d838b70ecfe350c726acd0d4c6c0fa3b86313",
+     "op_id": "premium1",
+     "ordinal": 0,
+     "reason": "ok",
+     "scope_id": "scope1",
+     "status": "available",
+     "value": "{\"definition_use\": {\"definition_id\": \"definition1\", \"kind\": \"available\"}, \"multiplier\": \"0x3ff0000000000000 (1.0)\", \"premium\": {\"branch\": \"ordinary\", \"metric_id\": \"premium\", \"monetary_basis\": null, \"reason\": \"ok\", \"status\": \"available\", \"unit\": \"currency\", \"value\": \"0x4000000000000000 (2.0)\"}, \"producer\": {\"formula_id\": \"b64-price-products1\", \"input_record_sha256s\": [\"a141b91a4466484972e1de18b301d..."
+    },
+    {
+     "dependency_binding_ids": [
+      "binding1"
+     ],
+     "dependency_count": 5,
+     "evidence_count": 1,
+     "kind": "premium",
+     "object_id": "46fad7a28d0a283fbd7b29b304ab3e0ac025235dced817acc93f74a18211b8b8",
+     "op_id": "premium1",
+     "ordinal": 1,
+     "reason": "ok",
+     "scope_id": "scope1",
+     "status": "available",
+     "value": "{\"definition_use\": {\"definition_id\": \"definition1\", \"kind\": \"available\"}, \"multiplier\": \"0x3ff0000000000000 (1.0)\", \"premium\": {\"branch\": \"ordinary\", \"metric_id\": \"premium\", \"monetary_basis\": null, \"reason\": \"ok\", \"status\": \"available\", \"unit\": \"currency\", \"value\": \"0x4000000000000000 (2.0)\"}, \"producer\": {\"formula_id\": \"b64-price-products1\", \"input_record_sha256s\": [\"a141b91a4466484972e1de18b301d..."
+    }
+   ],
+   "run_key": "REFERENCE-W3-worker-base",
+   "shas": {
+    "cohort": "b360c38dcf0ad00bd238015db341e76de1441f5ff2a26b8bfe3acf2ad823a917",
+    "input_checkpoint": null,
+    "output_checkpoint": "f36a179d9659cc12470d1a036cc8a2a7a9db79601403a0d97f9e5bdd0e355f43",
+    "publication": "885d2d11999f6af8da15080d546d686509867b8ec1423e1f03558d9a9891a4b2",
+    "request": "0f9e4800422840dca5f02d278f34a5da457206b6a64f1bd3e16cd061503f2ca2",
+    "results": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+    "snapshot": "c8f03137bf240e86fe3e1eb1cc47d9d53e60c9b440ab7c9af39475afd0e43e09",
+    "work": "c00a8ecb73bc9bfbb4c5fd3fe951c1e85516dd8c3444d3b6fa7b14a0f240c552"
+   },
+   "state": "committed"
+  }
+ ],
+ "schema": "option-flow-demo-export1",
+ "source_file": "sample.duckdb",
+ "storage_schema": [
+  "option-flow-variants-generation1"
+ ]
+}

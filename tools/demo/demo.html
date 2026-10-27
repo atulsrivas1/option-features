@@ -1,0 +1,738 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:">
+<title>Variants1 stored-output demo</title>
+<!-- Single self-contained file: no network, no CDN, no server. Data is rendered with textContent only.
+     Usage and the exporter are described at the top of export_demo.py. The embedded sample is a copy of
+     tools/demo/sample/demo-export.json (SYNTHETIC reference fixtures). -->
+<style>
+:root{--bg:#f7f7f4;--fg:#1c1c1a;--mut:#55554f;--card:#fff;--line:#c9c9c0;--acc:#0b5cad;--ok:#0a6b2d;--okbg:#e3f4e8;--bad:#a1141b;--badbg:#fbe6e7;--warn:#7a4b00;--warnbg:#fff1d6;--gry:#4a4a45;--grybg:#ececE6}
+@media (prefers-color-scheme:dark){:root{--bg:#161614;--fg:#ececE6;--mut:#b4b4aa;--card:#201f1d;--line:#47463f;--acc:#7db8f5;--ok:#7fe0a0;--okbg:#12301c;--bad:#ff9ea3;--badbg:#3a1416;--warn:#ffd28a;--warnbg:#3a2a08;--gry:#cfcfc6;--grybg:#2c2b28}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header,main{max-width:1100px;margin:0 auto;padding:0 16px}
+h1{font-size:1.35rem;margin:16px 0 8px}h2{font-size:1.1rem;margin:20px 0 8px}h3{font-size:1rem;margin:16px 0 6px}
+.banner{border:2px solid var(--warn);background:var(--warnbg);color:var(--fg);padding:10px 12px;border-radius:6px;margin-bottom:12px}
+.loader{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;margin:8px 0}
+.loader label{font-weight:600}
+input[type=file]{max-width:100%}
+button,select{font:inherit;color:var(--fg);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 12px;min-height:44px}
+button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+[role=tablist]{display:flex;flex-wrap:wrap;gap:4px;border-bottom:1px solid var(--line);margin-top:12px}
+[role=tab]{border-bottom-left-radius:0;border-bottom-right-radius:0;margin-bottom:-1px}
+[role=tab][aria-selected=true]{border-color:var(--acc);border-bottom-color:var(--bg);background:var(--bg);font-weight:700}
+.wrap{overflow-x:auto;border:1px solid var(--line);border-radius:6px;background:var(--card)}
+table{border-collapse:collapse;width:100%;min-width:560px}
+caption{text-align:left;font-weight:600;padding:8px}
+th,td{text-align:left;vertical-align:top;padding:6px 8px;border-top:1px solid var(--line)}
+th{background:var(--grybg)}
+code,.mono{font-family:ui-monospace,Consolas,Menlo,monospace;font-size:.88em;word-break:break-all}
+.chip{display:inline-block;padding:1px 8px;border-radius:12px;border:1px solid currentColor;font-weight:700;font-size:.82rem;white-space:nowrap}
+.SYNTHETIC,.equal,.match{color:var(--ok);background:var(--okbg)}
+.MIXED,.warnc{color:var(--warn);background:var(--warnbg)}
+.UNVERIFIED,.differs,.DIFFERS,.failc{color:var(--bad);background:var(--badbg)}
+.not_run{color:var(--gry);background:var(--grybg)}
+.depbtn{min-height:44px;margin:2px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:8px 12px;margin:8px 0}
+dl{display:grid;grid-template-columns:max-content 1fr;gap:2px 12px;margin:4px 0}dt{color:var(--mut)}dd{margin:0}
+.err{border:2px solid var(--bad);background:var(--badbg);padding:8px 12px;border-radius:6px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+@media (max-width:600px){dl{grid-template-columns:1fr}dt{margin-top:6px}}
+</style>
+</head>
+<body>
+<header>
+<h1>Variants1 stored-output demo</h1>
+<div class="banner" role="note"><strong>Unqualified prerelease. Synthetic fixtures only.</strong>
+This page shows stored integration evidence read from a variants1 output database. It is not real market data,
+not a numerical oracle and not a release certificate. Any run not badged SYNTHETIC makes no claim at all.</div>
+<div class="loader">
+<label for="file">Load a demo-export.json file</label>
+<input id="file" type="file" accept=".json,application/json">
+<button id="sample" type="button">Use embedded sample</button>
+</div>
+<div id="msg" role="status" aria-live="polite"></div>
+</header>
+<main id="main" hidden>
+<div role="tablist" aria-label="Views">
+<button role="tab" id="tab-runs" aria-controls="p-runs" aria-selected="true">Runs</button>
+<button role="tab" id="tab-results" aria-controls="p-results" aria-selected="false" tabindex="-1">Results per operation</button>
+<button role="tab" id="tab-equality" aria-controls="p-equality" aria-selected="false" tabindex="-1">Replay equality</button>
+</div>
+<section id="p-runs" role="tabpanel" aria-labelledby="tab-runs"></section>
+<section id="p-results" role="tabpanel" aria-labelledby="tab-results" hidden></section>
+<section id="p-equality" role="tabpanel" aria-labelledby="tab-equality" hidden></section>
+</main>
+<script type="application/json" id="embedded-sample">{
+ "generated_by": "tools/demo/export_demo.py",
+ "note": "Synthetic prerelease demo of stored integration evidence; not real data, not a qualification.",
+ "runs": [
+  {
+   "bindings": [
+    {
+     "binding_id": "binding1",
+     "mode": "synthetic",
+     "rights": "Synthetic independent reference fixture only",
+     "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+     "source_id": "synthetic-full-reference",
+     "source_revision": "v2"
+    }
+   ],
+   "cohort": {
+    "artifacts": [
+     {
+      "distribution": "duckdb",
+      "role": "dependency",
+      "source_commit": "1111111111111111111111111111111111111111",
+      "version": "1.5.6",
+      "wheel_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "distribution": "option-flow-contracts",
+      "role": "contracts",
+      "source_commit": "2222222222222222222222222222222222222222",
+      "version": "0.1.0a1",
+      "wheel_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+     },
+     {
+      "distribution": "option-flow-features",
+      "role": "calculations",
+      "source_commit": "3333333333333333333333333333333333333333",
+      "version": "0.1.0a1",
+      "wheel_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+     },
+     {
+      "distribution": "option-flow-io",
+      "role": "io",
+      "source_commit": "4444444444444444444444444444444444444444",
+      "version": "0.1.0a1",
+      "wheel_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+     },
+     {
+      "distribution": "option-flow-workers",
+      "role": "workers",
+      "source_commit": "5555555555555555555555555555555555555555",
+      "version": "0.1.0a1",
+      "wheel_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+     }
+    ],
+    "candidate_id": "REFERENCE-full-fixtures2",
+    "platform_id": "REFERENCE-synthetic-platform"
+   },
+   "counts": {
+    "bindings": 1,
+    "objects": 2,
+    "operations": 1
+   },
+   "equality": {
+    "layers": {
+     "direct": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     },
+     "persisted": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     },
+     "replay": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     },
+     "worker": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     }
+    },
+    "verdict": "equal"
+   },
+   "integrity": {
+    "errors": [],
+    "ok": true
+   },
+   "operations": [
+    {
+     "dependency_count": 6,
+     "evidence_count": 2,
+     "object_count": 2,
+     "op_id": "premium1",
+     "ordinal": 0,
+     "reason": "ok",
+     "status": "available"
+    }
+   ],
+   "provenance": {
+    "badge": "SYNTHETIC",
+    "reasons": [
+     "all 1 binding(s) have mode synthetic"
+    ]
+   },
+   "results": [
+    {
+     "dependency_binding_ids": [
+      "binding1"
+     ],
+     "dependency_count": 5,
+     "evidence_count": 1,
+     "kind": "premium",
+     "object_id": "16992896c8f89ecc3e7723c93c6d838b70ecfe350c726acd0d4c6c0fa3b86313",
+     "op_id": "premium1",
+     "ordinal": 0,
+     "reason": "ok",
+     "scope_id": "scope1",
+     "status": "available",
+     "value": "{\"definition_use\": {\"definition_id\": \"definition1\", \"kind\": \"available\"}, \"multiplier\": \"0x3ff0000000000000 (1.0)\", \"premium\": {\"branch\": \"ordinary\", \"metric_id\": \"premium\", \"monetary_basis\": null, \"reason\": \"ok\", \"status\": \"available\", \"unit\": \"currency\", \"value\": \"0x4000000000000000 (2.0)\"}, \"producer\": {\"formula_id\": \"b64-price-products1\", \"input_record_sha256s\": [\"a141b91a4466484972e1de18b301d..."
+    },
+    {
+     "dependency_binding_ids": [
+      "binding1"
+     ],
+     "dependency_count": 5,
+     "evidence_count": 1,
+     "kind": "premium",
+     "object_id": "46fad7a28d0a283fbd7b29b304ab3e0ac025235dced817acc93f74a18211b8b8",
+     "op_id": "premium1",
+     "ordinal": 1,
+     "reason": "ok",
+     "scope_id": "scope1",
+     "status": "available",
+     "value": "{\"definition_use\": {\"definition_id\": \"definition1\", \"kind\": \"available\"}, \"multiplier\": \"0x3ff0000000000000 (1.0)\", \"premium\": {\"branch\": \"ordinary\", \"metric_id\": \"premium\", \"monetary_basis\": null, \"reason\": \"ok\", \"status\": \"available\", \"unit\": \"currency\", \"value\": \"0x4000000000000000 (2.0)\"}, \"producer\": {\"formula_id\": \"b64-price-products1\", \"input_record_sha256s\": [\"a141b91a4466484972e1de18b301d..."
+    }
+   ],
+   "run_key": "REFERENCE-W3-mode-replay-0",
+   "shas": {
+    "cohort": "b360c38dcf0ad00bd238015db341e76de1441f5ff2a26b8bfe3acf2ad823a917",
+    "input_checkpoint": null,
+    "output_checkpoint": "f36a179d9659cc12470d1a036cc8a2a7a9db79601403a0d97f9e5bdd0e355f43",
+    "publication": "aa0c61309f88c81473460065f9ffa8afd1cc509f820881fb507162d65523816e",
+    "request": "0f9e4800422840dca5f02d278f34a5da457206b6a64f1bd3e16cd061503f2ca2",
+    "results": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+    "snapshot": "c8f03137bf240e86fe3e1eb1cc47d9d53e60c9b440ab7c9af39475afd0e43e09",
+    "work": "c00a8ecb73bc9bfbb4c5fd3fe951c1e85516dd8c3444d3b6fa7b14a0f240c552"
+   },
+   "state": "committed"
+  },
+  {
+   "bindings": [
+    {
+     "binding_id": "binding1",
+     "mode": "synthetic",
+     "rights": "Synthetic independent reference fixture only",
+     "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+     "source_id": "synthetic-full-reference",
+     "source_revision": "v2"
+    }
+   ],
+   "cohort": {
+    "artifacts": [
+     {
+      "distribution": "duckdb",
+      "role": "dependency",
+      "source_commit": "1111111111111111111111111111111111111111",
+      "version": "1.5.6",
+      "wheel_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "distribution": "option-flow-contracts",
+      "role": "contracts",
+      "source_commit": "2222222222222222222222222222222222222222",
+      "version": "0.1.0a1",
+      "wheel_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+     },
+     {
+      "distribution": "option-flow-features",
+      "role": "calculations",
+      "source_commit": "3333333333333333333333333333333333333333",
+      "version": "0.1.0a1",
+      "wheel_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+     },
+     {
+      "distribution": "option-flow-io",
+      "role": "io",
+      "source_commit": "4444444444444444444444444444444444444444",
+      "version": "0.1.0a1",
+      "wheel_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+     },
+     {
+      "distribution": "option-flow-workers",
+      "role": "workers",
+      "source_commit": "5555555555555555555555555555555555555555",
+      "version": "0.1.0a1",
+      "wheel_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+     }
+    ],
+    "candidate_id": "REFERENCE-full-fixtures2",
+    "platform_id": "REFERENCE-synthetic-platform"
+   },
+   "counts": {
+    "bindings": 1,
+    "objects": 2,
+    "operations": 1
+   },
+   "equality": {
+    "layers": {
+     "direct": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "2f557068ab8db965f3abdf66d6a265da9831b27c3c135d0127aaa8961aa0e2d8",
+      "results_sha256": "f3e887fd7b29b374a79f82e804ea3d6290206f0cb892d2e4f5f55cd2fd31819f",
+      "state": "present"
+     },
+     "persisted": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "2f557068ab8db965f3abdf66d6a265da9831b27c3c135d0127aaa8961aa0e2d8",
+      "results_sha256": "f3e887fd7b29b374a79f82e804ea3d6290206f0cb892d2e4f5f55cd2fd31819f",
+      "state": "present"
+     },
+     "replay": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "2f557068ab8db965f3abdf66d6a265da9831b27c3c135d0127aaa8961aa0e2d8",
+      "results_sha256": "f3e887fd7b29b374a79f82e804ea3d6290206f0cb892d2e4f5f55cd2fd31819f",
+      "state": "present"
+     },
+     "worker": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "2f557068ab8db965f3abdf66d6a265da9831b27c3c135d0127aaa8961aa0e2d8",
+      "results_sha256": "f3e887fd7b29b374a79f82e804ea3d6290206f0cb892d2e4f5f55cd2fd31819f",
+      "state": "present"
+     }
+    },
+    "verdict": "equal"
+   },
+   "integrity": {
+    "errors": [],
+    "ok": true
+   },
+   "operations": [
+    {
+     "dependency_count": 6,
+     "evidence_count": 2,
+     "object_count": 2,
+     "op_id": "premium1",
+     "ordinal": 0,
+     "reason": "ok",
+     "status": "available"
+    }
+   ],
+   "provenance": {
+    "badge": "SYNTHETIC",
+    "reasons": [
+     "all 1 binding(s) have mode synthetic"
+    ]
+   },
+   "results": [
+    {
+     "dependency_binding_ids": [
+      "binding1"
+     ],
+     "dependency_count": 5,
+     "evidence_count": 1,
+     "kind": "premium",
+     "object_id": "16992896c8f89ecc3e7723c93c6d838b70ecfe350c726acd0d4c6c0fa3b86313",
+     "op_id": "premium1",
+     "ordinal": 0,
+     "reason": "ok",
+     "scope_id": "scope1",
+     "status": "available",
+     "value": "{\"definition_use\": {\"definition_id\": \"definition1\", \"kind\": \"available\"}, \"multiplier\": \"0x3ff0000000000000 (1.0)\", \"premium\": {\"branch\": \"ordinary\", \"metric_id\": \"premium\", \"monetary_basis\": null, \"reason\": \"ok\", \"status\": \"available\", \"unit\": \"currency\", \"value\": \"0x4000000000000000 (2.0)\"}, \"producer\": {\"formula_id\": \"b64-price-products1\", \"input_record_sha256s\": [\"a141b91a4466484972e1de18b301d..."
+    },
+    {
+     "dependency_binding_ids": [
+      "binding1"
+     ],
+     "dependency_count": 5,
+     "evidence_count": 1,
+     "kind": "premium",
+     "object_id": "46fad7a28d0a283fbd7b29b304ab3e0ac025235dced817acc93f74a18211b8b8",
+     "op_id": "premium1",
+     "ordinal": 1,
+     "reason": "ok",
+     "scope_id": "scope1",
+     "status": "available",
+     "value": "{\"definition_use\": {\"definition_id\": \"definition1\", \"kind\": \"available\"}, \"multiplier\": \"0x3ff0000000000000 (1.0)\", \"premium\": {\"branch\": \"ordinary\", \"metric_id\": \"premium\", \"monetary_basis\": null, \"reason\": \"ok\", \"status\": \"available\", \"unit\": \"currency\", \"value\": \"0x4000000000000000 (2.0)\"}, \"producer\": {\"formula_id\": \"b64-price-products1\", \"input_record_sha256s\": [\"a141b91a4466484972e1de18b301d..."
+    }
+   ],
+   "run_key": "REFERENCE-W3-mode-replay-1",
+   "shas": {
+    "cohort": "b360c38dcf0ad00bd238015db341e76de1441f5ff2a26b8bfe3acf2ad823a917",
+    "input_checkpoint": null,
+    "output_checkpoint": "3495215f4657baee79f58078547a2d88f98a6628218b55a87d26f3ac9be55ece",
+    "publication": "79103096fd3437015e7731851ee352b393702bf1b0909faa730145941937565d",
+    "request": "525f30e41625d5025df8df73efcbde6f912ad4bcdc7a454cf439025683b69ea7",
+    "results": "f3e887fd7b29b374a79f82e804ea3d6290206f0cb892d2e4f5f55cd2fd31819f",
+    "snapshot": "c8f03137bf240e86fe3e1eb1cc47d9d53e60c9b440ab7c9af39475afd0e43e09",
+    "work": "cf1e99093ac6db906ab5d3d7e151f967eb7138a8b8b41f73be0bc567616eb24e"
+   },
+   "state": "committed"
+  },
+  {
+   "bindings": [
+    {
+     "binding_id": "binding1",
+     "mode": "synthetic",
+     "rights": "Synthetic independent reference fixture only",
+     "source_content_sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+     "source_id": "synthetic-full-reference",
+     "source_revision": "v2"
+    }
+   ],
+   "cohort": {
+    "artifacts": [
+     {
+      "distribution": "duckdb",
+      "role": "dependency",
+      "source_commit": "1111111111111111111111111111111111111111",
+      "version": "1.5.6",
+      "wheel_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     {
+      "distribution": "option-flow-contracts",
+      "role": "contracts",
+      "source_commit": "2222222222222222222222222222222222222222",
+      "version": "0.1.0a1",
+      "wheel_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+     },
+     {
+      "distribution": "option-flow-features",
+      "role": "calculations",
+      "source_commit": "3333333333333333333333333333333333333333",
+      "version": "0.1.0a1",
+      "wheel_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+     },
+     {
+      "distribution": "option-flow-io",
+      "role": "io",
+      "source_commit": "4444444444444444444444444444444444444444",
+      "version": "0.1.0a1",
+      "wheel_sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+     },
+     {
+      "distribution": "option-flow-workers",
+      "role": "workers",
+      "source_commit": "5555555555555555555555555555555555555555",
+      "version": "0.1.0a1",
+      "wheel_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+     }
+    ],
+    "candidate_id": "REFERENCE-full-fixtures2",
+    "platform_id": "REFERENCE-synthetic-platform"
+   },
+   "counts": {
+    "bindings": 1,
+    "objects": 2,
+    "operations": 1
+   },
+   "equality": {
+    "layers": {
+     "direct": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     },
+     "persisted": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     },
+     "replay": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     },
+     "worker": {
+      "canonical_bytes": 7365,
+      "canonical_sha256": "e08abec7d8dec75b85a9db22af3d8c9bbe2b71a56a294f950785688c176d4627",
+      "results_sha256": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+      "state": "present"
+     }
+    },
+    "verdict": "equal"
+   },
+   "integrity": {
+    "errors": [],
+    "ok": true
+   },
+   "operations": [
+    {
+     "dependency_count": 6,
+     "evidence_count": 2,
+     "object_count": 2,
+     "op_id": "premium1",
+     "ordinal": 0,
+     "reason": "ok",
+     "status": "available"
+    }
+   ],
+   "provenance": {
+    "badge": "SYNTHETIC",
+    "reasons": [
+     "all 1 binding(s) have mode synthetic"
+    ]
+   },
+   "results": [
+    {
+     "dependency_binding_ids": [
+      "binding1"
+     ],
+     "dependency_count": 5,
+     "evidence_count": 1,
+     "kind": "premium",
+     "object_id": "16992896c8f89ecc3e7723c93c6d838b70ecfe350c726acd0d4c6c0fa3b86313",
+     "op_id": "premium1",
+     "ordinal": 0,
+     "reason": "ok",
+     "scope_id": "scope1",
+     "status": "available",
+     "value": "{\"definition_use\": {\"definition_id\": \"definition1\", \"kind\": \"available\"}, \"multiplier\": \"0x3ff0000000000000 (1.0)\", \"premium\": {\"branch\": \"ordinary\", \"metric_id\": \"premium\", \"monetary_basis\": null, \"reason\": \"ok\", \"status\": \"available\", \"unit\": \"currency\", \"value\": \"0x4000000000000000 (2.0)\"}, \"producer\": {\"formula_id\": \"b64-price-products1\", \"input_record_sha256s\": [\"a141b91a4466484972e1de18b301d..."
+    },
+    {
+     "dependency_binding_ids": [
+      "binding1"
+     ],
+     "dependency_count": 5,
+     "evidence_count": 1,
+     "kind": "premium",
+     "object_id": "46fad7a28d0a283fbd7b29b304ab3e0ac025235dced817acc93f74a18211b8b8",
+     "op_id": "premium1",
+     "ordinal": 1,
+     "reason": "ok",
+     "scope_id": "scope1",
+     "status": "available",
+     "value": "{\"definition_use\": {\"definition_id\": \"definition1\", \"kind\": \"available\"}, \"multiplier\": \"0x3ff0000000000000 (1.0)\", \"premium\": {\"branch\": \"ordinary\", \"metric_id\": \"premium\", \"monetary_basis\": null, \"reason\": \"ok\", \"status\": \"available\", \"unit\": \"currency\", \"value\": \"0x4000000000000000 (2.0)\"}, \"producer\": {\"formula_id\": \"b64-price-products1\", \"input_record_sha256s\": [\"a141b91a4466484972e1de18b301d..."
+    }
+   ],
+   "run_key": "REFERENCE-W3-worker-base",
+   "shas": {
+    "cohort": "b360c38dcf0ad00bd238015db341e76de1441f5ff2a26b8bfe3acf2ad823a917",
+    "input_checkpoint": null,
+    "output_checkpoint": "f36a179d9659cc12470d1a036cc8a2a7a9db79601403a0d97f9e5bdd0e355f43",
+    "publication": "885d2d11999f6af8da15080d546d686509867b8ec1423e1f03558d9a9891a4b2",
+    "request": "0f9e4800422840dca5f02d278f34a5da457206b6a64f1bd3e16cd061503f2ca2",
+    "results": "09253f4c0a54fa23e889e7585da8cc5178436715f261bf1b073642e1bc418d86",
+    "snapshot": "c8f03137bf240e86fe3e1eb1cc47d9d53e60c9b440ab7c9af39475afd0e43e09",
+    "work": "c00a8ecb73bc9bfbb4c5fd3fe951c1e85516dd8c3444d3b6fa7b14a0f240c552"
+   },
+   "state": "committed"
+  }
+ ],
+ "schema": "option-flow-demo-export1",
+ "source_file": "sample.duckdb",
+ "storage_schema": [
+  "option-flow-variants-generation1"
+ ]
+}</script>
+<script>
+"use strict";
+var BADGES = {SYNTHETIC: 1, MIXED: 1, UNVERIFIED: 1};
+var LAYERS = ["direct", "worker", "persisted", "replay"];
+var LABEL = {direct: "Direct evaluation", worker: "Worker receipt", persisted: "Persisted readback", replay: "Replay"};
+var data = null, selected = 0, selectedBinding = null;
+
+function el(tag, attrs, kids) {
+  var n = document.createElement(tag);
+  Object.keys(attrs || {}).forEach(function (k) {
+    if (k === "text") n.textContent = attrs[k]; else if (k === "cls") n.className = attrs[k]; else n.setAttribute(k, attrs[k]);
+  });
+  (kids || []).forEach(function (c) { n.appendChild(typeof c === "string" ? document.createTextNode(c) : c); });
+  return n;
+}
+function short(s) { return typeof s === "string" && s.length > 14 ? s.slice(0, 12) + "..." : (s == null ? "-" : String(s)); }
+function hash(s) { return el("code", {text: short(s), title: s == null ? "" : String(s)}); }
+function badge(b) { var k = BADGES[b] ? b : "UNVERIFIED"; return el("span", {cls: "chip " + k, text: k}); }
+function mark(cls, text) { return el("span", {cls: "chip " + cls, text: text}); }
+function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+function say(text, isErr) {
+  var m = document.getElementById("msg"); clear(m);
+  if (text) m.appendChild(el("p", {cls: isErr ? "err" : "", text: text, role: isErr ? "alert" : "status"}));
+}
+function table(caption, heads, rows) {
+  var t = el("table"), th = el("tr");
+  t.appendChild(el("caption", {text: caption}));
+  heads.forEach(function (h) { th.appendChild(el("th", {scope: "col", text: h})); });
+  t.appendChild(el("thead", {}, [th]));
+  var tb = el("tbody");
+  rows.forEach(function (r) {
+    var tr = el("tr");
+    r.forEach(function (c) { tr.appendChild(el("td", {}, [c == null ? "-" : (typeof c === "object" ? c : String(c))])); });
+    tb.appendChild(tr);
+  });
+  t.appendChild(tb);
+  return el("div", {cls: "wrap", tabindex: "0", role: "region", "aria-label": caption}, [t]);
+}
+function integrity(run) {
+  return run.integrity && run.integrity.ok ? mark("match", "verified") : mark("failc", "FAILED");
+}
+function verdictMark(v) {
+  return mark(v === "equal" ? "equal" : v === "differs" ? "differs" : "not_run",
+              v === "equal" ? "equal" : v === "differs" ? "DIFFERS" : "not run");
+}
+
+function renderRuns(p) {
+  clear(p);
+  p.appendChild(el("h2", {text: "Runs (" + data.runs.length + ")"}));
+  p.appendChild(el("p", {text: "Provenance badge is computed by the exporter from the stored bindings; the default is the weakest claim."}));
+  p.appendChild(table("Stored runs", ["Run", "Provenance", "State", "Integrity", "Results", "Operations", "Bindings", "Publication", ""],
+    data.runs.map(function (r, i) {
+      var open = el("button", {type: "button", text: "Open results", "aria-label": "Open results for " + r.run_key});
+      open.addEventListener("click", function () { selected = i; selectedBinding = null; show("results"); });
+      return [el("code", {text: r.run_key}), badge(r.provenance && r.provenance.badge), r.state, integrity(r),
+              r.counts.objects, r.counts.operations, r.counts.bindings, hash(r.shas.publication), open];
+    })));
+  data.runs.forEach(function (r) {
+    var d = el("details", {cls: "panel"}, [el("summary", {text: "Provenance detail: " + r.run_key})]);
+    d.appendChild(el("p", {text: (r.provenance.reasons || []).join("; ")}));
+    if (r.integrity && !r.integrity.ok) d.appendChild(el("p", {cls: "err", text: "Integrity errors: " + r.integrity.errors.join("; ")}));
+    d.appendChild(table("Bindings", ["Binding", "Mode", "Source", "Revision", "Content hash", "Rights"],
+      r.bindings.map(function (b) { return [b.binding_id, b.mode, b.source_id, b.source_revision, hash(b.source_content_sha256), b.rights]; })));
+    if (r.cohort) d.appendChild(table("Cohort " + (r.cohort.candidate_id || "") + " on " + (r.cohort.platform_id || ""),
+      ["Distribution", "Version", "Role", "Source commit", "Wheel hash"],
+      r.cohort.artifacts.map(function (a) { return [a.distribution, a.version, a.role, hash(a.source_commit), hash(a.wheel_sha256)]; })));
+    p.appendChild(d);
+  });
+}
+
+function runPicker(p, label) {
+  var sel = el("select", {id: "run-" + label});
+  data.runs.forEach(function (r, i) { var o = el("option", {value: String(i), text: r.run_key}); if (i === selected) o.selected = true; sel.appendChild(o); });
+  sel.addEventListener("change", function () { selected = Number(sel.value); selectedBinding = null; renderAll(); });
+  p.appendChild(el("div", {cls: "row"}, [el("label", {"for": "run-" + label, text: "Run"}), sel]));
+}
+
+function renderResults(p) {
+  clear(p);
+  var r = data.runs[selected];
+  p.appendChild(el("h2", {text: "Stored feature results per operation"}));
+  runPicker(p, "results");
+  p.appendChild(el("p", {}, ["Provenance ", badge(r.provenance.badge), " ", integrity(r),
+    " Evidence count = members + excluded + controls; dependency count = Evidence.dependencies entries."]));
+  var ops = {};
+  r.operations.forEach(function (o) { ops[o.op_id] = o; });
+  var order = r.operations.map(function (o) { return o.op_id; });
+  r.results.forEach(function (x) { if (order.indexOf(x.op_id) < 0) order.push(x.op_id); });
+  order.forEach(function (id) {
+    var o = ops[id];
+    p.appendChild(el("h3", {text: "Operation " + id}));
+    p.appendChild(el("p", {text: o ? "Receipt: " + o.status + " (" + o.reason + "), " + o.object_count + " object(s), evidence " +
+      o.evidence_count + ", dependencies " + o.dependency_count : "No operation receipt stored."}));
+    var rows = r.results.filter(function (x) { return x.op_id === id; }).map(function (x) {
+      var chips = el("span");
+      x.dependency_binding_ids.forEach(function (b) {
+        var btn = el("button", {type: "button", cls: "depbtn", text: b, "aria-label": "Show provenance of binding " + b});
+        btn.addEventListener("click", function () { selectedBinding = b; renderBinding(); });
+        chips.appendChild(btn);
+      });
+      return [x.ordinal, x.kind, x.scope_id, x.status ? x.status + (x.reason ? " (" + x.reason + ")" : "") : "-", el("code", {text: x.value}),
+              x.evidence_count, x.dependency_count, chips.childNodes.length ? chips : "-"];
+    });
+    p.appendChild(table("Results of " + id, ["#", "Kind", "Scope", "Status", "Value (binary64 shown as hex and decoded)", "Evidence", "Dependencies", "Bindings"], rows));
+  });
+  p.appendChild(el("div", {id: "binding-box", "aria-live": "polite"}));
+  renderBinding();
+}
+function renderBinding() {
+  var box = document.getElementById("binding-box");
+  if (!box) return;
+  clear(box);
+  if (selectedBinding == null) return;
+  var r = data.runs[selected], b = r.bindings.filter(function (x) { return x.binding_id === selectedBinding; })[0];
+  var pn = el("div", {cls: "panel"}, [el("h3", {text: "Binding " + selectedBinding})]);
+  if (!b) { pn.appendChild(el("p", {text: "Not stored in this run."})); box.appendChild(pn); return; }
+  var dl = el("dl");
+  [["Mode", b.mode], ["Source", b.source_id + "@" + b.source_revision], ["Content hash", b.source_content_sha256], ["Rights", b.rights]]
+    .forEach(function (kv) { dl.appendChild(el("dt", {text: kv[0]})); dl.appendChild(el("dd", {}, [el("code", {text: String(kv[1])})])); });
+  pn.appendChild(dl);
+  box.appendChild(pn);
+}
+
+function renderEquality(p) {
+  clear(p);
+  p.appendChild(el("h2", {text: "Replay equality"}));
+  p.appendChild(el("p", {text: "Each layer is compared with the persisted readback by record digest, canonical byte digest and canonical byte length. " +
+    "Only the persisted layer is read from the database; the other layers come from an evidence file and are not run when it is absent."}));
+  var rows = data.runs.map(function (r) {
+    var ref = r.equality.layers.persisted, cells = [el("code", {text: r.run_key})];
+    LAYERS.forEach(function (n) {
+      var l = r.equality.layers[n];
+      if (l.state !== "present") { cells.push(mark("not_run", "not run")); return; }
+      var same = ref.state === "present" && ["results_sha256", "canonical_sha256", "canonical_bytes"].every(function (k) { return l[k] === ref[k]; });
+      cells.push(el("span", {}, [mark(same ? "match" : "DIFFERS", same ? "match" : "DIFFERS"), " ", hash(l.results_sha256)]));
+    });
+    cells.push(verdictMark(r.equality.verdict));
+    return cells;
+  });
+  p.appendChild(table("Equality per run", ["Run"].concat(LAYERS.map(function (n) { return LABEL[n]; }), ["Verdict"]), rows));
+  runPicker(p, "equality");
+  var r = data.runs[selected];
+  p.appendChild(el("h3", {text: "Full digests for " + r.run_key}));
+  p.appendChild(table("Layer digests", ["Layer", "State", "Results digest", "Canonical bytes digest", "Bytes"],
+    LAYERS.map(function (n) {
+      var l = r.equality.layers[n];
+      return [LABEL[n], l.state === "present" ? "present" : "not run", l.results_sha256 ? el("code", {text: l.results_sha256}) : "-",
+              l.canonical_sha256 ? el("code", {text: l.canonical_sha256}) : "-", l.canonical_bytes == null ? "-" : l.canonical_bytes];
+    })));
+}
+
+var VIEWS = ["runs", "results", "equality"];
+function show(name) {
+  VIEWS.forEach(function (v) {
+    var t = document.getElementById("tab-" + v), on = v === name;
+    t.setAttribute("aria-selected", on ? "true" : "false");
+    t.tabIndex = on ? 0 : -1;
+    document.getElementById("p-" + v).hidden = !on;
+  });
+  renderAll();
+}
+function renderAll() {
+  if (!data) return;
+  renderRuns(document.getElementById("p-runs"));
+  renderResults(document.getElementById("p-results"));
+  renderEquality(document.getElementById("p-equality"));
+}
+function load(doc, source) {
+  if (!doc || doc.schema !== "option-flow-demo-export1" || !Array.isArray(doc.runs)) {
+    say("This file is not a demo export (expected schema option-flow-demo-export1).", true);
+    return;
+  }
+  data = doc; selected = 0; selectedBinding = null;
+  document.getElementById("main").hidden = false;
+  say("Loaded " + source + ": " + doc.runs.length + " run(s).", false);
+  show("runs");
+}
+document.getElementById("file").addEventListener("change", function (e) {
+  var f = e.target.files[0];
+  if (!f) return;
+  var rd = new FileReader();
+  rd.onload = function () {
+    try { load(JSON.parse(rd.result), f.name); } catch (x) { say("Could not read the file as JSON.", true); }
+  };
+  rd.onerror = function () { say("Could not read the file.", true); };
+  rd.readAsText(f);
+});
+document.getElementById("sample").addEventListener("click", function () {
+  try { load(JSON.parse(document.getElementById("embedded-sample").textContent), "embedded synthetic sample"); }
+  catch (x) { say("The embedded sample is missing or invalid.", true); }
+});
+VIEWS.forEach(function (v, i) {
+  var t = document.getElementById("tab-" + v);
+  t.addEventListener("click", function () { show(v); });
+  t.addEventListener("keydown", function (e) {
+    var j = e.key === "ArrowRight" ? (i + 1) % 3 : e.key === "ArrowLeft" ? (i + 2) % 3 : -1;
+    if (j >= 0) { show(VIEWS[j]); document.getElementById("tab-" + VIEWS[j]).focus(); e.preventDefault(); }
+  });
+});
+document.getElementById("sample").click();
+</script>
+</body>
+</html>

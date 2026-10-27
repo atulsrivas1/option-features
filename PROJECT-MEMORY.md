@@ -20,3 +20,6 @@
 - option-feature-workers (from repo root): `python -B -m unittest discover -s packages/workers/tests -v`; integration: `python -B qualification/run_integration.py --config <config.json> --trusted-manifest-sha256 <digest> --destination <new-dir>` (per qualification/README.md).
 - Not executed here. Unverified: whether tests/ discovery works without package markers, and R26 variants1 test entry points (none found).
 - Private candidate4 fixtures: see docs/r26-variants/FIXTURE_MANIFEST.md.
+
+## Demo (tools/demo, synthetic only, prerelease)
+- `python -I -B tools/demo/export_demo.py OUT.duckdb [--evidence evidence.json] --out demo-export.json`, then open `tools/demo/demo.html` (file://, no network) and pick the JSON. Usage and the badge rules are in the export_demo.py header. The page embeds `tools/demo/sample/demo-export.json` (synthetic fixtures; rebuild with `sample/make_sample.py`). Variants1 sink only; no REAL badge exists; unknown provenance is UNVERIFIED. A gate for a qualified release, not for the prerelease.
