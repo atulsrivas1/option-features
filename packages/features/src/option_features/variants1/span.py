@@ -3,7 +3,7 @@ from option_feature_contracts.variants1.canonical import b2f, b64num, canonical_
 from . import numeric as N
 from . import premium as P
 from . import signing as S
-from .admission import interval_contains
+from .admission import _in_interval, interval_contains
 from .context import Deps, make_evidence
 from .flow import (Cap, capture_deps, definition_records, eligibility_block, exclusion_deps, sign_members)
 from .results import metric, unavailable_metric, row as mkrow, receipt, aggregate
@@ -49,7 +49,7 @@ def _candidates(ctx, op, scope):
     return out
 
 
-def _collect(ctx, op, scope, anchor_rev, asof_ns, w, cands, memo, expected):
+def _collect(ctx, op, scope, anchor_rev, asof_ns, w, cands, memo, expected, ctls):
     """Witness population (partition members at/after the anchor inside M) for one anchor."""
     anchor_new = ctx.new_rev(anchor_rev["root_id"])
     a_ns = anchor_new["event_ns"]
@@ -65,6 +65,10 @@ def _collect(ctx, op, scope, anchor_rev, asof_ns, w, cands, memo, expected):
             d = P.definition_of(ctx, rev)
             if d is not None and (akey is None or partition_key(d) != akey):
                 continue
+        if rev["root_id"] != anchor_rev["root_id"] and rev["root_id"] not in expected and not all(
+                _in_interval(c["event_domain"], new["event_ns"]) for c in ctls):
+            memo.setdefault(("f4", anchor_rev["root_id"]), []).append(rev["root_id"])
+            continue  # F4: neither expected nor captured; excluded below (exclusion dependency only)
         wit.append(_premiums(ctx, op, memo, rev))
     return wit, a_ns, hi
 
@@ -96,7 +100,7 @@ def span(ctx, oi, op):
     anchors = []
     for rid in op["anchor_ids"]:
         arev = ctx.k_selected(rid)
-        wit, a_ns, hi = _collect(ctx, op, scope, arev, asof_ns, w, cands, memo, expected)
+        wit, a_ns, hi = _collect(ctx, op, scope, arev, asof_ns, w, cands, memo, expected, ctls)
         anchors.append((rid, arev, wit, a_ns, hi))
     # phase 2: anchor eligibility in anchor array order
     plan = []
@@ -130,6 +134,7 @@ def span(ctx, oi, op):
         unres_ids = {r["rev"]["root_id"] for r in wit if r["outcome"] == "unresolved_premium"}
         excluded = [rid2 for rid2 in expected if rid2 not in set(member_ids) and rid2 not in unres_ids and
                     ctx.k_selected(rid2) is not None]
+        excluded += [x for x in memo.get(("f4", rid), []) if x not in excluded]
         cap.excl_revs = []
         for rid2 in excluded:
             cap.excl_revs += [r for r in ctx.chain(rid2) if ctx.vis_K(r["stamp"])]

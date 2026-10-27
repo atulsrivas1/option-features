@@ -44,6 +44,19 @@ def capture(ctx, op, oi, interval=None):
             cap.excl_revs += [r for r in ctx.chain(rid) if ctx.vis_K(r["stamp"])]
             continue
         cap.raw.append(sel)
+    if cap.domain is not None and "scope_id" in op:
+        # F4 (clarification2 Q2a/Q2b): a visible regular root that is neither expected nor covered by the
+        # capture domain is excluded (listed, exclusion dependency only; never a member).
+        for rid in ctx.roots:
+            if rid in seen:
+                continue
+            sel = ctx.k_selected(rid)
+            if (sel is None or sel["kind"] == "cancel" or sel["condition"] != "regular" or
+                    sel["scope_id"] != op["scope_id"] or _in_interval(cap.domain, ctx.new_rev(rid)["event_ns"])):
+                continue
+            cap.complete = False
+            cap.excluded.append(rid)
+            cap.excl_revs += [r for r in ctx.chain(rid) if ctx.vis_K(r["stamp"])]
     return cap
 
 
