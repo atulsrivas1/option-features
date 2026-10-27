@@ -1,6 +1,6 @@
 # R26 variants: restore CP3 order, missing stream and suffix checks (clarification 2)
 
-Status: proposed, needs independent review and PO ratification, October 27, 2026. It supplements PUBLIC_SAFE_RESTORE_ERROR_PATH_CLARIFICATION1 and POST_R26_CLARIFICATIONS section 4 and implements PO_RULING_RESTORE_OPEN (2026-10-27). It freezes no fixture and changes no frozen row. Parts not decided by existing text are marked **proposed**.
+Status: Q3 (missing stream) RATIFIED by PO 2026-10-27 (inferred): checkpoint_cut_mismatch at the index-free /request/cut_cursors, first in CP3, any number of omitted streams yields one error. Q4 (suffix checks) HELD: no code, no fixture. Q1/Q2 as decided; decided, pending owner review. Original status was "proposed, needs independent review and PO ratification", October 27, 2026. It supplements PUBLIC_SAFE_RESTORE_ERROR_PATH_CLARIFICATION1 and POST_R26_CLARIFICATIONS section 4 and implements PO_RULING_RESTORE_OPEN (2026-10-27). It freezes no fixture and changes no frozen row. Parts not decided by existing text are marked **proposed**.
 
 ## Q1. Order of the temporal rules and cut-cursor regression (PO ruling A)
 

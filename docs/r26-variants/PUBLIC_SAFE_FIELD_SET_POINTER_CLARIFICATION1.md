@@ -1,6 +1,6 @@
 # Public-safe field_set missing/extra pointer clarification 1
 
-Status: **proposed, needs independent review and PO ratification.** Docs only; no code, fixture or freeze changed. Supersedes the "proposed ruling" in POST_R26_CLARIFICATIONS section 1 (same direction, made definite and with corrected evidence).
+Status: **ratified by PO 2026-10-27 (inferred from frozen rows).** The field_set parent pointer is INFERRED (the contract states no explicit rule); independently reviewed, recorded as "decided, pending owner review". Docs only; no code, fixture or freeze changed by this document. Supersedes the "proposed ruling" in POST_R26_CLARIFICATIONS section 1 (same direction, made definite and with corrected evidence).
 
 ## 1. Ruling
 
