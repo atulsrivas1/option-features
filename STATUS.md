@@ -1,5 +1,8 @@
 # Status (newest first)
 
+## 2026-10-27 - Candidate5 phase A frozen as a post-release candidate
+- Candidate5 phase A frozen (2542 of 2554 rows, 12 excluded, post-release fixture correction; record docs/r26-variants/CANDIDATE5_FREEZE_RECORD.md). Product owner accepted with conditions; independent freeze review approve-with-conditions. Frozen-subject-to-regeneration watch list (13 ids), gaps G1 to G6 (17 phase-non-asserted rows, graph evidence digest-level only, N4 scripts exit 0 on failure) and the controller's removed source-review gate are recorded; release notes must repeat them. Coordinator rulings decided, pending owner review.
+
 ## 2026-10-27 - S1 hygiene and S2 clarifications merged; candidate5 phase A approved, freeze pending
 - S1 hygiene (PR 25) and S2 post-R26 clarifications (PR 26) merged. Candidate5 phase A source (30 of 31 rows fixed, 2 F4 rows undetermined) approved by an independent reviewer (work folder review of 2026-10-27). Contained run passed attempt 1 (83 s, 2554 rows, 2521 byte-identical, 33 changed). Audit verdict: approve-with-conditions. Replay: library 393/393 (393 of 397 rows run; 2 F4 rows excluded, 2 checkpoint rows belong to the workers layer), I/O 1757/1757, workers 76/76. Harnesses unreviewed; freeze proposal pending.
 - Code gaps remain in workers validate_restore (missing-stream, request immutability, CP3 temporal order, K-regression placement, suffix checks) and the library field_set pointer; fixtures needed first. Nothing released.
