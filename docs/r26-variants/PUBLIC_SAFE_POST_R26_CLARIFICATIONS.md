@@ -14,6 +14,7 @@ Where a ruling differs from shipped code, code is not changed here; the differen
 - Proposed ruling (**proposed, needs independent review**): for a missing or extra member of a closed record (including a union object missing `kind`), `field_set` at stage 3 points to the record that fails the check (the parent), not the member. Within a record, report the first missing field in declaration order; if none is missing, the first extra member in supplied order. Duplicate-key pointer unchanged. This matches the frozen fixtures and the codec; the library's direct (non-codec) child pointer should be re-aligned in a follow-up code story.
 - Rationale: one normative pointer shape for every entry path; frozen rows already encode it; the contract names only code and stage.
 - Fixtures needed: missing first/last field; extra field before/after known fields; missing plus extra in one record (missing wins); nested record in an array at index > 0; union without `kind`; envelope-level missing/extra key; duplicate key unchanged. The 1,502 W3-field rows cover most; add missing-plus-extra and extra-in-supplied-order.
+- Erratum (2026-10-27): "the 1,502 frozen W3-field rows" in the lines above is inaccurate. 751 of them are field_set (missing member) and 751 are type_mismatch; 782 stage 3 field_set rows in all (including extra-member and array-element union rows) assert the parent pointer. See PUBLIC_SAFE_FIELD_SET_POINTER_CLARIFICATION1.md, which supersedes this section.
 
 ## 2. Rolling envelope member ids and the four undetermined rolling cases
 
