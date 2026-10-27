@@ -13,3 +13,10 @@
 
 ## Open at last check (2026-10-22)
 - R25 released as prerelease, unchanged. R26 (44-output native candidate) unreleased: draft PRs option-features #9, option-feature-io #5, option-feature-workers #5; EQ188/EQ189/EQ215 In progress (variant contract rework), EQ191/EQ192 Test, EQ190/EQ193 gated on real EQ153/EQ158 producers.
+
+## Run and test commands (read-only inspection; use a clean CPython 3.12 runtime with the packages installed, always `-B`, no bytecode)
+- option-features (from repo root): `python -B -m unittest discover -s tests -p "test_*.py" -v` (tests/contracts, tests/features, tests/qualification; the fixture consumer needs R25_INDEPENDENT_WIRE_FIXTURES and R25_INDEPENDENT_WIRE_FIXTURES_SHA256, see docs/R25_LOCAL_QUALIFICATION.md).
+- option-feature-io (from repo root): `python -B -m unittest discover -s packages/io/tests -v`
+- option-feature-workers (from repo root): `python -B -m unittest discover -s packages/workers/tests -v`; integration: `python -B qualification/run_integration.py --config <config.json> --trusted-manifest-sha256 <digest> --destination <new-dir>` (per qualification/README.md).
+- Not executed here. Unverified: whether tests/ discovery works without package markers, and R26 variants1 test entry points (none found).
+- Private candidate4 fixtures: see docs/r26-variants/FIXTURE_MANIFEST.md.
