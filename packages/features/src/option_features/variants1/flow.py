@@ -43,6 +43,13 @@ def capture(ctx, op, oi, interval=None):
             cap.excluded.append(rid)
             cap.excl_revs += [r for r in ctx.chain(rid) if ctx.vis_K(r["stamp"])]
             continue
+        if not all(_in_interval(c["event_domain"], ctx.new_rev(rid)["event_ns"]) for c in cap.controls):
+            # F4 (PO-ratified): with several capture Controls a root is covered only if every Control's
+            # event_domain contains it, expected or not
+            cap.complete = False
+            cap.excluded.append(rid)
+            cap.excl_revs += [r for r in ctx.chain(rid) if ctx.vis_K(r["stamp"])]
+            continue
         cap.raw.append(sel)
     if cap.controls and "scope_id" in op:
         # F4 (clarification2 Q2a/Q2b): a visible regular root that is neither expected nor covered by the
