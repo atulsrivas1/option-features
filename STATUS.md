@@ -1,5 +1,9 @@
 # Status (newest first)
 
+## 2026-10-27 - S1 hygiene and S2 clarifications merged; candidate5 phase A approved, freeze pending
+- S1 hygiene (PR 25) and S2 post-R26 clarifications (PR 26) merged. Candidate5 phase A source (30 of 31 rows fixed, 2 F4 rows undetermined) approved by independent review. Contained run passed attempt 1 (82 s, 2554 rows, 2521 byte-identical, 33 changed). Audit: approve with conditions. Replay: library 393/393, I/O 1757/1757, workers 76/76. Harnesses unreviewed; freeze proposal pending.
+- Code gaps remain in workers validate_restore (missing-stream, request immutability, CP3 temporal order, K-regression placement, suffix checks) and the library field_set pointer; fixtures needed first. Nothing released.
+
 ## 2026-10-23 - R26 variants1 released as unqualified prerelease (tag r26-variants1-prerelease in all three repos; owner chose to skip Windows qualification, browser demo and candidate5; 31 fixture-defect rows excluded (18 library + 13 I/O, incl. 3 joint-output; earlier "28" omitted those 3); contract gaps open)
 
 ## 2026-10-23 - R26 candidate4 (N4 obligation fixtures) materialized and audited (mechanical)

@@ -1,16 +1,18 @@
 # Handoff (keep under 60 lines; update after every merge)
 
-Updated 2026-10-23. Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
+Updated 2026-10-27. Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
-## Where we are: R26 released 2026-10-23 as unqualified prerelease (tag r26-variants1-prerelease, three repos)
-- Merged: option-features #12 #15 (clarifications) #16 #18 #20 #22 (decisions) #17 (skill) #19 #21 (library); option-feature-io #7 (codec, stages 1-4/9); option-feature-workers #7 (checkpoint/restore, DuckDB storage, replay). Evidence: docs/r26-variants/R26_EVIDENCE.md; retro: docs/knowledge/RETRO_R26.md (PR 23 pending until merged).
-- Manual runs: owned frozen rows pass per layer (workers 76/76; I/O 0 mismatches); 31 fixture-defect rows excluded pending a corrected candidate5: 18 library + 13 I/O (10 FEFF/unknown-tag + 3 joint-output); earlier "28" omitted the 3 joint rows.
-- Private fixtures/evidence: owner's work folder Documents/ChatGPT/Equity Features/work/r26-20261021 (candidate4 in variant-full-fixtures-completion4; freeze proposal + Addendum 1; reviews).
+## Where we are: R26 prerelease out (r26-variants1-prerelease); S1 (PR 25) and S2 (PR 26) merged; candidate5 phase A awaiting freeze (2026-10-27)
+- Candidate5 source approved (30 of 31 rows fixed, 2 F4 undetermined); contained run passed (2554 rows, 2521 identical, 33 changed). Replay: library 393/393, I/O 1757/1757, workers 76/76. Audit approve-with-conditions; harnesses unreviewed; freeze proposal pending.
+- Open code gaps: workers validate_restore (missing-stream, request immutability, CP3 temporal order, K-regression placement, suffix checks), library field_set pointer; fixtures first. Nothing new released.
+- R26 evidence: docs/r26-variants/R26_EVIDENCE.md; retro: docs/knowledge/RETRO_R26.md. Private work: owner's Documents/ChatGPT/Equity Features/work/r26-20261021.
 
 ## Next
-1. Candidate5: regenerate the 31 excluded fixture rows (representative rows predate the quote-selector clarification) and replay all layers.
-2. Contract clarifications still needed: field_set missing/extra pointer, rolling envelope member ids, DailyCore excluded-candidate Results and scope pointers, restore i>0, PR 12 lane control/overflow placement, A>K temporal_cut order; N4 schema notes (bp vs bits, monetary_basis reverse direction).
-3. Close: Windows qualification, browser demo, owner acceptance; apply retro changes in the next release's first brief.
+1. Freeze review of candidate5.
+2. Phase B fixtures for the S2 rulings.
+3. Workers hardening (validate_restore, field_set pointer).
+4. Windows qualification (backlog, not a gate).
+5. Browser demo: stored-output DuckDB with provenance.
 
 ## Owner items (parked)
 - Decide what the browser demo shows for a library release; when to run Windows qualification; release acceptance.
