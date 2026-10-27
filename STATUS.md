@@ -1,5 +1,8 @@
 # Status (newest first)
 
+## 2026-10-27 - Candidate9 recorded as a post-release candidate (2594 rows)
+- Candidate9 (record docs/r26-variants/CANDIDATE9_FREEZE_RECORD.md, supersedes candidate8): 2594 rows in files (2292 + 302 graphs), nothing excluded, frozen 2594. The missing-stream row is unmasked (Q3, INFERRED) and the 9 held B rows return under the ratified assumption 2. +5 N4 rows (A>K before merge, 4 direct-root field_set), +2 F4 two-roots rows, +2 graphs. Replay v6 on merged mains (option-features 6a81e65, io e156963, workers 8795f3e): library 397/397, N4 49/49, graphs 298/298, I/O 1764/1764, workers 83/83 (32 partial, pinned after a first run; independent recompute owed); all exit 0. 49 rows and 22 graphs flagged frozen subject to regeneration. Open: two-control fixtures then flow/span domain fix, /checkpoint and /config direct-root rows; Q4 and the narrower-rollup clause held. Rulings decided, pending owner review.
+
 ## 2026-10-27 - Candidate8 frozen as a post-release candidate (2575 rows)
 - Candidate8 frozen (record docs/r26-variants/CANDIDATE8_FREEZE_RECORD.md, supersedes candidate6): 2585 rows in files, 1 excluded (N4-restore-missing-stream-dropped-retained-stream), 9 held B rows tagged out by id (assumption 2 held), frozen 2575 (2275 rows + 300 graphs). Replay of record REPLAY_V5 on merged mains (9ecd68e / io e156963 / workers 82aac59): library 395/395, N4 45/45, graphs 296/296, I/O 1764/1764, workers 81/81 (30 partial); all exit 0. 32 rows and 20 graphs flagged frozen subject to regeneration. The 6 former masked rows and 6 graphs are unmasked and frozen. PR 37 merged (29c0cb1) but Q3/Q4 still unratified. Independent review approve-with-conditions. Rulings decided, pending owner review.
 
