@@ -2,29 +2,29 @@
 
 Updated 2026-10-27. Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
-## Where we are: R26 prerelease out; candidate11 proposed as the post-release candidate (2026-10-27)
-- Freeze record: docs/r26-variants/CANDIDATE11_FREEZE_RECORD.md (supersedes candidate9; its PR is not final until merged; independent freeze review done: approve-with-conditions, conditions applied): 2608 rows in files (2300 + 308 graphs), nothing excluded, frozen 2608 (candidate9 + 14 = 8 rows + 6 graphs). index.json 6f6e0f0e...
-- Replay v8 at option-features 4e82136 / io e156963 / workers 8795f3e: library 403/403, N4 49/49, graphs 304/304, I/O 1764/1764, workers 85/85 (32 partial); all exit 0, no expected-to-fail. Audits candidate10 and candidate11: approve.
-- Two-control latent defect fixed (PR 42); candidate9 rows unchanged. Demo merged (PR 41).
-- Flagged frozen-subject-to-regeneration: 57 rows and 28 graphs. Gaps G1 to G24 in the record. Rulings decided, pending owner review.
+## Where we are: R26 prerelease out; candidate12 proposed as the post-release candidate (2026-10-27)
+- Freeze record: docs/r26-variants/CANDIDATE12_FREEZE_RECORD.md (supersedes candidate11; its PR is not final until merged; independent freeze review done: approve-with-conditions, conditions applied, independent re-run of the five v9 harnesses matched; audit approve): 2614 rows in files (2304 + 310 graphs), nothing excluded, frozen 2614 (candidate11 + 6 = 4 rows + 2 graphs). index.json 4e2f6428...
+- Replay v9 at option-features 0f37caa / io e156963 / workers 8795f3e: library 405/405 (+2 skipped), N4 49/49, graphs 306/306, I/O 1764/1764, workers 87/87 (32 partial); all exit 0, no expected-to-fail. Mutation proof for all five harnesses (first graph mutation redone).
+- Integer-op incomplete capture and /checkpoint, /config shape order ratified (inferred); rollup rows and missing-member rows now authored. Two-control fix (PR 42) and demo (PR 41, synthetic-only) merged.
+- Flagged frozen-subject-to-regeneration: 61 rows and 30 graphs. Gaps G1 to G26 in the record. Rulings decided, pending owner review.
 
 ## Next
-1. Coordinator freeze and merge of the record PR (independent freeze review done).
-2. Ruling needed: integer-op incomplete-capture sentence (integer_weights and count Metrics statuses); then re-author the rollup-wider row (c-domain, c-completeness are untested until then).
-3. Ruling needed: /checkpoint and /config missing-member sentences (stage-3 field_set before CP0-CP2 / config checks); then author missing-member rows.
-4. Q4 (suffix checks) and the narrower-rollup clause stay held (PO question needed to unhold).
-5. Release notes (record section 8 items; filter re-issued for candidate11); qualified-release criteria from PO_DECISION_CANDIDATE9: Windows qualification passes, demo works, two-control fix landed (done), /checkpoint and /config coverage or scoped out, no flagged id undisclosed, owner accepts. Stay a prerelease until then.
-6. Regenerate the 18 assumption-2 flagged rows/graphs plus the 9 held rows (largest flagged block).
-
-## Owner items (parked)
-- Permission for PyPI downloads (python-flint, duckdb, setuptools wheels) for Windows qualification; qualification scope.
-- Release acceptance and the qualified-vs-prerelease label.
-- Review of decisions marked "pending owner review".
-- Leftover worktrees under .claude/worktrees in the three repos can be removed (needs OK or manual cleanup).
+OWNER ITEMS first (parked until the owner returns):
+1. PyPI wheel permission for Windows qualification: python-flint==0.9.0, duckdb==1.5.6, setuptools==80.9.0, win_amd64 cp312 (sizes unverified).
+2. Qualification scope.
+3. Release acceptance and the qualified-vs-prerelease label. Criteria: Windows qualification passes; demo works (merged, synthetic-only); two-control fix landed (done); /checkpoint and /config coverage (done) or scoped out; every flagged id disclosed; owner accepts.
+4. Review of the "decided, pending owner review" decisions (assumption 2, Q3 and field_set inference, F4 ratifications, Clarification 4 and Addendum 5 inferences, controller no-review deviation, candidate12 supersession).
+5. Worktree cleanup (.claude/worktrees in the three repos, including s24-freeze12 after merge).
+Team items:
+6. Independent freeze review of candidate12: DONE (approve-with-conditions, conditions applied). Next: coordinator freeze and merge of the record PR.
+7. Q4 (suffix checks) and the narrower-rollup clause stay held (PO question needed to unhold).
+8. Release notes finalization (record section 8 items; filter re-issued for candidate12; draft kept in the private work folder).
+9. Regenerate the flagged rows, assumption-2 block first (18 rows/graphs plus the 9 held rows).
 
 ## Gotchas
 - Controller runs need absolute paths; contained run via python -I -B, never reuse a failed attempt dir.
 - Add .gitignore for bytecode before any run; commit-then-remove leaks into branch history.
 - Fixture-vs-contract triage before bending code; Sonnet (not Haiku) for storage/restore work.
-- Pinned counts learned from a first run (workers partial 32) must be recomputed by a reviewer (done for 32 by the candidate9 freeze review).
+- Pinned counts learned from a first run (workers partial 32) must be recomputed by a reviewer.
+- A mutation that does not trip proves nothing: confirm the mutated field is one the harness reads.
 - Check gh auth (atulsrivas1) before every push.
