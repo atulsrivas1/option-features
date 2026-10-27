@@ -61,7 +61,7 @@ def compute_premium(ctx, recipe, scope, rev, definition):
     m = b2f(mult["bits"])
     t = N.mul(p, qf)
     out = N.mul(t, m)
-    branch = "underflow_to_zero" if out == 0 else "ordinary"
+    branch = "underflow_to_zero" if (out == 0 and p != 0 and qf != 0 and m != 0) else "ordinary"
     return metric("premium", unit, b64num(out), branch=branch), mult
 
 
