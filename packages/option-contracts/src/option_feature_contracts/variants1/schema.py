@@ -106,7 +106,7 @@ RECORDS = {
     "MoneyBasis": "unit:L.currency_ticks currency:currency scale:sp",
     "Scope": "scope_id:id population_universe_id:id underlying_id:id contract_ids:[]id session_id:id session_day:day currency:currency action_basis_id:id deliverable_basis_id:id definition_basis_id:id clock_id:id partition_start_ns:u monetary_basis:?R.MoneyBasis",
     "RawIntegerPrice": "kind:L.integer ticks:sp scale:sp",
-    "RawBinary64Price": "kind:L.b64 bits:bp",
+    "RawBinary64Price": "kind:L.b64 bits:bn",
     "IntegerMultiplier": "kind:L.integer units:sp",
     "Binary64Multiplier": "kind:L.b64 bits:bp",
     "DefinitionAvailable": "kind:L.available definition_id:id",
