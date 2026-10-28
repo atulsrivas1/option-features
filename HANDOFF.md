@@ -15,7 +15,7 @@ OWNER ITEMS first (parked until the owner returns):
 1. PyPI wheel permission for Windows qualification: APPROVED by the owner and done; python-flint 0.9.0, duckdb 1.5.6, setuptools 80.9.0 (win_amd64 cp312) downloaded, sizes and sha256 verified against PyPI (see docs/r26-variants/WINDOWS_PARTIAL_QUALIFICATION_RECORD.md).
 2. Qualification scope.
 3. Release acceptance and the qualified-vs-prerelease label. Criteria: Windows qualification passes; demo works (merged, synthetic-only); two-control fix landed (done); /checkpoint and /config coverage (done) or scoped out; every flagged id disclosed; owner accepts.
-4. DONE: the pending-decision review is complete; all decisions are now PO-ruled (see DECISIONS.md, "PO ratification of pending decisions" and "PO rulings on the six items"); some rulings carry open conditions (items 9b-9f). No review items remain for the owner.
+4. DONE: the pending-decision review is complete; all decisions are now PO-ruled (see DECISIONS.md, "PO ratification of pending decisions" and "PO rulings on the six items"); some rulings carry open conditions (items 9b-9e). No review items remain for the owner.
 5. Worktree cleanup (.claude/worktrees in the three repos, including s24-freeze12 after merge).
 Team items:
 6. Independent freeze review of candidate12: DONE (approve-with-conditions, conditions applied). Next: coordinator freeze and merge of the record PR.
@@ -27,8 +27,8 @@ Team items:
 9c. PR 34 entries (open condition): regenerate the 6 rows and graphs under Reading B; order of excluded_ids not asserted.
 9d. Two-control F4 fix (open condition): frozen rows byte-identical per v9 replay; new two-control fixtures must fail before the fix and pass after.
 9e. Release notes must disclose that c-domain and c-completeness are untested (rollup-wider row removed).
-9g. Assumption 2: the 9 B and 9 B3 rows already encode it in candidate12 (analysis finding, PO acceptance pending via PR 49 review); no regeneration needed, so the flagged-rows item 9 assumption-2 block is satisfied pending that acceptance; the 9 graphs were not separately inspected.
 9f. CP3 compatibility ratified: Q2 combined-defect order unspecified and not asserted; Q4 held.
+9g. Assumption 2: the 9 B and 9 B3 rows already encode it in candidate12 (analysis finding, PO acceptance pending via PR 49 review); no regeneration needed, so the flagged-rows item 9 assumption-2 block is satisfied pending that acceptance; the 9 graphs were not separately inspected.
 
 ## variants2 backlog
 - Contract-versus-code conflict: BOUNDARY_CONTRACT line 322 may mandate canonicalizing -0.0, while variants1 rejects -0.0 permanently. Resolve in variants2.
