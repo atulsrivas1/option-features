@@ -6,7 +6,7 @@ Updated 2026-10-28. Read this, then STATUS.md, DECISIONS.md, the coordinator ski
 - Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (see PR 51; Next item 8 is done once that PR merges). Scoped qualified label is a next-release gate; candidate13 stays the baseline.
 
 ## Where we are: candidate13 proposed (2026-10-28); R26 prerelease out
-- Freeze record: docs/r26-variants/CANDIDATE13_FREEZE_RECORD.md (supersedes candidate12; its PR is not final until merged; independent freeze review of the record NOT yet done). index.json 518539dd...efac; 2647 rows in files, 5 N5 rows excluded by id, frozen 2642 (candidate12's 2614 byte-identical, +28 N5 rows, no new graphs). Audit approve; source and controller reviews approve-with-conditions (applied; hardened rerun byte-identical).
+- Freeze record: docs/r26-variants/CANDIDATE13_FREEZE_RECORD.md (supersedes candidate12; its PR is not final until merged; independent freeze review of the record DONE: approve-with-conditions, conditions applied). index.json 518539dd...efac; 2647 rows in files, 5 N5 rows excluded by id, frozen 2642 (candidate12's 2614 byte-identical, +28 N5 rows, no new graphs). Audit approve; source and controller reviews approve-with-conditions (applied; hardened rerun byte-identical).
 - Replay v10 (option-features 8951003, io e156963, workers 8795f3e): library 405/405, N4 49/49, graphs 306/306, I/O 1783/1783, workers 96/96 (38 partial); all exit 0. Flagged: 89 rows and 30 graphs (28 N5 added, none removed; assumption-2 rows and graphs confirmed encoding but still flagged pending PO acceptance). Controller review is partial (see record section 7). excluded_ids order IS compared literally (correction). Release label stays PRERELEASE.
 
 ## Earlier: R26 prerelease out; candidate12 proposed as the post-release candidate (2026-10-27)
@@ -18,7 +18,7 @@ Updated 2026-10-28. Read this, then STATUS.md, DECISIONS.md, the coordinator ski
 - Windows qualification (2026-10-27): PO decision PRERELEASE, Windows x64 cp312 partial Windows evidence, not qualified (docs/r26-variants/WINDOWS_PARTIAL_QUALIFICATION_RECORD.md; must-fix list there; python-flint LGPL-3.0-or-later needs a licence review). Release notes must include the candidate12 flagged rows and gaps. Decided, accepted by PO.
 
 ## Next
-0. Independent freeze review of CANDIDATE13_FREEZE_RECORD (not yet done), then coordinator freeze and merge. PO to review: N5 rows flagged (proposed), assumption-2 confirmation, A>K disclosure, sorted-literal excluded_ids, nonexpected two-control rows as negative controls (the last three already PO-ruled; see DECISIONS.md).
+0. Independent freeze review of CANDIDATE13_FREEZE_RECORD: DONE (approve-with-conditions, applied); next coordinator freeze and merge. Then candidate14 (PO R27 rulings): lift exclusion of the 3 null-nondict rows, harness assertion for the extra-stream control row, re-issue filter, hashes, counts and release notes. PO to review: N5 rows flagged (proposed), assumption-2 confirmation, A>K disclosure, sorted-literal excluded_ids, nonexpected two-control rows as negative controls (the last three already PO-ruled; see DECISIONS.md).
 OWNER ITEMS first (parked until the owner returns):
 1. PyPI wheel permission for Windows qualification: APPROVED by the owner and done; python-flint 0.9.0, duckdb 1.5.6, setuptools 80.9.0 (win_amd64 cp312) downloaded, sizes and sha256 verified against PyPI (see docs/r26-variants/WINDOWS_PARTIAL_QUALIFICATION_RECORD.md).
 2. Qualification scope.
@@ -27,7 +27,7 @@ OWNER ITEMS first (parked until the owner returns):
 5. Worktree cleanup (.claude/worktrees in the three repos, including s24-freeze12 after merge).
 Team items:
 6. Independent freeze review of candidate12: DONE (approve-with-conditions, conditions applied). Next: coordinator freeze and merge of the record PR. Candidate13 supersedes it once its record PR is reviewed and merged.
-7. Q4 (suffix checks) and the narrower-rollup clause stay held (PO question needed to unhold).
+7. Q4 and the narrower-rollup clause are SCOPED OUT with disclosure (PO R27 ruling, 2026-10-28); N5-restore-q3-dropped-with-extra-stream-added also scoped out. Reopen only on owner-supplied contract text.
 8. Release notes finalization (record section 8 items; filter re-issued for candidate13 hashes, counts and the 5 excluded ids; draft kept in the private work folder).
 8b. New fixtures for uncovered Q3 / field_set positions; code and codec changes land together (PO condition).
 9. Regenerate the flagged rows, assumption-2 block first (18 rows/graphs plus the 9 held rows).

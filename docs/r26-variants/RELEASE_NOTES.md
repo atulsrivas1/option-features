@@ -13,7 +13,7 @@ This page carries counts, hashes, ids and limits only. It carries no fixture row
 
 ### 2. Fixture baseline (candidate13)
 - index.json sha256 518539dd8d49fc9b2763644c295c9a141f68f53f3d96dce3f819e35704c4efac. 2647 rows in files (2337 non-graph + 310 graphs). 5 excluded by id. **Frozen: 2642** (2332 non-graph + 310 graphs). Candidate12's 2614 rows are byte-identical; 33 N5 rows were added (28 frozen).
-- Candidate13's record has had no independent freeze review. An audit (approve), a source review and a controller review (both approve-with-conditions, applied) exist.
+- Candidate13's record had an independent freeze review (approve-with-conditions, conditions applied; the reviewer did not verify the workers 96-row total and 58/38 split, the controller determinism rerun and hashes, the audit approvals or the mutation proof). An audit (approve), a source review and a controller review (both approve-with-conditions, applied) exist.
 - Consumer filter (structured keys only, never substring search): skip a row if `freeze_excluded` is true, or `contract_status == "UNDETERMINED_CONTRACT_GAP"`, or (obligations) `completeness != "complete"`. Rows with a non-empty `non_asserted_subfields` must not assert those subfields. `UNFROZEN_CANDIDATE` on most N4 and N5 rows is not an exclusion. Verify whole-file sha256 first; files are never edited.
 
 ### 3. Frozen subject to regeneration (flagged)
@@ -34,8 +34,8 @@ Excluded by id (`freeze_excluded` true, `UNDETERMINED_CONTRACT_GAP`):
 The first three: nullability of a record or union object is not declared in the contract text. The fourth depends on the unspecified admission of an extra stream. The fifth pins only "no checkpoint_cut_mismatch"; its expected results are masked. No graph is excluded.
 
 ### 5. Open contract gaps and held items
-- Q4 (suffix checks): HELD, not asserted.
-- Narrower-rollup clause: HELD. The F4 rollup-wider-than-capture-domain row was removed; **c-domain and c-completeness are untested**.
+- Q4 (suffix checks): scoped out by PO ruling R27 (see 11b), not asserted.
+- Narrower-rollup clause: scoped out by PO ruling R27 (see 11b). The F4 rollup-wider-than-capture-domain row was removed; **c-domain and c-completeness are untested**.
 - Gaps G1 to G26 (candidate12 record) and G27 to G31 (candidate13 record) remain open, including: partial rows (38 workers rows partial; nothing may assert doc_phase or doc_checkpoint_phase); 2 W3-admission rows without an expected receipt (compared via expected_publication only); Q3 combined with K regression, admission or root A after K not authored; Q2 combined-defect order unspecified and not asserted; no code or codec change is part of candidate13.
 - Variants2 backlog: BOUNDARY_CONTRACT line 322 may mandate canonicalizing -0.0, while variants1 rejects -0.0 permanently (one pinning row exists).
 - Numeric, wire and earliest-error correctness is not claimed beyond the audit and the replays.
@@ -54,8 +54,8 @@ The first three: nullability of a record or union object is not declared in the 
 ### 8. Graph evidence is digest-level
 Identity-graph evidence is compared at digest level only and was not recomputed. The 4 mode graphs (IDENTITY4 batch, chronological_cut_replay, checkpoint_restore, admission-extension) have no source row and are unevidenced.
 
-### 9. python-flint licence (review pending)
-python-flint 0.9.0 (win_amd64 wheel, sha256 8f1059536b7393e48b1444894c3b54ce1b961e4aa4a356e19217b26690f20db0) is not MIT-only. Its licence expression is MIT AND LGPL-3.0-or-later AND others (with a GCC runtime exception); bundled licences cover libflint 3.6.0, gmp 6.3.0, mpfr 4.2.2, the gcc runtime and winpthreads. Wheel inspection is not a legal review. A licence review of LGPL-3.0-or-later redistribution obligations is still required before any release that ships or depends on it.
+### 9. python-flint licence notice
+python-flint 0.9.0 (win_amd64 wheel, sha256 8f1059536b7393e48b1444894c3b54ce1b961e4aa4a356e19217b26690f20db0) is installed by pip, not vendored or shipped by us. Its Python bindings are MIT; the wheel bundles LGPL-3.0-or-later GMP 6.3.0, MPFR 4.2.2 and FLINT 3.6.0 (plus winpthreads and the gcc runtime under a GCC exception) as separate DLLs that the user may replace. Licence review verdict: acceptable as a pip dependency with this notice; no obligation falls on our MIT code. Vendoring or shipping a bundle (frozen exe, image, vendored wheel) needs a separate review (COPYING files, source offer, no relinking restriction). See the python-flint project for its licences. This is a coordinator review of wheel metadata, not legal advice.
 
 ### 10. Root A after K fixture (3 rows)
 The three root-A-after-K rows are accepted by the PO (A>K temporal_cut wins) with this disclosure: the authorship of that fixture's provenance is unrecorded. A standing open condition remains: author a fixture that fails on current code and passes after a workers change, with no frozen row changed.
@@ -73,6 +73,17 @@ Deviations:
 - The 7 tamper cases and the layer-isolation harness are reconstructions (86 test methods rather than the R25 172), not the original harnesses.
 - Not yet tested: OneDrive-synced folders, antivirus lock contention, CRLF/BOM evidence files, long paths with system support disabled.
 - Project and third-party wheel names, sizes and hashes: see the Windows record, sections 2 and 3.
+
+### 11b. PO R27 rulings (effective in candidate14; candidate13 and this release unchanged)
+- Adopted, needs candidate14: the three null-nondict rows (N5-nondict-plain-record-null, N5-nondict-union-plain-null, N5-nondict-union-array-element-null-index1) leave the excluded list. Rule: a record or union object is never nullable unless the schema declares it; null is a non-dict value giving type_mismatch at the record or union pointer (field-set clarification section 2 item 4; non-nullability inferred). Expected candidate14 census: frozen N5 31, flagged 92 (32 and 93 if the control row below is also frozen).
+- Narrow sentence adopted: an extra stream in the Request cut cursors is not an omission and never triggers the Q3 checkpoint_cut_mismatch at /request/cut_cursors. N5-restore-q3-control-extra-stream-only-accepted stays masked and excluded until the harness can assert 'not checkpoint_cut_mismatch at /request/cut_cursors'.
+- Scoped out with disclosure: N5-restore-q3-dropped-with-extra-stream-added (a restore that both omits a retained stream and adds an unknown stream is unspecified and not asserted; the worker currently rejects the dropped-with-extra form with input_invalid and accepts the extra-stream-only control, diagnostic only; the probe output mislabels the dropped row as ACCEPTED); Q4 suffix checks (not part of the variants contract; equal stamped positions in a suffix are identity_conflict; a suffix position not above the retained cursor is not rejected by a dedicated check); the narrower-rollup clause (a non-expected root inside the capture domain but outside a narrower rollup_interval is neither listed in excluded_ids nor depended on; observed behaviour, not contract).
+
+### 11c. Harness findings from the R27 review (disclosed, not yet fixed)
+- The tamper and isolation scripts exit 0 regardless of case outcomes; summary.json is the only verdict. Do not use their exit codes as gates.
+- The workers replay probe of skipped rows mislabels results (it prints ACCEPTED for any non-empty diff list, including a PARTIAL doc_phase note) and swallows exceptions; it is diagnostic only and never affects the exit code.
+- Rows with only PARTIAL notes are counted as passing (partial).
+- I/O non-wire N5 rows are skipped without an assertion that their count equals the workers-owned count.
 
 ### 12. Before any "qualified" label
 Next-release gate (PO, 2026-10-28): reviewed trust digest, real upstream commits, 111-case run, stored demo, written python-flint licence verdict, independent harness review, rulings or scoping for the 5 undetermined rows, regeneration of the 28 N5 rows, independent review of containment-helper internals, and owner acceptance.
