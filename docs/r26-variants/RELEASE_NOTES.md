@@ -1,13 +1,13 @@
 # R26 variants1 release notes: known limitations and disclosures (public-safe)
 
-Release: r26-variants1-prerelease (tag in all three repos, published 2026-10-23). Label: **PRERELEASE**. Product Owner decision (2026-10-28): R26 stays an accepted prerelease, "Windows x64 cp312 partially qualified". It is not qualified, and no stronger label is claimed. A scoped qualified label is deferred to the next release as a gate.
+Release: r26-variants1-prerelease (tag in all three repos, published 2026-10-23). Label: **PRERELEASE**. Product Owner decision (2026-10-28): R26 stays an accepted prerelease with partial Windows evidence (the PO's decision label, cited verbatim: "Windows x64 cp312 partially qualified"). It is not qualified, and no stronger label is claimed. A scoped qualified label is deferred to the next release as a gate.
 
 This page carries counts, hashes, ids and limits only. It carries no fixture row content and no private paths. Sources: [CANDIDATE13_FREEZE_RECORD.md](CANDIDATE13_FREEZE_RECORD.md), [WINDOWS_PARTIAL_QUALIFICATION_RECORD.md](WINDOWS_PARTIAL_QUALIFICATION_RECORD.md), [CANDIDATE12_FREEZE_RECORD.md](CANDIDATE12_FREEZE_RECORD.md), DECISIONS.md. The fixture baseline described below is candidate13, a post-release correction candidate recorded after the tagged prerelease.
 
 ## Known limitations and disclosures
 
 ### 1. Label and platform scope
-- Label: PRERELEASE. Platform scope: Windows x64, CPython 3.12.10 only, PARTIALLY qualified. Do not describe any R26 artifact as "qualified".
+- Label: PRERELEASE. Platform scope: Windows x64, CPython 3.12.10 only, partial Windows evidence. Do not describe any R26 artifact as "qualified".
 - No Linux parity. Package versions stay 0.1.0a1.
 - The label does not claim sandbox confinement. It claims only: frozen fixtures replay on installed packages, a reproducible build, and the limits listed here.
 
@@ -60,8 +60,11 @@ python-flint 0.9.0 (win_amd64 wheel, sha256 8f1059536b7393e48b1444894c3b54ce1b96
 ### 10. Root A after K fixture (3 rows)
 The three root-A-after-K rows are accepted by the PO (A>K temporal_cut wins) with this disclosure: the authorship of that fixture's provenance is unrecorded. A standing open condition remains: author a fixture that fails on current code and passes after a workers change, with no frozen row changed.
 
-### 11. Windows partial qualification items
-Windows replay evidence used candidate12 (library 405/405, N4 49/49, I/O 1764/1764, workers 87/87 with 32 partial, 108 unit tests OK); candidate13 was replayed on read-only exports, not re-run on Windows. Deviations:
+### 11. Partial Windows evidence items
+Windows replay evidence used candidate12 (library 405/405, N4 49/49, I/O 1764/1764, workers 87/87 with 32 partial, 108 unit tests OK); candidate13 was replayed on read-only exports, not re-run on Windows.
+- candidate13 replays ran against read-only exports of option-features 8951003, while the Windows build used option-features c0db18e.
+- The 31 fixture-defect rows excluded in the 2026-10-23 tagged release (see STATUS 2026-10-23) predate candidate13 and are covered by the earlier candidate records; the tag itself carries them.
+Deviations:
 - No reviewed trust digest: the trusted digest was self-computed by a separate reimplementation. This shows self-consistency, not an external trust anchor.
 - Stand-in upstream commits: third-party source_commit values are sha1 of the wheel bytes.
 - No 111-case golden run (R25: 111 batch/retry plus 111 replay cases); only the 5-scenario integration harness ran.

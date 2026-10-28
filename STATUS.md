@@ -1,6 +1,6 @@
 # Status (newest first)
 
-## 2026-10-28 - R26 release notes with full disclosures (PRERELEASE, Windows x64 cp312 partially qualified)
+## 2026-10-28 - R26 release notes with full disclosures (PRERELEASE, Windows x64 cp312 partial Windows evidence)
 - PO decision: R26 stays an accepted PRERELEASE; no qualified label now (scoped label deferred to the next release as a gate). Release notes added at docs/r26-variants/RELEASE_NOTES.md with a Known limitations and disclosures section: 89 flagged rows and 30 graphs (28 new N5), 5 excluded undetermined rows by id, Q4 and narrower-rollup held, containment non-claims, unreviewed harnesses, digest-level graphs, python-flint licence review pending, A>K authorship unrecorded, Windows partial items. Counts and hashes taken from the merged candidate13 and Windows records. Decided, ratified by PO.
 
 ## 2026-10-28 - Candidate13 proposed as the post-release candidate (2642 frozen of 2647 rows)
