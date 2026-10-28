@@ -9,7 +9,7 @@ Status: candidate13 is recorded as a post-release candidate for the next release
 | baseline.jsonl | 6066098b3470ff373c5b86e1ee97f1d5d7a22cfc641a8662dd0b32b5a2e85a1c | 44818801 | 153 | 153 | byte-identical |
 | flow.jsonl | 14efa0af86b76e51ecf580e6e98f57dbb02906f6fb890c736bfcfed74cf9abea | 24815750 | 174 | 174 | byte-identical |
 | flow-residual.jsonl | eddc4090a30703b5f1246ed364fafd1961e9c72a473de520d74d16b9b26164ed | 9534396 | 55 | 55 | byte-identical |
-| wire.jsonl | e98d6850b02dc62743049d6f0f1fb514912dcb6386c016610550829a810452f3 | 46510253 | 1810 | 1810 | byte-identical |
+| wire.jsonl | e98d6850b02dc62739049d6f0f1fb514912dcb6386c016610550829a810452f3 | 46510253 | 1810 | 1810 | byte-identical |
 | obligations.jsonl | f9f542dc78f55bda2300a53a1a5b33cfb385eaeb3961312a23ce4d6238f41e4e | 15578323 | 120 | 115 | +33 N5 rows (the 87 N4 rows are identical) |
 | identity-graphs.jsonl | fc45131815038ae00c24124e71136619eff93f879f7a892ddce922ec9153aad6 | 57721593 | 310 | 310 | byte-identical (no N5 graphs) |
 | index.json | 518539dd8d49fc9b2763644c295c9a141f68f53f3d96dce3f819e35704c4efac | 2202 | - | - | - |
