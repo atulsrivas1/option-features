@@ -15,7 +15,7 @@ OWNER ITEMS first (parked until the owner returns):
 1. PyPI wheel permission for Windows qualification: APPROVED by the owner and done; python-flint 0.9.0, duckdb 1.5.6, setuptools 80.9.0 (win_amd64 cp312) downloaded, sizes and sha256 verified against PyPI (see docs/r26-variants/WINDOWS_PARTIAL_QUALIFICATION_RECORD.md).
 2. Qualification scope.
 3. Release acceptance and the qualified-vs-prerelease label. Criteria: Windows qualification passes; demo works (merged, synthetic-only); two-control fix landed (done); /checkpoint and /config coverage (done) or scoped out; every flagged id disclosed; owner accepts.
-4. DONE: the pending-decision review is complete; the Product Owner ratified all of it (see DECISIONS.md, "PO ratification of pending decisions"). No review items remain for the owner.
+4. DONE: the pending-decision review is complete; all decisions are now PO-ruled (see DECISIONS.md, "PO ratification of pending decisions" and "PO rulings on the six items"); some rulings carry open conditions (items 9b-9f). No review items remain for the owner.
 5. Worktree cleanup (.claude/worktrees in the three repos, including s24-freeze12 after merge).
 Team items:
 6. Independent freeze review of candidate12: DONE (approve-with-conditions, conditions applied). Next: coordinator freeze and merge of the record PR.
@@ -23,6 +23,11 @@ Team items:
 8. Release notes finalization (record section 8 items; filter re-issued for candidate12; draft kept in the private work folder).
 8b. New fixtures for uncovered Q3 / field_set positions; code and codec changes land together (PO condition).
 9. Regenerate the flagged rows, assumption-2 block first (18 rows/graphs plus the 9 held rows).
+9b. A>K over merge identity_conflict (open condition): author a fixture first that fails on current code and passes after the workers change; no frozen row may change.
+9c. PR 34 entries (open condition): regenerate the 6 rows and graphs under Reading B; order of excluded_ids not asserted.
+9d. Two-control F4 fix (open condition): frozen rows byte-identical per v9 replay; new two-control fixtures must fail before the fix and pass after.
+9e. Release notes must disclose that c-domain and c-completeness are untested (rollup-wider row removed).
+9f. CP3 compatibility ratified: Q2 combined-defect order unspecified and not asserted; Q4 held.
 
 ## variants2 backlog
 - Contract-versus-code conflict: BOUNDARY_CONTRACT line 322 may mandate canonicalizing -0.0, while variants1 rejects -0.0 permanently. Resolve in variants2.
