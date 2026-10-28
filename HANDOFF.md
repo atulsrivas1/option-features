@@ -8,6 +8,8 @@ Updated 2026-10-27. Read this, then STATUS.md, DECISIONS.md, the coordinator ski
 - Integer-op incomplete capture and /checkpoint, /config shape order ratified (inferred); rollup rows and missing-member rows now authored. Two-control fix (PR 42) and demo (PR 41, synthetic-only) merged.
 - Flagged frozen-subject-to-regeneration: 61 rows and 30 graphs. Gaps G1 to G26 in the record. Rulings decided, pending owner review.
 
+- Windows qualification (2026-10-27): PO decision PRERELEASE, Windows x64 cp312 PARTIALLY qualified, not qualified (docs/r26-variants/WINDOWS_PARTIAL_QUALIFICATION_RECORD.md; must-fix list there; python-flint LGPL-3.0-or-later needs a licence review). Release notes must include the candidate12 flagged rows and gaps. Decided, pending owner review.
+
 ## Next
 OWNER ITEMS first (parked until the owner returns):
 1. PyPI wheel permission for Windows qualification: python-flint==0.9.0, duckdb==1.5.6, setuptools==80.9.0, win_amd64 cp312 (sizes unverified).
