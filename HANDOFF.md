@@ -2,8 +2,8 @@
 
 Updated 2026-10-28. Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
-## PO decision 2026-10-28: R26 stays PRERELEASE (Windows x64 cp312 partially qualified)
-- Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (PR pending merge; Next item 8 is done once it merges). Scoped qualified label is a next-release gate; candidate13 stays the baseline.
+## PO decision 2026-10-28: R26 stays PRERELEASE (Windows x64 cp312, partial Windows evidence)
+- Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (see PR 51; Next item 8 is done once that PR merges). Scoped qualified label is a next-release gate; candidate13 stays the baseline.
 
 ## Where we are: candidate13 proposed (2026-10-28); R26 prerelease out
 - Freeze record: docs/r26-variants/CANDIDATE13_FREEZE_RECORD.md (supersedes candidate12; its PR is not final until merged; independent freeze review of the record NOT yet done). index.json 518539dd...efac; 2647 rows in files, 5 N5 rows excluded by id, frozen 2642 (candidate12's 2614 byte-identical, +28 N5 rows, no new graphs). Audit approve; source and controller reviews approve-with-conditions (applied; hardened rerun byte-identical).
@@ -15,7 +15,7 @@ Updated 2026-10-28. Read this, then STATUS.md, DECISIONS.md, the coordinator ski
 - Integer-op incomplete capture and /checkpoint, /config shape order ratified (inferred); rollup rows and missing-member rows now authored. Two-control fix (PR 42) and demo (PR 41, synthetic-only) merged.
 - Flagged frozen-subject-to-regeneration: 61 rows and 30 graphs. Gaps G1 to G26 in the record. Rulings ratified by the Product Owner.
 
-- Windows qualification (2026-10-27): PO decision PRERELEASE, Windows x64 cp312 PARTIALLY qualified, not qualified (docs/r26-variants/WINDOWS_PARTIAL_QUALIFICATION_RECORD.md; must-fix list there; python-flint LGPL-3.0-or-later needs a licence review). Release notes must include the candidate12 flagged rows and gaps. Decided, accepted by PO.
+- Windows qualification (2026-10-27): PO decision PRERELEASE, Windows x64 cp312 partial Windows evidence, not qualified (docs/r26-variants/WINDOWS_PARTIAL_QUALIFICATION_RECORD.md; must-fix list there; python-flint LGPL-3.0-or-later needs a licence review). Release notes must include the candidate12 flagged rows and gaps. Decided, accepted by PO.
 
 ## Next
 0. Independent freeze review of CANDIDATE13_FREEZE_RECORD (not yet done), then coordinator freeze and merge. PO to review: N5 rows flagged (proposed), assumption-2 confirmation, A>K disclosure, sorted-literal excluded_ids, nonexpected two-control rows as negative controls (the last three already PO-ruled; see DECISIONS.md).
