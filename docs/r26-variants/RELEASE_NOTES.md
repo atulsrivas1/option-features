@@ -23,7 +23,7 @@ Consumers must expect these ids may change.
 - Other flagged groups, all carried: assumption 2 (9 B rows, 9 B3-integer-price rows, 9 graphs; assumption 2 is a PO product ruling, not contract text; encoding was confirmed, not regenerated, and the 9 graphs were not separately inspected); PR 34 rows (4 roll-unresolved + 2 F4 capture-domain rows, with 6 graphs; the earlier text "4 + 4" for F4 was imprecise, see the candidate14 record section 7; `excluded_ids` is stored as a sorted literal and its order is compared literally by the replay harness); two-control F4 rows (4 rows and 4 graphs); root A after K rows (3); every other candidate12 flag per the candidate12 record, section 3.
 - Two-control detail: the two expected-root rows (span, rolling) fail before the PR 42 fix and pass after; the two nonexpected-root rows pass both ways and do not discriminate (G30). The PO ruled them valid negative controls.
 
-### 4. Excluded undetermined rows (5, all N5)
+### 4. Excluded undetermined rows (5, all N5; candidate13 baseline, superseded by section 13: candidate14 excludes 3)
 Excluded by id (`freeze_excluded` true, `UNDETERMINED_CONTRACT_GAP`):
 - N5-nondict-plain-record-null
 - N5-nondict-union-plain-null

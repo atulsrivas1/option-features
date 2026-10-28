@@ -3,7 +3,7 @@
 Status: candidate14 is recorded as the post-release candidate (2026-10-28), superseding candidate13 (CANDIDATE13_FREEZE_RECORD.md) for the fixtures it covers. The release label stays PRERELEASE; nothing here is "qualified". Not final until this PR is merged and the review gates in section 11 are recorded. This record carries hashes, counts, ids, flags and limits only: no row content and no private paths.
 
 ## 0. Definition of "frozen" (verbatim)
-Frozen means the 2665 rows are byte-reproducible from the manifested source, immutable except by a new candidate, and that the hashes above identify them. It does NOT mean every row is validated: flagged rows (N5 31, N6 21, W3 39) are frozen as-is, flagged, and consumers must treat them as provisional. Null rows are frozen without a flag. Unflagging does not change row content; any content change requires candidate15.
+Frozen means the 2665 rows are byte-reproducible from the manifested source, immutable except by a new candidate, and that the hashes in section 1 identify them. It does NOT mean every row is validated: flagged rows (N5 31, N6 21, W3 39) are frozen as-is, flagged, and consumers must treat them as provisional. Null rows are frozen without a flag. Unflagging does not change row content; any content change requires candidate15.
 
 (The 3 null rows are frozen with no per-row flag key. See section 4 for how the group census counts them.)
 
