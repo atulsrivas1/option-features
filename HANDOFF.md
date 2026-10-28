@@ -8,7 +8,7 @@ Updated 2026-10-27. Read this, then STATUS.md, DECISIONS.md, the coordinator ski
 - Integer-op incomplete capture and /checkpoint, /config shape order ratified (inferred); rollup rows and missing-member rows now authored. Two-control fix (PR 42) and demo (PR 41, synthetic-only) merged.
 - Flagged frozen-subject-to-regeneration: 61 rows and 30 graphs. Gaps G1 to G26 in the record. Rulings ratified by the Product Owner.
 
-- Windows qualification (2026-10-27): PO decision PRERELEASE, Windows x64 cp312 PARTIALLY qualified, not qualified (docs/r26-variants/WINDOWS_PARTIAL_QUALIFICATION_RECORD.md; must-fix list there; python-flint LGPL-3.0-or-later needs a licence review). Release notes must include the candidate12 flagged rows and gaps. Decided, pending owner review.
+- Windows qualification (2026-10-27): PO decision PRERELEASE, Windows x64 cp312 PARTIALLY qualified, not qualified (docs/r26-variants/WINDOWS_PARTIAL_QUALIFICATION_RECORD.md; must-fix list there; python-flint LGPL-3.0-or-later needs a licence review). Release notes must include the candidate12 flagged rows and gaps. Decided, accepted by PO.
 
 ## Next
 OWNER ITEMS first (parked until the owner returns):
@@ -21,6 +21,7 @@ Team items:
 6. Independent freeze review of candidate12: DONE (approve-with-conditions, conditions applied). Next: coordinator freeze and merge of the record PR.
 7. Q4 (suffix checks) and the narrower-rollup clause stay held (PO question needed to unhold).
 8. Release notes finalization (record section 8 items; filter re-issued for candidate12; draft kept in the private work folder).
+8b. New fixtures for uncovered Q3 / field_set positions; code and codec changes land together (PO condition).
 9. Regenerate the flagged rows, assumption-2 block first (18 rows/graphs plus the 9 held rows).
 
 ## variants2 backlog
