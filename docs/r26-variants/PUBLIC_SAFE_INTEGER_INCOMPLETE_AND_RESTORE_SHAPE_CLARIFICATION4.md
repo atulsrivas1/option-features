@@ -1,5 +1,7 @@
 # Clarification 4: integer-op incomplete capture; /checkpoint and /config missing-member order; Q4 held
 
+> SUPERSEDED in part (2026-10-27): the statement that fixtures must not assert premiums or signs under incomplete capture for an integer op is superseded by PUBLIC_SAFE_INTEGER_INCOMPLETE_PREMIUMS_SIGNS_ADDENDUM5.md (the Result still lists the ordinary premium objects and signs of the retained roots; only metrics and weights change).
+
 Status: **proposed, needs independent review and PO ratification.** Docs only, no code and no fixture change. Author: Architect, 2026-10-27. Directed by PO_DECISION_CANDIDATE11 decisions (1), (2), (3). The PO had not read the contract text and stated "if the contract says otherwise, the contract wins"; this document performs that check. Support labels: GROUNDED (stated in contract/clarification text or enforced by the schema), CONVENTION-ONLY (consistent with text, chosen by us), GUESS (no support).
 
 Read for this check: docs/r26 (FLOW_CONTRACT, MATHEMATICS, FEATURE_BINDINGS), the variants schema (`option_feature_contracts/variants1/schema.py`), the library (`variants1/integer_flow.py`, `current.py`, `results.py`), REPLAY_V7, and the workers `checkpoint.py`, `execute.py`, `run.py` (variants1, read-only).
