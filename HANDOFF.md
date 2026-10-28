@@ -12,7 +12,7 @@ Updated 2026-10-27. Read this, then STATUS.md, DECISIONS.md, the coordinator ski
 
 ## Next
 OWNER ITEMS first (parked until the owner returns):
-1. PyPI wheel permission for Windows qualification: python-flint==0.9.0, duckdb==1.5.6, setuptools==80.9.0, win_amd64 cp312 (sizes unverified).
+1. PyPI wheel permission for Windows qualification: APPROVED by the owner and done; python-flint 0.9.0, duckdb 1.5.6, setuptools 80.9.0 (win_amd64 cp312) downloaded, sizes and sha256 verified against PyPI (see docs/r26-variants/WINDOWS_PARTIAL_QUALIFICATION_RECORD.md).
 2. Qualification scope.
 3. Release acceptance and the qualified-vs-prerelease label. Criteria: Windows qualification passes; demo works (merged, synthetic-only); two-control fix landed (done); /checkpoint and /config coverage (done) or scoped out; every flagged id disclosed; owner accepts.
 4. Review of the "decided, pending owner review" decisions (assumption 2, Q3 and field_set inference, F4 ratifications, Clarification 4 and Addendum 5 inferences, controller no-review deviation, candidate12 supersession).

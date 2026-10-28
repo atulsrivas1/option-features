@@ -16,7 +16,7 @@ Status: PRERELEASE. Windows x64, CPython 3.12.10 is PARTIALLY qualified. This is
 pip served them from its local cache of PyPI downloads; hashes were verified against PyPI regardless.
 
 ## 3. Project wheels
-Built with `--no-build-isolation`, setuptools 80.9.0, no `wheel` package. The source record gives the sha256 of each project wheel but not the wheel file names or sizes; they are not invented here.
+Built with `--no-build-isolation`, setuptools 80.9.0, no `wheel` package. For the first build below, the source record gives only the sha256 of each project wheel (no file names or sizes; they are not invented here). The controlled rebuild has full names, sizes and hashes.
 
 First build (git archive export, which applied eol conversion; superseded by the controlled rebuild below):
 
@@ -27,7 +27,18 @@ First build (git archive export, which applied eol conversion; superseded by the
 | option_feature_io | a1caeeb1fae59a10414e98ae698979f71ba15abc45ed3132e4d7ca54692b2aff |
 | option_feature_workers | 7724d44e92ee4978b6acfedbed0c70dc54e78d17056ae878609f81c1332fe99a |
 
-Controlled rebuild (blob-exact staging, no eol conversion, `_build_identity.json` with the source commit written before build, fixed SOURCE_DATE_EPOCH): contracts 336119aa..., io 41fdd653..., workers 0cb39281..., features 3a4836d1... (sha256 prefixes only in the source record; full hashes live in the private run configuration). Wheels rebuilt from the new sdists are byte-identical (same sha256 for all 4). The only difference from the first build, besides the marker, is CRLF to LF: use blob-exact staging, not git archive with text=auto.
+Controlled rebuild (blob-exact staging, no eol conversion, `_build_identity.json` with the source commit written before build, fixed SOURCE_DATE_EPOCH). Wheels and the wheels rebuilt from the new sdists are byte-identical (verified: same bytes and sha256 in both directories):
+
+| File | Bytes | sha256 |
+|---|---|---|
+| option_feature_contracts-0.1.0a1-py3-none-any.whl | 35355 | 336119aad0b4ce228515a3c6ff3eb7963a0de1d9b1fea62593ec0729a80087bd |
+| option_feature_io-0.1.0a1-py3-none-any.whl | 17719 | 41fdd6534add0eebcdb1e4e2aa366387e3d83ad0e1445996b9359248b3f7eadd |
+| option_feature_workers-0.1.0a1-py3-none-any.whl | 29666 | 0cb39281ecb639aacd4b83779756b47d146f5ad6f5ffef378bfc2ebfe112ecf3 |
+| option_features-0.1.0a1-py3-none-any.whl | 71230 | 3a4836d102973abdcda92747825466e920429e907ddab341abf062eb8f156157 |
+
+sdist sizes: option_feature_contracts-0.1.0a1.tar.gz 32231 B, option_feature_io-0.1.0a1.tar.gz 17513 B, option_feature_workers-0.1.0a1.tar.gz 28129 B, option_features-0.1.0a1.tar.gz 56520 B.
+
+The only difference from the first build, besides the marker, is CRLF to LF: use blob-exact staging, not git archive with text=auto.
 
 ## 4. Results (counts)
 - Clean offline install (`--no-index --no-compile`): closure = 4 project wheels + python-flint 0.9.0 + duckdb 1.5.6; modules load from site-packages.
