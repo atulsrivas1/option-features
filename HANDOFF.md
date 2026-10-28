@@ -27,11 +27,12 @@ Team items:
 9c. PR 34 entries (open condition): regenerate the 6 rows and graphs under Reading B; order of excluded_ids not asserted.
 9d. Two-control F4 fix (open condition): frozen rows byte-identical per v9 replay; new two-control fixtures must fail before the fix and pass after.
 9e. Release notes must disclose that c-domain and c-completeness are untested (rollup-wider row removed).
+9g. Assumption 2: the 9 B and 9 B3 rows already encode it in candidate12 (analysis finding, PO acceptance pending via PR 49 review); no regeneration needed, so the flagged-rows item 9 assumption-2 block is satisfied pending that acceptance; the 9 graphs were not separately inspected.
 9f. CP3 compatibility ratified: Q2 combined-defect order unspecified and not asserted; Q4 held.
 
 ## variants2 backlog
 - Contract-versus-code conflict: BOUNDARY_CONTRACT line 322 may mandate canonicalizing -0.0, while variants1 rejects -0.0 permanently. Resolve in variants2.
-- Pending for variants1: one pinning fixture row, -0.0 rejected (invalid_scalar, stage 4).
+- -0.0 pinning row already exists: N4-premium-b64-negative-zero-price-rejected (invalid_scalar, stage 4); no new row needed, only the pointer flag remains (analysis finding, PO acceptance pending via PR 49 review).
 - Before any "qualified" release: independent controller review.
 
 ## Gotchas
