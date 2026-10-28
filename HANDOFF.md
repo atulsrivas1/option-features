@@ -2,6 +2,9 @@
 
 Updated 2026-10-28. Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
+## PO decision 2026-10-28: R26 stays PRERELEASE (Windows x64 cp312 partially qualified)
+- Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (PR pending merge; Next item 8 is done once it merges). Scoped qualified label is a next-release gate; candidate13 stays the baseline.
+
 ## Where we are: candidate13 proposed (2026-10-28); R26 prerelease out
 - Freeze record: docs/r26-variants/CANDIDATE13_FREEZE_RECORD.md (supersedes candidate12; its PR is not final until merged; independent freeze review of the record NOT yet done). index.json 518539dd...efac; 2647 rows in files, 5 N5 rows excluded by id, frozen 2642 (candidate12's 2614 byte-identical, +28 N5 rows, no new graphs). Audit approve; source and controller reviews approve-with-conditions (applied; hardened rerun byte-identical).
 - Replay v10 (option-features 8951003, io e156963, workers 8795f3e): library 405/405, N4 49/49, graphs 306/306, I/O 1783/1783, workers 96/96 (38 partial); all exit 0. Flagged: 89 rows and 30 graphs (28 N5 added, none removed; assumption-2 rows and graphs confirmed encoding but still flagged pending PO acceptance). Controller review is partial (see record section 7). excluded_ids order IS compared literally (correction). Release label stays PRERELEASE.
