@@ -347,12 +347,25 @@ class RunResult:
         return (json.dumps(doc, sort_keys=True, separators=(",", ":")) + "\n").encode("utf-8")
 
 
+def clean_stale(out_dir):
+    """Remove a previous run's digests.json, results.jsonl and .*.tmp so a failed run never leaves old outputs."""
+    if not os.path.isdir(out_dir):
+        return
+    for name in os.listdir(out_dir):
+        if name in ("digests.json", "results.jsonl") or (name.startswith(".") and name.endswith(".tmp")):
+            try:
+                os.remove(os.path.join(out_dir, name))
+            except OSError:
+                pass
+
+
 def write_outputs(result, out_dir):
     """Write digests.json (and results.jsonl for emit=full) only now, after every unit is merged: temp then rename."""
     files = {"digests.json": result.digests_bytes()}
     if result.units is not None:
         files["results.jsonl"] = b"".join(v + b"\n" for _, v in result.units)
     os.makedirs(out_dir, exist_ok=True)
+    clean_stale(out_dir)
     temps = []
     try:
         for name, data in files.items():
@@ -511,6 +524,8 @@ class Runner:
         if self.workers_used >= 2 and (self._broken or not self._procs):
             raise RunnerError("the worker pool is not running (use the Runner as a context manager; a failed run ends the pool)")
         self._seq += 1
+        if out_dir is not None:
+            clean_stale(out_dir)
         keys = workload.all_unit_keys(spec)
         group = len(spec.cutoffs)
         batch = batch_size if batch_size is not None else auto_batch_size(len(keys), self.workers_used, group)

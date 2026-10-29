@@ -284,6 +284,37 @@ class OutputsAndCli(unittest.TestCase):
             self.assertIn("clamp", Path(logp).read_text())
 
 
+class StaleOutputsAndClamp(unittest.TestCase):
+    """Conditions from the independent Tester review (method: Tester's CLI-driven stale-output and clamp checks)."""
+
+    def stale(self, out):
+        for name in ("digests.json", "results.jsonl", ".digests.json.tmp", ".results.jsonl.tmp"):
+            Path(out, name).write_text("old")
+
+    def test_failed_run_removes_previous_outputs(self):
+        with tempfile.TemporaryDirectory() as out:
+            self.stale(out)
+            with Runner(workers=2, fault={"kind": "kill_worker", "worker": 1, "after_units": 2}) as r:
+                with self.assertRaises(WorkerCrashedError):
+                    r.run(SPEC, batch_size=3, out_dir=out)
+            self.assertEqual(os.listdir(out), [])
+
+    def test_successful_write_removes_stale_temp_and_results(self):
+        with tempfile.TemporaryDirectory() as out:
+            self.stale(out)
+            with Runner(workers=1) as r:
+                r.run(SPEC, out_dir=out)  # digest emit: stale results.jsonl must not survive
+            self.assertEqual(sorted(os.listdir(out)), ["digests.json"])
+            self.assertNotEqual(Path(out, "digests.json").read_text(), "old")
+
+    def test_cli_prints_clamp_line_to_stderr_not_stdout(self):
+        p = subprocess.run([sys.executable, "-B", str(ROOT / "tools" / "m1_runner" / "cli.py"), "--shape", "T", "--underlyings", "SYN1",
+                            "--sessions", "1", "--cutoffs", "0", "--workers", "64", "--cores", "2"], capture_output=True, text=True, timeout=120)
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertIn("clamp: requested 64 used 2 cap 2", p.stderr)
+        self.assertRegex(p.stdout.strip(), r"^result_sha256 [0-9a-f]{64} units 1$")
+
+
 class Docs(unittest.TestCase):
     DOC = ROOT / "docs" / "M1_RUNNER.md"
 
@@ -297,7 +328,7 @@ class Docs(unittest.TestCase):
 
     def test_doc_covers_required_topics(self):
         text = self.DOC.read_text(encoding="utf-8")
-        for needle in ("--workers", "min(physical cores", "no partial output", "PYTHONHASHSEED", "unit key", "synthetic workload, relative engineering budget"):
+        for needle in ("--workers", "min(physical cores", "no partial output", "PYTHONHASHSEED", "unit key", "synthetic workload, relative engineering budget", "pool path only", "never by name or command-line pattern"):
             self.assertIn(needle, text)
 
     def test_runner_never_enabled_by_default(self):

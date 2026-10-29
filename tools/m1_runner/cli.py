@@ -74,6 +74,9 @@ def main(argv=None):
     except m1_runner.RunnerError as e:
         print("%s: %s" % (type(e).__name__, e), file=sys.stderr)
         return 2
+    if res.log["clamp"]:
+        c = res.log["clamp"]
+        print("clamp: requested %d used %d cap %d" % (c["requested"], c["used"], c["cap"]), file=sys.stderr)
     print("result_sha256 %s units %d" % (res.result_sha256, res.unit_count))
     return 0
 
