@@ -1,0 +1,376 @@
+{
+ "chain_b6": {
+  "dev_base": {
+   "arb_calls_per_solve": 13.19,
+   "max_s": 4.27545,
+   "p50_s": 4.07384,
+   "p95_s": 4.16481,
+   "repeats": 30,
+   "samples_s": [
+    4.01006,
+    4.02717,
+    4.05382,
+    4.01132,
+    4.06794,
+    4.03996,
+    4.05519,
+    4.09971,
+    4.05591,
+    4.05011,
+    4.09111,
+    4.03789,
+    4.07648,
+    4.07734,
+    4.07947,
+    4.09398,
+    4.08142,
+    4.07384,
+    4.0848,
+    4.05244,
+    4.1053,
+    4.12654,
+    4.27545,
+    4.06477,
+    4.05618,
+    4.16481,
+    4.11589,
+    4.07194,
+    4.09476,
+    4.11718
+   ],
+   "solves": 992
+  },
+  "dev_changed": {
+   "arb_calls_per_solve": 13.19,
+   "max_s": 1.40271,
+   "p50_s": 1.27408,
+   "p95_s": 1.35042,
+   "repeats": 30,
+   "samples_s": [
+    1.28962,
+    1.26608,
+    1.26225,
+    1.24191,
+    1.27044,
+    1.24006,
+    1.26686,
+    1.25226,
+    1.21595,
+    1.21059,
+    1.28593,
+    1.30665,
+    1.29958,
+    1.40271,
+    1.34472,
+    1.29675,
+    1.29369,
+    1.29221,
+    1.27408,
+    1.27584,
+    1.26867,
+    1.24613,
+    1.25459,
+    1.24578,
+    1.25596,
+    1.31956,
+    1.29024,
+    1.28362,
+    1.3288,
+    1.35042
+   ],
+   "solves": 992
+  },
+  "eur_base": {
+   "arb_calls_per_solve": 13.18,
+   "max_s": 7.47148,
+   "p50_s": 7.18463,
+   "p95_s": 7.3779,
+   "repeats": 30,
+   "samples_s": [
+    7.20182,
+    7.18276,
+    7.28348,
+    7.33265,
+    7.21929,
+    7.20988,
+    7.2317,
+    7.2753,
+    7.1746,
+    7.13465,
+    7.12994,
+    7.07694,
+    7.08977,
+    7.15155,
+    7.07261,
+    7.1911,
+    7.106,
+    7.21263,
+    7.18463,
+    7.15133,
+    7.12639,
+    7.3779,
+    7.47148,
+    7.17775,
+    7.15418,
+    7.27814,
+    7.20187,
+    7.21574,
+    7.14203,
+    7.27129
+   ],
+   "solves": 1736
+  },
+  "eur_changed": {
+   "arb_calls_per_solve": 13.18,
+   "max_s": 2.29006,
+   "p50_s": 2.24165,
+   "p95_s": 2.28956,
+   "repeats": 30,
+   "samples_s": [
+    2.24744,
+    2.29006,
+    2.26926,
+    2.26765,
+    2.25487,
+    2.24236,
+    2.22995,
+    2.22169,
+    2.22619,
+    2.22298,
+    2.24165,
+    2.28104,
+    2.24302,
+    2.26646,
+    2.25533,
+    2.25178,
+    2.24762,
+    2.28168,
+    2.28956,
+    2.25376,
+    2.21304,
+    2.2205,
+    2.2097,
+    2.2049,
+    2.2161,
+    2.20491,
+    2.1976,
+    2.21132,
+    2.1838,
+    2.1879
+   ],
+   "solves": 1736
+  },
+  "peak_working_set": {
+   "base": "all-european B6 once: 7.43 s, peak working set 33.5 MB",
+   "changed": "all-european B6 once: 2.55 s, peak working set 33.2 MB"
+  }
+ },
+ "chain_notes": {
+  "dev": "tools/m1_chain_benchmark.py default chain: american contracts that are ITM are not solved (992 solves of 2000)",
+  "eur": "--all-european: every contract european, valid quotes everywhere, 1736 solves (72 price_out_of_bounds, cheap)",
+  "interleaving": "6 alternating rounds of 5 repeats (base, changed), pooled 30 samples each; p95 is nearest-rank"
+ },
+ "compare": {
+  "contracts": 23200,
+  "evidence": "Developer evidence only",
+  "label": "synthetic workload, relative engineering budget",
+  "runs": {
+   "changed": {
+    "by_set": {
+     "adv": {
+      "identical": 2800,
+      "total": 2800
+     },
+     "flat": {
+      "identical": 10000,
+      "total": 10000
+     },
+     "mixed": {
+      "identical": 10000,
+      "total": 10000
+     },
+     "mut": {
+      "identical": 400,
+      "total": 400
+     }
+    },
+    "different": [],
+    "identical_result_hashes": 23200,
+    "identical_status_reason": 23200,
+    "unsolvable_contracts": 771,
+    "unsolvable_identical": 771
+   },
+   "changed_legacy_conv": {
+    "by_set": {
+     "adv": {
+      "identical": 2800,
+      "total": 2800
+     },
+     "flat": {
+      "identical": 10000,
+      "total": 10000
+     },
+     "mixed": {
+      "identical": 10000,
+      "total": 10000
+     },
+     "mut": {
+      "identical": 400,
+      "total": 400
+     }
+    },
+    "different": [],
+    "identical_result_hashes": 23200,
+    "identical_status_reason": 23200,
+    "unsolvable_contracts": 771,
+    "unsolvable_identical": 771
+   },
+   "changed_switch_off": {
+    "by_set": {
+     "adv": {
+      "identical": 2800,
+      "total": 2800
+     },
+     "flat": {
+      "identical": 10000,
+      "total": 10000
+     },
+     "mixed": {
+      "identical": 10000,
+      "total": 10000
+     },
+     "mut": {
+      "identical": 400,
+      "total": 400
+     }
+    },
+    "different": [],
+    "identical_result_hashes": 23200,
+    "identical_status_reason": 23200,
+    "unsolvable_contracts": 771,
+    "unsolvable_identical": 771
+   }
+  },
+  "sets": "flat:10000,mixed:10000,adv:2400,mut:400",
+  "status_counts": {
+   "available/ok": 22429,
+   "bracket_exceeded/sigma_cap": 269,
+   "invalid_input/price_out_of_bounds": 479,
+   "numerical_failure/precision_exhausted": 23
+  }
+ },
+ "evidence": "Developer evidence only; independent Tester must re-run",
+ "label": "synthetic workload, relative engineering budget",
+ "machine": {
+  "cores": 96,
+  "cpu": "Intel64 Family 6 Model 85 Stepping 4, GenuineIntel",
+  "os": "Windows-11-10.0.26300-SP0",
+  "python": "3.12.10"
+ },
+ "per_solve_bench": {
+  "arb_calls": {
+   "base": {
+    "arb_calls_per_solve_p50": 9,
+    "arb_calls_per_solve_p95": 16,
+    "conversions_per_solve_mean": 41.37,
+    "conversions_per_solve_p50": 38,
+    "conversions_per_solve_p95": 66,
+    "decimal_materialisations_per_solve_mean": 22.125,
+    "max": 23,
+    "mean": 9.61,
+    "solves": 200,
+    "total": 1922
+   },
+   "changed": {
+    "arb_calls_per_solve_p50": 9,
+    "arb_calls_per_solve_p95": 16,
+    "conversions_per_solve_mean": 21.22,
+    "conversions_per_solve_p50": 20,
+    "conversions_per_solve_p95": 34,
+    "decimal_materialisations_per_solve_mean": 8.745,
+    "max": 23,
+    "mean": 9.61,
+    "solves": 200,
+    "total": 1922
+   },
+   "changed_switch_off": {
+    "arb_calls_per_solve_p50": 39,
+    "arb_calls_per_solve_p95": 41,
+    "conversions_per_solve_mean": 77.12,
+    "conversions_per_solve_p50": 80,
+    "conversions_per_solve_p95": 84,
+    "decimal_materialisations_per_solve_mean": 8.745,
+    "max": 42,
+    "mean": 37.56,
+    "solves": 200,
+    "total": 7512
+   }
+  },
+  "b6_proxy": {
+   "base_s": 6.12476655,
+   "budget_verbatim": "B6 <= 5 s budget, 15 s hard (PERF_ACCEPTANCE.md)",
+   "chain_contracts": 2000,
+   "changed_s": 2.0803405833333333,
+   "formula": "chain_contracts * mean_us_per_solve / 1e6 seconds (IV solve only; flat+mixed mean)",
+   "kind": "PROXY arithmetic, not a measurement"
+  },
+  "base": {
+   "mean_us_per_solve": 3108.0888999999997,
+   "peak_working_set_mb": 32.61328125,
+   "repeats": 30,
+   "samples": 6000,
+   "solves_per_repeat": 200,
+   "solves_per_s_at_p50": 341.28528036585783,
+   "solves_per_s_repeat_mean_p50": 322.03780369573803,
+   "wall_us_per_solve_p50": 2930.1,
+   "wall_us_per_solve_p95": 5070.7
+  },
+  "base2": {
+   "mean_us_per_solve": 3016.67765,
+   "peak_working_set_mb": 32.69140625,
+   "repeats": 30,
+   "samples": 6000,
+   "solves_per_repeat": 200,
+   "solves_per_s_at_p50": 350.4345388281469,
+   "solves_per_s_repeat_mean_p50": 333.452542617319,
+   "wall_us_per_solve_p50": 2853.6,
+   "wall_us_per_solve_p95": 4961.7
+  },
+  "changed": {
+   "mean_us_per_solve": 1008.6777166666667,
+   "peak_working_set_mb": 32.4921875,
+   "repeats": 30,
+   "samples": 6000,
+   "solves_per_repeat": 200,
+   "solves_per_s_at_p50": 1043.6234606553955,
+   "solves_per_s_repeat_mean_p50": 994.153878119717,
+   "wall_us_per_solve_p50": 958.2,
+   "wall_us_per_solve_p95": 1568.3
+  },
+  "changed2": {
+   "mean_us_per_solve": 1071.6628666666668,
+   "peak_working_set_mb": 32.34375,
+   "repeats": 30,
+   "samples": 6000,
+   "solves_per_repeat": 200,
+   "solves_per_s_at_p50": 976.8486861385171,
+   "solves_per_s_repeat_mean_p50": 944.6362843298538,
+   "wall_us_per_solve_p50": 1023.7,
+   "wall_us_per_solve_p95": 1698.7
+  },
+  "evidence": "Developer evidence only",
+  "label": "synthetic workload, relative engineering budget",
+  "machine": {
+   "cores": 96,
+   "cpu": "Intel64 Family 6 Model 85 Stepping 4, GenuineIntel",
+   "os": "Windows-11-10.0.26300-SP0",
+   "python": "3.12.10"
+  },
+  "speedup_mean": 3.0813498193170816,
+  "speedup_mean2": 2.8149502458577924,
+  "speedup_p50": 3.0579211020663744,
+  "speedup_p502": 2.7875354107648724,
+  "speedup_p95": 3.233246190142192,
+  "speedup_p952": 2.920880673456172
+ }
+}
