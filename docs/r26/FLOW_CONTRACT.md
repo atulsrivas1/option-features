@@ -1,5 +1,7 @@
 # R26 additive flow boundary, candidate 1
 
+> **Notice (R27, docs correction):** the output vocabulary described in this document (feature, output and formula ids such as option-flow-formulas1) is not implemented. The released implementation is the `variants1` subpackage; the library family formerly called F4 is called "span". A naming map from design ids to variants1 ids is planned and not yet published. See docs/r26-variants/R26_EVIDENCE.md.
+
 > **Superseded (distribution layout):** this candidate describes separate `option-flow-*` distributions. As released in R26, the implementation is the `variants1` subpackage (e.g. `option_features.variants1`) inside the existing R25 packages; no `option-flow-*` distributions exist. See DECISIONS.md and docs/r26-variants/R26_EVIDENCE.md. The text below is unchanged.
 
 Status: **proposed for independent review**, October 21, 2026, EQ188. This is an original public design, not implemented or frozen. Only a coordinator-recorded, independently reviewed exact commit may freeze it. [Mathematics](MATHEMATICS.md), [feature bindings](FEATURE_BINDINGS.json), [compatibility](COMPATIBILITY.json) and [independent fixture protocol](FIXTURE_PROTOCOL.md) are companion normative candidates. Conflicts between them block authoring; an implementation must not choose silently.

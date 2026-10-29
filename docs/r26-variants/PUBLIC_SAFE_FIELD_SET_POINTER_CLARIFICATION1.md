@@ -79,3 +79,5 @@ Becomes unnecessary: `option-feature-io` `packages/io/src/option_feature_io/vari
 ## 8. Correction notes for earlier documents
 
 Earlier documents say the "1,502 frozen field_set rows" expect the parent pointer. Only 751 of the 1,502 W3-field rows are field_set rows (the other 751 are `type_mismatch`); the parent pointer is supported by 782 stage 3 rows in total (section 5). Documents: DECISIONS.md 2026-10-23 entry (line 12), PUBLIC_SAFE_POST_R26_CLARIFICATIONS.md section 1 lines 13 and 16, and R26_EVIDENCE.md line 25 ("field 1502" is a row count, not a field_set count). Notes are appended to those documents in this change.
+
+R27 note on item 5: a `kind` member that is null is a non-string `kind` and gives `type_mismatch` at `<union>/kind`.

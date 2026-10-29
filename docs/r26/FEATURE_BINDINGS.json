@@ -1,5 +1,6 @@
 {
   "schema_version": 1,
+  "notice": "R27 docs correction: the output vocabulary in this file is not implemented; the released implementation is the variants1 subpackage (the family formerly called F4 is called span). A naming map from design ids to variants1 ids is planned and not yet published. See docs/r26-variants/R26_EVIDENCE.md.",
   "contract_version": "option-flow-formulas1",
   "status": "original_normative_candidate_not_frozen_not_implemented",
   "named_feature_count": 6,
