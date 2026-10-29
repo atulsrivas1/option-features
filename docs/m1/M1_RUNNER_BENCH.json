@@ -1,0 +1,1189 @@
+{
+ "after_wait_fix": {
+  "b7_rerun_after_wait_fix_24w": {
+   "aggregate_peak_rss_bytes": 7488884736,
+   "cpu_s_sum": 8281.09375,
+   "history_s_sum": 208.46504760021344,
+   "max_worker_peak_rss_bytes": 489357312,
+   "result_sha256": "9dc0a09434c8a40f9476da11ece473ec449dfa8a2144bb88826d134b261c8305",
+   "units_per_s": 5.037786849020577,
+   "wall_min": 6.451245551668884,
+   "wall_s": 387.074733100133,
+   "workers": 24
+  },
+  "exploratory_48w_aggregate_limit_raised_to_64GiB": {
+   "aggregate_peak_rss_bytes": 16380362752,
+   "cpu_s_sum": 10869.75,
+   "history_s_sum": 994.852200997062,
+   "max_worker_peak_rss_bytes": 441016320,
+   "result_sha256": "9dc0a09434c8a40f9476da11ece473ec449dfa8a2144bb88826d134b261c8305",
+   "units_per_s": 7.944658642155136,
+   "wall_min": 4.090798794998166,
+   "wall_s": 245.44792769989,
+   "workers": 48
+  }
+ },
+ "arb": {
+  "arb_calls_per_solve": {
+   "counts": {
+    "bounds": 2989,
+    "forward": 2961,
+    "price_interval": 33309,
+    "solves": 2989
+   },
+   "mean": 13.134493141518902,
+   "solves": 2989,
+   "total": 39259
+  },
+  "note": "untimed counter run; counters are log-only",
+  "spec": {
+   "contract_order": "natural",
+   "cutoffs": [
+    10,
+    39,
+    70
+   ],
+   "gating": "valid",
+   "seed": 20261029,
+   "sessions": [
+    1
+   ],
+   "shape": "M",
+   "underlyings": [
+    "SYN1"
+   ]
+  }
+ },
+ "b6": {
+  "budget": "<= 5 s p95, hard 15 s (all outputs, 1 underlying, size M, 1 cutoff)",
+  "n_workers": {
+   "aggregate_peak_rss_bytes": 4136583168,
+   "note": "25 units run concurrently (one per worker); per-unit wall (excluding input synthesis) is the B6 wall under 24-way concurrency",
+   "peak_rss_per_worker_bytes": [
+    161460224,
+    168439808,
+    254742528,
+    263380992,
+    152776704,
+    172990464,
+    173273088,
+    172912640,
+    158978048,
+    171909120,
+    157638656,
+    186630144,
+    161861632,
+    174018560,
+    168259584,
+    142585856,
+    175607808,
+    167628800,
+    151486464,
+    160456704,
+    142733312,
+    162422784,
+    161579008,
+    172810240
+   ],
+   "per_unit_wall_max_s": 4.994904000079259,
+   "per_unit_wall_p50_s": 4.5650493002031,
+   "per_unit_wall_p95_s": 4.799306300003082,
+   "repeats": 30,
+   "run_wall_max_s": 16.571148400194943,
+   "run_wall_p50_s": 16.12950470019132,
+   "run_wall_p95_s": 16.401941700140014,
+   "units_per_run": 25,
+   "verdict_unit_p95": "within budget",
+   "workers": 24
+  },
+  "note": "valid-quote chains (gating=valid), size M, one underlying, cutoff 39; wall includes building the quote history up to the cutoff and the OC5/OC6 pass",
+  "one_worker": {
+   "basis": "wall excluding input synthesis (the quote-history generator), the B6 compute: IV, ATM, 30-day, OC5, OC6 for 2000 contracts",
+   "max_s": 4.278518500039354,
+   "p50_s": 4.043638600036502,
+   "p95_s": 4.271854899823666,
+   "repeats": 30,
+   "samples_s": [
+    4.271854899823666,
+    4.202993599930778,
+    4.0035390998236835,
+    4.162557499948889,
+    4.075800500111654,
+    4.036497300025076,
+    3.999955500010401,
+    3.99600060028024,
+    4.012365799862891,
+    4.03444889979437,
+    4.065616300096735,
+    4.066408300073817,
+    4.092080200091004,
+    3.976128499954939,
+    4.033737400081009,
+    3.9992118002846837,
+    4.167382900137454,
+    3.983449600171298,
+    4.043638600036502,
+    4.148686300031841,
+    4.022684199735522,
+    4.055735900299624,
+    4.0202021999284625,
+    4.044263599906117,
+    4.158065100200474,
+    4.029385599773377,
+    4.133184499805793,
+    4.09575720038265,
+    4.019066199893132,
+    4.278518500039354
+   ],
+   "verdict_p95": "within budget",
+   "with_input_synthesis": {
+    "max_s": 8.086759799858555,
+    "p50_s": 7.575175800127909,
+    "p95_s": 7.923145299777389,
+    "samples_s": [
+     7.923145299777389,
+     8.086759799858555,
+     7.68344679987058,
+     7.612085700035095,
+     7.524120799964294,
+     7.5013445999938995,
+     7.4836001000367105,
+     7.561967400135472,
+     7.578508799895644,
+     7.4880653999280185,
+     7.585772900143638,
+     7.51264450000599,
+     7.650632200064138,
+     7.522940200055018,
+     7.6120368000119925,
+     7.455503200180829,
+     7.593699000077322,
+     7.420545600121841,
+     7.615100699942559,
+     7.575175800127909,
+     7.479352399939671,
+     7.514813700225204,
+     7.5550704000052065,
+     7.57291889982298,
+     7.582302800146863,
+     7.509917999850586,
+     7.620946699986234,
+     7.612981000216678,
+     7.590219100005925,
+     7.6717691998928785
+    ]
+   }
+  }
+ },
+ "b7": {
+  "aggregate_peak_rss_bytes": 7486042112,
+  "batch_size": 14,
+  "budget": "<= 170 min, hard 240 min (5 x 5 x 78 cutoffs, size M, run once; under 10 min on 8 cores is reported, not promised)",
+  "chunk_count": 150,
+  "chunks": 150,
+  "clamp": null,
+  "cpu_s_sum": 8780.3125,
+  "history_s_sum": 231.32432199968025,
+  "input_synthesis_share_of_cpu": 0.02634579600665469,
+  "n_subset": 1,
+  "peak_rss_per_worker_bytes": [
+   275009536,
+   288845824,
+   274874368,
+   332603392,
+   256921600,
+   413601792,
+   518795264,
+   297373696,
+   271167488,
+   296255488,
+   466255872,
+   325206016,
+   276119552,
+   299630592,
+   288026624,
+   238632960,
+   304197632,
+   287031296,
+   255123456,
+   273879040,
+   237953024,
+   435871744,
+   275001344,
+   297664512
+  ],
+  "physical_cores": "48",
+  "result_sha256": "9dc0a09434c8a40f9476da11ece473ec449dfa8a2144bb88826d134b261c8305",
+  "units": 1950,
+  "units_per_s": 5.185842275826337,
+  "utilisation_cpu_over_workers_x_wall": 0.9729340973817613,
+  "wall_min": 6.267062951663198,
+  "wall_min_excluding_input_synthesis_estimate": 6.101952189577816,
+  "wall_s": 376.0237770997919,
+  "worker_cap": {
+   "aggregate_hard_bytes": 8589934592,
+   "b9_peak_bytes": 356515840,
+   "cap": 24,
+   "cap_by_aggregate": 24,
+   "cap_by_cores": 96,
+   "cap_by_ram": 766,
+   "cores": 96,
+   "ram_bytes": 273400750080
+  },
+  "workers_requested": 24,
+  "workers_used": 24
+ },
+ "exploratory_150_unit_curve": {
+  "note": "exploratory, aggregate limit raised, NOT a gate result; same 150-unit curve workload as scaling.curve",
+  "runs": {
+   "48": {
+    "aggregate_peak_rss_bytes": 14382518272,
+    "max_worker_rss": 496644096,
+    "result_sha256": "5807eda135a23e85a161cac14d1588606da0a940e1f40ea5b665f783f1a2678f",
+    "wall_s": 33.98985689994879
+   },
+   "96": {
+    "aggregate_peak_rss_bytes": 22587760640,
+    "max_worker_rss": 379727872,
+    "result_sha256": "5807eda135a23e85a161cac14d1588606da0a940e1f40ea5b665f783f1a2678f",
+    "wall_s": 35.19758849986829
+   }
+  }
+ },
+ "frozen": {
+  "budgets": {
+   "B6": "<= 5 s p95, hard 15 s (all outputs, 1 underlying, size M, 1 cutoff)",
+   "B7": "<= 170 min, hard 240 min (5 x 5 x 78 cutoffs, size M, run once; under 10 min on 8 cores is reported, not promised)",
+   "B9": "<= 2 GB per process, aggregate <= 8 GB, hard 4 GB per process",
+   "S01": "speedup at 4 workers >= 2.0x on multi-underlying work (5 underlyings)"
+  },
+  "git_head": "cb009f9e36ca7614f0c344aad8508238cb5f8d45",
+  "machine": {
+   "cpu_load_percent_before": "1.5",
+   "cpu_name": "Intel(R) Xeon(R) Platinum 8160 CPU @ 2.10GHz",
+   "executable": "C:\\Users\\Monikasrivas1\\Documents\\ChatGPT\\Equity Features\\work\\r25-20261020\\method-development-env\\Scripts\\python.exe",
+   "label": "synthetic workload, relative engineering budget",
+   "logical_cores": 96,
+   "os_build": "26300",
+   "physical_cores": "48",
+   "platform": "Windows-11-10.0.26300-SP0",
+   "power_plan": "Power Scheme GUID: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c  (High performance)",
+   "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+   "python_flint": "0.9.0",
+   "pythonhashseed_in_workers": "0",
+   "ram_bytes": 273400750080,
+   "sockets": "2"
+  },
+  "runner": {
+   "N": 24,
+   "aggregate_hard_bytes": 8589934592,
+   "b9_peak_bytes_used_for_cap": 356515840
+  },
+  "workload": {
+   "contracts_per_chain": 2000,
+   "label": "synthetic workload, relative engineering budget",
+   "perf_manifest_sha256": "2d405bc4a12f3f97c6dddc41f5be4c3512a1d7ed186e47b3ac94cbd86b51eeee",
+   "seed": 20261029,
+   "shape": "M",
+   "spec": {
+    "contract_order": "natural",
+    "cutoffs": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22,
+     23,
+     24,
+     25,
+     26,
+     27,
+     28,
+     29,
+     30,
+     31,
+     32,
+     33,
+     34,
+     35,
+     36,
+     37,
+     38,
+     39,
+     40,
+     41,
+     42,
+     43,
+     44,
+     45,
+     46,
+     47,
+     48,
+     49,
+     50,
+     51,
+     52,
+     53,
+     54,
+     55,
+     56,
+     57,
+     58,
+     59,
+     60,
+     61,
+     62,
+     63,
+     64,
+     65,
+     66,
+     67,
+     68,
+     69,
+     70,
+     71,
+     72,
+     73,
+     74,
+     75,
+     76,
+     77
+    ],
+    "gating": "mixed",
+    "seed": 20261029,
+    "sessions": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "shape": "M",
+    "underlyings": [
+     "SYN1",
+     "SYN2",
+     "SYN3",
+     "SYN4",
+     "SYN5"
+    ]
+   },
+   "units_b7": 1950
+  }
+ },
+ "matrix": {
+  "all_identical": true,
+  "batch_order_runs": [
+   {
+    "aggregate_peak_rss_bytes": 1076789248,
+    "batch_requested": 1,
+    "batch_size": 1,
+    "chunks": 78,
+    "equals_single_process_reference": true,
+    "order": "natural",
+    "peak_rss_per_worker_bytes": [
+     273301504,
+     270782464,
+     267759616,
+     264945664
+    ],
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 0.9424235604950084,
+    "wall_s": 82.7653332001064,
+    "workers_used": 4
+   },
+   {
+    "aggregate_peak_rss_bytes": 1545183232,
+    "batch_requested": 7,
+    "batch_size": 7,
+    "chunks": 12,
+    "equals_single_process_reference": true,
+    "order": "reversed",
+    "peak_rss_per_worker_bytes": [
+     328200192,
+     369819648,
+     412168192,
+     434995200
+    ],
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 0.8157039611038597,
+    "wall_s": 95.6229266000446,
+    "workers_used": 4
+   },
+   {
+    "aggregate_peak_rss_bytes": 1545183232,
+    "batch_requested": 16,
+    "batch_size": 16,
+    "chunks": 5,
+    "equals_single_process_reference": true,
+    "order": "shuffle:11",
+    "peak_rss_per_worker_bytes": [
+     328200192,
+     369819648,
+     412168192,
+     434995200
+    ],
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 0.6525798559079689,
+    "wall_s": 119.52560180006549,
+    "workers_used": 4
+   },
+   {
+    "aggregate_peak_rss_bytes": 328200192,
+    "batch_requested": 1000,
+    "batch_size": 1000,
+    "chunks": 1,
+    "equals_single_process_reference": true,
+    "order": "shuffle:5",
+    "peak_rss_per_worker_bytes": [
+     328200192,
+     0,
+     0,
+     0
+    ],
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 0.2660665821893653,
+    "wall_s": 293.1597021999769,
+    "workers_used": 4
+   }
+  ],
+  "reference_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+  "runs": [
+   {
+    "aggregate_peak_rss_bytes": 271056896,
+    "batch_size": 78,
+    "chunks": 1,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     271056896
+    ],
+    "repeat": 1,
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 0.26138194306150025,
+    "wall_s": 298.413880799897,
+    "workers_requested": 1,
+    "workers_used": 1
+   },
+   {
+    "aggregate_peak_rss_bytes": 272343040,
+    "batch_size": 78,
+    "chunks": 1,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     272343040
+    ],
+    "repeat": 2,
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 0.25815817403543134,
+    "wall_s": 302.1403459000867,
+    "workers_requested": 1,
+    "workers_used": 1
+   },
+   {
+    "aggregate_peak_rss_bytes": 272343040,
+    "batch_size": 78,
+    "chunks": 1,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     272343040
+    ],
+    "repeat": 3,
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 0.2577239984771874,
+    "wall_s": 302.64934760006145,
+    "workers_requested": 1,
+    "workers_used": 1
+   },
+   {
+    "aggregate_peak_rss_bytes": 546484224,
+    "batch_size": 7,
+    "chunks": 12,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     274604032,
+     271880192
+    ],
+    "repeat": 1,
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 0.4707758509029983,
+    "wall_s": 165.68394459993578,
+    "workers_requested": 2,
+    "workers_used": 2
+   },
+   {
+    "aggregate_peak_rss_bytes": 546545664,
+    "batch_size": 7,
+    "chunks": 12,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     274604032,
+     271941632
+    ],
+    "repeat": 2,
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 0.477685281460844,
+    "wall_s": 163.28742589987814,
+    "workers_requested": 2,
+    "workers_used": 2
+   },
+   {
+    "aggregate_peak_rss_bytes": 547143680,
+    "batch_size": 7,
+    "chunks": 12,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     275202048,
+     271941632
+    ],
+    "repeat": 3,
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 0.4733289440972771,
+    "wall_s": 164.79026050004177,
+    "workers_requested": 2,
+    "workers_used": 2
+   },
+   {
+    "aggregate_peak_rss_bytes": 1044549632,
+    "batch_size": 4,
+    "chunks": 20,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     273997824,
+     268578816,
+     256999424,
+     244973568
+    ],
+    "repeat": 1,
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 0.9455756467604424,
+    "wall_s": 82.48943409998901,
+    "workers_requested": 4,
+    "workers_used": 4
+   },
+   {
+    "aggregate_peak_rss_bytes": 1044877312,
+    "batch_size": 4,
+    "chunks": 20,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     274124800,
+     268578816,
+     257200128,
+     244973568
+    ],
+    "repeat": 2,
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 0.9460183540465436,
+    "wall_s": 82.45083159999922,
+    "workers_requested": 4,
+    "workers_used": 4
+   },
+   {
+    "aggregate_peak_rss_bytes": 1046130688,
+    "batch_size": 4,
+    "chunks": 20,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     274305024,
+     269000704,
+     257417216,
+     245407744
+    ],
+    "repeat": 3,
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 0.9459265995180486,
+    "wall_s": 82.45882930001244,
+    "workers_requested": 4,
+    "workers_used": 4
+   },
+   {
+    "aggregate_peak_rss_bytes": 5742878720,
+    "batch_size": 1,
+    "chunks": 78,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     272744448,
+     270315520,
+     267321344,
+     264523776,
+     261799936,
+     258490368,
+     255488000,
+     252764160,
+     249778176,
+     247160832,
+     243408896,
+     240697344,
+     237699072,
+     234307584,
+     231260160,
+     228413440,
+     225763328,
+     223023104,
+     219922432,
+     217575424,
+     214626304,
+     211537920,
+     208732160,
+     205524992
+    ],
+    "repeat": 1,
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 3.39459710700704,
+    "wall_s": 22.977690000087023,
+    "workers_requested": 24,
+    "workers_used": 24
+   },
+   {
+    "aggregate_peak_rss_bytes": 5747740672,
+    "batch_size": 1,
+    "chunks": 78,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     273047552,
+     270315520,
+     267423744,
+     264716288,
+     261799936,
+     258777088,
+     255684608,
+     252764160,
+     250527744,
+     247160832,
+     243408896,
+     241029120,
+     237699072,
+     234688512,
+     231587840,
+     228642816,
+     225935360,
+     223137792,
+     220725248,
+     217604096,
+     214626304,
+     211841024,
+     208957440,
+     205639680
+    ],
+    "repeat": 2,
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 3.5345751392391955,
+    "wall_s": 22.06771590001881,
+    "workers_requested": 24,
+    "workers_used": 24
+   },
+   {
+    "aggregate_peak_rss_bytes": 5748559872,
+    "batch_size": 1,
+    "chunks": 78,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     273506304,
+     270315520,
+     267423744,
+     264716288,
+     261799936,
+     258777088,
+     255684608,
+     252764160,
+     250527744,
+     247160832,
+     243408896,
+     241029120,
+     237699072,
+     234688512,
+     231587840,
+     228651008,
+     225935360,
+     223256576,
+     220725248,
+     217604096,
+     214626304,
+     211976192,
+     208957440,
+     205737984
+    ],
+    "repeat": 3,
+    "result_sha256": "8a1a4cc06fb9661fc96328c34f5d18c949804b4cfff99136d873cd42442c8b4b",
+    "units_per_s": 3.522552510164463,
+    "wall_s": 22.143034000182524,
+    "workers_requested": 24,
+    "workers_used": 24
+   }
+  ],
+  "shuffled_contract_order_equal": true,
+  "spec": {
+   "contract_order": "natural",
+   "cutoffs": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77
+   ],
+   "gating": "mixed",
+   "seed": 20261029,
+   "sessions": [
+    1
+   ],
+   "shape": "M",
+   "underlyings": [
+    "SYN1"
+   ]
+  },
+  "units": 78
+ },
+ "note": "Measured on branch m1/process-pool-runner (main 4f08db3, Stage 2 PR 71 not included). The main sweep ran before a Windows 63-handle wait fix (pool wait mechanics only; results unchanged); b7 was re-run after the fix (after_wait_fix) with the same result hash. 'wall' includes synthetic input synthesis (quote-history generator) except where stated. Label: synthetic workload, relative engineering budget.",
+ "phases_done": [
+  "freeze",
+  "arb",
+  "b6",
+  "b7",
+  "scaling",
+  "matrix"
+ ],
+ "scaling": {
+  "curve": {
+   "1": {
+    "efficiency": 1.0,
+    "p50_wall_s": 738.7672705000732,
+    "runs": [
+     {
+      "aggregate_peak_rss_bytes": 525934592,
+      "batch_size": 6,
+      "chunks": 25,
+      "peak_rss_per_worker_bytes": [
+       525934592
+      ],
+      "result_sha256": "01c238b3c55f3e7a2c81125af32e46a765e2a49c57397fac906dd8df718c2428",
+      "units_per_s": 0.20304093858741828,
+      "wall_s": 738.7672705000732,
+      "workers_used": 1
+     }
+    ],
+    "speedup": 1.0,
+    "units_per_s_p50": 0.20304093858741828
+   },
+   "16": {
+    "efficiency": 0.8126295739592385,
+    "p50_wall_s": 56.81919030006975,
+    "runs": [
+     {
+      "aggregate_peak_rss_bytes": 6851305472,
+      "batch_size": 2,
+      "chunks": 75,
+      "peak_rss_per_worker_bytes": [
+       472399872,
+       323690496,
+       441782272,
+       469942272,
+       423047168,
+       412336128,
+       401727488,
+       499818496,
+       493699072,
+       493256704,
+       451260416,
+       347766784,
+       409219072,
+       422494208,
+       320462848,
+       468402176
+      ],
+      "result_sha256": "01c238b3c55f3e7a2c81125af32e46a765e2a49c57397fac906dd8df718c2428",
+      "units_per_s": 2.599330170642942,
+      "wall_s": 57.70717459986918,
+      "workers_used": 16
+     },
+     {
+      "aggregate_peak_rss_bytes": 6996615168,
+      "batch_size": 2,
+      "chunks": 75,
+      "peak_rss_per_worker_bytes": [
+       474705920,
+       323993600,
+       441782272,
+       469942272,
+       423649280,
+       412336128,
+       412700672,
+       499818496,
+       493801472,
+       495669248,
+       481370112,
+       445313024,
+       409595904,
+       422494208,
+       320462848,
+       468979712
+      ],
+      "result_sha256": "01c238b3c55f3e7a2c81125af32e46a765e2a49c57397fac906dd8df718c2428",
+      "units_per_s": 2.639953142729242,
+      "wall_s": 56.81919030006975,
+      "workers_used": 16
+     }
+    ],
+    "speedup": 13.002073183347816,
+    "units_per_s_p50": 2.639953142729242
+   },
+   "24": {
+    "efficiency": 0.6880944048964853,
+    "p50_wall_s": 44.73509650002234,
+    "runs": [
+     {
+      "aggregate_peak_rss_bytes": 6752284672,
+      "batch_size": 2,
+      "chunks": 75,
+      "peak_rss_per_worker_bytes": [
+       262156288,
+       275656704,
+       270114816,
+       244228096,
+       245456896,
+       283271168,
+       283422720,
+       284340224,
+       258232320,
+       281817088,
+       383447040,
+       308707328,
+       262885376,
+       286703616,
+       274812928,
+       227500032,
+       290205696,
+       274927616,
+       454365184,
+       261550080,
+       226893824,
+       265248768,
+       262467584,
+       283873280
+      ],
+      "result_sha256": "01c238b3c55f3e7a2c81125af32e46a765e2a49c57397fac906dd8df718c2428",
+      "units_per_s": 3.337365189376043,
+      "wall_s": 44.9456357001327,
+      "workers_used": 24
+     },
+     {
+      "aggregate_peak_rss_bytes": 7134687232,
+      "batch_size": 2,
+      "chunks": 75,
+      "peak_rss_per_worker_bytes": [
+       262156288,
+       402866176,
+       270114816,
+       244391936,
+       245784576,
+       283365376,
+       283918336,
+       284516352,
+       300359680,
+       281817088,
+       383447040,
+       309047296,
+       262885376,
+       286703616,
+       275140608,
+       437837824,
+       290205696,
+       274927616,
+       454365184,
+       261869568,
+       227196928,
+       265248768,
+       262647808,
+       283873280
+      ],
+      "result_sha256": "01c238b3c55f3e7a2c81125af32e46a765e2a49c57397fac906dd8df718c2428",
+      "units_per_s": 3.353072011366402,
+      "wall_s": 44.73509650002234,
+      "workers_used": 24
+     }
+    ],
+    "speedup": 16.51426571751565,
+    "units_per_s_p50": 3.353072011366402
+   },
+   "8": {
+    "efficiency": 0.8496523493864823,
+    "p50_wall_s": 108.68669859995134,
+    "runs": [
+     {
+      "aggregate_peak_rss_bytes": 3974631424,
+      "batch_size": 4,
+      "chunks": 50,
+      "peak_rss_per_worker_bytes": [
+       487534592,
+       544038912,
+       499007488,
+       495382528,
+       475115520,
+       489725952,
+       521527296,
+       462299136
+      ],
+      "result_sha256": "01c238b3c55f3e7a2c81125af32e46a765e2a49c57397fac906dd8df718c2428",
+      "units_per_s": 1.366713492974187,
+      "wall_s": 109.75233709998429,
+      "workers_used": 8
+     },
+     {
+      "aggregate_peak_rss_bytes": 4043251712,
+      "batch_size": 4,
+      "chunks": 50,
+      "peak_rss_per_worker_bytes": [
+       502501376,
+       544038912,
+       499064832,
+       495382528,
+       475115520,
+       543281152,
+       521527296,
+       462340096
+      ],
+      "result_sha256": "01c238b3c55f3e7a2c81125af32e46a765e2a49c57397fac906dd8df718c2428",
+      "units_per_s": 1.3801136839394914,
+      "wall_s": 108.68669859995134,
+      "workers_used": 8
+     }
+    ],
+    "speedup": 6.797218795091858,
+    "units_per_s_p50": 1.3801136839394914
+   },
+   "units": 150
+  },
+  "s01": {
+   "1": {
+    "p50_wall_s": 184.24554589996114,
+    "runs": [
+     {
+      "aggregate_peak_rss_bytes": 499085312,
+      "batch_size": 8,
+      "chunks": 5,
+      "peak_rss_per_worker_bytes": [
+       499085312
+      ],
+      "result_sha256": "8c4efcf782d2b705ed64cc0a23063d7b6e402e5800c6cdd43ca3c654d803241a",
+      "units_per_s": 0.21364310284296217,
+      "wall_s": 187.22813639999367,
+      "workers_used": 1
+     },
+     {
+      "aggregate_peak_rss_bytes": 499978240,
+      "batch_size": 8,
+      "chunks": 5,
+      "peak_rss_per_worker_bytes": [
+       499978240
+      ],
+      "result_sha256": "8c4efcf782d2b705ed64cc0a23063d7b6e402e5800c6cdd43ca3c654d803241a",
+      "units_per_s": 0.21710158476079847,
+      "wall_s": 184.24554589996114,
+      "workers_used": 1
+     },
+     {
+      "aggregate_peak_rss_bytes": 500330496,
+      "batch_size": 8,
+      "chunks": 5,
+      "peak_rss_per_worker_bytes": [
+       500330496
+      ],
+      "result_sha256": "8c4efcf782d2b705ed64cc0a23063d7b6e402e5800c6cdd43ca3c654d803241a",
+      "units_per_s": 0.21775879349590505,
+      "wall_s": 183.6894821000751,
+      "workers_used": 1
+     }
+    ]
+   },
+   "2": {
+    "p50_wall_s": 94.7587270999793,
+    "runs": [
+     {
+      "aggregate_peak_rss_bytes": 942104576,
+      "batch_size": 4,
+      "chunks": 10,
+      "peak_rss_per_worker_bytes": [
+       474624000,
+       467480576
+      ],
+      "result_sha256": "8c4efcf782d2b705ed64cc0a23063d7b6e402e5800c6cdd43ca3c654d803241a",
+      "units_per_s": 0.42079599740212636,
+      "wall_s": 95.0579383999575,
+      "workers_used": 2
+     },
+     {
+      "aggregate_peak_rss_bytes": 970956800,
+      "batch_size": 4,
+      "chunks": 10,
+      "peak_rss_per_worker_bytes": [
+       474624000,
+       496332800
+      ],
+      "result_sha256": "8c4efcf782d2b705ed64cc0a23063d7b6e402e5800c6cdd43ca3c654d803241a",
+      "units_per_s": 0.42297622549279185,
+      "wall_s": 94.56796290003695,
+      "workers_used": 2
+     },
+     {
+      "aggregate_peak_rss_bytes": 971026432,
+      "batch_size": 4,
+      "chunks": 10,
+      "peak_rss_per_worker_bytes": [
+       474624000,
+       496402432
+      ],
+      "result_sha256": "8c4efcf782d2b705ed64cc0a23063d7b6e402e5800c6cdd43ca3c654d803241a",
+      "units_per_s": 0.4221247079205303,
+      "wall_s": 94.7587270999793,
+      "workers_used": 2
+     }
+    ]
+   },
+   "4": {
+    "p50_wall_s": 48.74022060004063,
+    "runs": [
+     {
+      "aggregate_peak_rss_bytes": 1452650496,
+      "batch_size": 2,
+      "chunks": 20,
+      "peak_rss_per_worker_bytes": [
+       290947072,
+       415031296,
+       335532032,
+       411140096
+      ],
+      "result_sha256": "8c4efcf782d2b705ed64cc0a23063d7b6e402e5800c6cdd43ca3c654d803241a",
+      "units_per_s": 0.8014238737688953,
+      "wall_s": 49.911165999947116,
+      "workers_used": 4
+     },
+     {
+      "aggregate_peak_rss_bytes": 1505382400,
+      "batch_size": 2,
+      "chunks": 20,
+      "peak_rss_per_worker_bytes": [
+       290947072,
+       467554304,
+       335740928,
+       411140096
+      ],
+      "result_sha256": "8c4efcf782d2b705ed64cc0a23063d7b6e402e5800c6cdd43ca3c654d803241a",
+      "units_per_s": 0.8206774509339553,
+      "wall_s": 48.74022060004063,
+      "workers_used": 4
+     },
+     {
+      "aggregate_peak_rss_bytes": 1505382400,
+      "batch_size": 2,
+      "chunks": 20,
+      "peak_rss_per_worker_bytes": [
+       290947072,
+       467554304,
+       335740928,
+       411140096
+      ],
+      "result_sha256": "8c4efcf782d2b705ed64cc0a23063d7b6e402e5800c6cdd43ca3c654d803241a",
+      "units_per_s": 0.8209227868274241,
+      "wall_s": 48.72565439995378,
+      "workers_used": 4
+     }
+    ]
+   },
+   "budget": "speedup at 4 workers >= 2.0x on multi-underlying work (5 underlyings)",
+   "efficiency_4": 0.9450385309694698,
+   "meets_2_0x": true,
+   "speedup_2_vs_1": 1.944364931216994,
+   "speedup_4_vs_1": 3.780154123877879,
+   "units": 40
+  }
+ }
+}

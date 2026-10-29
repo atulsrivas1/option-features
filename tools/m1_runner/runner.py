@@ -345,6 +345,17 @@ def _check_fault(fault, workers_used):
     return dict(fault)
 
 
+def _wait_ready(conns, timeout):
+    """Connections with data or at EOF. Windows WaitForMultipleObjects takes at most 63 handles, so large pools are
+    waited on in slices (the parent closes its copy of each child end, so a dead worker's pipe reads EOF)."""
+    if len(conns) <= 60:
+        return set(wait(conns, timeout=timeout))
+    ready, slices = set(), [conns[i:i + 60] for i in range(0, len(conns), 60)]
+    for part in slices:
+        ready |= set(wait(part, timeout=timeout / len(slices)))
+    return ready
+
+
 def _exitcode(proc):
     proc.join(2)
     return proc.exitcode
@@ -401,7 +412,7 @@ class Runner:
         try:
             while any(e is None for e in self._env):
                 waiting = [i for i, e in enumerate(self._env) if e is None]
-                ready = wait([self._conns[i] for i in waiting] + [self._procs[i].sentinel for i in waiting], timeout=1.0)
+                ready = _wait_ready([self._conns[i] for i in waiting], 1.0)
                 for i in waiting:
                     if self._conns[i] in ready:
                         try:
@@ -411,7 +422,7 @@ class Runner:
                         if msg[0] == "error":
                             raise WorkerFailedError("worker %d failed to start:\n%s" % (i, msg[2]))
                         self._env[i] = msg[2]
-                    elif self._procs[i].sentinel in ready:
+                    elif not self._procs[i].is_alive():
                         raise WorkerCrashedError("worker %d exited during start (exit code %s)" % (i, _exitcode(self._procs[i])))
                 if time.monotonic() > deadline:
                     raise WorkerTimeoutError("workers did not start within %.0f s" % HELLO_TIMEOUT_S)
@@ -532,13 +543,13 @@ class Runner:
                 inflight[wid] = (cid, keys, time.monotonic())
             if not inflight:
                 break
-            ready = set(wait([self._conns[w] for w in inflight] + [self._procs[w].sentinel for w in inflight], timeout=0.5))
+            ready = _wait_ready([self._conns[w] for w in inflight], 0.5)
             now = time.monotonic()
             for wid in list(inflight):
                 cid, keys, started = inflight[wid]
                 conn, proc = self._conns[wid], self._procs[wid]
                 msg = None
-                if conn in ready or proc.sentinel in ready:
+                if conn in ready or not proc.is_alive():
                     try:
                         if conn.poll():
                             msg = conn.recv()
