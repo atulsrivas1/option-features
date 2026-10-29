@@ -7,9 +7,10 @@ Each solver run happens in a fresh subprocess against one checkout's source tree
 mixed (10k) from qualification/synthetic/perf/gen_m1_solver_sets.py, plus the adversarial list of
 tools/m1_adversarial_sets.py (2800 contracts: dyadic-sigma near ties, roots, edges, extremes, out-of-domain).
 
-  compare   --base-root BASE --changed-root CHANGED [--n 10000] [--adv 2400]
+  compare   --base-root BASE --changed-root CHANGED [--n 10000] [--adv 2400] [--mut 400]
             Captures every InverseResult and SolverEvidence field (exact-field hash) at BASE, at CHANGED
-            with the float filter on (default) and at CHANGED with float_filter=False (the switch), and
+            with the float filter on (default), at CHANGED with float_filter=False and at CHANGED with the Stage 2
+            conversion switch off (--conv legacy), and
             requires identical hashes everywhere. Exit non-zero on any difference.
   mutation  --base-root BASE --changed-root CHANGED [--n 1000]
             Acceptance test 3. Test-only hooks (tools/m1_filter_hooks.py) shrink the bound and inject a
@@ -124,6 +125,9 @@ def worker(a):
     numerical_owner, solve, prepare, cfg, srcfile = setup(a.root)
     assert str(Path(a.root).resolve()).lower() in str(Path(srcfile).resolve()).lower(), "imported solver is not from --root"
     kw = {"float_filter": False} if a.filter == "off" else {}
+    if a.conv == "legacy":   # Stage 2 switch: pre-Stage-2 endpoint conversion (arithmetic_legacy)
+        import option_features.arithmetic as _ar
+        _ar.set_fast_endpoints(False)
     hooks = None
     if a.hooks:
         from m1_filter_hooks import test_hooks
@@ -159,12 +163,29 @@ def worker(a):
             calls[0] += 1
             return real_bounds(*x, **y)
         model.equation, inv.bounds = eq, bd
-        per = []
+        # Stage 2: endpoint conversions (dyadic endpoint + outward_decimal calls) and Decimal materialisations
+        import option_features.arithmetic as ar
+        conv, dec = [0], [0]
+
+        def wrap(mod, name, ctr):
+            real = getattr(mod, name)
+
+            def f(*x, **y):
+                ctr[0] += 1
+                return real(*x, **y)
+            setattr(mod, name, f)
+        for name in ("dyadic_endpoint", "dyadic_endpoint_parts", "outward_decimal"):
+            if hasattr(ar, name) and not (name == "dyadic_endpoint" and hasattr(ar, "dyadic_endpoint_parts")):
+                wrap(ar, name, conv)
+        wrap(ar, "_decimal" if hasattr(ar, "_decimal") else "decimal_tuple", dec)
+        per, per_conv, per_dec = [], [], []
         for k, i, p in preps:
-            calls[0] = 0
+            calls[0] = conv[0] = dec[0] = 0
             run_one(numerical_owner, solve, p, cfg, kw)
             per.append(calls[0])
-        json.dump({"per_solve": per}, open(a.out, "w"))
+            per_conv.append(conv[0])
+            per_dec.append(dec[0])
+        json.dump({"per_solve": per, "conversions": per_conv, "decimals": per_dec}, open(a.out, "w"))
     else:
         sub = [p for k, i, p in preps]
         for p in sub:
@@ -206,20 +227,21 @@ def diff_count(ref, other):
 def compare(a):
     tmp = Path(a.tmpdir)
     tmp.mkdir(parents=True, exist_ok=True)
-    sets = "flat:%d,mixed:%d,adv:%d" % (a.n, a.n, a.adv)
+    sets = "flat:%d,mixed:%d,adv:%d,mut:%d" % (a.n, a.n, a.adv, a.mut)   # 10000+10000+2400+400 = 22,800 contracts
     caps = capture_all({"base": (a.base_root, {"sets": sets}), "changed": (a.changed_root, {"sets": sets}),
-                        "changed_switch_off": (a.changed_root, {"sets": sets, "filter": "off"})}, tmp)
+                        "changed_switch_off": (a.changed_root, {"sets": sets, "filter": "off"}),
+                        "changed_legacy_conv": (a.changed_root, {"sets": sets, "conv": "legacy"})}, tmp)
     base = caps["base"]
     rep = {"label": LABEL, "evidence": "Developer evidence only", "contracts": len(base), "sets": sets, "runs": {}}
     bad = 0
-    for name in ("changed", "changed_switch_off"):
+    for name in ("changed", "changed_switch_off", "changed_legacy_conv"):
         d = diff_count(base, caps[name])
         reason_ident = sum(base[k][1:] == caps[name][k][1:] for k in base)
         unsolv = [k for k in base if base[k][1] != "available"]
         rep["runs"][name] = {"identical_result_hashes": len(base) - len(d), "different": d[:20], "identical_status_reason": reason_ident,
                              "unsolvable_contracts": len(unsolv), "unsolvable_identical": sum(base[k] == caps[name][k] for k in unsolv),
                              "by_set": {s: {"total": sum(k.startswith(s) for k in base),
-                                            "identical": sum(base[k][0] == caps[name][k][0] for k in base if k.startswith(s))} for s in ("flat", "mixed", "adv")}}
+                                            "identical": sum(base[k][0] == caps[name][k][0] for k in base if k.startswith(s))} for s in ("flat", "mixed", "adv", "mut")}}
         bad += len(d) + (len(base) - reason_ident)
     rep["status_counts"] = {}
     for k in base:
@@ -271,12 +293,16 @@ def count(a):
     tmp.mkdir(parents=True, exist_ok=True)
     sets = "flat:%d,mixed:%d" % (a.n, a.n)
     out = {}
-    for name, root, kw in (("base", a.base_root, {}), ("changed", a.changed_root, {}), ("changed_switch_off", a.changed_root, {"filter": "off"})):
+    for name, root, kw in (("base", a.base_root, {}), ("changed", a.changed_root, {}), ("changed_switch_off", a.changed_root, {"filter": "off"}),
+                           ("changed_legacy_conv", a.changed_root, {"conv": "legacy"})):
         p = spawn(root, "count", tmp / (name + "_count.json"), sets=sets, **kw)
         if p.wait():
             sys.exit("count worker failed")
-        per = json.load(open(tmp / (name + "_count.json")))["per_solve"]
-        out[name] = {"solves": len(per), "arb_calls_per_solve_p50": pct(per, 50), "arb_calls_per_solve_p95": pct(per, 95),
+        cj = json.load(open(tmp / (name + "_count.json")))
+        per = cj["per_solve"]
+        out[name] = {"conversions_per_solve_p50": pct(cj["conversions"], 50), "conversions_per_solve_p95": pct(cj["conversions"], 95),
+                     "conversions_per_solve_mean": sum(cj["conversions"]) / len(per), "decimal_materialisations_per_solve_mean": sum(cj["decimals"]) / len(per),
+                     "solves": len(per), "arb_calls_per_solve_p50": pct(per, 50), "arb_calls_per_solve_p95": pct(per, 95),
                      "max": max(per), "total": sum(per), "mean": sum(per) / len(per)}
     out["label"] = LABEL
     print(json.dumps(out, indent=1, sort_keys=True))
@@ -329,6 +355,7 @@ def main():
     ap.add_argument("--out")
     ap.add_argument("--sets", default="flat,mixed")
     ap.add_argument("--filter", default="default")
+    ap.add_argument("--conv", default="default", help="legacy = pre-Stage-2 endpoint conversion (Stage 2 switch)")
     ap.add_argument("--hooks", default="")
     ap.add_argument("--n", type=int, default=10000)
     ap.add_argument("--adv", type=int, default=2400)
