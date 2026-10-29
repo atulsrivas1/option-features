@@ -120,6 +120,23 @@ class StreamTests(unittest.TestCase):
             self.assertEqual((result.ask_premium, result.bid_premium, result.unclassified_premium), (ask, bid, unc))
             self.assertEqual(result.quotes + result.trades, len(records))
 
+    def test_stream_boundaries_equal_single(self):
+        # exact touch and age boundaries: price at ask - eps, bid + eps (and one tick either side), age at the limit and +1 ns
+        eps, limit = "0.0100", 3 * NS
+        records, singles = [], []
+        t = 0
+        for c, (bid, ask) in enumerate((("10.0000", "10.1000"), ("2.0000", "2.0000"))):
+            for price in ("9.9899", "9.9900", "10.0000", "10.0100", "10.0101", "10.0899", "10.0900", "10.1000", "10.1100", "2.0000", "2.0100"):
+                for age in (limit - 1, limit, limit + 1):
+                    records.append(("q", c, t, bid, ask))
+                    records.append(("t", c, t + age, price, 1))
+                    singles.append(quotes.sign_trade(price, (bid, ask, t), t + age, inside_spread="unknown", epsilon=eps, max_quote_age_ns=limit))
+                    t += limit + 2
+        result = quotes.classify_stream(records, epsilon=eps, max_quote_age_ns=limit)
+        got = [result.sign(i) for i, r in enumerate(records) if r[0] == "t"]
+        self.assertEqual(got, singles)
+        self.assertEqual({s.reason for s in singles if s.status != "available"} >= {"stale_quote", "inside_spread", "ambiguous_touch"}, True)
+
     def test_equal_time_follows_input_order(self):
         quote = ("q", 1, 5, "10.0000", "10.1000")
         trade = ("t", 1, 5, "10.1000", 1)

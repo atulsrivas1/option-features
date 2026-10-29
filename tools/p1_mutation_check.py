@@ -36,6 +36,8 @@ MUTS = [
  ("M27 OTM inclusive at the money", "option_features/shares.py", "otm = k > s if right == \"call\" else k < s", "otm = k >= s if right == \"call\" else k <= s"),
  ("M18 short limit off by one", "option_features/shares.py", "short = 0 <= dte <= max_days", "short = 0 <= dte < max_days"),
  ("M14 denominator = referenced premium", "option_features/shares.py", "share = Fraction(hit, total)", "share = Fraction(hit, ref)"),
+ ("S1 stream: bid-touch exclusive", "option_features/quotes.py", "                elif p <= bid_hi:\n                    code = S_BID", "                elif p < bid_hi:\n                    code = S_BID", "test_p1_batch.py"),
+ ("S2 stream: age 3s stale", "option_features/quotes.py", "elif t - qt > max_quote_age_ns:", "elif t - qt >= max_quote_age_ns:", "test_p1_batch.py"),
  ("M22 unclassified counted as ask", "option_features/quotes.py", "        else:\n            unc += premium\n    m = STANDARD_MULTIPLIER", "        else:\n            unc += premium\n            ask += premium\n    m = STANDARD_MULTIPLIER"),
  ("M32 same-ns quote unusable", "option_features/quotes.py", "or qt > t:\n        return S_NO_QUOTE", "or qt >= t:\n        return S_NO_QUOTE"),
  ("M33 later quote usable", "option_features/quotes.py", "or qt > t:\n        return S_NO_QUOTE", ":\n        return S_NO_QUOTE"),
@@ -43,7 +45,8 @@ MUTS = [
 ]
 survivors = 0
 MUT = tempfile.mkdtemp(prefix="p1-mutants-")
-for name, rel, a, b in MUTS:
+for name, rel, a, b, *more in MUTS:
+    suite = more[0] if more else "test_p1_rows.py"
     if os.path.exists(MUT):
         shutil.rmtree(MUT)
     shutil.copytree(ROOT / "packages" / "features" / "src", os.path.join(MUT, "f"), ignore=shutil.ignore_patterns("__pycache__"))
@@ -53,8 +56,8 @@ for name, rel, a, b in MUTS:
         sys.exit("pattern missing for " + name)
     open(p, "w", encoding="utf-8", newline="").write(s.replace(a, b, 1))
     env = dict(os.environ, PYTHONPATH=os.pathsep.join([os.path.join(MUT, "f"), str(ROOT / "packages" / "option-contracts" / "src"), str(ROOT / "tests" / "p1")]), PYTHONDONTWRITEBYTECODE="1")
-    r = subprocess.run([PY, "-B", "-m", "unittest", "discover", "-s", str(ROOT / "tests" / "p1"), "-p", "test_p1_rows.py", "-v"], capture_output=True, text=True, env=env, cwd=ROOT)
-    failed = sorted(set(re.findall(r"^(?:FAIL|ERROR): test_row_(\w+)", r.stderr, re.M)))
+    r = subprocess.run([PY, "-B", "-m", "unittest", "discover", "-s", str(ROOT / "tests" / "p1"), "-p", suite, "-v"], capture_output=True, text=True, env=env, cwd=ROOT)
+    failed = sorted(set(re.findall(r"^(?:FAIL|ERROR): (?:test_row_)?(\w+)", r.stderr, re.M)))
     survivors += not failed
     print(("CAUGHT   " if failed else "SURVIVED ") + name + "  rows: " + " ".join(failed))
 shutil.rmtree(MUT, ignore_errors=True)

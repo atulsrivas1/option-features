@@ -51,23 +51,23 @@ Gate precedence (PO-P1-02): no_quote, invalid_quote, crossed_market, locked_mark
 | F1 | 1-minute premium rate vs 15-minute | variants1 `directional` b64-rolling-BD1 | two horizons composed by the consumer | partial | R26 |
 | F2a, F2b | Premium or contracts in top X% of sessions | variants1 `baseline` | no percentile rank, no crossing form | partial | R26 |
 | F2c, F2d | Rate in top X%, average of F2a-c | none | | missing | |
-| F3 | Premium in window ending now, calls/puts | `option_features.windows.window_premium`, `WindowIndex` | `window_end_ns` = evaluation time (explicit end, closed [end-W, end]); `window_end_ns=None` is the legacy last-print anchor; call/put split; multiplier != 100 excluded and counted | match | P1 |
+| F3 | Premium in window ending now, calls/puts | `option_features.windows.window_premium`, `WindowIndex` | `window_end_ns` = evaluation time (explicit end, closed [end-W, end]); `window_end_ns=None` is the legacy last-print anchor; call/put split; multiplier != 100 excluded and counted | match (library modules only; not on the wire) | P1 |
 | F3 legacy | Rolling window ending at the last positive print | variants1 `directional` b64-rolling-BD1 | unchanged | (legacy mode) | R26 |
 | F4 (design: large prints) | N prints of $100k or more | variants1 `premium` rows | no count, no threshold (the repository family called F4 is "span") | partial | R26 |
-| F5 | At least X% of premium expiring within 2 days | `option_features.shares.single_reference_shares` -> `short_dte` | needs civil date and expiry only; 0 <= dte <= short_dte_max_days; total-premium denominator; coverage; `short_min_share` inclusive; label "at least X% of total eligible premium" | match | P1 |
-| F6 | Out-of-the-money share | same -> `otm` | needs spot only; strict OTM (call K > S, put K < S); `otm_min_share` | match | P1 |
-| F5/F6 joint | Both references | same -> `joint_short_dte`, `joint_otm`; `shares.joint_amounts` | kept; legacy variants1 joint op unchanged | match | P1 (legacy R26) |
+| F5 | At least X% of premium expiring within 2 days | `option_features.shares.single_reference_shares` -> `short_dte` | needs civil date and expiry only; 0 <= dte <= short_dte_max_days; total-premium denominator; coverage; `short_min_share` inclusive; label "at least X% of total eligible premium" | match (library modules only; not on the wire) | P1 |
+| F6 | Out-of-the-money share | same -> `otm` | needs spot only; strict OTM (call K > S, put K < S); `otm_min_share` | match (library modules only; not on the wire) | P1 |
+| F5/F6 joint | Both references | same -> `joint_short_dte`, `joint_otm`; `shares.joint_amounts` | kept; legacy variants1 joint op unchanged | match (library modules only; not on the wire) | P1 (legacy R26) |
 | F7 | 60% in one strike or expiry | variants1 `directional` i64 per-strike/expiry totals | no share, no threshold | partial | R26 |
 | F8 | Share of universe premium | none | | missing | |
 | F9 | Repeated or multi-venue prints within a second | variants1 `parent_groups` | side-split lanes, exclusive first-unassigned windows (design wording to follow, request 7) | partial | R26 |
 | F10, F20 | Contracts or premium vs baseline | variants1 `baseline_consumer` (median), `baseline` mean | design baseline statistic open (request 9); R29 | partial | R26 |
 | F11, F12 | Price response, episodes | none | | missing | |
-| F13 | Call-ask plus put-bid premium | `option_features.quotes.sign_aggregate` -> `call_ask_plus_put_bid_premium` | `inside_spread="unknown"` (touch policy), epsilon, `max_quote_age_ns` 3 s; label "ask-side proxy" / "bid-side proxy" | match | P1 |
-| F14 | Put-ask plus call-bid premium | same -> `put_ask_plus_call_bid_premium` | as F13 | match | P1 |
-| F15 | Ask-side premium | same -> `ask_premium`, `ask_share_of_classified` | as F13 | match | P1 |
-| F16 | Bid-side premium | same -> `bid_premium`, `bid_share_of_classified` | as F13 | match | P1 |
+| F13 | Call-ask plus put-bid premium | `option_features.quotes.sign_aggregate` -> `call_ask_plus_put_bid_premium` | `inside_spread="unknown"` (touch policy), epsilon, `max_quote_age_ns` 3 s; label "ask-side proxy" / "bid-side proxy" | match (library modules only; not on the wire) | P1 |
+| F14 | Put-ask plus call-bid premium | same -> `put_ask_plus_call_bid_premium` | as F13 | match (library modules only; not on the wire) | P1 |
+| F15 | Ask-side premium | same -> `ask_premium`, `ask_share_of_classified` | as F13 | match (library modules only; not on the wire) | P1 |
+| F16 | Bid-side premium | same -> `bid_premium`, `bid_share_of_classified` | as F13 | match (library modules only; not on the wire) | P1 |
 | F13-F16 legacy | Midpoint-split sides | variants1 `directional` metrics bullish, bearish, ask, bid; `quotes.sign_trade(inside_spread="split")` | the default; unchanged | (legacy mode) | R26 |
-| F13-F16 unclassified | Premium inside the spread | `sign_aggregate` -> `unclassified_premium`, `unclassified_share_of_total` | inside_spread, ambiguous_touch and every unsignable trade; excluded from both shares | match | P1 |
+| F13-F16 unclassified | Premium inside the spread | `sign_aggregate` -> `unclassified_premium`, `unclassified_share_of_total` | inside_spread, ambiguous_touch and every unsignable trade; excluded from both shares | match (library modules only; not on the wire) | P1 |
 | Tick fallback | Optional tick rule | none | later, optional | missing | |
 | Crossing form | Crossing form for F2a-c | none | engine concern | missing | |
 | F17 | One contract, 5 minutes, at least $X | variants1 `span_at_anchor` | anchors supplied | partial | R26 |
