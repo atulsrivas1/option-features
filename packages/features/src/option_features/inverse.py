@@ -1,9 +1,9 @@
 """Finite certified bisection, preserving a root-containing volatility bracket."""
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from fractions import Fraction
 from option_feature_contracts import SolverEvidence
 from .arithmetic import (TIERS, NumericalFailure, decimal_exact, exact_decimal, nearest_binary64, certify)
-from .model import bounds, forward, price_interval
+from .model import Operands, bounds, forward, price_interval
 
 @dataclass(frozen=True, slots=True)
 class InverseResult:
@@ -21,28 +21,36 @@ def _diagnostic(value):
     except NumericalFailure:
         return None
 
-def _price(operands, sigma, target, owner):
+def _with_sigma(operands, sigma_f):
+    return Operands(operands.spot, operands.strike, operands.rate, operands.carry, operands.time, sigma_f, operands.eta, operands.cache)
+
+def _price(operands, sigma_f, target, owner):
+    """sigma_f is Fraction.from_float(sigma), converted once by the caller. Returns the enclosure, its
+    ordering sign and (when already computed) its exact endpoint fractions, so callers do not convert again."""
     latest = None
+    fractions = None
     failure = NumericalFailure("bound_precision")
+    shifted = _with_sigma(operands, sigma_f)
     for bits in TIERS:
         try:
-            latest = price_interval(replace(operands, sigma=Fraction.from_float(sigma)), owner, bits)
-            low, high = _fractions(latest)
+            latest = price_interval(shifted, owner, bits)
+            fractions = None
+            low, high = fractions = _fractions(latest)
             if high < target:
-                return latest, -1
+                return latest, -1, fractions
             if low > target:
-                return latest, 1
+                return latest, 1, fractions
         except NumericalFailure as exc:
             failure = exc
     if latest is None:
         raise failure
-    return latest, 0
+    return latest, 0, fractions
 
-def _conditioning(operands, sigma, target, config, owner):
+def _conditioning(operands, sigma_f, target, config, owner):
     """Certify the same Vega inequality for every available IV candidate."""
     try:
-        certificate = forward(replace(operands, sigma=Fraction.from_float(sigma)), "greeks.vega", owner)
-        volatility_tolerance = Fraction.from_float(config.vol_abs_tol)+Fraction.from_float(config.vol_rel_tol)*abs(Fraction.from_float(sigma))
+        certificate = forward(_with_sigma(operands, sigma_f), "greeks.vega", owner)
+        volatility_tolerance = Fraction.from_float(config.vol_abs_tol)+Fraction.from_float(config.vol_rel_tol)*abs(sigma_f)
         price_tolerance = Fraction.from_float(config.price_abs_tol)+Fraction.from_float(config.price_rel_tol)*abs(target)
         maximum = max(abs(certificate.low), abs(certificate.high))
         minimum = min(abs(certificate.low), abs(certificate.high)) if certificate.low*certificate.high > 0 else Fraction(0)
@@ -98,7 +106,7 @@ def solve(operands, target, config, converted, owner):
                     residual_point = 0.0 if candidate_price is not None and Fraction.from_float(candidate_price) == target else (_diagnostic(Fraction.from_float(candidate_price)-target) if candidate_price is not None else None)
                     worst_residual = exact_decimal(Fraction(0))
                     boundary = "lower_boundary"
-                    vega, ill_conditioned = _conditioning(operands, candidate, target, config, owner)
+                    vega, ill_conditioned = _conditioning(operands, Fraction(0), target, config, owner)
                     return result(0.0, "available", "ok", True)
                 if upper_exact is not None and target == upper_exact:
                     boundary = "upper_asymptote"
@@ -113,7 +121,10 @@ def solve(operands, target, config, converted, owner):
             if not bound_succeeded and bound_failure is not None:
                 return result(None, "numerical_failure", bound_failure.reason)
             return result(None, "numerical_failure", "bound_precision")
-        cap_enclosure, cap_sign = _price(operands, hi, target, owner)
+        # Stage 0: per-contract memo of sigma-independent conversions (balls once per tier, guard once)
+        operands = Operands(operands.spot, operands.strike, operands.rate, operands.carry, operands.time, operands.sigma, operands.eta, {})
+        hi_f, lo_f = Fraction.from_float(hi), Fraction.from_float(lo)
+        cap_enclosure, cap_sign, _ = _price(operands, hi_f, target, owner)
         if cap_sign < 0:
             boundary = "sigma_cap"
             candidate, candidate_enclosure = hi, cap_enclosure
@@ -124,54 +135,57 @@ def solve(operands, target, config, converted, owner):
             candidate, candidate_enclosure = hi, cap_enclosure
             return result(None, "numerical_failure", "bound_precision")
         price_tolerance = Fraction.from_float(config.price_abs_tol)+Fraction.from_float(config.price_rel_tol)*abs(target)
+        vol_abs_f, vol_rel_f = Fraction.from_float(config.vol_abs_tol), Fraction.from_float(config.vol_rel_tol)
 
-        def acceptable(sigma, enclosed):
+        def acceptable(sigma, sigma_f, enclosed, fractions):
             nonlocal candidate, candidate_enclosure, candidate_price, residual_point, worst_residual, vega, ill_conditioned
             candidate, candidate_enclosure = sigma, enclosed
-            a, b = _fractions(enclosed)
+            a, b = fractions if fractions is not None else _fractions(enclosed)
             residual = max(abs(a-target), abs(b-target))
-            width = Fraction.from_float(hi)-Fraction.from_float(lo)
-            volatility_tolerance = Fraction.from_float(config.vol_abs_tol)+Fraction.from_float(config.vol_rel_tol)*abs(Fraction.from_float(sigma))
+            width = hi_f-lo_f
+            volatility_tolerance = vol_abs_f+vol_rel_f*abs(sigma_f)
             if residual > price_tolerance or width > volatility_tolerance:
                 return False
             worst_residual = exact_decimal(residual)
             point = certify(enclosed)
             candidate_price = point.value
             residual_point = _diagnostic(Fraction.from_float(point.value)-target)
-            vega, ill_conditioned = _conditioning(operands, sigma, target, config, owner)
+            vega, ill_conditioned = _conditioning(operands, sigma_f, target, config, owner)
             return True
 
         for index in range(config.max_iterations):
             iterations = index+1
-            midpoint = nearest_binary64((Fraction.from_float(lo)+Fraction.from_float(hi))/2)
+            midpoint = nearest_binary64((lo_f+hi_f)/2)
             if not lo < midpoint < hi:
                 # No invented interval collapse when adjacent binary64 values
                 # remain. A terminal candidate can still meet both criteria.
-                candidate_enclosure, _ = _price(operands, lo, target, owner)
-                if acceptable(lo, candidate_enclosure):
+                candidate_enclosure, _, fr = _price(operands, lo_f, target, owner)
+                if acceptable(lo, lo_f, candidate_enclosure, fr):
                     return result(lo, "available", "ok", True)
                 return result(None, "numerical_failure", "precision_exhausted")
-            candidate_enclosure, sign = _price(operands, midpoint, target, owner)
-            if acceptable(midpoint, candidate_enclosure):
+            mid_f = Fraction.from_float(midpoint)
+            candidate_enclosure, sign, fr = _price(operands, mid_f, target, owner)
+            if acceptable(midpoint, mid_f, candidate_enclosure, fr):
                 return result(midpoint, "available", "ok", True)
             if sign < 0:
-                lo = midpoint
+                lo, lo_f = midpoint, mid_f
             elif sign > 0:
-                hi = midpoint
+                hi, hi_f = midpoint, mid_f
             else:
-                left = nearest_binary64((Fraction.from_float(lo)+Fraction.from_float(midpoint))/2)
-                right = nearest_binary64((Fraction.from_float(midpoint)+Fraction.from_float(hi))/2)
+                left = nearest_binary64((lo_f+mid_f)/2)
+                right = nearest_binary64((mid_f+hi_f)/2)
                 if not lo < left < midpoint < right < hi:
                     return result(None, "numerical_failure", "precision_exhausted")
-                _, left_sign = _price(operands, left, target, owner)
-                _, right_sign = _price(operands, right, target, owner)
+                left_f, right_f = Fraction.from_float(left), Fraction.from_float(right)
+                _, left_sign, _ = _price(operands, left_f, target, owner)
+                _, right_sign, _ = _price(operands, right_f, target, owner)
                 if left_sign < 0 and right_sign > 0:
-                    lo, hi = left, right
+                    lo, hi, lo_f, hi_f = left, right, left_f, right_f
                 else:
                     return result(None, "numerical_failure", "bound_precision")
             # After a certified contraction check the current already-enclosed
             # candidate against the new bracket, without extra price work.
-            if lo <= midpoint <= hi and acceptable(midpoint, candidate_enclosure):
+            if lo <= midpoint <= hi and acceptable(midpoint, mid_f, candidate_enclosure, fr):
                 return result(midpoint, "available", "ok", True)
         return result(None, "iteration_limit", "iteration_budget")
     except NumericalFailure as exc:
