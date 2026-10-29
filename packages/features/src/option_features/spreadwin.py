@@ -26,7 +26,7 @@ monotone in order a general sweep (sort by known_at, running maximum) gives the 
 from fractions import Fraction
 
 from .quotehist import (DEFAULT_COVERAGE_MIN, DEFAULT_STALE_LIMIT_NS, DEFAULT_WINDOW_NS, order_updates,
-                        latest_index, price_ticks, quote_fault, rational, Ticks)
+                        latest_index, price_ticks, quote_fault, rational, Ticks, slice_window)
 from .quotes import SCALE, SCALE_DIGITS
 
 _POW = tuple(10 ** i for i in range(SCALE_DIGITS + 1))
@@ -101,6 +101,22 @@ class OC6Result:
 
     def __repr__(self):
         return "OC6Result(%s, %s, %s, %s)" % (self.status, self.reason, self.label, self.value)
+
+
+def _full(validate):
+    if validate == "scanned":
+        return False
+    if validate == "full":
+        return True
+    raise ValueError('validate must be "scanned" or "full"')
+
+
+def float_ratio(dc, wtot, sc, acc):
+    """Binary64 estimate of the OC6 ratio (the filter input); exposed so the error bound can be tested."""
+    tot = 0.0
+    for k, n in acc.items():
+        tot += n / k
+    return dc * wtot / (sc * tot)
 
 
 def _unavailable(reason, count):
@@ -233,8 +249,12 @@ def _scan_general(ups, i, t_ns, open_ns, wstart):
     return acc, wtot, count
 
 
-def _oc6(t_ns, updates, session_open_ns, window_ns, limit, cov_min, np_, nq, wp, wq, n_lo, n_hi, w_lo, w_hi):
-    ups = order_updates(updates)
+def _oc6(t_ns, updates, session_open_ns, window_ns, limit, cov_min, np_, nq, wp, wq, n_lo, n_hi, w_lo, w_hi, full):
+    if full:
+        ups = order_updates(updates)
+    else:
+        ws = t_ns - window_ns
+        ups = order_updates(slice_window(updates, t_ns, ws if ws > session_open_ns else session_open_ns, session_open_ns))
     i = latest_index(ups, t_ns)
     if i < 0:
         return _unavailable("no_quote", 0)
@@ -264,10 +284,7 @@ def _oc6(t_ns, updates, session_open_ns, window_ns, limit, cov_min, np_, nq, wp,
     status, label = "fired", None
     r = None
     if len(acc) <= MAX_FILTER_TERMS:
-        tot = 0.0
-        for k, n in acc.items():
-            tot += n / k
-        r = dc * wtot / (sc * tot)
+        r = float_ratio(dc, wtot, sc, acc)
         if r < n_lo:
             label = "narrower"
         elif r > w_hi:
@@ -289,18 +306,19 @@ def _oc6(t_ns, updates, session_open_ns, window_ns, limit, cov_min, np_, nq, wp,
     return OC6Result(status, None, label, count, dc, sc, acc, wtot, nd)
 
 
-def oc6(updates, t_ns, session_open_ns, params=None, consolidated=True, standard=True):
+def oc6(updates, t_ns, session_open_ns, params=None, consolidated=True, standard=True, validate="scanned"):
     """One contract. updates: QuoteUpdate records; t_ns and session_open_ns: int ns. Raises OCStructuralError.
 
     `consolidated` and `standard` are accepted for symmetry with OC5 and have no effect: a single-venue feed
-    does not block OC6 (D6) and a non-standard contract is evaluated.
+    does not block OC6 (D6) and a non-standard contract is evaluated. validate="scanned" (default) checks only the
+    window, its carry-in and the latest update (O(window)); "full" checks the whole history (see quotehist).
     """
     p = params or OC6Params()
-    return _oc6(t_ns, updates, session_open_ns, p.window_ns, p.stale_limit_ns, p.coverage_min, p.np, p.nq, p.wp, p.wq, p.n_lo, p.n_hi, p.w_lo, p.w_hi)
+    return _oc6(t_ns, updates, session_open_ns, p.window_ns, p.stale_limit_ns, p.coverage_min, p.np, p.nq, p.wp, p.wq, p.n_lo, p.n_hi, p.w_lo, p.w_hi, _full(validate))
 
 
-def oc6_many(items, params=None):
+def oc6_many(items, params=None, validate="scanned"):
     """Many contracts: items is an iterable of (t_ns, updates, session_open_ns); identical to `oc6` per item."""
     p = params or OC6Params()
-    args = (p.window_ns, p.stale_limit_ns, p.coverage_min, p.np, p.nq, p.wp, p.wq, p.n_lo, p.n_hi, p.w_lo, p.w_hi)
+    args = (p.window_ns, p.stale_limit_ns, p.coverage_min, p.np, p.nq, p.wp, p.wq, p.n_lo, p.n_hi, p.w_lo, p.w_hi, _full(validate))
     return [_oc6(t, u, o, *args) for t, u, o in items]

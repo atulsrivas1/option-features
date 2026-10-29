@@ -37,6 +37,15 @@ def _make(row):
     return test
 
 
+class RowsFullValidation(unittest.TestCase):
+    """The same rows with validate="full" (whole-history validation) give the same answers."""
+
+    def test_all_rows(self):
+        for row in ROWS:
+            with self.subTest(row=row["id"]):
+                self.assertIsNone(A.check_row(row, "full"))
+
+
 for _row in ROWS:
     setattr(RowIntegrity, "test_row_" + _row["id"].replace("-", "_"), _make(_row))
 

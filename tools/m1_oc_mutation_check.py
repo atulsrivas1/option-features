@@ -27,6 +27,9 @@ FAULT5 = ("    fault = quote_fault(price_ticks(bid), price_ticks(ask))\n"
           "        return _UNAVAILABLE[fault]\n")
 FAULT6 = "    fault = quote_fault(b, a)\n    if fault is not None:\n        return _unavailable(fault, 0)\n"
 COVER6 = "    if count < cov_min:\n        return _unavailable(\"low_quote_coverage\", count)\n"
+TIE_LO = ("        while lo > 0 and ups[lo - 1][1] == ups[lo][1]:\n            lo -= 1\n"
+          "        return ups[max(lo - 1, 0):hi]  # one older update: boundary order check\n")
+EPS_OLD = chr(10) + "FILTER_EPS = 1e-9" + chr(10)
 COUNT = "        if u[5]:\n            if e >= wstart:\n                count += 1\n        else:\n            st = None\n"
 
 MUTS = [
@@ -46,7 +49,7 @@ MUTS = [
     ("M8 fall back to older quote", [(HIST, "if u[1] <= t_ns and u[2] <= t_ns:", "if u[1] <= t_ns and u[2] <= t_ns and u[5]:")]),
     ("M9 both-zero treated as 0", [(IMB, "    if total == 0:\n        return _UNAVAILABLE[\"zero_displayed_size\"]\n",
                                     "    if total == 0:\n        return OC5Result(\"not_fired\", None, None, 0, 1)\n")]),
-    ("M10 OC6 ratio inverted", [(SPR, "r = dc * wtot / (sc * tot)", "r = (sc * tot) / (dc * wtot)"),
+    ("M10 OC6 ratio inverted", [(SPR, "return dc * wtot / (sc * tot)", "return (sc * tot) / (dc * wtot)"),
                                 (SPR, "left = dc * den * wtot", "left = sc * num"),
                                 (SPR, "right = sc * num", "right = dc * den * wtot")]),
     ("M11 OC6 thresholds exclusive", [(SPR, "left * nq <= np_ * right", "left * nq < np_ * right"),
@@ -84,6 +87,11 @@ MUTS = [
     ("X10 coverage before stale", [(SPR, STALE6, ""), (SPR, COVER6, COVER6 + STALE6)]),
     ("X11 single_venue blocks OC6", [(SPR, "    p = params or OC6Params()\n    return _oc6", "    p = params or OC6Params()\n    if not consolidated:\n        return _unavailable(\"not_consolidated\", 0)\n    return _oc6")]),
     ("X12a non-standard blocks OC5", [(IMB, "    params = params or OC5Params()\n    return _oc5", "    params = params or OC5Params()\n    if not standard:\n        return _UNAVAILABLE[\"invalid_quote\"]\n    return _oc5")]),
+    ("F0 filter margin 0", [(SPR, EPS_OLD, EPS_OLD.replace("1e-9", "0.0"))], "test_m1_oc_properties.py"),
+    ("F1 filter margin 1e-13", [(SPR, EPS_OLD, EPS_OLD.replace("1e-9", "1e-13"))], "test_m1_oc_properties.py"),
+    ("F2 filter margin 1e-11", [(SPR, EPS_OLD, EPS_OLD.replace("1e-9", "1e-11"))], "test_m1_oc_properties.py"),
+    ("V1 scanned slice drops the boundary tie group", [(HIST, TIE_LO, TIE_LO.split("\n", 2)[2])],"test_m1_oc_properties.py"),
+    ("V2 scanned slice drops the boundary check", [(HIST, "return ups[max(lo - 1, 0):hi]", "return ups[lo:hi]")], "test_m1_oc_properties.py"),
     ("X12b non-standard blocks OC6", [(SPR, "    p = params or OC6Params()\n    return _oc6", "    p = params or OC6Params()\n    if not standard:\n        return _unavailable(\"invalid_quote\", 0)\n    return _oc6")]),
 ]
 
@@ -92,7 +100,8 @@ def main():
     survivors = 0
     work = tempfile.mkdtemp(prefix="m1-oc-mutants-")
     try:
-        for name, edits in MUTS:
+        for name, edits, *more in MUTS:
+            suite = more[0] if more else "test_m1_oc_rows.py"
             dst = os.path.join(work, "f")
             if os.path.exists(dst):
                 shutil.rmtree(dst)
@@ -105,9 +114,11 @@ def main():
                 open(p, "w", encoding="utf-8", newline="").write(text.replace(old, new, 1))
             env = dict(os.environ, PYTHONDONTWRITEBYTECODE="1", PYTHONPATH=os.pathsep.join(
                 [dst, str(ROOT / "packages" / "option-contracts" / "src"), str(ROOT / "tests" / "m1")]))
-            r = subprocess.run([PY, "-B", "-m", "unittest", "discover", "-s", str(ROOT / "tests" / "m1"), "-p", "test_m1_oc_rows.py", "-v"],
+            r = subprocess.run([PY, "-B", "-m", "unittest", "discover", "-s", str(ROOT / "tests" / "m1"), "-p", suite, "-v"],
                                capture_output=True, text=True, env=env, cwd=ROOT)
-            failed = sorted(set(re.findall(r"^(?:FAIL|ERROR): test_row_(\w+)", r.stderr, re.M)))
+            if os.environ.get("M1_DEBUG"):
+                print(r.stderr[-600:])
+            failed = sorted(set(re.findall(r"^(?:FAIL|ERROR): (?:test_row_)?(\w+)", r.stderr, re.M)))
             survivors += not failed
             shown = " ".join(x.replace("_", "-") for x in failed[:8]) + (" (+%d)" % (len(failed) - 8) if len(failed) > 8 else "")
             print(("CAUGHT   " if failed else "SURVIVED ") + name + "  rows: " + shown)

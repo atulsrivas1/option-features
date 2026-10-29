@@ -27,7 +27,7 @@ def _updates(quote_rows):
                         q["condition"] == "regular", q.get("seq")) for q in quote_rows]
 
 
-def run_row(row):
+def run_row(row, validate="scanned"):
     from option_features.quotehist import OCStructuralError, QuoteSize
     inputs, req = row["inputs"], row["request"]
     try:
@@ -36,11 +36,11 @@ def run_row(row):
             sizes = [QuoteSize(s["rev"], s["bid_size"], s["ask_size"]) for s in inputs["sizes"]]
             params = OC5Params(req["imbalance_threshold"], req["stale_limit_ns"])
             return oc5(_updates(inputs["quotes"]), sizes, inputs["T_ns"], params,
-                       consolidated=inputs["feed_kind"] == "consolidated", standard=inputs["contract_standard"])
+                       consolidated=inputs["feed_kind"] == "consolidated", standard=inputs["contract_standard"], validate=validate)
         from option_features.spreadwin import OC6Params, oc6
         params = OC6Params(req["window_ns"], req["stale_limit_ns"], req["coverage_min"], req["narrower_max"], req["wider_min"])
         return oc6(_updates(inputs["quotes"]), inputs["T_ns"], req["session_open_ns"], params,
-                   consolidated=inputs["feed_kind"] == "consolidated", standard=inputs["contract_standard"])
+                   consolidated=inputs["feed_kind"] == "consolidated", standard=inputs["contract_standard"], validate=validate)
     except OCStructuralError as exc:
         return exc
 
@@ -50,11 +50,11 @@ def _dec(x):
     return "0.0000" if text == "-0.0000" else text
 
 
-def check_row(row):
+def check_row(row, validate="scanned"):
     """None if the library result matches the row, else a one-line description of the first difference."""
     from option_features.quotehist import OCStructuralError
     exp = row["expected"]
-    got = run_row(row)
+    got = run_row(row, validate)
     if isinstance(got, OCStructuralError):
         if exp["status"] != "structural_error":
             return "unexpected structural error %s" % got.code

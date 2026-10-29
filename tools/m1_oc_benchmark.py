@@ -72,6 +72,78 @@ def to_tick_updates(ups):
     return [u._replace(bid=as_ticks(u.bid), ask=as_ticks(u.ask)) for u in ups]
 
 
+def with_history(rng, n_old, n_win):
+    """n_old bursty older updates (distinct mids) over 3000 s before the window, then an n_win-update window."""
+    old, t = [], -300 * NS - 3000 * NS
+    step = 3000 * NS // max(n_old, 1)
+    while len(old) < n_old:
+        for _ in range(rng.choice((1, 3, 10))):
+            if len(old) < n_old:
+                half = rng.choice((200, 250, 300, 500))
+                mid = 10 * 10000 + rng.randint(0, 400)
+                old.append((t, mid, half))
+                t += rng.choice((0, 1_000_000))
+        t += step
+    ups = [QuoteUpdate(i + 1, e, e, dec(m - h), dec(m + h), True, i) for i, (e, m, h) in enumerate(e for e in old if e[0] < -300 * NS)]
+    win = oc6_window(rng, n_win)
+    return ups + [u._replace(rev=len(ups) + u.rev) for u in win]
+
+
+def oc5_history(rng, n):
+    ups = [QuoteUpdate(i + 1, -3000 * NS + i * (2990 * NS // n), -3000 * NS + i * (2990 * NS // n), dec(100000 - 200), dec(100000 + 200 + i % 90), True, None) for i in range(n)]
+    sizes = {u.rev: QuoteSize(u.rev, 1 + u.rev % 900, 1 + (u.rev * 7) % 900) for u in ups}
+    return ups, sizes
+
+
+def timed(fn, reps_inner, repeats):
+    samples = []
+    for _ in range(repeats):
+        for _ in range(reps_inner):
+            a = time.perf_counter_ns()
+            fn()
+            samples.append(time.perf_counter_ns() - a)
+    return samples
+
+
+def long_history_section(rng, repeats, report):
+    p6, p5 = OC6Params(), OC5Params()
+    print("Long history (PO Fix B: validate=scanned is O(window); documented path = prices as Ticks at ingest, sizes as dict)")
+    print("  B3 headline gates on the documented path; budget p95 <= 200 us, hard <= 1 ms (50-update window), hard <= 20 ms (5,000)")
+    report["long_history"] = {}
+    for n_win, olds, inner in ((50, (0, 150, 1500, 15000), 5), (5000, (0, 15000), 1)):
+        for n_old in olds:
+            hist = [with_history(rng, n_old, n_win) for _ in range(inner)]
+            ticks = [to_tick_updates(h) for h in hist]
+            for h in hist + ticks:
+                oc6(h, 0, OPEN, p6)
+            rows = {}
+            for label, data, kw in (("documented (Ticks, scanned)", ticks, {}), ("strings, scanned", hist, {}), ("strings, validate=full", hist, {"validate": "full"})):
+                if label.endswith("full") and n_old == 15000 and n_win == 5000:
+                    continue
+                samples = []
+                for _ in range(repeats):
+                    for h in data:
+                        a = time.perf_counter_ns()
+                        oc6(h, 0, OPEN, p6, **kw)
+                        samples.append(time.perf_counter_ns() - a)
+                rows[label] = summarize(samples)
+            hard = 1000 if n_win == 50 else 20000
+            doc = rows["documented (Ticks, scanned)"]
+            verdict = "PASS" if (n_win == 50 and doc["p95_us"] <= 200) else ("hard met" if doc["p95_us"] <= hard else "HARD BREACH")
+            print("  OC6 window %-5d + %-6d older: " % (n_win, n_old) + " | ".join("%s p50 %.1f p95 %.1f us" % (k, v["p50_us"], v["p95_us"]) for k, v in rows.items()) + " | documented: " + verdict)
+            report["long_history"]["oc6_%d_%d" % (n_win, n_old)] = rows
+    for n in (1000, 100000):
+        ups, sizes = oc5_history(rng, n)
+        slist = list(sizes.values())
+        oc5(ups, sizes, 0, p5)
+        rows = {}
+        for label, sz, kw in (("sizes dict, scanned", sizes, {}), ("sizes list, scanned", slist, {}), ("full validation", slist, {"validate": "full"})):
+            count = 300 if label.startswith("sizes dict") or n <= 1000 else 30
+            rows[label] = summarize(timed(lambda: oc5(ups, sz, 0, p5, **kw), 1, count))
+        print("  OC5 one contract, %-6d updates: " % n + " | ".join("%s p50 %.1f p95 %.1f us" % (k, v["p50_us"], v["p95_us"]) for k, v in rows.items()))
+        report["long_history"]["oc5_%d" % n] = rows
+
+
 def machine():
     info = {"cpu": platform.processor(), "logical_cores": os.cpu_count(), "python": sys.version, "os": platform.platform()}
     if os.name == "nt":
@@ -181,6 +253,7 @@ def main():
     s = summarize(per)
     print("  oc6_many 50-update windows per contract: p50 %.1f us  p95 %.1f us" % (s["p50_us"], s["p95_us"]))
     report["B3"]["oc6_many_50_per_contract"] = s
+    long_history_section(rng, args.repeats, report)
     print("machine: %s" % json.dumps(report["machine"]))
     if args.json:
         Path(args.json).write_text(json.dumps(report, indent=1), encoding="utf-8")

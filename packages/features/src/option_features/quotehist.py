@@ -11,14 +11,26 @@ event_ns <= T and known_at_ns <= T (D7, no look-ahead).
 Prices are decimal strings, ints (whole units), Decimals, Fractions or `Ticks` (pre-converted integer ticks of
 10**-8, the fast path for repeated windows over the same updates); a binary float is `malformed_type`.
 
+Validation scope (PO-ruled performance trade, owner goal): by default (`validate="scanned"`) oc5 and oc6 locate
+the scanned portion by binary search on event time and validate only that portion (OC6: the window, its carry-in
+and boundary tie groups, plus one older update as a boundary order check; OC5: the latest update, its tie
+group, one older update and the later updates), so a call costs O(window)
+not O(history). A structural error outside the scanned portion is NOT detected unless `validate="full"` (checks
+the whole history every call) or the history went through `validate_history` once at ingest. Event order of the
+whole list is assumed by the binary search.
+
 Structural errors (`OCStructuralError.code`): malformed_type, non_monotone_event_time, ambiguous_ordering,
 negative_size, non_integer_size, duplicate_size_revision. They raise; every other outcome is a result.
 """
+from bisect import bisect_left, bisect_right
 from collections import namedtuple
 from decimal import Decimal
 from fractions import Fraction
+from operator import itemgetter
 
 from .quotes import to_ticks
+
+_EV = itemgetter(1)
 
 QuoteUpdate = namedtuple("QuoteUpdate", "rev event_ns known_at_ns bid ask regular seq", defaults=(None,))
 QuoteSize = namedtuple("QuoteSize", "rev bid_size ask_size")
@@ -36,7 +48,8 @@ class Ticks(int):
 
 
 def as_ticks(value):
-    """Ticks (or None) for a decimal string, int, Decimal or Fraction; raises OCStructuralError if not exact."""
+    """Ticks (or None) for a decimal string, int, Decimal or Fraction; raises OCStructuralError (malformed_type)
+    for a bool, a binary float, a non-exact value or more than 8 decimals. Use once per update at ingest."""
     return None if value is None else Ticks(price_ticks(value))
 
 
@@ -82,6 +95,72 @@ def order_updates(updates):
     return ups
 
 
+def _seq(updates):
+    return updates if type(updates) in (list, tuple) else list(updates)
+
+
+def slice_latest(updates, t_ns):
+    """Scanned portion for OC5: the latest causal update and its event-time tie group, plus the later updates
+    up to t_ns (binary search on event time; O(log n + tail)). Nothing outside it is validated."""
+    ups = _seq(updates)
+    try:
+        hi = bisect_right(ups, t_ns, key=_EV)
+        j = hi - 1
+        while j >= 0 and ups[j][2] > t_ns:
+            j -= 1
+        if j < 0:
+            return []
+        ev = ups[j][1]
+        while j > 0 and ups[j - 1][1] == ev:
+            j -= 1
+        return ups[max(j - 1, 0):hi]  # one older update: boundary order check
+    except (TypeError, IndexError, ValueError):
+        raise OCStructuralError("malformed_type", "update list is not a sequence of update records") from None
+
+
+def slice_window(updates, t_ns, wstart, open_ns):
+    """Scanned portion for OC6: updates with event time in [wstart, t_ns], the carry-in backwards from the window
+    start (same stop rule as the weighting pass), the latest causal update and event-time tie groups at the
+    boundary. O(log n + window + carry-in). Nothing outside it is validated."""
+    ups = _seq(updates)
+    try:
+        hi = bisect_right(ups, t_ns, key=_EV)
+        lo = bisect_left(ups, wstart, 0, hi, key=_EV)
+        jl = hi - 1
+        while jl >= 0 and ups[jl][2] > t_ns:
+            jl -= 1
+        if jl < 0:
+            return []
+        j = lo - 1
+        while j >= 0:
+            u = ups[j]
+            if u[2] > t_ns:
+                j -= 1
+                continue
+            if u[1] < open_ns:
+                break
+            lo = j
+            if u[2] <= wstart:
+                break
+            j -= 1
+        if jl < lo:
+            lo = jl
+        while lo > 0 and ups[lo - 1][1] == ups[lo][1]:
+            lo -= 1
+        return ups[max(lo - 1, 0):hi]  # one older update: boundary order check
+    except (TypeError, IndexError, ValueError):
+        raise OCStructuralError("malformed_type", "update list is not a sequence of update records") from None
+
+
+def validate_history(updates, sizes=None):
+    """One-time full validation at ingest: checks every update (types, event order, ties) and every size row;
+    returns the updates in order. Scanned-portion evaluation does not re-check older history."""
+    ordered = order_updates(updates)
+    if sizes is not None:
+        size_map(sizes)
+    return ordered
+
+
 def latest_index(ups, t_ns):
     """Index of the latest update known and occurring at or before t_ns in the ordered list, or -1."""
     i = len(ups) - 1
@@ -94,8 +173,11 @@ def latest_index(ups, t_ns):
 
 
 def price_ticks(value):
-    if type(value) is Ticks:
+    kind = type(value)
+    if kind is Ticks:
         return value
+    if kind is bool or kind is float:
+        raise OCStructuralError("malformed_type", "price %r" % (value,))
     try:
         return to_ticks(value)
     except (ValueError, ArithmeticError):
@@ -113,9 +195,15 @@ def quote_fault(bid, ask):
     return None
 
 
-def size_map(sizes):
-    """{rev: (bid_size, ask_size)} after validating every row (None means missing)."""
+def size_map(sizes, revs=None):
+    """{rev: (bid_size, ask_size)} after validating the rows (None means missing).
+
+    sizes is an iterable of QuoteSize (every row validated, O(rows)) or a mapping rev -> QuoteSize; for a mapping
+    only the rows of `revs` are validated and read (O(len(revs))), all rows when revs is None.
+    """
     out = {}
+    if hasattr(sizes, "get"):
+        sizes = sizes.values() if revs is None else [sizes[r] for r in revs if r in sizes]
     for rev, bs, as_ in sizes:
         for v in (bs, as_):
             if v is None:

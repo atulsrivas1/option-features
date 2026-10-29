@@ -9,7 +9,8 @@ import random
 import unittest
 
 from option_features.imbalance import OC5Params, oc5, oc5_many
-from option_features.quotehist import OCStructuralError, QuoteSize, QuoteUpdate, as_ticks
+from option_features import spreadwin
+from option_features.quotehist import OCStructuralError, QuoteSize, QuoteUpdate, as_ticks, validate_history
 from option_features.spreadwin import OC6Params, oc6, oc6_many
 
 NS = 10 ** 9
@@ -236,6 +237,144 @@ class OC5Properties(unittest.TestCase):
         for item, res in zip(items, oc5_many(items, params)):
             single = oc5(item[1], item[2], item[0], params, item[3])
             self.assertEqual((res.status, res.reason, res.label, res.value), (single.status, single.reason, single.label, single.value))
+
+
+def rand_history(rng, n, t_end=0):
+    """Long history before and around t_end: events spread over 3000 s, bursty, tie groups, late-known updates."""
+    events = []
+    t = t_end - 3000 * NS
+    while len(events) < n:
+        burst = rng.choice((1, 1, 4, 12))
+        for _ in range(burst):
+            events.append(t)
+            t += rng.choice((0, 0, 1, 20_000_000))
+        t += rng.randint(1, 120) * NS
+    events = sorted(e for e in events if e <= t_end + 10 * NS)
+    out = []
+    for i, e in enumerate(events):
+        half = rng.choice((5, 10, 50, 100))
+        mid = 100000 + rng.randint(0, 3000)
+        ka = e + rng.choice((0, 0, 0, 5 * NS, 200 * NS))
+        out.append(QuoteUpdate(i + 1, e, ka, dec(mid - half), dec(mid + half), rng.random() > 0.05, i))
+    return out
+
+
+class ScannedValidation(unittest.TestCase):
+    def test_scanned_equals_full_on_valid_histories(self):
+        rng = random.Random(23)
+        params5, params6 = OC5Params(), OC6Params()
+        for _ in range(600):
+            ups = rand_history(rng, rng.randint(0, 120))
+            t = rng.choice((0, 0, 7 * NS, -400 * NS))
+            op = rng.choice((OPEN, -200 * NS, -1500 * NS))
+            a, b = oc6(ups, t, op, params6), oc6(ups, t, op, params6, validate="full")
+            self.assertEqual((a.status, a.reason, a.label, a.value, a.regular_update_count),
+                             (b.status, b.reason, b.label, b.value, b.regular_update_count), (t, op))
+            sizes = {u.rev: QuoteSize(u.rev, rng.choice((0, 100, 600)), rng.choice((0, 100, 600))) for u in ups}
+            a5 = oc5(ups, sizes, t, params5)
+            b5 = oc5(ups, list(sizes.values()), t, params5, validate="full")
+            self.assertEqual(tuple(a5), tuple(b5))
+
+    def test_errors_outside_the_scanned_portion_need_full(self):
+        ups = [QuoteUpdate(i + 1, (-2000 + i) * NS, (-2000 + i) * NS, "9.9500", "10.0500", True, i) for i in range(200)]
+        ups += [QuoteUpdate(300 + i, (-300 + 60 * i) * NS, (-300 + 60 * i) * NS, "9.9500", "10.0500", True, 300 + i) for i in range(6)]
+        sizes = {u.rev: QuoteSize(u.rev, 600, 100) for u in ups}
+        bad = list(ups)
+        bad[10] = bad[10]._replace(event_ns=ups[10].event_ns + 1000 * NS)  # non-monotone, far outside the window
+        bad[20] = bad[20]._replace(bid=1.5)  # float price, far outside
+        self.assertEqual(oc6(bad, 0, OPEN).status, oc6(ups, 0, OPEN).status)
+        self.assertEqual(oc5(bad, sizes, 0).status, oc5(ups, sizes, 0).status)
+        for fn in (lambda: oc6(bad, 0, OPEN, validate="full"), lambda: oc5(bad, sizes, 0, validate="full"), lambda: validate_history(bad)):
+            with self.assertRaises(OCStructuralError):
+                fn()
+        validate_history(ups, sizes)
+        with self.assertRaises(ValueError):
+            oc6(ups, 0, OPEN, validate="none")
+
+    def test_boundary_order_check_and_tie_group_at_the_carry_in(self):
+        win = [QuoteUpdate(10 + i, (-250 + 50 * i) * NS, (-250 + 50 * i) * NS, "9.9500", "10.0500", True, 10 + i) for i in range(6)]
+        carry = QuoteUpdate(2, -400 * NS, -400 * NS, "9.9500", "10.0500", True, 2)
+        out_of_order = QuoteUpdate(1, -100 * NS, -100 * NS, "9.9500", "10.0500", True, 1)
+        with self.assertRaises(OCStructuralError):  # the update just before the carry-in is checked
+            oc6([out_of_order, carry] + win, 0, OPEN)
+        # a three-update tie group at the carry-in event time: seq 3 (first in the list, wide) is the quote in effect
+        a = QuoteUpdate(3, -400 * NS, -400 * NS, "9.9000", "10.1000", True, 3)
+        b = QuoteUpdate(4, -400 * NS, -400 * NS, "9.9500", "10.0500", True, 1)
+        c = QuoteUpdate(5, -400 * NS, -400 * NS, "9.9500", "10.0500", True, 2)
+        ups = [a, b, c] + win
+        s, f = oc6(ups, 0, OPEN), oc6(ups, 0, OPEN, validate="full")
+        self.assertEqual((s.status, s.label, s.value, s.average_spread_bps), (f.status, f.label, f.value, f.average_spread_bps))
+        self.assertGreater(s.average_spread_bps, 100)  # the wide tie-group member carried in at the window start
+
+    def test_boundary_and_window_errors_are_detected(self):
+        ups = [QuoteUpdate(i + 1, (-300 + 60 * i) * NS, (-300 + 60 * i) * NS, "9.9500", "10.0500", True, i) for i in range(6)]
+        for k in range(6):
+            bad = list(ups)
+            bad[k] = bad[k]._replace(bid=2.5)
+            with self.assertRaises(OCStructuralError, msg=k):
+                oc6(bad, 0, OPEN)
+
+
+class Immutability(unittest.TestCase):
+    def test_oc5_results_immutable(self):
+        r = oc5([], [], 0)
+        self.assertIs(r, oc5([], [], 0))  # shared unavailable result
+        for attr in ("status", "reason", "label"):
+            with self.assertRaises(AttributeError):
+                setattr(r, attr, "x")
+        with self.assertRaises(AttributeError):
+            r.extra = 1
+        self.assertEqual(r.status, "unavailable")
+        ok = oc5([QuoteUpdate(1, -NS, -NS, "1.0000", "1.0500", True)], [QuoteSize(1, 600, 100)], 0)
+        with self.assertRaises(AttributeError):
+            ok.label = "ask"
+        self.assertEqual((ok.status, ok.label, ok.value), ("fired", "bid", Fraction(5, 7)))
+
+    def test_as_ticks_rejects_bool_and_float(self):
+        for bad in (True, False, 1.0, 0.5):
+            with self.assertRaises(OCStructuralError) as cm:
+                as_ticks(bad)
+            self.assertEqual(cm.exception.code, "malformed_type")
+        self.assertEqual(as_ticks("1.0000"), 10 ** 8)
+
+
+class FloatFilter(unittest.TestCase):
+    def test_pinned_constant_covers_proven_bound(self):
+        """FILTER_EPS must stay at least 8x the proven relative error bound (m + 8) * 2**-53 for the largest m."""
+        self.assertGreaterEqual(spreadwin.FILTER_EPS, 8 * (spreadwin.MAX_FILTER_TERMS + 8) * 2.0 ** -53)
+
+    def test_empirical_float_error_is_far_below_eps(self):
+        rng = random.Random(29)
+        worst = 0.0
+        for n in (50, 500, 3000):
+            for _ in range(4):
+                ups = [QuoteUpdate(i, -300 * NS + i * (300 * NS // n), -300 * NS + i * (300 * NS // n),
+                                   dec(100000 - 5 - rng.randint(0, 3000)), dec(100000 + 5 + rng.randint(0, 3000)), True, i) for i in range(n)]
+                res = oc6(ups, 0, OPEN)
+                from option_features.spreadwin import float_ratio
+                est = float_ratio(res._dc, res._w, res._sc, res._acc)
+                exact = res.value
+                worst = max(worst, abs(Fraction(est) - exact) / exact)
+        self.assertLess(float(worst), spreadwin.FILTER_EPS / 8)
+
+    def test_exact_ties_with_distinct_mids(self):
+        """Every interval is 100/3 bps (spread = mid / 300) at a different midpoint and the current spread is 25 bps
+        (mid / 400): the ratio is exactly 3/4 (narrower) whatever the binary64 estimate does, and the weights make
+        the float sum of the non-representable terms drift; a filter margin of 0 mislabels some of these."""
+        rng = random.Random(31)
+        mids = (30, 60, 90, 120, 150)
+        for _ in range(600):
+            ups, t = [], -300 * NS
+            for i in range(6):
+                m = rng.choice(mids)
+                half = Fraction(m, 600)
+                ups.append(QuoteUpdate(i + 1, t, t, "%.4f" % (m - half), "%.4f" % (m + half), True, i))
+                t += rng.randint(20, 59) * NS + rng.randint(0, 999_999_999)
+            m = rng.choice((40, 80, 120, 160))
+            half = Fraction(m, 800)
+            ups.append(QuoteUpdate(9, 0, 0, "%.4f" % (m - half), "%.4f" % (m + half), True, 9))
+            r = oc6(ups, 0, OPEN)
+            self.assertEqual((r.status, r.label, r.value), ("fired", "narrower", Fraction(3, 4)), ups)
 
 
 class Validation(unittest.TestCase):
