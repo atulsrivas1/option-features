@@ -1,14 +1,14 @@
 # R26 variants1 release notes: known limitations and disclosures (public-safe)
 
-Release: r26-variants1-prerelease (tag in all three repos, published 2026-10-23). Label: **PRERELEASE**. Product Owner decision (2026-10-28): R26 stays an accepted prerelease with partial Windows evidence (the PO's decision label, cited verbatim: "Windows x64 cp312 partially qualified"). It is not qualified, and no stronger label is claimed. A scoped qualified label is deferred to the next release as a gate.
+Release: r26-variants1-prerelease (tag in all three repos, published 2026-10-23). Label: **Qualified for Windows x64, CPython 3.12, synthetic data only, with disclosed exclusions (PRERELEASE).** Product Owner ratification (2026-10-29): the scoped gate is met (sections 12 and 15); the release stays PRERELEASE and the label applies only with the scope and exclusions in section 15. The earlier 2026-10-28 label (partial Windows evidence) is superseded.
 
 This page carries counts, hashes, ids and limits only. It carries no fixture row content and no private paths. Sources: [CANDIDATE13_FREEZE_RECORD.md](CANDIDATE13_FREEZE_RECORD.md), [WINDOWS_PARTIAL_QUALIFICATION_RECORD.md](WINDOWS_PARTIAL_QUALIFICATION_RECORD.md), [CANDIDATE12_FREEZE_RECORD.md](CANDIDATE12_FREEZE_RECORD.md), DECISIONS.md. The fixture baseline described below is candidate13, a post-release correction candidate recorded after the tagged prerelease.
 
 ## Known limitations and disclosures
 
 ### 1. Label and platform scope
-- Windows evidence: superseded by section 14 for the c14 cohort; label is "Windows evidence recorded, not qualified".
-- Label: PRERELEASE. Platform scope: Windows x64, CPython 3.12.10 only, partial Windows evidence. Do not describe any R26 artifact as "qualified".
+- Windows evidence: superseded by section 14 for the c14 cohort; the label is now the scoped label in section 15.
+- Label: Qualified for Windows x64, CPython 3.12, synthetic data only, with disclosed exclusions (PRERELEASE). Platform scope: Windows x64, CPython 3.12 only. Use the label only with its scope and exclusions (section 15).
 - No Linux parity. Package versions stay 0.1.0a1.
 - The label does not claim sandbox confinement. It claims only: frozen fixtures replay on installed packages, a reproducible build, and the limits listed here.
 
@@ -45,7 +45,7 @@ The first three: nullability of a record or union object is not declared in the 
 - Network confinement, file-system confinement (only pins and a post-run census check), environment and other-process isolation, and memory reservation are NOT verified. Nothing here claims sandboxing.
 - The independent controller review is partial. The containment helper internals and the 15 contract hashes were later reviewed independently (approve-with-conditions; see 14d and 14e). The standard library and site packages are not hashed (the interpreter is pinned by path and hash).
 - Earlier controller deviations (dropped independent source-review gate, dropped source receipts and others) were accepted by the coordinator and PO and are listed in DECISIONS.md.
-- Whether this meets the PO condition of an independent controller review before a stronger label is not claimed.
+- Whether this meets the PO condition of an independent controller review before a label stronger than the scoped one is not claimed.
 
 ### 7. Unreviewed worker-authored harness scripts
 - The five replay v10 harnesses were worker-authored and have no independent review (G21). sha256: replay5_library_v10.py b018c0e556446f24d54c597fb7388957a77d3c0b032b5c39491985262c97676d; replay5_library_n4_v10.py abb4d8892caa6117a58adcbf5b80bb749b4a3650dcf65aa263ea3e8af1966800; replay5_library_n4_graphs_v10.py ef7cbe1aeaa3c8154451283cb0c61231535f18068afa742ce44a90571364e2f6; replay_io_c5_v10.py a39612e123fdd37b7ae809404cd8be83ed44e044c61de7894798cf25f5306be8; replay_workers_c5_v10.py 6bd42a791e4d93137fda09afc6197caabee11d1de0667c7a9bf319d6cb30a4eb.
@@ -62,7 +62,7 @@ python-flint 0.9.0 (win_amd64 wheel, sha256 8f1059536b7393e48b1444894c3b54ce1b96
 The three root-A-after-K rows are accepted by the PO (A>K temporal_cut wins) with this disclosure: the authorship of that fixture's provenance is unrecorded. A standing open condition remains: author a fixture that fails on current code and passes after a workers change, with no frozen row changed.
 
 ### 11. Partial Windows evidence items
-(Superseded by section 14 for the c14 cohort; label is "Windows evidence recorded, not qualified".)
+(Superseded by section 14 for the c14 cohort; the label is now the scoped label in section 15.)
 Windows replay evidence used candidate12 (library 405/405, N4 49/49, I/O 1764/1764, workers 87/87 with 32 partial, 108 unit tests OK); candidate13 was replayed on read-only exports, not re-run on Windows.
 - candidate13 replays ran against read-only exports of option-features 8951003, while the Windows build used option-features c0db18e.
 - The 31 fixture-defect rows excluded in the 2026-10-23 tagged release (see STATUS 2026-10-23) predate candidate13 and are covered by the earlier candidate records; the tag itself carries them.
@@ -87,11 +87,11 @@ Deviations:
 - Rows with only PARTIAL notes are counted as passing (partial).
 - I/O non-wire N5 rows are skipped without an assertion that their count equals the workers-owned count. (N5_NONWIRE is now count-pinned and id-pinned in harness v13.1; see section 15.)
 
-### 12. Before any "qualified" label
-Next-release gate (PO, 2026-10-28): reviewed trust digest, real upstream commits, 111-case run, stored demo, written python-flint licence verdict, independent harness review, rulings or scoping for the 5 undetermined rows, regeneration of the 28 N5 rows, independent review of containment-helper internals, and owner acceptance.
+### 12. Scoped qualified gate: met (PO ratification 2026-10-29)
+The gate set by the PO on 2026-10-28 is met for the scope in section 15 (harness v13.1 accepted; repeat Windows run c14e met; digest independently recomputed; demo atomic write not claimed; demo page provenance partial, excluded and disclosed, which does not fail the gate). Items 5 and 6 are scoped out; items 7 to 9 are optional and only reduce the flagged list. Exclusions: atomic replace of demo output, demo page provenance, wheel-to-source provenance, and the still-flagged rows (39 W3 ids, N5 flagged rows, N6 row 21). Original gate list (PO, 2026-10-28): reviewed trust digest, real upstream commits, 111-case run, stored demo, written python-flint licence verdict, independent harness review, rulings or scoping for the 5 undetermined rows, regeneration of the 28 N5 rows, independent review of containment-helper internals, and owner acceptance.
 
 ### 13. Candidate14 (post-release baseline, proposed; supersedes the candidate13 baseline in sections 2 to 4 once its PR merges)
-Record: [CANDIDATE14_FREEZE_RECORD.md](CANDIDATE14_FREEZE_RECORD.md). Label stays PRERELEASE; nothing is "qualified". Counts and hashes only.
+Record: [CANDIDATE14_FREEZE_RECORD.md](CANDIDATE14_FREEZE_RECORD.md). Release stays PRERELEASE; the label is the scoped label in section 15. Counts and hashes only.
 - index.json sha256 11165e906a7e03c6e217847a980db6d949aea210ed47697c34838b7f13331203. 2668 rows in files (2358 non-graph + 310 graphs). 3 excluded by id; **frozen 2665**. Candidate13's rows are byte-identical except the 3 null rows; 21 N6 rows added. Generated twice and again after a source-copy correction, byte-identical every time (controller 7afa68a1ce05dd1ebb95eed360d4770d6b55b077ec4993f576ca69f440b0f19a, manifest 5233264ea38ff07613db957654cd079aea3c10445dc8624fd76fd56b65ea0153; first-run manifest and controller hashes are superseded).
 - Excluded by id: N5-restore-q3-dropped-with-extra-stream-added, N5-restore-q3-control-extra-stream-only-accepted, N6-restore-q3-with-knowledge-regression. The consumer filter in section 2 applies unchanged with these 3 ids. The three null-at-record rows (N5-nondict-plain-record-null, N5-nondict-union-plain-null, N5-nondict-union-array-element-null-index1) are now frozen, with no per-row flag (the union row targets Execution.definition_use because Execution.price is nullable).
 - **Frozen means reproducible, not validated.** Provisional (flagged) groups: N5 28 rows (the 3 null rows are frozen-unflagged; frozen N5 census 31 = 28 + 3), N6 21 rows (18 proof rows, 2 NON-PROOF controls, 1 excluded; no independent adjudication; two groundings by precedent: the worker input_invalid wrapper and the half-open end of the capture domain), and 39 W3 ids (assumption-2: 9 B, 9 B3, 9 graphs; PR 34: 6 rows, 6 graphs). Carried flags from candidate13 (61 rows and 30 graphs) are unchanged. W3 disclosure: independent regeneration was attempted in candidate14 and found infeasible at byte level; no difference was found and none was disproven; these ids are not independently confirmed (NOT_REGENERATED 39/39). (Superseded in part by section 15f: N6 rows 1-20 are adjudicated and their flags lifted; row 21 stays excluded.)
@@ -99,9 +99,9 @@ Record: [CANDIDATE14_FREEZE_RECORD.md](CANDIDATE14_FREEZE_RECORD.md). Label stay
 - Q4 and the narrower-rollup clause are scoped out by PO ruling (not held). Unreviewed harness scripts, controller non-claims, digest-level graph evidence and the python-flint notice (section 9) are unchanged. (Harness scripts: superseded by section 15a; harness v13.1 was reviewed and accepted.)
 
 ### 14. Windows c14 evidence (recorded 2026-10-28; PO final ruling A3/A4)
-Label: **Windows evidence recorded, not qualified.** Counts, hashes and limits only; no fixture values and no private paths. This section supersedes the Windows evidence wording of sections 1 and 11 for the c14 cohort (option-features a25c9d1, option-feature-io e156963, option-feature-workers 8795f3e); the release label remains PRERELEASE.
+Label: **Qualified for Windows x64, CPython 3.12, synthetic data only, with disclosed exclusions (PRERELEASE).** (This section was labelled "Windows evidence recorded, not qualified" until the 2026-10-29 ratification in section 15.) Counts, hashes and limits only; no fixture values and no private paths. This section supersedes the Windows evidence wording of sections 1 and 11 for the c14 cohort (option-features a25c9d1, option-feature-io e156963, option-feature-workers 8795f3e); the release label remains PRERELEASE.
 
-Final wording (PO):
+Final wording (PO, 2026-10-28, historical; superseded by section 15):
 > Windows evidence recorded, not qualified: on Windows 11 x64 with CPython 3.12, installed packages built from the pinned commits were checked offline: 108 unit tests, c14 replay (library 405, N4 58, graphs 306, I/O 1793, workers 100 with 2 disclosed gaps), tamper and isolation checks, a 5-scenario integration, a 111-case direct versus stored full-payload parity run (378 rows, passed), and a stored demo (exit 0, outputs hashed; read-only census after the run: 5 runs, 45 result rows, 4 tables, 56 rows). Limits: single run, synthetic data, Windows x64 cp312 only; atomic replace of an existing output file was not verified; demo page provenance text not verified; the trust digest was computed in-project and its independent re-review is A1 approve-with-conditions (independent reviewer); python-flint and duckdb receipt source commits are wheel-hash stand-ins (real upstream tag commits recorded in 14g; no wheel-to-commit provenance); no production data, performance or other-platform proof.
 
 #### 14a. A5 requalification result (CPython 3.12.10, cp312 win_amd64)
@@ -164,7 +164,7 @@ python-flint 0.9.0 is installed by pip and is not vendored or shipped by us. Its
 - (d) The A1 reviewer did not rebuild the sdists, did not rerun install, tamper, isolation or integration, and did not compare the third-party wheels with PyPI (offline).
 
 ### 15. Qualified-gate evidence (recorded 2026-10-29; PO rulings of 2026-10-28 and 2026-10-29)
-Label: **PRERELEASE, Windows evidence recorded, not qualified.** This section records the evidence gathered for the scoped qualified gate. It does not change the label and nothing here says the release is qualified; the Product Owner ratifies the label separately in writing. Counts, hashes and limits only; no fixture values and no private paths.
+Label: **Qualified for Windows x64, CPython 3.12, synthetic data only, with disclosed exclusions (PRERELEASE).** This section records the evidence for the scoped gate, which the Product Owner ruled met on 2026-10-29 (ratification effective when this documentation change merges). The release stays PRERELEASE. Release-notes sentence (PO, exact): "Qualified (scoped, prerelease): on Windows 11 x64 with CPython 3.12 only, using synthetic data only, installed packages built from the pinned commits replay the frozen candidate14 fixtures clean, twice on independent runs, with hashes recorded and the trust digest independently recomputed; this is not a claim for other platforms or Python versions, production or real market data, performance, or confinement/sandboxing, and it excludes atomic replace of demo output, demo page provenance (rendered check not completed), wheel-to-source provenance (python-flint 0.9.0 and duckdb 1.5.6 are PyPI wheels, hash-matched, tested with, not rebuilt), and the still-flagged rows (39 W3 ids, N5 flagged rows, N6 row 21), which are frozen and reproducible, not independently validated." Counts, hashes and limits only; no fixture values and no private paths.
 
 #### 15a. Harness v13.1 (accepted, no conditions)
 - Gate harness: harness v13.1 (new version, never an in-place edit). run_all_v13.sh sha256 f493dae294f20b0fe70b346246b70240ed7bfb0e7abb45a942e03df6e1164881. Independent review: approve; regeneration 9 of 9 generated files byte-identical; negtest 20/20 (adds B2); replay counts 405 / 58 / 306 / 1793 / 100 and the five results.json prefixes equal the c14 run.

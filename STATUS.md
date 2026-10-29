@@ -1,5 +1,8 @@
 # Status (newest first)
 
+## 2026-10-29 - Label ratified (scoped): Qualified for Windows x64, CPython 3.12, synthetic data only, with disclosed exclusions (PRERELEASE)
+- Docs only: RELEASE_NOTES (header, 1, 11, 12, 13, 14, 15), HANDOFF and DECISIONS aligned to the PO ratification. Gate met with disclosed exclusions (atomic replace of demo output, demo page provenance, wheel-to-source provenance, flagged rows: 39 W3 ids, N5 flagged rows, N6 row 21). Not a claim for other platforms or Python versions, real data, performance or confinement. Release stays PRERELEASE.
+
 ## 2026-10-28 - Windows c14 evidence recorded (label: Windows evidence recorded, not qualified; PRERELEASE unchanged)
 - Docs only: docs/r26-variants/RELEASE_NOTES.md section 14. A5 requalification on installed c14 packages (108 unit tests, replay library 405, N4 58, graphs 306, I/O 1793, workers 100 with 2 disclosed gaps, tamper, isolation, 5-scenario integration). A3 passed: 111 cases, 378 rows. A4: exit 0, outputs hashed, read-only census 5 runs, 45 result rows, 4 tables, 56 rows; atomic replace and demo page provenance not verified (known gaps).
 - A1 approve-with-conditions (independent reviewer; conditions in RELEASE_NOTES 14h); A2 done with limits: upstream tags resolve to python-flint 572c8a21... and duckdb 069cc9f9..., PyPI wheel hashes match, receipts keep sha1-of-wheel placeholders (unedited, digest ce491355... valid), no wheel-to-commit provenance (RELEASE_NOTES 14g). Independent docs review required before merge.
@@ -62,4 +65,4 @@
 ## 2026-10-22 - earlier checkpoint (superseded above)
 - Fresh read-only reviews of the private completion3 fixture source rejected B3 (1 blocking: a bucket-key-mismatch case that does not mismatch) and F3 (2 blocking: no strike/right/expiry partition cases under one contract_id; flow_residual_cases.py unsealed). Correction authors were started; results need a fresh re-review.
 - Not done: W3 pending clarification reviews (UTF-8 BOM, restore pointer, DailyCore multi-Scope), root aggregator/controller, contained generation, independent audit, literal freeze, layer workers. Nothing released or published.
-- 2026-10-29: Qualified-gate evidence recorded in RELEASE_NOTES section 15 (harness v13.1 accepted, repeat Windows run c14e accepted, digest recomputed, demo atomic write not claimed, demo page provenance partial, N6 rows 1-20 adjudicated). Label unchanged: PRERELEASE, Windows evidence recorded, not qualified; PO ratifies the label separately.
+- 2026-10-29: Qualified-gate evidence recorded in RELEASE_NOTES section 15 (harness v13.1 accepted, repeat Windows run c14e accepted, digest recomputed, demo atomic write not claimed, demo page provenance partial, N6 rows 1-20 adjudicated). Label then unchanged; superseded the same day by the PO ratification (top entry).
