@@ -82,7 +82,7 @@ actual BSM inverse root/bracket/residual and conditioning acceptance.
 
 The author ran the focused test module in a newly created private development
 environment on Windows 11 AMD64, CPython 3.12.10, with the pinned
-`python-flint==0.9.0` wheel and `option-feature-contracts==0.1.0a1` wheel copied
+`python-flint==0.9.0` wheel and `option-feature-contracts==0.1.0a1` wheel (the version of that historical run; the current source is 0.2.0a1) copied
 by installation from the qualification attempt's read-only artifacts. Production
 feature imports came explicitly from the current source tree. The command is:
 

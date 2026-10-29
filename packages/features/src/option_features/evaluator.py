@@ -205,7 +205,7 @@ def evaluate(snapshot, request):
             request.valuation_ns, request.knowledge_cutoff_ns, model_id, formula,
             metric.producer_model_id if metric is not None else None,
             metric.producer_formula_id if metric is not None else None,
-            config_hash, snapshot_hash, "0.1.0a1", "0.1.0a1",
+            config_hash, snapshot_hash, "0.2.0a1", "0.2.0a1",
         ))
 
     with ExitStack() as stack:
