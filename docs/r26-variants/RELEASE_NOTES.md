@@ -152,13 +152,13 @@ python-flint 0.9.0 is installed by pip and is not vendored or shipped by us. Its
 
 #### 14g. Disclosed as pending or not done
 - A1: approve-with-conditions (independent reviewer); the conditions are in 14h.
-- A2: python-flint and duckdb receipt source commits remain wheel-hash stand-ins; no upstream fetch was done.
+- A2: done with limits (2026-10-28). Third-party dependencies (python-flint 0.9.0, duckdb 1.5.6) were qualified using the unmodified PyPI wheels; their sha256 hashes match the PyPI-published values (and the c14 record). The upstream release tags resolve to commits 572c8a213a88c0f92feb1bdb938ce4622f4517fa (python-flint tag 0.9.0, annotated) and 069cc9f9b5be802405797faecc284961b07c70ef (duckdb tag v1.5.6, lightweight). Upstream tag archives retained: python-flint-0.9.0.tar.gz sha256 a70c7deb6af3c45fb9fa718121b4e7c5b42fb8c0b23635e3cedd4139cd228563; duckdb-v1.5.6.tar.gz sha256 1fadcbe9e69e1470f9093b6bcde08daf477d729c449e59a807f45c346622099b (GitHub archive bytes are not guaranteed stable; the commit sha is the durable identifier). The wheels were not rebuilt from source and wheel-to-commit provenance was not independently verified; A2 does not show the wheels were built from those commits. The 'source_commit' fields for these two packages in the qualification receipts are sha1-of-wheel placeholders, not upstream commits; the receipts were not edited, so the pinned digest ce491355... stays valid.
 - Not run: a content-change or failed-replace check of the demo output (known gap in 14c).
 - Evidence is a single run on synthetic data, Windows x64 cp312 only. No production data, performance or other-platform proof.
 - The R27 harness findings in 11c remain open.
 
 #### 14h. A1 trust-digest review conditions
 - (a) The receipt tree ids a4bb890c, c437d758 and 6bb46e80 are the commit root tree, not the package-path tree. This is not a trust break; the receipts were not edited.
-- (b) The duckdb and python-flint source_commit values are sha1-of-wheel stand-ins (A2 open). The digest attests wheel bytes and project commits only.
+- (b) The duckdb and python-flint source_commit values are sha1-of-wheel stand-ins (A2 done with limits: real upstream commits are recorded in 14g, but the receipts still carry the placeholders and are unedited). The digest attests wheel bytes and project commits only.
 - (c) The trusted digest ce4913556d48a46067b4fb61a82041a3170422f2349137ebc100879c6e834c15 is pinned; any rebuild or receipt edit invalidates it.
 - (d) The A1 reviewer did not rebuild the sdists, did not rerun install, tamper, isolation or integration, and did not compare the third-party wheels with PyPI (offline).

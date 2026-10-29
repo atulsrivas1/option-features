@@ -4,7 +4,7 @@ Updated 2026-10-28 (candidate14). Read this, then STATUS.md, DECISIONS.md, the c
 
 ## PO decision 2026-10-28: R26 stays PRERELEASE (Windows x64 cp312, partial Windows evidence)
 - Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (see PR 51; Next item 8 is done once that PR merges). Scoped qualified label is a next-release gate; candidate13 stays the baseline.
-- Windows c14 evidence: RELEASE_NOTES section 14 (PR 54; label "Windows evidence recorded, not qualified"). A1 approve-with-conditions (independent reviewer); A2 needs owner O1.
+- Windows c14 evidence: RELEASE_NOTES section 14 (PR 54; label "Windows evidence recorded, not qualified"). A1 approve-with-conditions (independent reviewer); A2 done with limits (tags -> commits recorded in 14g; receipts keep placeholders; no wheel-to-commit provenance).
 
 ## Where we are: candidate14 frozen with flags, PR open (2026-10-28)
 - Record: docs/r26-variants/CANDIDATE14_FREEZE_RECORD.md (2665 frozen of 2668; index.json 11165e90...1203; controller 7afa68a1..., manifest 5233264e...). Merge is blocked until: independent docs review of the five docs, auditor addendum (conditions a, b), CI, PO acceptance and a retro entry in DECISIONS.
