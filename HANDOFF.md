@@ -1,12 +1,12 @@
 # Handoff (keep under 60 lines; update after every merge)
 
-Updated 2026-10-29 (candidate15 frozen as R27 candidate, docs/r26-variants/CANDIDATE15_FREEZE_RECORD.md: 2666 of 2668 frozen, harness v15; Windows T5-wheel and Linux R27 evidence PENDING; scoped label per RELEASE_NOTES section 15 unchanged, PRERELEASE). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
+Updated 2026-10-29 (candidate15 frozen, CANDIDATE15_FREEZE_RECORD.md: 2666 of 2668; R27 evidence recorded in RELEASE_NOTES section 16 (T8 draft, docs review and PO accept pending): harness v15.1 is the gate harness, label extended to candidate15 on Windows, Linux evidence on WSL2 is not a label; PRERELEASE). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
 ## PO decision 2026-10-28: R26 stays PRERELEASE (Windows x64 cp312, partial Windows evidence)
-- Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (see PR 51; Next item 8 is done once that PR merges). The scoped label was ratified 2026-10-29 (see below); candidate13 stays the baseline.
+- Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (see PR 51; Next item 8 is done once that PR merges). The scoped label was ratified 2026-10-29 (see below); candidate13 stays the baseline (history: the baseline is now candidate15, RELEASE_NOTES section 16).
 - Windows c14 evidence: RELEASE_NOTES section 14 (PR 54; its label wording is superseded by section 15). A1 approve-with-conditions (independent reviewer); A2 done with limits (tags -> commits recorded in 14g; receipts keep placeholders; no wheel-to-commit provenance).
 
-## Where we are: candidate14 frozen with flags, PR open (2026-10-28)
+## History (2026-10-28, superseded by candidate15 and RELEASE_NOTES section 16): candidate14 frozen with flags, PR open
 - Record: docs/r26-variants/CANDIDATE14_FREEZE_RECORD.md (2665 frozen of 2668; index.json 11165e90...1203; controller 7afa68a1..., manifest 5233264e...). Merge is blocked until: independent docs review of the five docs, auditor addendum (conditions a, b), CI, PO acceptance and a retro entry in DECISIONS.
 - Reproduce: contained controller run_completion_candidate14b.py with the 14b manifest and both sha pins, python -I -B, absolute paths, a NEW output dir (the controller refuses an existing one; move the generated dir between runs). Rerun note: the corrected authoring file made only the manifest and controller identities change; all 8 outputs were byte-identical (first-run hashes are superseded in the record).
 - Replay: harness-c14 run_all with explicit pins (option-features 8285cf70, io e1569636, workers 8795f3e83, fixture tree sha); no --expect overrides.

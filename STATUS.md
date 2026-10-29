@@ -1,5 +1,8 @@
 # Status (newest first)
 
+## 2026-10-29 - R27 release notes (T8): section 16 added; label extended to candidate15 and harness v15.1 (PRERELEASE)
+- Docs only: RELEASE_NOTES section 16 carries the R27 evidence (Windows scoped label for candidate15 with harness v15.1; Linux replay evidence on WSL2 recorded as evidence, not a label; T6 demo wording; T5 wheel hashes with epoch 1792800000 and the second-party rebuild; third-party disclosures, PyPI not checked). Sections 1, 2-4, 11b, 13 and 15 reconciled with supersession pointers. Pending: independent docs review, T9 docs reviewer, PO acceptance, retro.
+
 ## 2026-10-29 - Candidate15 frozen as the R27 candidate (2666 frozen of 2668 rows; label stays PRERELEASE)
 - Record docs/r26-variants/CANDIDATE15_FREEZE_RECORD.md: tree 8d713f61...b466, one-row change (N5 extra-stream control, NON-PROOF masked negative control), harness v15, independent review approve with 4 disclosed limits. Docs only: R27 candidate evidence on Windows (T5 wheels) and Linux is PENDING, no claim made. T9 banners added to docs/r26 (output vocabulary not implemented).
 
