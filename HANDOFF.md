@@ -9,9 +9,9 @@ Updated 2026-10-29 (P1 DONE, 0.2.0a1 on main, merge 62a178c; candidate15 frozen,
 - Performance rulings (DECISIONS.md, D4 amended): opt-in process-pool runner (opt-in, default single-process) = LAST M1 story (workers <= min(cores, RAM/B9), merge by unit key); solver stages: Fraction hoist, float-filtered bisection with certified fallback and proven bound, Stage 0 then Stage 1 both in M1; Newton only as verified bracket seed; true-value change = separate PO ruling and candidate bump; governing B7 = 170/240 min; Linux process check, not claimed; eight acceptance tests authored by the independent Tester. Owner-only: python-flint scratch venv approval, B7 machine cores/RAM.
 - P1 and M1 fixtures authored independently (Tester, no implementation read), reviewed by an independent reviewer; interim rulings on design requests 1-3 (option A each) are pending design ratification; a changed answer redoes fixtures. M1 code starts when P1 is accepted. P1 bump plan: docs/P1_VERSION_BUMP_PLAN.md.
 
-## M1 Stage 1 (float filter): PR open, not merged; needs independent Tester review of the bound proof
+## M1 Stage 1 (float filter): PR 67 Tester APPROVE-WITH-CONDITIONS, conditions applied, awaiting PO acceptance
 - Done: floatfilter.py + inverse.solve float_filter switch; docs/M1_STAGE1_FLOAT_FILTER_BOUND.md; 22800 of 22800 identical vs base; mutation (injected-error variant) detected; arb calls p50 39 to 9; wall p50 3.7x; B6 proxy 6.2 s (budget 5 s, not met, not claimed). Stage 0 is merged (PR 65).
-- Next: Tester reviews the proof, runs mutation and platform replays; PO rules on the literal divisor-10 mutation and on a tighter libm assumption U; then Newton bracket seed, OC5/OC6/ATM/30-day, runner last.
+- Rulings: injected-error mutation is only a sensitivity check; test 3 = libm-perturbation test (in tests); U=2^-40 and E stay; B6 not met by Stage 1 (proxy 6.2 s), the opt-in runner is the next lever. Then Newton bracket seed, OC5/OC6/ATM/30-day, runner last.
 
 ## P1 (0.2.0a1): DONE, PO accepted 2026-10-29 (PR 63, merge 62a178c on main)
 - Accepted after independent code review (approve-with-conditions, then delta re-check approve) and an independent Tester re-run with python-flint 0.9.0 (DECISIONS.md, last entries). Interim design rulings stay pending ratification; wire exposure of quotes/windows/shares is a candidate16 item.

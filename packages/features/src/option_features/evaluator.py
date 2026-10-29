@@ -61,7 +61,7 @@ def _supplied(snapshot, request, definition, output_id):
         faults.append(("ineligible_input", "stale_supplied_metric"))
     return Outcome(None if faults else (abs(metric.value) if projection else metric.value), tuple(faults), records), metric, projection
 
-def _model(snapshot, request, definition, output_id, owner):
+def _model(snapshot, request, definition, output_id, owner, float_filter=True):
     records = [definition]
     remaining = definition.fixing_ns-request.valuation_ns
     faults = _profile(definition, remaining > 0)
@@ -156,7 +156,7 @@ def _model(snapshot, request, definition, output_id, owner):
         operands = Operands(S, K, rate, carry, T, sigma, 1 if definition.right == "call" else -1)
         converted = ConvertedOperands(spot_preview, strike_preview, float(rate), float(carry), float(sigma) if "volatility" in selected else None, remaining, time_preview)
         if output_id == "volatility.implied_volatility":
-            inverse = solve(operands, (decimal_exact(quote.bid)+decimal_exact(quote.ask))/2, request.solver, converted, owner())
+            inverse = solve(operands, (decimal_exact(quote.bid)+decimal_exact(quote.ask))/2, request.solver, converted, owner(), float_filter=float_filter)
             flags = ()
             if inverse.evidence is not None:
                 flags = tuple(flag for flag, present in (("lower_boundary", inverse.evidence.boundary == "lower_boundary"), ("ill_conditioned", inverse.evidence.ill_conditioned is True)) if present)
@@ -169,8 +169,9 @@ def _model(snapshot, request, definition, output_id, owner):
     except NumericalFailure as exc:
         return unavailable("numerical_failure", exc.reason, tuple(records)), None, None, None
 
-def evaluate(snapshot, request):
-    """Pure option-request1 evaluation, preserving semantic output order."""
+def evaluate(snapshot, request, float_filter=True):
+    """Pure option-request1 evaluation, preserving semantic output order. float_filter=False forces the
+    fully certified IV solve (identical result bytes either way; see docs/M1_STAGE1_FLOAT_FILTER_BOUND.md)."""
     validate_request(request)
     validate_snapshot(snapshot, request.limits)
     config_hash = content_digest("request", request, request.limits)
@@ -229,7 +230,7 @@ def evaluate(snapshot, request):
                 elif output_id in REFERENCE_OUTPUTS:
                     append_result(contract_id, definition, output_id, evaluate_reference(snapshot, request, definition, output_id))
                 else:
-                    outcome, pricing, converted, solver = _model(snapshot, request, definition, output_id, get_owner)
+                    outcome, pricing, converted, solver = _model(snapshot, request, definition, output_id, get_owner, float_filter)
                     append_result(contract_id, definition, output_id, outcome, pricing, converted, solver)
         for output_id in request.output_ids:
             if output_id == "chain.activity":

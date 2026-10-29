@@ -8,12 +8,11 @@ is in docs/M1_STAGE1_FLOAT_FILTER_BOUND.md and must be read with this file.
 Uses only IEEE-754 +, -, *, /, sqrt (correctly rounded on every platform) and the libm functions
 exp, log, erfc, for which the proof assumes a relative error of at most U = 2**-40 (about 4096 ulp).
 """
-from contextlib import contextmanager
 from math import erfc, exp, isfinite, log, sqrt
 
 U = 2.0 ** -40          # assumed libm relative error bound (exp, log, erfc); true libms are near 2**-52
-W_COEFF = 5.0           # proven worst-case float price error is at most W_COEFF * U * SCALE (derived: 4.1)
-C_BOUND = 40.0          # bound E = C_BOUND * U * SCALE; safety factor C_BOUND / W_COEFF = 8 (9.8 over derived)
+W_COEFF = 5.0           # proven worst-case float price error is at most W_COEFF * U * SCALE (derived: 3.2, rounded up)
+C_BOUND = 40.0          # bound E = C_BOUND * U * SCALE; safety factor C_BOUND / W_COEFF = 8 (12.5 over derived 3.2)
 Z_MAX = 1.0e5           # filter disabled for a sigma whose conditioning factor Z exceeds this
 D_MAX = 30.0            # filter disabled when |d1| or |d2| exceeds this: keeps the true price far above the
                         # certified path's enclosure-text limits (true price >= ~1e-250 there; see the note)
@@ -22,25 +21,6 @@ EXP_ARG_MAX = 64.0      # admitted |rate*T|, |carry*T|
 T_MIN, T_MAX = 2.0 ** -30, 1.0e3
 SIGMA_MAX = 100.0
 INV_SQRT2 = 0.7071067811865476
-
-_TEST = {"bound_divisor": 1.0, "inject": 0.0}
-
-
-@contextmanager
-def test_hooks(bound_divisor=1.0, inject=0.0):
-    """TEST-ONLY. bound_divisor shrinks the bound E; inject adds inject*U*SCALE to the float price
-    (models a float error of that size). Never used by library code; defaults are the shipped values."""
-    old = dict(_TEST)
-    _TEST["bound_divisor"], _TEST["inject"] = float(bound_divisor), float(inject)
-    try:
-        yield
-    finally:
-        _TEST.clear()
-        _TEST.update(old)
-
-
-def active_bound_divisor():
-    return _TEST["bound_divisor"]
 
 
 class FloatFilter:
@@ -92,9 +72,11 @@ class FloatFilter:
             return 0, False
 
 
-def make(operands, target, config):
+def make(operands, target, config, bound_divisor=1.0, inject=0.0):
     """FloatFilter for one contract, or None when the contract is outside the admitted domain (then the
-    caller runs the full certified path). Any exception or non-finite value means None."""
+    caller runs the full certified path). Any exception or non-finite value means None.
+    bound_divisor and inject are TEST-ONLY knobs (tools/m1_filter_hooks.py wraps make to set them); the
+    library never passes them, so there is no mutable global state in this module."""
     try:
         eta = operands.eta
         if eta not in (1, -1) or operands.time <= 0 or not operands.spot > 0 or not operands.strike > 0:
@@ -112,7 +94,7 @@ def make(operands, target, config):
         ptol = config.price_abs_tol + config.price_rel_tol * t
         if not all(isfinite(x) for x in (A, B, lnsk, absdrift, sqrt(T), ptol)) or not (A > 0.0 and B > 0.0):
             return None
-        bound_k = C_BOUND * U / _TEST["bound_divisor"]
-        return FloatFilter(float(eta), lnsk, r - q, T, sqrt(T), A, B, absdrift, t, 2.0 * ptol, bound_k, _TEST["inject"] * U)
+        bound_k = C_BOUND * U / bound_divisor
+        return FloatFilter(float(eta), lnsk, r - q, T, sqrt(T), A, B, absdrift, t, 2.0 * ptol, bound_k, inject * U)
     except (ValueError, OverflowError, ZeroDivisionError, TypeError, AttributeError):
         return None

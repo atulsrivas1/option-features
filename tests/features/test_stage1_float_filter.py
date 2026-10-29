@@ -19,6 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / "qualification" / "synthetic" / "perf"), str(ROOT / "tools")]
 import gen_m1_solver_sets as gen  # noqa: E402
 import m1_adversarial_sets as adv  # noqa: E402
+from m1_filter_hooks import test_hooks  # noqa: E402
 
 CFG = SolverConfig("bisection1", "midpoint", 8.0, 256, 1e-10, 1e-10, 1e-10, 1e-10)
 
@@ -141,17 +142,20 @@ class Stage1Tests(unittest.TestCase):
     def test_shrunk_bound_mutation_is_detected_and_control_is_clean(self):
         ties = [prepared(c) for c in adv.mutation_ties(60)]
         ref = [solve(p, float_filter=False) for p in ties]
-        with floatfilter.test_hooks(bound_divisor=1, inject=5.0):
+        with test_hooks(bound_divisor=1, inject=5.0):
             self.assertEqual([solve(p) for p in ties], ref)           # control: zero differences
-        with floatfilter.test_hooks(bound_divisor=1, inject=30.0):
+        with test_hooks(bound_divisor=1, inject=30.0):
             self.assertEqual([solve(p) for p in ties], ref)           # headroom: 6x the proven worst case
-        with floatfilter.test_hooks(bound_divisor=10, inject=5.0):
+        with test_hooks(bound_divisor=10, inject=5.0):
             mutant = [solve(p) for p in ties]
         self.assertTrue(any(a != b for a, b in zip(mutant, ref)), "shrunk-bound mutation NOT detected: the build must fail")
-        self.assertEqual(floatfilter.active_bound_divisor(), 1.0)      # hook restored
+        self.assertIs(floatfilter.make, floatfilter.make)
 
-    def test_hooks_default_to_shipped_values(self):
-        self.assertEqual(floatfilter._TEST, {"bound_divisor": 1.0, "inject": 0.0})
+    def test_no_mutable_hook_state_in_the_shipped_module(self):
+        self.assertFalse(hasattr(floatfilter, "_TEST") or hasattr(floatfilter, "test_hooks"))
+        with test_hooks(bound_divisor=10, inject=5):
+            pass
+        self.assertEqual(floatfilter.make.__module__, floatfilter.__name__)   # wrapper removed after the block
 
     def test_deferred_enclosure_failure_reruns_certified(self):
         # if the deferred candidate enclosure cannot be computed, the solve reruns fully certified

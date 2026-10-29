@@ -12,7 +12,7 @@ tools/m1_adversarial_sets.py (2800 contracts: dyadic-sigma near ties, roots, edg
             with the float filter on (default) and at CHANGED with float_filter=False (the switch), and
             requires identical hashes everywhere. Exit non-zero on any difference.
   mutation  --base-root BASE --changed-root CHANGED [--n 1000]
-            Acceptance test 3. Test-only hooks (floatfilter.test_hooks) shrink the bound and inject a
+            Acceptance test 3. Test-only hooks (tools/m1_filter_hooks.py) shrink the bound and inject a
             modelled float error. Control (bound_divisor 1) must show ZERO differences; the shrunk bound
             (bound_divisor 10) must show AT LEAST ONE, otherwise this command exits non-zero (the build
             fails). Also prints the plain divisor-10 run without injection (informational).
@@ -126,9 +126,9 @@ def worker(a):
     kw = {"float_filter": False} if a.filter == "off" else {}
     hooks = None
     if a.hooks:
-        import option_features.floatfilter as ff
+        from m1_filter_hooks import test_hooks
         d, inj = (float(x) for x in a.hooks.split(","))
-        hooks = ff.test_hooks(bound_divisor=d, inject=inj)
+        hooks = test_hooks(bound_divisor=d, inject=inj)
         hooks.__enter__()
     items = []
     for spec in a.sets.split(","):
