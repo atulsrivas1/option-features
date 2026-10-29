@@ -230,7 +230,8 @@ class ContextOwnershipTests(unittest.TestCase):
 
 
 class ControlledInverseDecisionTests(unittest.TestCase):
-    """Literal monotone synthetic prices exercise finite decisions, never BSM."""
+    """Literal monotone synthetic prices exercise finite decisions, never BSM. They test the certified
+    decision logic, so they run with float_filter=False (the float filter prices real BSM)."""
     def setUp(self):
         self.operands = model.Operands(Q(1), Q(1), Q(0), Q(0), Q(1), Q(1), 1)
         self.config = SolverConfig("bisection1", "midpoint", 2.0, 3, 1e-10, 1e-10, 1e-10, 1e-10)
@@ -248,10 +249,10 @@ class ControlledInverseDecisionTests(unittest.TestCase):
             return price(operands.sigma)
         with patch.object(inverse, "bounds", return_value=(self.zero, self.ten, Q(0), Q(10))), patch.object(inverse, "price_interval", side_effect=interval):
             if midpoint is None:
-                result = inverse.solve(self.operands, Q(1), config or self.config, None, None)
+                result = inverse.solve(self.operands, Q(1), config or self.config, None, None, float_filter=False)
             else:
                 with patch.object(inverse, "nearest_binary64", side_effect=midpoint):
-                    result = inverse.solve(self.operands, Q(1), config or self.config, None, None)
+                    result = inverse.solve(self.operands, Q(1), config or self.config, None, None, float_filter=False)
         self.assertLessEqual(len(calls), 15*((config or self.config).max_iterations+2))
         return result, calls
 

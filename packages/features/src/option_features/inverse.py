@@ -4,6 +4,7 @@ from fractions import Fraction
 from option_feature_contracts import SolverEvidence
 from .arithmetic import (TIERS, NumericalFailure, decimal_exact, exact_decimal, nearest_binary64, certify)
 from .model import Operands, bounds, forward, price_interval
+from . import floatfilter
 
 @dataclass(frozen=True, slots=True)
 class InverseResult:
@@ -59,8 +60,28 @@ def _conditioning(operands, sigma_f, target, config, owner):
     except NumericalFailure:
         return None, None
 
-def solve(operands, target, config, converted, owner):
-    """Target is exact rational midpoint; no supplied volatility is consumed."""
+class _FilterAbort(Exception):
+    """Internal: the float-filtered run met a state it cannot reproduce; rerun fully certified."""
+
+def _midpoint(lo, hi):
+    """nearest_binary64((Fraction(lo)+Fraction(hi))/2) without Fractions: fl(lo+hi) is the correctly rounded
+    sum and halving is exact for normal results, so the two agree; tiny or huge brackets use the exact path."""
+    if 1e-290 <= hi <= 1e300:
+        return (lo+hi)/2
+    return nearest_binary64((Fraction.from_float(lo)+Fraction.from_float(hi))/2)
+
+def solve(operands, target, config, converted, owner, float_filter=True):
+    """Target is exact rational midpoint; no supplied volatility is consumed. float_filter=False forces
+    the fully certified path (always available; also the fallback for any doubt). Result bytes are
+    identical either way (docs/M1_STAGE1_FLOAT_FILTER_BOUND.md)."""
+    if float_filter:
+        try:
+            return _solve(operands, target, config, converted, owner, True)
+        except _FilterAbort:
+            pass
+    return _solve(operands, target, config, converted, owner, False)
+
+def _solve(operands, target, config, converted, owner, use_filter):
     iterations = 0
     lo, hi = 0.0, config.max_sigma
     lower = upper = candidate_enclosure = None
@@ -68,8 +89,18 @@ def solve(operands, target, config, converted, owner):
     boundary = "none"
     vega = ill_conditioned = None
     target_decimal = None
+    fl = Fraction.from_float
+
+    pending = None   # sigma of the last filter-skipped midpoint whose candidate/enclosure are not yet computed
 
     def result(value, status, reason, converged=False):
+        nonlocal pending, candidate, candidate_enclosure
+        if pending is not None:
+            try:
+                enclosed = _price(operands, fl(pending), target, owner)[0]
+            except NumericalFailure:
+                raise _FilterAbort()
+            candidate, candidate_enclosure, pending = pending, enclosed, None
         evidence = None
         if target_decimal is not None:
             evidence = SolverEvidence(
@@ -123,8 +154,11 @@ def solve(operands, target, config, converted, owner):
             return result(None, "numerical_failure", "bound_precision")
         # Stage 0: per-contract memo of sigma-independent conversions (balls once per tier, guard once)
         operands = Operands(operands.spot, operands.strike, operands.rate, operands.carry, operands.time, operands.sigma, operands.eta, {})
-        hi_f, lo_f = Fraction.from_float(hi), Fraction.from_float(lo)
-        cap_enclosure, cap_sign, _ = _price(operands, hi_f, target, owner)
+        ff = floatfilter.make(operands, target, config) if use_filter else None
+        if ff is not None and ff.sign(hi)[0] > 0:
+            cap_enclosure, cap_sign = None, 1   # float certainly above the target at the cap; the cap enclosure is otherwise unused
+        else:
+            cap_enclosure, cap_sign, _ = _price(operands, fl(hi), target, owner)
         if cap_sign < 0:
             boundary = "sigma_cap"
             candidate, candidate_enclosure = hi, cap_enclosure
@@ -136,13 +170,15 @@ def solve(operands, target, config, converted, owner):
             return result(None, "numerical_failure", "bound_precision")
         price_tolerance = Fraction.from_float(config.price_abs_tol)+Fraction.from_float(config.price_rel_tol)*abs(target)
         vol_abs_f, vol_rel_f = Fraction.from_float(config.vol_abs_tol), Fraction.from_float(config.vol_rel_tol)
+        vol_abs, vol_rel = config.vol_abs_tol, config.vol_rel_tol
 
         def acceptable(sigma, sigma_f, enclosed, fractions):
-            nonlocal candidate, candidate_enclosure, candidate_price, residual_point, worst_residual, vega, ill_conditioned
+            nonlocal pending, candidate, candidate_enclosure, candidate_price, residual_point, worst_residual, vega, ill_conditioned
+            pending = None
             candidate, candidate_enclosure = sigma, enclosed
             a, b = fractions if fractions is not None else _fractions(enclosed)
             residual = max(abs(a-target), abs(b-target))
-            width = hi_f-lo_f
+            width = fl(hi)-fl(lo)
             volatility_tolerance = vol_abs_f+vol_rel_f*abs(sigma_f)
             if residual > price_tolerance or width > volatility_tolerance:
                 return False
@@ -155,32 +191,46 @@ def solve(operands, target, config, converted, owner):
 
         for index in range(config.max_iterations):
             iterations = index+1
-            midpoint = nearest_binary64((lo_f+hi_f)/2)
+            midpoint = _midpoint(lo, hi) if ff is not None else nearest_binary64((fl(lo)+fl(hi))/2)
             if not lo < midpoint < hi:
                 # No invented interval collapse when adjacent binary64 values
                 # remain. A terminal candidate can still meet both criteria.
+                lo_f = fl(lo)
                 candidate_enclosure, _, fr = _price(operands, lo_f, target, owner)
                 if acceptable(lo, lo_f, candidate_enclosure, fr):
                     return result(lo, "available", "ok", True)
                 return result(None, "numerical_failure", "precision_exhausted")
-            mid_f = Fraction.from_float(midpoint)
+            if ff is not None:
+                fsign, resid_ok = ff.sign(midpoint)
+                if fsign:
+                    # The float price is certainly on one side. Skip the enclosure only when the base loop
+                    # would also reject this candidate before and after the contraction (see the bound note).
+                    w2 = (hi-midpoint) if fsign < 0 else (midpoint-lo)
+                    if resid_ok or w2*(1-2**-30) > (vol_abs+vol_rel*abs(midpoint))*(1+2**-30):
+                        pending = midpoint
+                        if fsign < 0:
+                            lo = midpoint
+                        else:
+                            hi = midpoint
+                        continue
+            mid_f = fl(midpoint)
             candidate_enclosure, sign, fr = _price(operands, mid_f, target, owner)
             if acceptable(midpoint, mid_f, candidate_enclosure, fr):
                 return result(midpoint, "available", "ok", True)
             if sign < 0:
-                lo, lo_f = midpoint, mid_f
+                lo = midpoint
             elif sign > 0:
-                hi, hi_f = midpoint, mid_f
+                hi = midpoint
             else:
-                left = nearest_binary64((lo_f+mid_f)/2)
-                right = nearest_binary64((mid_f+hi_f)/2)
+                left = nearest_binary64((fl(lo)+mid_f)/2)
+                right = nearest_binary64((mid_f+fl(hi))/2)
                 if not lo < left < midpoint < right < hi:
                     return result(None, "numerical_failure", "precision_exhausted")
-                left_f, right_f = Fraction.from_float(left), Fraction.from_float(right)
+                left_f, right_f = fl(left), fl(right)
                 _, left_sign, _ = _price(operands, left_f, target, owner)
                 _, right_sign, _ = _price(operands, right_f, target, owner)
                 if left_sign < 0 and right_sign > 0:
-                    lo, hi, lo_f, hi_f = left, right, left_f, right_f
+                    lo, hi = left, right
                 else:
                     return result(None, "numerical_failure", "bound_precision")
             # After a certified contraction check the current already-enclosed
