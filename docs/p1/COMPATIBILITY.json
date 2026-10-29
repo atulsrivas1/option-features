@@ -25,8 +25,8 @@
     }
   },
   "sibling_repositories": {
-    "option-feature-io": {"pin_change": "own pull request after P1 acceptance", "requires_after": ["option-feature-contracts==0.2.0a1"], "moving_references": false},
-    "option-feature-workers": {"pin_change": "own pull request after P1 acceptance", "requires_after": ["option-feature-contracts==0.2.0a1", "option-features==0.2.0a1"], "moving_references": false}
+    "option-feature-io": {"pin_change": "option-feature-io PR 9 merged (24ca029): own version 0.2.0a1, pin moved", "requires_after": ["option-feature-contracts==0.2.0a1"], "moving_references": false},
+    "option-feature-workers": {"pin_change": "option-feature-workers PR 11 pending: own version 0.2.0a1, pins moved", "requires_after": ["option-feature-contracts==0.2.0a1", "option-features==0.2.0a1", "option-feature-io==0.2.0a1"], "moving_references": false}
   },
   "supported_candidate_environments": {
     "python_requires": ">=3.12,<3.13",

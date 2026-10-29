@@ -11,7 +11,7 @@ Updated 2026-10-29 (P1 DONE, 0.2.0a1 on main, merge 62a178c; candidate15 frozen,
 
 ## P1 (0.2.0a1): DONE, PO accepted 2026-10-29 (PR 63, merge 62a178c on main)
 - Accepted after independent code review (approve-with-conditions, then delta re-check approve) and an independent Tester re-run with python-flint 0.9.0 (DECISIONS.md, last entries). Interim design rulings stay pending ratification; wire exposure of quotes/windows/shares is a candidate16 item.
-- Next, in order: sibling pin PRs (io, workers) to 0.2.0a1, then M1 Stage 0 (Fraction hoist), Stage 1 (float filter with proven bound), OC5/OC6/ATM/30-day IV, opt-in process-pool runner last. Owner goal: performance. Also still open: tag and wheel rebuild from the tag (no publication), Linux process check (not claimed).
+- Next, in order: workers pin PR 11 (io PR 9 merged), then M1 Stage 0 (Fraction hoist), Stage 1 (float filter with proven bound), OC5/OC6/ATM/30-day IV, opt-in process-pool runner last. Owner goal: performance. Also still open: tag and wheel rebuild from the tag (no publication), Linux process check (not claimed).
 
 ## PO decision 2026-10-28: R26 stays PRERELEASE (Windows x64 cp312, partial Windows evidence)
 - Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (see PR 51; Next item 8 is done once that PR merges). The scoped label was ratified 2026-10-29 (see below); candidate13 stays the baseline (history: the baseline is now candidate15, RELEASE_NOTES section 16).
