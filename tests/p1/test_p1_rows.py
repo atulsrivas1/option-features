@@ -3,7 +3,7 @@
 One test method per row (test_<id>) so a failing row is named. The rows are read-only
 inputs: test_rows_unedited pins their SHA-256 (LF-normalised) to the Tester's manifest.
 
-Label: synthetic workload, relative engineering budget (no real-data claim). Synthetic fixtures only.
+Label: synthetic workload, relative engineering budget (no claim about recorded data). Synthetic fixtures only.
 """
 import hashlib
 from fractions import Fraction
