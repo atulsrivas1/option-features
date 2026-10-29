@@ -16,6 +16,13 @@ from option_features import evaluate
 
 REQUIRED_FAMILIES = frozenset({"interior", "terminal", "zero_volatility", "time", "iv_bounds", "conditioning", "units", "readiness", "profile", "quotes"})
 
+# P1 (PO-P1-02) supersedes two frozen R25 results for liquidity.spread_bps. The frozen fixture file is
+# not edited; the consumer asserts the P1 status and reason for these ids instead.
+P1_SUPERSEDED = {
+    "quote-locked": {"status": "invalid_input", "reason": "locked_market", "quality_flags": ("locked_market",)},
+    "quote-zero": {"status": "invalid_input", "reason": "nonpositive_bid", "quality_flags": ("nonpositive_bid", "zero_midpoint")},
+}
+
 class IndependentWireFixtures(unittest.TestCase):
     def assert_coverage(self, result, expected):
         if expected is None:
@@ -144,13 +151,17 @@ class IndependentWireFixtures(unittest.TestCase):
                 expected = case["expected"]
                 self.assertEqual(len(actual), len(expected))
                 for result, wanted in zip(actual, expected):
+                    override = P1_SUPERSEDED.get(case["id"]) if wanted["output_id"] == "liquidity.spread_bps" else None
                     for name in ("output_id", "contract_id", "underlying_id", "status", "reason", "unit", "origin", "model_id", "formula_version", "producer_model_id", "producer_formula_id"):
-                        self.assertEqual(getattr(result, name), wanted[name], name)
-                    self.assertEqual(result.quality_flags, tuple(wanted["quality_flags"]))
+                        self.assertEqual(getattr(result, name), override[name] if override and name in override else wanted[name], name)
+                    self.assertEqual(result.quality_flags, override["quality_flags"] if override else tuple(wanted["quality_flags"]))
                     self.assertEqual(result.dependency_binding_ids, tuple(wanted["dependency_binding_ids"]))
                     self.assertEqual(result.dependency_record_sha256s, tuple(wanted["dependency_record_sha256s"]))
                     self.assert_coverage(result, wanted["coverage"])
                     self.assert_solver(result, wanted, request)
+                    if override:
+                        self.assertIsNone(result.value)
+                        continue
                     if result.status != "available":
                         self.assertIsNone(result.value)
                         self.assertIsNone(wanted["oracle_decimal"])

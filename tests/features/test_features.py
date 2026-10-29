@@ -43,7 +43,9 @@ class ReferenceTests(unittest.TestCase):
         self.assertTrue(all(r.status == "available" for r in results))
 
     def test_quote_locked_crossed_zero_and_spread(self):
-        cases = (("2", "2", "available", "ok", 0.0), ("1", "3", "available", "ok", 10000.0), ("3", "1", "invalid_input", "crossed_quote", None), ("0", "0", "undefined", "zero_midpoint", None))
+        # P1 (PO-P1-02) supersedes the R25 results for a locked quote (was available 0.0) and for bid 0
+        # (was undefined zero_midpoint): spread outputs now give locked_market and nonpositive_bid.
+        cases = (("2", "2", "invalid_input", "locked_market", None), ("1", "3", "available", "ok", 10000.0), ("3", "1", "invalid_input", "crossed_quote", None), ("0", "0", "invalid_input", "nonpositive_bid", None))
         for bid, ask, status, reason, value in cases:
             with self.subTest(bid=bid, ask=ask):
                 result, = evaluate(snapshot(quotes=(quote(bid, ask),)), request("liquidity.spread_bps"))

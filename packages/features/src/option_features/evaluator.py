@@ -13,7 +13,7 @@ from .arithmetic import numerical_owner, decimal_exact, nearest_binary64, Numeri
 from .model import Operands, Undefined, forward
 from .inverse import solve
 
-REFERENCE_OUTPUTS = frozenset({"contract.dte", "contract.multiplier", "contract.moneyness", "liquidity.spread_bps", "quality.quote_coverage"})
+REFERENCE_OUTPUTS = frozenset({"contract.dte", "contract.multiplier", "contract.moneyness", "liquidity.spread_bps", "liquidity.spread", "liquidity.midpoint", "quality.quote_coverage"})
 YEAR_NS = 31536000000000000
 
 def _profile_certification(definition):
@@ -179,7 +179,7 @@ def evaluate(snapshot, request):
 
     def append_result(contract_id, definition, output_id, outcome, pricing=None, converted=None, solver=None, metric=None, projection=False):
         origin = "supplied" if request.origin_policy == "supplied_only" and not projection else "computed"
-        formula = "option-reference1" if output_id.startswith("contract.") else {"liquidity.spread_bps": "option-spread1", "quality.quote_coverage": "option-quote-count1", "chain.activity": "option-chain-breadth1"}.get(output_id, "option-bsm1")
+        formula = "option-reference1" if output_id.startswith("contract.") else {"liquidity.spread_bps": "option-spread1", "liquidity.spread": "option-spread1", "liquidity.midpoint": "option-spread1", "quality.quote_coverage": "option-quote-count1", "chain.activity": "option-chain-breadth1"}.get(output_id, "option-bsm1")
         model_id = "not_applicable" if output_id in REFERENCE_OUTPUTS or output_id == "chain.activity" else "option-bsm1"
         if request.origin_policy == "supplied_only" and metric is None:
             model_id = "not_applicable"
