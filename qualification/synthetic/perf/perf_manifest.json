@@ -1,0 +1,259 @@
+{
+ "chains": {
+  "L": {
+   "contracts": 6000,
+   "expiries_days": [
+    7,
+    14,
+    21,
+    28,
+    35,
+    42,
+    56,
+    63,
+    91,
+    126,
+    182,
+    273
+   ],
+   "sample": [
+    {
+     "expiry_days": 7,
+     "i": 0,
+     "right": "C",
+     "strike": "37.5000",
+     "style": "american"
+    },
+    {
+     "expiry_days": 7,
+     "i": 1,
+     "right": "P",
+     "strike": "37.5000",
+     "style": "american"
+    },
+    {
+     "expiry_days": 7,
+     "i": 2,
+     "right": "C",
+     "strike": "38.0000",
+     "style": "american"
+    },
+    {
+     "expiry_days": 7,
+     "i": 3,
+     "right": "P",
+     "strike": "38.0000",
+     "style": "american"
+    },
+    {
+     "expiry_days": 7,
+     "i": 4,
+     "right": "C",
+     "strike": "38.5000",
+     "style": "american"
+    },
+    {
+     "expiry_days": 7,
+     "i": 5,
+     "right": "P",
+     "strike": "38.5000",
+     "style": "american"
+    }
+   ],
+   "strikes": 250
+  },
+  "M": {
+   "contracts": 2000,
+   "expiries_days": [
+    7,
+    14,
+    21,
+    28,
+    35,
+    63,
+    91,
+    182
+   ],
+   "sample": [
+    {
+     "expiry_days": 7,
+     "i": 0,
+     "right": "C",
+     "strike": "69.0000",
+     "style": "american"
+    },
+    {
+     "expiry_days": 7,
+     "i": 1,
+     "right": "P",
+     "strike": "69.0000",
+     "style": "american"
+    },
+    {
+     "expiry_days": 7,
+     "i": 2,
+     "right": "C",
+     "strike": "69.5000",
+     "style": "american"
+    },
+    {
+     "expiry_days": 7,
+     "i": 3,
+     "right": "P",
+     "strike": "69.5000",
+     "style": "american"
+    },
+    {
+     "expiry_days": 7,
+     "i": 4,
+     "right": "C",
+     "strike": "70.0000",
+     "style": "american"
+    },
+    {
+     "expiry_days": 7,
+     "i": 5,
+     "right": "P",
+     "strike": "70.0000",
+     "style": "american"
+    }
+   ],
+   "strikes": 125
+  },
+  "S": {
+   "contracts": 500,
+   "expiries_days": [
+    7,
+    28,
+    35,
+    63,
+    91
+   ],
+   "sample": [
+    {
+     "expiry_days": 7,
+     "i": 0,
+     "right": "C",
+     "strike": "87.5000",
+     "style": "american"
+    },
+    {
+     "expiry_days": 7,
+     "i": 1,
+     "right": "P",
+     "strike": "87.5000",
+     "style": "american"
+    },
+    {
+     "expiry_days": 7,
+     "i": 2,
+     "right": "C",
+     "strike": "88.0000",
+     "style": "american"
+    },
+    {
+     "expiry_days": 7,
+     "i": 3,
+     "right": "P",
+     "strike": "88.0000",
+     "style": "american"
+    },
+    {
+     "expiry_days": 7,
+     "i": 4,
+     "right": "C",
+     "strike": "88.5000",
+     "style": "american"
+    },
+    {
+     "expiry_days": 7,
+     "i": 5,
+     "right": "P",
+     "strike": "88.5000",
+     "style": "american"
+    }
+   ],
+   "strikes": 50
+  }
+ },
+ "generator": "gen_perf_workloads.py",
+ "label": "synthetic workload, relative engineering budget",
+ "oc_windows": {
+  "note": "OC5 = single quote state; OC6 = time-weighted window of N updates",
+  "updates": [
+   1,
+   50,
+   5000
+  ],
+  "window_ns": 300000000000
+ },
+ "prng": "splitmix64; stream seeds = first 8 bytes of sha256(seed|keys)",
+ "provenance": "SYNTHETIC",
+ "qualification_label": "mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12",
+ "quote_updates": {
+  "distribution": "pareto tail, median 50, p99 5000, cap 20000, min 1",
+  "frozen_fact_size_M_SYN1_s1": {
+   "max": 20000,
+   "median": 53,
+   "p99": 5456,
+   "total": 583663
+  },
+  "inv_alpha": 1.177183820135558,
+  "targets": {
+   "median": 50,
+   "p99": 5000
+  },
+  "tolerance_pct": 10,
+  "xm": 22.110693482867728
+ },
+ "schema_version": 1,
+ "seed": 20261029,
+ "streams": {
+  "class_weights_pct": [
+   70,
+   3,
+   3,
+   3,
+   8,
+   8,
+   3,
+   1,
+   1
+  ],
+  "classes": [
+   "normal",
+   "locked",
+   "crossed",
+   "bid_zero",
+   "touch_ask",
+   "touch_bid",
+   "inside",
+   "stale_boundary",
+   "window_end"
+  ],
+  "full_workload": "regenerate with stream_record(seed, n, i), i in 0..n-1",
+  "quote_share_pct": 80,
+  "sha256_of_canonical_jsonl": {
+   "100000": "a66cc60b5ebdcc07fc4deaa881c97b62922d932611646fb525c8ef6756996401",
+   "1000000": "8ad564c4a638d585a8bead4d788826587f539144b40bdac3f42b74f13e12ea57"
+  },
+  "sizes": [
+   100000,
+   1000000
+  ],
+  "stale_boundary": "age_hint_ns in {3s-1ns, 3s, 3s+1ns}"
+ },
+ "universe": {
+  "cutoff_step_ns": 300000000000,
+  "cutoffs_per_session": 78,
+  "sessions": 5,
+  "total_cutoffs_per_size": 1950,
+  "underlyings": [
+   "SYN1",
+   "SYN2",
+   "SYN3",
+   "SYN4",
+   "SYN5"
+  ]
+ }
+}

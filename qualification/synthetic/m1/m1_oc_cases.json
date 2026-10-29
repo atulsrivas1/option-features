@@ -1,0 +1,8114 @@
+{
+ "provenance": "SYNTHETIC",
+ "qualification_label": "mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12",
+ "generator": "gen_m1_oc.py",
+ "seed": 20261029,
+ "schema_version": 1,
+ "note": "Test oracle fixtures written from design text and PO rulings only. Times are integer ns relative to T=0. Decimals are strings with at most 4 places. Expected values are exact rationals.",
+ "status_values": [
+  "fired",
+  "not_fired",
+  "unavailable",
+  "structural_error"
+ ],
+ "closed_reasons": [
+  "excluded_condition",
+  "invalid_quote",
+  "crossed_market",
+  "locked_market",
+  "stale_quote",
+  "low_quote_coverage",
+  "no_quote",
+  "zero_displayed_size",
+  "missing_size",
+  "future_known",
+  "no_window_spread",
+  "not_consolidated",
+  "american_itm",
+  "style_unknown",
+  "no_atm_strike",
+  "no_bracketing_expiry"
+ ],
+ "defaults": {
+  "stale_limit_ns": 10000000000,
+  "window_ns": 300000000000,
+  "coverage_min": 5,
+  "imbalance_threshold": "0.60",
+  "narrower_max": "0.75",
+  "wider_min": "1.50"
+ },
+ "mutation_report": {
+  "M1": [
+   "OC5-03",
+   "OC5-05a",
+   "OC5-08c"
+  ],
+  "M2": [
+   "OC5-01",
+   "OC5-02",
+   "OC5-03",
+   "OC5-04",
+   "OC5-05a",
+   "OC5-05b",
+   "OC5-06",
+   "OC5-07a",
+   "OC5-07c",
+   "OC5-08a",
+   "OC5-08b",
+   "OC5-08c",
+   "OC5-09b",
+   "OC5-13",
+   "OC5-15b",
+   "OC5-15c",
+   "OC5-15e",
+   "OC5-16a",
+   "OC5-16b",
+   "OC5-18a",
+   "OC5-18b",
+   "OC5-19",
+   "OC5-24b",
+   "OC5-AM",
+   "OC5-NSTD"
+  ],
+  "M3": [
+   "OC5-01",
+   "OC5-02",
+   "OC5-03",
+   "OC5-05a",
+   "OC5-07b",
+   "OC5-08b",
+   "OC5-08c",
+   "OC5-09a",
+   "OC5-09b",
+   "OC5-13",
+   "OC5-15b",
+   "OC5-15c",
+   "OC5-15e",
+   "OC5-16a",
+   "OC5-16b",
+   "OC5-18a",
+   "OC5-18b",
+   "OC5-19",
+   "OC5-24b",
+   "OC5-AM",
+   "OC5-NSTD"
+  ],
+  "M4a": [
+   "OC5-01",
+   "OC5-02",
+   "OC5-03",
+   "OC5-04",
+   "OC5-05a",
+   "OC5-05b",
+   "OC5-08a",
+   "OC5-08b",
+   "OC5-08c",
+   "OC5-09b",
+   "OC5-13",
+   "OC5-15b",
+   "OC5-15c",
+   "OC5-15e",
+   "OC5-16a",
+   "OC5-16b",
+   "OC5-18a",
+   "OC5-18b",
+   "OC5-19",
+   "OC5-24b",
+   "OC5-AM",
+   "OC5-NSTD"
+  ],
+  "M4b": [
+   "OC5-01",
+   "OC5-02",
+   "OC5-03",
+   "OC5-04",
+   "OC5-05a",
+   "OC5-05b",
+   "OC5-07b",
+   "OC5-08a",
+   "OC5-08b",
+   "OC5-08c",
+   "OC5-09a",
+   "OC5-13",
+   "OC5-15b",
+   "OC5-15c",
+   "OC5-15e",
+   "OC5-16a",
+   "OC5-16b",
+   "OC5-18a",
+   "OC5-18b",
+   "OC5-19",
+   "OC5-24b",
+   "OC5-AM",
+   "OC5-NSTD"
+  ],
+  "M5": [
+   "OC5-02",
+   "OC5-05a",
+   "OC5-08c",
+   "OC5-09b",
+   "OC5-18a",
+   "OC5-18b"
+  ],
+  "M6a": [
+   "OC5-15a",
+   "OC5-15d",
+   "OC5-15f",
+   "OC5-G4",
+   "OC5-G5",
+   "OC6-ST-b",
+   "OC6-ST-c",
+   "OC6-B9"
+  ],
+  "M6b": [
+   "OC5-15d",
+   "OC5-15f",
+   "OC6-ST-b"
+  ],
+  "M6c": [
+   "OC5-15c",
+   "OC5-15e",
+   "OC6-ST-a"
+  ],
+  "M7": [
+   "OC5-16b",
+   "OC5-16e"
+  ],
+  "M8": [
+   "OC5-17a",
+   "OC5-G2"
+  ],
+  "M9": [
+   "OC5-10"
+  ],
+  "M10": [
+   "OC6-20",
+   "OC6-21",
+   "OC6-23a",
+   "OC6-23b",
+   "OC6-23c",
+   "OC6-23d",
+   "OC6-24a",
+   "OC6-25a",
+   "OC6-25b",
+   "OC6-25c",
+   "OC6-25d",
+   "OC6-26",
+   "OC6-27",
+   "OC6-28a",
+   "OC6-28b",
+   "OC6-28c",
+   "OC6-31a",
+   "OC6-33a",
+   "OC6-33b",
+   "OC6-34a",
+   "OC6-34b",
+   "OC6-AM",
+   "OC6-31b",
+   "OC6-31c",
+   "OC6-B1",
+   "OC6-B2",
+   "OC6-B3",
+   "OC6-B7",
+   "OC6-B11",
+   "OC6-NSTD",
+   "OC6-BURST"
+  ],
+  "M11": [
+   "OC6-23a",
+   "OC6-23b",
+   "OC6-25b",
+   "OC6-25c",
+   "OC6-31b",
+   "OC6-31c",
+   "OC6-B2"
+  ],
+  "M12a": [
+   "OC6-26",
+   "OC6-27",
+   "OC6-28a",
+   "OC6-28b",
+   "OC6-28c",
+   "OC6-31b",
+   "OC6-31c",
+   "OC6-B1",
+   "OC6-B3",
+   "OC6-B7",
+   "OC6-BURST"
+  ],
+  "M12b": [
+   "OC6-24b",
+   "OC6-28b"
+  ],
+  "M13a": [
+   "OC6-24b",
+   "OC6-B4"
+  ],
+  "M13b": [
+   "OC6-24a",
+   "OC6-28a",
+   "OC6-28b",
+   "OC6-28c",
+   "OC6-33a",
+   "OC6-33b",
+   "OC6-NWS",
+   "OC6-31b",
+   "OC6-31c",
+   "OC6-B3",
+   "OC6-B7"
+  ],
+  "M14": [
+   "OC6-25c",
+   "OC6-31b",
+   "OC6-31c"
+  ],
+  "M15": [
+   "OC6-30a"
+  ],
+  "M16": [
+   "OC6-24c"
+  ],
+  "M17": [
+   "OC6-20",
+   "OC6-21",
+   "OC6-23a",
+   "OC6-23b",
+   "OC6-23c",
+   "OC6-23d",
+   "OC6-24a",
+   "OC6-25a",
+   "OC6-25b",
+   "OC6-25c",
+   "OC6-25d",
+   "OC6-26",
+   "OC6-27",
+   "OC6-28a",
+   "OC6-28b",
+   "OC6-28c",
+   "OC6-31a",
+   "OC6-33a",
+   "OC6-33b",
+   "OC6-34a",
+   "OC6-34b",
+   "OC6-NWS",
+   "OC6-AM",
+   "OC6-31b",
+   "OC6-31c",
+   "OC6-B1",
+   "OC6-B2",
+   "OC6-B3",
+   "OC6-B7",
+   "OC6-B11",
+   "OC6-NSTD",
+   "OC6-BURST"
+  ],
+  "M18": [
+   "OC6-28a",
+   "OC6-28c",
+   "OC6-33a",
+   "OC6-31b",
+   "OC6-31c",
+   "OC6-B3",
+   "OC6-B7"
+  ],
+  "M19": [
+   "OC5-15c",
+   "OC5-15e",
+   "OC6-ST-a"
+  ],
+  "M20": [
+   "OC5-01",
+   "OC5-02",
+   "OC5-03",
+   "OC5-04",
+   "OC5-05a",
+   "OC5-05b",
+   "OC5-06",
+   "OC5-07a",
+   "OC5-07b",
+   "OC5-07c",
+   "OC5-08a",
+   "OC5-08b",
+   "OC5-08c",
+   "OC5-09a",
+   "OC5-09b",
+   "OC5-10",
+   "OC5-11a",
+   "OC5-11b",
+   "OC5-11c",
+   "OC5-13",
+   "OC5-15b",
+   "OC5-15c",
+   "OC5-15e",
+   "OC5-16a",
+   "OC5-16b",
+   "OC5-18a",
+   "OC5-18b",
+   "OC5-19",
+   "OC5-24b",
+   "OC5-AM",
+   "OC5-NSTD"
+  ],
+  "X1": [
+   "OC6-28b"
+  ],
+  "X2": [
+   "OC6-33a",
+   "OC6-33b"
+  ],
+  "X3": [
+   "OC6-26",
+   "OC6-33b",
+   "OC6-B3"
+  ],
+  "X4": [
+   "OC6-26",
+   "OC6-B3"
+  ],
+  "X5": [
+   "OC6-B2"
+  ],
+  "X6": [
+   "OC6-B3"
+  ],
+  "X7": [
+   "OC6-B4"
+  ],
+  "X8": [
+   "OC6-B7"
+  ],
+  "X9": [
+   "OC5-B1",
+   "OC6-G2"
+  ],
+  "X10": [
+   "OC6-B9"
+  ],
+  "X11": [
+   "OC6-B11"
+  ],
+  "X12": [
+   "OC5-NSTD",
+   "OC6-NSTD"
+  ],
+  "X13": [
+   "OC5-G4",
+   "OC5-G5",
+   "OC5-G6",
+   "OC5-G7"
+  ],
+  "X14": [
+   "OC5-G3"
+  ]
+ },
+ "rows": [
+  {
+   "id": "OC5-01",
+   "group": "OC5",
+   "design_ref": "OC 2.2 OC5; ruling Q1",
+   "case": "1",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "5/7",
+     "decimal": "0.7143",
+     "precision": 4
+    },
+    "label": "bid",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(600-100)/(600+100)=5/7=0.7143; threshold 0.6000 inclusive -> bid"
+  },
+  {
+   "id": "OC5-02",
+   "group": "OC5",
+   "design_ref": "OC 2.2 OC5; ruling Q1",
+   "case": "2",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 100,
+      "ask_size": 600
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "-5/7",
+     "decimal": "-0.7143",
+     "precision": 4
+    },
+    "label": "ask",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(100-600)/(100+600)=-5/7=-0.7143; threshold 0.6000 inclusive -> ask"
+  },
+  {
+   "id": "OC5-03",
+   "group": "OC5",
+   "design_ref": "OC 2.2 OC5; ruling Q1",
+   "case": "3",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 160,
+      "ask_size": 40
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/5",
+     "decimal": "0.6000",
+     "precision": 4
+    },
+    "label": "bid",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "inclusive boundary (M1). imbalance=(160-40)/(160+40)=3/5=0.6000; threshold 0.6000 inclusive -> bid"
+  },
+  {
+   "id": "OC5-04",
+   "group": "OC5",
+   "design_ref": "OC 2.2 OC5; ruling Q1",
+   "case": "4",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 159,
+      "ask_size": 41
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "not_fired",
+    "reason": null,
+    "value": {
+     "exact": "59/100",
+     "decimal": "0.5900",
+     "precision": 4
+    },
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(159-41)/(159+41)=59/100=0.5900; threshold 0.6000 inclusive -> not fired"
+  },
+  {
+   "id": "OC5-05a",
+   "group": "OC5",
+   "design_ref": "OC 2.2 OC5; ruling Q1",
+   "case": "5",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 40,
+      "ask_size": 160
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "-3/5",
+     "decimal": "-0.6000",
+     "precision": 4
+    },
+    "label": "ask",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(40-160)/(40+160)=-3/5=-0.6000; threshold 0.6000 inclusive -> ask"
+  },
+  {
+   "id": "OC5-05b",
+   "group": "OC5",
+   "design_ref": "OC 2.2 OC5; ruling Q1",
+   "case": "5",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 41,
+      "ask_size": 159
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "not_fired",
+    "reason": null,
+    "value": {
+     "exact": "-59/100",
+     "decimal": "-0.5900",
+     "precision": 4
+    },
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(41-159)/(41+159)=-59/100=-0.5900; threshold 0.6000 inclusive -> not fired"
+  },
+  {
+   "id": "OC5-06",
+   "group": "OC5",
+   "design_ref": "OC 2.2 OC5; ruling Q1",
+   "case": "6",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 500,
+      "ask_size": 500
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "not_fired",
+    "reason": null,
+    "value": {
+     "exact": "0",
+     "decimal": "0.0000",
+     "precision": 4
+    },
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(500-500)/(500+500)=0=0.0000; threshold 0.6000 inclusive -> not fired"
+  },
+  {
+   "id": "OC5-07a",
+   "group": "OC5",
+   "design_ref": "OC 2.2 OC5; ruling Q1",
+   "case": "7",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 1000000000,
+      "ask_size": 999999999
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "not_fired",
+    "reason": null,
+    "value": {
+     "exact": "1/1999999999",
+     "decimal": "0.0000",
+     "precision": 4
+    },
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "exact big integers. imbalance=(1000000000-999999999)/(1000000000+999999999)=1/1999999999=0.0000; threshold 0.6000 inclusive -> not fired"
+  },
+  {
+   "id": "OC5-07b",
+   "group": "OC5",
+   "design_ref": "OC 2.2 OC5; ruling Q1",
+   "case": "7",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 1000000000,
+      "ask_size": 1
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "999999999/1000000001",
+     "decimal": "1.0000",
+     "precision": 4
+    },
+    "label": "bid",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(1000000000-1)/(1000000000+1)=999999999/1000000001=1.0000; threshold 0.6000 inclusive -> bid"
+  },
+  {
+   "id": "OC5-07c",
+   "group": "OC5",
+   "design_ref": "OC 2.2 OC5; ruling Q1",
+   "case": "7",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 999999999,
+      "ask_size": 1000000000
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "not_fired",
+    "reason": null,
+    "value": {
+     "exact": "-1/1999999999",
+     "decimal": "0.0000",
+     "precision": 4
+    },
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(999999999-1000000000)/(999999999+1000000000)=-1/1999999999=0.0000; threshold 0.6000 inclusive -> not fired"
+  },
+  {
+   "id": "OC5-08a",
+   "group": "OC5",
+   "design_ref": "OC 2.2 OC5; ruling Q1",
+   "case": "8",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 700,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.80",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "not_fired",
+    "reason": null,
+    "value": {
+     "exact": "3/4",
+     "decimal": "0.7500",
+     "precision": 4
+    },
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(700-100)/(700+100)=3/4=0.7500; threshold 0.8000 inclusive -> not fired"
+  },
+  {
+   "id": "OC5-08b",
+   "group": "OC5",
+   "design_ref": "OC 2.2 OC5; ruling Q1",
+   "case": "8",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 700,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.10",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/4",
+     "decimal": "0.7500",
+     "precision": 4
+    },
+    "label": "bid",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(700-100)/(700+100)=3/4=0.7500; threshold 0.1000 inclusive -> bid"
+  },
+  {
+   "id": "OC5-08c",
+   "group": "OC5",
+   "design_ref": "OC 2.2 OC5; ruling Q1",
+   "case": "8",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 100,
+      "ask_size": 300
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "-1/2",
+     "decimal": "-0.5000",
+     "precision": 4
+    },
+    "label": "ask",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "override threshold, inclusive at -0.50. imbalance=(100-300)/(100+300)=-1/2=-0.5000; threshold 0.5000 inclusive -> ask"
+  },
+  {
+   "id": "OC5-09a",
+   "group": "OC5",
+   "design_ref": "ruling Q2",
+   "case": "9",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 100,
+      "ask_size": 0
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "1",
+     "decimal": "1.0000",
+     "precision": 4
+    },
+    "label": "bid",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(100-0)/(100+0)=1=1.0000; threshold 0.6000 inclusive -> bid"
+  },
+  {
+   "id": "OC5-09b",
+   "group": "OC5",
+   "design_ref": "ruling Q2",
+   "case": "9",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 0,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "-1",
+     "decimal": "-1.0000",
+     "precision": 4
+    },
+    "label": "ask",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(0-100)/(0+100)=-1=-1.0000; threshold 0.6000 inclusive -> ask"
+  },
+  {
+   "id": "OC5-10",
+   "group": "OC5",
+   "design_ref": "ruling Q2",
+   "case": "10",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 0,
+      "ask_size": 0
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "zero_displayed_size",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "gate zero_displayed_size (all failing: zero_displayed_size; latest quote ev=-2s age=2s)"
+  },
+  {
+   "id": "OC5-11a",
+   "group": "OC5",
+   "design_ref": "ruling Q2",
+   "case": "11",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": null,
+      "ask_size": null
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "missing_size",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "gate missing_size (all failing: missing_size; latest quote ev=-2s age=2s)"
+  },
+  {
+   "id": "OC5-11b",
+   "group": "OC5",
+   "design_ref": "ruling Q2",
+   "case": "11",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 100,
+      "ask_size": null
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "missing_size",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "gate missing_size (all failing: missing_size; latest quote ev=-2s age=2s)"
+  },
+  {
+   "id": "OC5-11c",
+   "group": "OC5",
+   "design_ref": "ruling Q2",
+   "case": "11",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": []
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "missing_size",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "no QuoteSize row for the revision. gate missing_size (all failing: missing_size; latest quote ev=-2s age=2s)"
+  },
+  {
+   "id": "OC5-12a",
+   "group": "OC5",
+   "design_ref": "OC 2.3 invalid quote",
+   "case": "12",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": null,
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "gate invalid_quote (all failing: invalid_quote; latest quote ev=-2s age=2s)"
+  },
+  {
+   "id": "OC5-12b",
+   "group": "OC5",
+   "design_ref": "OC 2.3 invalid quote",
+   "case": "12",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": null,
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "gate invalid_quote (all failing: invalid_quote; latest quote ev=-2s age=2s)"
+  },
+  {
+   "id": "OC5-12c",
+   "group": "OC5",
+   "design_ref": "OC 2.3 invalid quote (bid not above 0)",
+   "case": "12",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "0.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req2"
+   ],
+   "derivation": "gate invalid_quote (all failing: invalid_quote; latest quote ev=-2s age=2s)"
+  },
+  {
+   "id": "OC5-13",
+   "group": "OC5",
+   "design_ref": "ruling Q8",
+   "case": "13",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0000",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "5/7",
+     "decimal": "0.7143",
+     "precision": 4
+    },
+    "label": "bid",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req1",
+    "pending:req10"
+   ],
+   "derivation": "locked evaluates for OC5. imbalance=(600-100)/(600+100)=5/7=0.7143; threshold 0.6000 inclusive -> bid"
+  },
+  {
+   "id": "OC5-14",
+   "group": "OC5",
+   "design_ref": "OC 2.3 crossed",
+   "case": "14",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0500",
+      "ask": "1.0000",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "crossed_market",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "gate crossed_market (all failing: crossed_market; latest quote ev=-2s age=2s)"
+  },
+  {
+   "id": "OC5-15a",
+   "group": "OC5",
+   "design_ref": "OC 2.3; ruling Q4",
+   "case": "15 age 30s",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "stale_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req11"
+   ],
+   "derivation": "gate stale_quote (all failing: stale_quote; latest quote ev=-30s age=30s)"
+  },
+  {
+   "id": "OC5-15b",
+   "group": "OC5",
+   "design_ref": "OC 2.3; ruling Q4",
+   "case": "15 age 2s",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "5/7",
+     "decimal": "0.7143",
+     "precision": 4
+    },
+    "label": "bid",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10",
+    "pending:req11"
+   ],
+   "derivation": "imbalance=(600-100)/(600+100)=5/7=0.7143; threshold 0.6000 inclusive -> bid"
+  },
+  {
+   "id": "OC5-15c",
+   "group": "OC5",
+   "design_ref": "OC 2.3; ruling Q4",
+   "case": "15 age exactly 10s fresh",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -10000000000,
+      "known_at_ns": -10000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "5/7",
+     "decimal": "0.7143",
+     "precision": 4
+    },
+    "label": "bid",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10",
+    "pending:req11"
+   ],
+   "derivation": "imbalance=(600-100)/(600+100)=5/7=0.7143; threshold 0.6000 inclusive -> bid"
+  },
+  {
+   "id": "OC5-15d",
+   "group": "OC5",
+   "design_ref": "OC 2.3; ruling Q4",
+   "case": "15 age 10s+1ns stale",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -10000000001,
+      "known_at_ns": -10000000001,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "stale_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req11"
+   ],
+   "derivation": "gate stale_quote (all failing: stale_quote; latest quote ev=-10000000001ns age=10000000001ns)"
+  },
+  {
+   "id": "OC5-15e",
+   "group": "OC5",
+   "design_ref": "OC 2.3; ruling Q4",
+   "case": "15 limit 5s: age exactly 5s fresh",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -5000000000,
+      "known_at_ns": -5000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 5000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "5/7",
+     "decimal": "0.7143",
+     "precision": 4
+    },
+    "label": "bid",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10",
+    "pending:req11"
+   ],
+   "derivation": "imbalance=(600-100)/(600+100)=5/7=0.7143; threshold 0.6000 inclusive -> bid"
+  },
+  {
+   "id": "OC5-15f",
+   "group": "OC5",
+   "design_ref": "OC 2.3; ruling Q4",
+   "case": "15 limit 5s: age 5s+1ns stale",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -5000000001,
+      "known_at_ns": -5000000001,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 5000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "stale_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req11"
+   ],
+   "derivation": "gate stale_quote (all failing: stale_quote; latest quote ev=-5000000001ns age=5000000001ns)"
+  },
+  {
+   "id": "OC5-16a",
+   "group": "OC5",
+   "design_ref": "OC 2.3 causal",
+   "case": "16 event after T",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -5000000000,
+      "known_at_ns": -5000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": 1000000000,
+      "known_at_ns": 1000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     },
+     {
+      "rev": 2,
+      "bid_size": 100,
+      "ask_size": 600
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "5/7",
+     "decimal": "0.7143",
+     "precision": 4
+    },
+    "label": "bid",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(600-100)/(600+100)=5/7=0.7143; threshold 0.6000 inclusive -> bid"
+  },
+  {
+   "id": "OC5-16b",
+   "group": "OC5",
+   "design_ref": "OC 2.3 causal",
+   "case": "16 known_at after T",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -5000000000,
+      "known_at_ns": -5000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -1000000000,
+      "known_at_ns": 1000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     },
+     {
+      "rev": 2,
+      "bid_size": 100,
+      "ask_size": 600
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "5/7",
+     "decimal": "0.7143",
+     "precision": 4
+    },
+    "label": "bid",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(600-100)/(600+100)=5/7=0.7143; threshold 0.6000 inclusive -> bid"
+  },
+  {
+   "id": "OC5-16c",
+   "group": "OC5",
+   "design_ref": "OC 2.3 causal",
+   "case": "16 empty stream",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [],
+    "sizes": []
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "no causal quote at T"
+  },
+  {
+   "id": "OC5-16d",
+   "group": "OC5",
+   "design_ref": "PO ruling D7",
+   "case": "16 only quote after T gives no_quote (D7)",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": 1000000000,
+      "known_at_ns": 1000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "no causal quote at T"
+  },
+  {
+   "id": "OC5-16e",
+   "group": "OC5",
+   "design_ref": "PO ruling D7",
+   "case": "16 only quote known after T gives no_quote (D7)",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -1000000000,
+      "known_at_ns": 1000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "no causal quote at T"
+  },
+  {
+   "id": "OC5-17a",
+   "group": "OC5",
+   "design_ref": "R25 latest-causal rule",
+   "case": "17 latest excluded, older regular fresh",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -5000000000,
+      "known_at_ns": -5000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -1000000000,
+      "known_at_ns": -1000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "excluded"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     },
+     {
+      "rev": 2,
+      "bid_size": 100,
+      "ask_size": 600
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "excluded_condition",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "gate excluded_condition (all failing: excluded_condition; latest quote ev=-1s age=1s)"
+  },
+  {
+   "id": "OC5-18a",
+   "group": "OC5",
+   "design_ref": "spec 18",
+   "case": "18 same event, sequence breaks tie",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -3000000000,
+      "known_at_ns": -3000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular",
+      "seq": 1
+     },
+     {
+      "rev": 2,
+      "event_ns": -3000000000,
+      "known_at_ns": -3000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular",
+      "seq": 2
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     },
+     {
+      "rev": 2,
+      "bid_size": 100,
+      "ask_size": 600
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "-5/7",
+     "decimal": "-0.7143",
+     "precision": 4
+    },
+    "label": "ask",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(100-600)/(100+600)=-5/7=-0.7143; threshold 0.6000 inclusive -> ask"
+  },
+  {
+   "id": "OC5-18b",
+   "group": "OC5",
+   "design_ref": "spec 18",
+   "case": "18 same event, known_at breaks tie",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -3000000000,
+      "known_at_ns": -3000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -3000000000,
+      "known_at_ns": -2500000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     },
+     {
+      "rev": 2,
+      "bid_size": 100,
+      "ask_size": 600
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "-5/7",
+     "decimal": "-0.7143",
+     "precision": 4
+    },
+    "label": "ask",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(100-600)/(100+600)=-5/7=-0.7143; threshold 0.6000 inclusive -> ask"
+  },
+  {
+   "id": "OC5-18c",
+   "group": "OC5",
+   "design_ref": "spec 18",
+   "case": "18 unresolved tie",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -3000000000,
+      "known_at_ns": -3000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -3000000000,
+      "known_at_ns": -3000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     },
+     {
+      "rev": 2,
+      "bid_size": 100,
+      "ask_size": 600
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "structural_error",
+    "code": "ambiguous_ordering"
+   },
+   "tags": [],
+   "derivation": ""
+  },
+  {
+   "id": "OC5-19",
+   "group": "OC5",
+   "design_ref": "spec 19 (sequence first)",
+   "case": "19 sequence and known_at disagree",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -3000000000,
+      "known_at_ns": -2900000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular",
+      "seq": 2
+     },
+     {
+      "rev": 2,
+      "event_ns": -3000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular",
+      "seq": 1
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     },
+     {
+      "rev": 2,
+      "bid_size": 100,
+      "ask_size": 600
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "5/7",
+     "decimal": "0.7143",
+     "precision": 4
+    },
+    "label": "bid",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "sequence outranks known_at; rev1 is latest. imbalance=(600-100)/(600+100)=5/7=0.7143; threshold 0.6000 inclusive -> bid"
+  },
+  {
+   "id": "OC5-24b",
+   "group": "OC5",
+   "design_ref": "ruling Q8",
+   "case": "24b low coverage does not block OC5",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -200000000000,
+      "known_at_ns": -200000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -100000000000,
+      "known_at_ns": -100000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     },
+     {
+      "rev": 2,
+      "bid_size": 600,
+      "ask_size": 100
+     },
+     {
+      "rev": 3,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "5/7",
+     "decimal": "0.7143",
+     "precision": 4
+    },
+    "label": "bid",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "3 regular updates in 5 minutes. imbalance=(600-100)/(600+100)=5/7=0.7143; threshold 0.6000 inclusive -> bid"
+  },
+  {
+   "id": "OC5-NC",
+   "group": "OC5",
+   "design_ref": "ruling Q7",
+   "case": "single_venue feed",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "single_venue",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "not_consolidated",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req11"
+   ],
+   "derivation": "gate not_consolidated (all failing: not_consolidated; latest quote ev=-2s age=2s)"
+  },
+  {
+   "id": "OC5-AM",
+   "group": "OC5",
+   "design_ref": "ruling section 2 item 6",
+   "case": "American style: quote-only unaffected",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": "american",
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "5/7",
+     "decimal": "0.7143",
+     "precision": 4
+    },
+    "label": "bid",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(600-100)/(600+100)=5/7=0.7143; threshold 0.6000 inclusive -> bid"
+  },
+  {
+   "id": "OC5-B1",
+   "group": "OC5",
+   "design_ref": "PO ruling D6",
+   "case": "stale and crossed together: validity first (D6)",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "bid": "1.0500",
+      "ask": "1.0000",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "crossed_market",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req11"
+   ],
+   "derivation": "gate crossed_market (all failing: crossed_market,stale_quote; latest quote ev=-30s age=30s)"
+  },
+  {
+   "id": "OC5-G1",
+   "group": "OC5",
+   "design_ref": "PO ruling gate order",
+   "case": "no_quote + single_venue: no_quote first",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "single_venue",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [],
+    "sizes": []
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "no causal quote at T"
+  },
+  {
+   "id": "OC5-G2",
+   "group": "OC5",
+   "design_ref": "PO ruling gate order",
+   "case": "excluded latest + single_venue: excluded_condition first",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "single_venue",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -5000000000,
+      "known_at_ns": -5000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -1000000000,
+      "known_at_ns": -1000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "excluded"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     },
+     {
+      "rev": 2,
+      "bid_size": 100,
+      "ask_size": 600
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "excluded_condition",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "gate excluded_condition (all failing: excluded_condition,not_consolidated; latest quote ev=-1s age=1s)"
+  },
+  {
+   "id": "OC5-G3",
+   "group": "OC5",
+   "design_ref": "PO ruling gate order",
+   "case": "single_venue + crossed: not_consolidated first",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "single_venue",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0500",
+      "ask": "1.0000",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "not_consolidated",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req11"
+   ],
+   "derivation": "gate not_consolidated (all failing: not_consolidated,crossed_market; latest quote ev=-2s age=2s)"
+  },
+  {
+   "id": "OC5-G4",
+   "group": "OC5",
+   "design_ref": "PO ruling gate order (size after stale)",
+   "case": "missing size + stale: stale_quote first",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": null,
+      "ask_size": null
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "stale_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req11"
+   ],
+   "derivation": "gate stale_quote (all failing: stale_quote,missing_size; latest quote ev=-30s age=30s)"
+  },
+  {
+   "id": "OC5-G5",
+   "group": "OC5",
+   "design_ref": "PO ruling gate order (size after stale)",
+   "case": "zero sizes + stale: stale_quote first",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 0,
+      "ask_size": 0
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "stale_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req11"
+   ],
+   "derivation": "gate stale_quote (all failing: stale_quote,zero_displayed_size; latest quote ev=-30s age=30s)"
+  },
+  {
+   "id": "OC5-G6",
+   "group": "OC5",
+   "design_ref": "PO ruling gate order (size after validity)",
+   "case": "missing size + invalid quote: invalid_quote first",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": null,
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": null,
+      "ask_size": null
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "gate invalid_quote (all failing: invalid_quote,missing_size; latest quote ev=-2s age=2s)"
+  },
+  {
+   "id": "OC5-G7",
+   "group": "OC5",
+   "design_ref": "PO ruling gate order (size after validity)",
+   "case": "zero sizes + crossed: crossed_market first",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0500",
+      "ask": "1.0000",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 0,
+      "ask_size": 0
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "crossed_market",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "gate crossed_market (all failing: crossed_market,zero_displayed_size; latest quote ev=-2s age=2s)"
+  },
+  {
+   "id": "OC5-S01",
+   "group": "OC5",
+   "design_ref": "R25 BOUNDARY",
+   "case": "negative size",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": -5,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "structural_error",
+    "code": "negative_size"
+   },
+   "tags": [
+    "structural"
+   ],
+   "derivation": ""
+  },
+  {
+   "id": "OC5-S02",
+   "group": "OC5",
+   "design_ref": "R25 BOUNDARY",
+   "case": "non-integer size",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 10.5,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "structural_error",
+    "code": "non_integer_size"
+   },
+   "tags": [
+    "structural"
+   ],
+   "derivation": ""
+  },
+  {
+   "id": "OC5-S03",
+   "group": "OC5",
+   "design_ref": "PO ruling D15",
+   "case": "negative bid price is invalid_quote (D15)",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "-0.0500",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req2"
+   ],
+   "derivation": "gate invalid_quote (all failing: invalid_quote; latest quote ev=-2s age=2s)"
+  },
+  {
+   "id": "OC5-NSTD",
+   "group": "OC5",
+   "design_ref": "OC 2.3 non-standard",
+   "case": "non-standard contract: quote-only unaffected",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": false,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "5/7",
+     "decimal": "0.7143",
+     "precision": 4
+    },
+    "label": "bid",
+    "model_label": null
+   },
+   "tags": [
+    "pending:req10"
+   ],
+   "derivation": "imbalance=(600-100)/(600+100)=5/7=0.7143; threshold 0.6000 inclusive -> bid"
+  },
+  {
+   "id": "OC5-S05",
+   "group": "OC5",
+   "design_ref": "PO ruling D15",
+   "case": "malformed type (bid as number)",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": 1.0,
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "structural_error",
+    "code": "malformed_type"
+   },
+   "tags": [
+    "structural"
+   ],
+   "derivation": ""
+  },
+  {
+   "id": "OC5-S04",
+   "group": "OC5",
+   "design_ref": "R25 BOUNDARY",
+   "case": "non-monotone event time",
+   "op": "oc5",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -5000000000,
+      "known_at_ns": -5000000000,
+      "bid": "1.0000",
+      "ask": "1.0500",
+      "condition": "regular"
+     }
+    ],
+    "sizes": [
+     {
+      "rev": 1,
+      "bid_size": 600,
+      "ask_size": 100
+     },
+     {
+      "rev": 2,
+      "bid_size": 600,
+      "ask_size": 100
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "imbalance_threshold": "0.60",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "structural_error",
+    "code": "non_monotone_event_time"
+   },
+   "tags": [
+    "structural"
+   ],
+   "derivation": ""
+  },
+  {
+   "id": "OC6-20",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "20 steady 0.10 then 0.06",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9700",
+      "ask": "10.0300",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/5",
+     "decimal": "0.6000",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "3/50",
+     "midpoint": "10",
+     "spread_bps": "60",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s over valid time 300s; average=100 bps; current=60 bps; ratio=(60)/(100)=3/5=0.6000; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=6"
+  },
+  {
+   "id": "OC6-21",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "21 steady 0.10 then 0.20",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "2",
+     "decimal": "2.0000",
+     "precision": 4
+    },
+    "label": "wider",
+    "aux": {
+     "current_spread": "1/5",
+     "midpoint": "10",
+     "spread_bps": "200",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s over valid time 300s; average=100 bps; current=200 bps; ratio=(200)/(100)=2=2.0000; narrower<=0.7500 wider>=1.5000 -> wider; regular updates in window=6"
+  },
+  {
+   "id": "OC6-22",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "22 steady 0.10 then 0.10",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "not_fired",
+    "reason": null,
+    "value": {
+     "exact": "1",
+     "decimal": "1.0000",
+     "precision": 4
+    },
+    "label": null,
+    "aux": {
+     "current_spread": "1/10",
+     "midpoint": "10",
+     "spread_bps": "100",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s over valid time 300s; average=100 bps; current=100 bps; ratio=(100)/(100)=1=1.0000; narrower<=0.7500 wider>=1.5000 -> neither; regular updates in window=6"
+  },
+  {
+   "id": "OC6-23a",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "23 ratio exactly 0.75",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9250",
+      "ask": "10.0750",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/4",
+     "decimal": "0.7500",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "3/20",
+     "midpoint": "10",
+     "spread_bps": "150",
+     "average_spread_bps": "200"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "inclusive (M11). window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 200bps*60s + 200bps*60s + 200bps*60s + 200bps*60s + 200bps*60s over valid time 300s; average=200 bps; current=150 bps; ratio=(150)/(200)=3/4=0.7500; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=6"
+  },
+  {
+   "id": "OC6-23b",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "23 ratio exactly 1.50",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.8500",
+      "ask": "10.1500",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/2",
+     "decimal": "1.5000",
+     "precision": 4
+    },
+    "label": "wider",
+    "aux": {
+     "current_spread": "3/10",
+     "midpoint": "10",
+     "spread_bps": "300",
+     "average_spread_bps": "200"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 200bps*60s + 200bps*60s + 200bps*60s + 200bps*60s + 200bps*60s over valid time 300s; average=200 bps; current=300 bps; ratio=(300)/(200)=3/2=1.5000; narrower<=0.7500 wider>=1.5000 -> wider; regular updates in window=6"
+  },
+  {
+   "id": "OC6-23c",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "23 ratio 0.7501",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.0000",
+      "ask": "11.0000",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.0000",
+      "ask": "11.0000",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.0000",
+      "ask": "11.0000",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.0000",
+      "ask": "11.0000",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.0000",
+      "ask": "11.0000",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.2499",
+      "ask": "10.7501",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "not_fired",
+    "reason": null,
+    "value": {
+     "exact": "7501/10000",
+     "decimal": "0.7501",
+     "precision": 4
+    },
+    "label": null,
+    "aux": {
+     "current_spread": "7501/5000",
+     "midpoint": "10",
+     "spread_bps": "7501/5",
+     "average_spread_bps": "2000"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 2000bps*60s + 2000bps*60s + 2000bps*60s + 2000bps*60s + 2000bps*60s over valid time 300s; average=2000 bps; current=7501/5 bps; ratio=(7501/5)/(2000)=7501/10000=0.7501; narrower<=0.7500 wider>=1.5000 -> neither; regular updates in window=6"
+  },
+  {
+   "id": "OC6-23d",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "23 ratio 1.4999",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.0000",
+      "ask": "11.0000",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.0000",
+      "ask": "11.0000",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.0000",
+      "ask": "11.0000",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.0000",
+      "ask": "11.0000",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.0000",
+      "ask": "11.0000",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "8.5001",
+      "ask": "11.4999",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "not_fired",
+    "reason": null,
+    "value": {
+     "exact": "14999/10000",
+     "decimal": "1.4999",
+     "precision": 4
+    },
+    "label": null,
+    "aux": {
+     "current_spread": "14999/5000",
+     "midpoint": "10",
+     "spread_bps": "14999/5",
+     "average_spread_bps": "2000"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 2000bps*60s + 2000bps*60s + 2000bps*60s + 2000bps*60s + 2000bps*60s over valid time 300s; average=2000 bps; current=14999/5 bps; ratio=(14999/5)/(2000)=14999/10000=1.4999; narrower<=0.7500 wider>=1.5000 -> neither; regular updates in window=6"
+  },
+  {
+   "id": "OC6-24a",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "24 exactly 5 updates in window",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -400000000000,
+      "known_at_ns": -400000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9700",
+      "ask": "10.0300",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/5",
+     "decimal": "0.6000",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "3/50",
+     "midpoint": "10",
+     "spread_bps": "60",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "carry-in at -400 not counted. window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s over valid time 300s; average=100 bps; current=60 bps; ratio=(60)/(100)=3/5=0.6000; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=5"
+  },
+  {
+   "id": "OC6-24b",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "24 only 4 updates in window",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -330000000000,
+      "known_at_ns": -330000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9700",
+      "ask": "10.0300",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "low_quote_coverage",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "-330 is outside the 300 s window (M12). gate low_quote_coverage (all failing: low_quote_coverage; regular updates in window=4; latest ev=0s)"
+  },
+  {
+   "id": "OC6-24c",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "24 (M16) 3 regular + 3 excluded",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -250000000000,
+      "known_at_ns": -250000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -200000000000,
+      "known_at_ns": -200000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "excluded"
+     },
+     {
+      "rev": 3,
+      "event_ns": -150000000000,
+      "known_at_ns": -150000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "excluded"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "excluded"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9700",
+      "ask": "10.0300",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "low_quote_coverage",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "gate low_quote_coverage (all failing: low_quote_coverage; regular updates in window=3; latest ev=0s)"
+  },
+  {
+   "id": "OC6-25a",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "25 narrower_max 0.50 on ratio 0.60",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9700",
+      "ask": "10.0300",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.50",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "not_fired",
+    "reason": null,
+    "value": {
+     "exact": "3/5",
+     "decimal": "0.6000",
+     "precision": 4
+    },
+    "label": null,
+    "aux": {
+     "current_spread": "3/50",
+     "midpoint": "10",
+     "spread_bps": "60",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s over valid time 300s; average=100 bps; current=60 bps; ratio=(60)/(100)=3/5=0.6000; narrower<=0.5000 wider>=1.5000 -> neither; regular updates in window=6"
+  },
+  {
+   "id": "OC6-25b",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "25 narrower_max 0.50 on ratio 0.50",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9750",
+      "ask": "10.0250",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.50",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "1/2",
+     "decimal": "0.5000",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "1/20",
+     "midpoint": "10",
+     "spread_bps": "50",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s over valid time 300s; average=100 bps; current=50 bps; ratio=(50)/(100)=1/2=0.5000; narrower<=0.5000 wider>=1.5000 -> narrower; regular updates in window=6"
+  },
+  {
+   "id": "OC6-25c",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "25 wider_min 2.0 on ratio 2.0",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "2.0",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "2",
+     "decimal": "2.0000",
+     "precision": 4
+    },
+    "label": "wider",
+    "aux": {
+     "current_spread": "1/5",
+     "midpoint": "10",
+     "spread_bps": "200",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s over valid time 300s; average=100 bps; current=200 bps; ratio=(200)/(100)=2=2.0000; narrower<=0.7500 wider>=2.0000 -> wider; regular updates in window=6"
+  },
+  {
+   "id": "OC6-25d",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "25 wider_min 2.0 on ratio 1.9",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9050",
+      "ask": "10.0950",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "2.0",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "not_fired",
+    "reason": null,
+    "value": {
+     "exact": "19/10",
+     "decimal": "1.9000",
+     "precision": 4
+    },
+    "label": null,
+    "aux": {
+     "current_spread": "19/100",
+     "midpoint": "10",
+     "spread_bps": "190",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s over valid time 300s; average=100 bps; current=190 bps; ratio=(190)/(100)=19/10=1.9000; narrower<=0.7500 wider>=2.0000 -> neither; regular updates in window=6"
+  },
+  {
+   "id": "OC6-26",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "26 crossed and locked intervals get zero weight",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -250000000000,
+      "known_at_ns": -250000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -200000000000,
+      "known_at_ns": -200000000000,
+      "bid": "10.0500",
+      "ask": "9.9500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -150000000000,
+      "known_at_ns": -150000000000,
+      "bid": "9.8500",
+      "ask": "10.1500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -100000000000,
+      "known_at_ns": -100000000000,
+      "bid": "10.0000",
+      "ask": "10.0000",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": -50000000000,
+      "known_at_ns": -50000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 7,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "4/7",
+     "decimal": "0.5714",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "1/10",
+     "midpoint": "10",
+     "spread_bps": "100",
+     "average_spread_bps": "175"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "valid time 200 s. window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*50s + 100bps*50s + 300bps*50s + 200bps*50s over valid time 200s; average=175 bps; current=100 bps; ratio=(100)/(175)=4/7=0.5714; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=7"
+  },
+  {
+   "id": "OC6-27",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "27 4-minute quiet gap, time-weighted",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -299000000000,
+      "known_at_ns": -299000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -298000000000,
+      "known_at_ns": -298000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -297000000000,
+      "known_at_ns": -297000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9350",
+      "ask": "10.0650",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "13/18",
+     "decimal": "0.7222",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "13/100",
+     "midpoint": "10",
+     "spread_bps": "130",
+     "average_spread_bps": "180"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "simple mean would give 0.757 (neither), M17. window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 200bps*1s + 200bps*1s + 200bps*1s + 200bps*237s + 100bps*60s over valid time 300s; average=180 bps; current=130 bps; ratio=(130)/(180)=13/18=0.7222; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=6"
+  },
+  {
+   "id": "OC6-28a",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "28 update exactly 300 s before T is inside",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9750",
+      "ask": "10.0250",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "1/2",
+     "decimal": "0.5000",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "1/20",
+     "midpoint": "10",
+     "spread_bps": "50",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*120s over valid time 300s; average=100 bps; current=50 bps; ratio=(50)/(100)=1/2=0.5000; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=5"
+  },
+  {
+   "id": "OC6-28b",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "carry-in: quote in force before window start",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -500000000000,
+      "known_at_ns": -500000000000,
+      "bid": "9.9000",
+      "ask": "10.1000",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -250000000000,
+      "known_at_ns": -250000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -200000000000,
+      "known_at_ns": -200000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -150000000000,
+      "known_at_ns": -150000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -100000000000,
+      "known_at_ns": -100000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9750",
+      "ask": "10.0250",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/7",
+     "decimal": "0.4286",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "1/20",
+     "midpoint": "10",
+     "spread_bps": "50",
+     "average_spread_bps": "350/3"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "carry-in 0.20 for [-300,-250). window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 200bps*50s + 100bps*50s + 100bps*50s + 100bps*50s + 100bps*100s over valid time 300s; average=350/3 bps; current=50 bps; ratio=(50)/(350/3)=3/7=0.4286; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=5"
+  },
+  {
+   "id": "OC6-28c",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "zero weight for the current quote when spread changes exactly at T",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -200000000000,
+      "known_at_ns": -200000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -100000000000,
+      "known_at_ns": -100000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -50000000000,
+      "known_at_ns": -50000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.8500",
+      "ask": "10.1500",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3",
+     "decimal": "3.0000",
+     "precision": 4
+    },
+    "label": "wider",
+    "aux": {
+     "current_spread": "3/10",
+     "midpoint": "10",
+     "spread_bps": "300",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*100s + 100bps*100s + 100bps*50s + 100bps*50s over valid time 300s; average=100 bps; current=300 bps; ratio=(300)/(100)=3=3.0000; narrower<=0.7500 wider>=1.5000 -> wider; regular updates in window=5"
+  },
+  {
+   "id": "OC6-29a",
+   "group": "OC6",
+   "design_ref": "OC 2.3 invalid",
+   "case": "29 current ask null",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9500",
+      "ask": null,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "gate invalid_quote (all failing: invalid_quote; regular updates in window=6; latest ev=0s)"
+  },
+  {
+   "id": "OC6-29b",
+   "group": "OC6",
+   "design_ref": "OC 2.3 invalid",
+   "case": "29 current bid null",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": null,
+      "ask": "10.0500",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "gate invalid_quote (all failing: invalid_quote; regular updates in window=6; latest ev=0s)"
+  },
+  {
+   "id": "OC6-30a",
+   "group": "OC6",
+   "design_ref": "ruling Q8",
+   "case": "30 locked at T",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "10.0000",
+      "ask": "10.0000",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "locked_market",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req1"
+   ],
+   "derivation": "gate locked_market (all failing: locked_market; regular updates in window=6; latest ev=0s)"
+  },
+  {
+   "id": "OC6-30b",
+   "group": "OC6",
+   "design_ref": "OC 2.3 invalid",
+   "case": "30 bid 0 positive ask",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "0.0000",
+      "ask": "0.1000",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req2"
+   ],
+   "derivation": "gate invalid_quote (all failing: invalid_quote; regular updates in window=6; latest ev=0s)"
+  },
+  {
+   "id": "OC6-30c",
+   "group": "OC6",
+   "design_ref": "OC 2.3 crossed",
+   "case": "crossed at T",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "10.0500",
+      "ask": "9.9500",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "crossed_market",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "gate crossed_market (all failing: crossed_market; regular updates in window=6; latest ev=0s)"
+  },
+  {
+   "id": "OC6-31a",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "31 tiny prices exact rational",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "0.0100",
+      "ask": "0.0200",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "0.0100",
+      "ask": "0.0200",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "0.0100",
+      "ask": "0.0200",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "0.0100",
+      "ask": "0.0200",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "0.0100",
+      "ask": "0.0200",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "0.0140",
+      "ask": "0.0160",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "1/5",
+     "decimal": "0.2000",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "1/500",
+     "midpoint": "3/200",
+     "spread_bps": "4000/3",
+     "average_spread_bps": "20000/3"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "bid/ask 0.0100/0.0200 then 0.0140/0.0160; midpoint 3/200. window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 20000/3bps*60s + 20000/3bps*60s + 20000/3bps*60s + 20000/3bps*60s + 20000/3bps*60s over valid time 300s; average=20000/3 bps; current=4000/3 bps; ratio=(4000/3)/(20000/3)=1/5=0.2000; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=6"
+  },
+  {
+   "id": "OC6-32a",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "32 single quote",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "low_quote_coverage",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "gate low_quote_coverage (all failing: low_quote_coverage; regular updates in window=1; latest ev=-2s)"
+  },
+  {
+   "id": "OC6-32b",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "32 single quote at T",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "low_quote_coverage",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "gate low_quote_coverage (all failing: low_quote_coverage; regular updates in window=1; latest ev=0s)"
+  },
+  {
+   "id": "OC6-33a",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "33 window crosses previous session",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -400000000000,
+      "known_at_ns": -400000000000,
+      "bid": "9.7500",
+      "ask": "10.2500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -250000000000,
+      "known_at_ns": -250000000000,
+      "bid": "9.7500",
+      "ask": "10.2500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -90000000000,
+      "known_at_ns": -90000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 7,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9750",
+      "ask": "10.0250",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -120000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "1/2",
+     "decimal": "0.5000",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "1/20",
+     "midpoint": "10",
+     "spread_bps": "50",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "session opens at -120 s; previous session never enters. window=[-120s,0s] (open -120s); time-weighted spread in bps of midpoint = 100bps*30s + 100bps*30s + 100bps*30s + 100bps*30s over valid time 120s; average=100 bps; current=50 bps; ratio=(50)/(100)=1/2=0.5000; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=5"
+  },
+  {
+   "id": "OC6-33b",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "33 no carry across the open",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -200000000000,
+      "known_at_ns": -200000000000,
+      "bid": "9.7500",
+      "ask": "10.2500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -50000000000,
+      "known_at_ns": -50000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -40000000000,
+      "known_at_ns": -40000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9750",
+      "ask": "10.0250",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -120000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "1/2",
+     "decimal": "0.5000",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "1/20",
+     "midpoint": "10",
+     "spread_bps": "50",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "[-120,-60) has no in-session quote: zero weight. window=[-120s,0s] (open -120s); time-weighted spread in bps of midpoint = 100bps*10s + 100bps*10s + 100bps*10s + 100bps*30s over valid time 60s; average=100 bps; current=50 bps; ratio=(50)/(100)=1/2=0.5000; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=5"
+  },
+  {
+   "id": "OC6-34a",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "34 events after T excluded",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9700",
+      "ask": "10.0300",
+      "condition": "regular"
+     },
+     {
+      "rev": 7,
+      "event_ns": 10000000000,
+      "known_at_ns": 10000000000,
+      "bid": "9.5000",
+      "ask": "10.5000",
+      "condition": "regular"
+     },
+     {
+      "rev": 8,
+      "event_ns": 20000000000,
+      "known_at_ns": 20000000000,
+      "bid": "9.5000",
+      "ask": "10.5000",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/5",
+     "decimal": "0.6000",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "3/50",
+     "midpoint": "10",
+     "spread_bps": "60",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s over valid time 300s; average=100 bps; current=60 bps; ratio=(60)/(100)=3/5=0.6000; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=6"
+  },
+  {
+   "id": "OC6-34b",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "34 known_at after T excluded",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": -10000000000,
+      "known_at_ns": 5000000000,
+      "bid": "9.7000",
+      "ask": "10.3000",
+      "condition": "regular"
+     },
+     {
+      "rev": 7,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9700",
+      "ask": "10.0300",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/5",
+     "decimal": "0.6000",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "3/50",
+     "midpoint": "10",
+     "spread_bps": "60",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s over valid time 300s; average=100 bps; current=60 bps; ratio=(60)/(100)=3/5=0.6000; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=6"
+  },
+  {
+   "id": "OC6-NWS",
+   "group": "OC6",
+   "design_ref": "ruling Q3 no_window_spread",
+   "case": "no valid weight: five valid updates all at T",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular",
+      "seq": 1
+     },
+     {
+      "rev": 2,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular",
+      "seq": 2
+     },
+     {
+      "rev": 3,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular",
+      "seq": 3
+     },
+     {
+      "rev": 4,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular",
+      "seq": 4
+     },
+     {
+      "rev": 5,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular",
+      "seq": 5
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_window_spread",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "ordered by seq; all intervals have zero length. count=5 but total valid weight is 0"
+  },
+  {
+   "id": "OC6-NQ",
+   "group": "OC6",
+   "design_ref": "OC 2.3",
+   "case": "empty stream",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": []
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "no causal quote at T"
+  },
+  {
+   "id": "OC6-ST-a",
+   "group": "OC6",
+   "design_ref": "OC 2.3; ruling Q4",
+   "case": "stale: age exactly 10s fresh",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": -10000000000,
+      "known_at_ns": -10000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "not_fired",
+    "reason": null,
+    "value": {
+     "exact": "1",
+     "decimal": "1.0000",
+     "precision": 4
+    },
+    "label": null,
+    "aux": {
+     "current_spread": "1/10",
+     "midpoint": "10",
+     "spread_bps": "100",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req11",
+    "pending:req3"
+   ],
+   "derivation": "latest update at -10 s: age exactly 10 s is fresh; spread constant 0.10 so the ratio is 1 under any weighting. window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*50s + 100bps*10s over valid time 300s; average=100 bps; current=100 bps; ratio=(100)/(100)=1=1.0000; narrower<=0.7500 wider>=1.5000 -> neither; regular updates in window=6"
+  },
+  {
+   "id": "OC6-ST-b",
+   "group": "OC6",
+   "design_ref": "OC 2.3; ruling Q4",
+   "case": "stale: age 10s+1ns",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": -10000000001,
+      "known_at_ns": -10000000001,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "stale_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req11"
+   ],
+   "derivation": "gate stale_quote (all failing: stale_quote; regular updates in window=6; latest ev=-10000000001ns)"
+  },
+  {
+   "id": "OC6-ST-c",
+   "group": "OC6",
+   "design_ref": "OC 2.3; ruling Q4",
+   "case": "stale: age 30s",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "stale_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req11"
+   ],
+   "derivation": "gate stale_quote (all failing: stale_quote; regular updates in window=6; latest ev=-30s)"
+  },
+  {
+   "id": "OC6-EX",
+   "group": "OC6",
+   "design_ref": "OC 2.3",
+   "case": "latest excluded condition",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9700",
+      "ask": "10.0300",
+      "condition": "excluded"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "excluded_condition",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "gate excluded_condition (all failing: excluded_condition; regular updates in window=5; latest ev=0s)"
+  },
+  {
+   "id": "OC6-AM",
+   "group": "OC6",
+   "design_ref": "ruling section 2 item 6",
+   "case": "American style: quote-only unaffected",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": "american",
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9700",
+      "ask": "10.0300",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/5",
+     "decimal": "0.6000",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "3/50",
+     "midpoint": "10",
+     "spread_bps": "60",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s over valid time 300s; average=100 bps; current=60 bps; ratio=(60)/(100)=3/5=0.6000; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=6"
+  },
+  {
+   "id": "OC6-31b",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "31 boundary exact 3/4 that binary64 misses",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9999",
+      "ask": "10.0001",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -200000000000,
+      "known_at_ns": -200000000000,
+      "bid": "9.9999",
+      "ask": "10.0001",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -100000000000,
+      "known_at_ns": -100000000000,
+      "bid": "9.9986",
+      "ask": "10.0014",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -50000000000,
+      "known_at_ns": -50000000000,
+      "bid": "9.9986",
+      "ask": "10.0014",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9996",
+      "ask": "10.0004",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/4",
+     "decimal": "0.7500",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "1/1250",
+     "midpoint": "10",
+     "spread_bps": "4/5",
+     "average_spread_bps": "16/15"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "ratio exactly 3/4 in rational arithmetic (M14). window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 1/5bps*100s + 1/5bps*100s + 14/5bps*50s + 14/5bps*50s over valid time 300s; average=16/15 bps; current=4/5 bps; ratio=(4/5)/(16/15)=3/4=0.7500; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=5"
+  },
+  {
+   "id": "OC6-31c",
+   "group": "OC6",
+   "design_ref": "ruling Q3",
+   "case": "31 boundary exact 3/2 that binary64 misses",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9999",
+      "ask": "10.0001",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -200000000000,
+      "known_at_ns": -200000000000,
+      "bid": "9.9999",
+      "ask": "10.0001",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -100000000000,
+      "known_at_ns": -100000000000,
+      "bid": "9.9996",
+      "ask": "10.0004",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -50000000000,
+      "known_at_ns": -50000000000,
+      "bid": "9.9996",
+      "ask": "10.0004",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9997",
+      "ask": "10.0003",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/2",
+     "decimal": "1.5000",
+     "precision": 4
+    },
+    "label": "wider",
+    "aux": {
+     "current_spread": "3/5000",
+     "midpoint": "10",
+     "spread_bps": "3/5",
+     "average_spread_bps": "2/5"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "ratio exactly 3/2 in rational arithmetic (M14). window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 1/5bps*100s + 1/5bps*100s + 4/5bps*50s + 4/5bps*50s over valid time 300s; average=2/5 bps; current=3/5 bps; ratio=(3/5)/(2/5)=3/2=1.5000; narrower<=0.7500 wider>=1.5000 -> wider; regular updates in window=5"
+  },
+  {
+   "id": "OC6-B1",
+   "group": "OC6",
+   "design_ref": "PO ruling D1",
+   "case": "current quote earlier than T is weighted to T (D1)",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": -5000000000,
+      "known_at_ns": -5000000000,
+      "bid": "9.9250",
+      "ask": "10.0750",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "not_fired",
+    "reason": null,
+    "value": {
+     "exact": "180/121",
+     "decimal": "1.4876",
+     "precision": 4
+    },
+    "label": null,
+    "aux": {
+     "current_spread": "3/20",
+     "midpoint": "10",
+     "spread_bps": "150",
+     "average_spread_bps": "605/6"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*55s + 150bps*5s over valid time 300s; average=605/6 bps; current=150 bps; ratio=(150)/(605/6)=180/121=1.4876; narrower<=0.7500 wider>=1.5000 -> neither; regular updates in window=6"
+  },
+  {
+   "id": "OC6-B2",
+   "group": "OC6",
+   "design_ref": "PO ruling D2",
+   "case": "midpoint moves: ratio in bps of midpoint (D2)",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "19.9250",
+      "ask": "20.0750",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/4",
+     "decimal": "0.7500",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "3/20",
+     "midpoint": "20",
+     "spread_bps": "75",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s over valid time 300s; average=100 bps; current=75 bps; ratio=(75)/(100)=3/4=0.7500; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=6"
+  },
+  {
+   "id": "OC6-B3",
+   "group": "OC6",
+   "design_ref": "PO ruling D3",
+   "case": "coverage counts regular-condition updates, validity ignored (D3)",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -200000000000,
+      "known_at_ns": -200000000000,
+      "bid": "10.0500",
+      "ask": "9.9500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -100000000000,
+      "known_at_ns": -100000000000,
+      "bid": "10.0000",
+      "ask": "10.0000",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -50000000000,
+      "known_at_ns": -50000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9700",
+      "ask": "10.0300",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/5",
+     "decimal": "0.6000",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "3/50",
+     "midpoint": "10",
+     "spread_bps": "60",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*100s + 100bps*50s over valid time 150s; average=100 bps; current=60 bps; ratio=(60)/(100)=3/5=0.6000; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=5"
+  },
+  {
+   "id": "OC6-B4",
+   "group": "OC6",
+   "design_ref": "PO ruling D4",
+   "case": "coverage clipped at session open (D4)",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -200000000000,
+      "known_at_ns": -200000000000,
+      "bid": "9.7500",
+      "ask": "10.2500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -90000000000,
+      "known_at_ns": -90000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9750",
+      "ask": "10.0250",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -120000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "low_quote_coverage",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "gate low_quote_coverage (all failing: low_quote_coverage; regular updates in window=4; latest ev=0s)"
+  },
+  {
+   "id": "OC6-B7",
+   "group": "OC6",
+   "design_ref": "PO ruling D5",
+   "case": "interval starts at known_at (D5)",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.8000",
+      "ask": "10.2000",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9750",
+      "ask": "10.0250",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "5/16",
+     "decimal": "0.3125",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "1/20",
+     "midpoint": "10",
+     "spread_bps": "50",
+     "average_spread_bps": "160"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*120s + 400bps*60s over valid time 300s; average=160 bps; current=50 bps; ratio=(50)/(160)=5/16=0.3125; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=5"
+  },
+  {
+   "id": "OC6-B9",
+   "group": "OC6",
+   "design_ref": "PO ruling D6",
+   "case": "stale before coverage (D6)",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "stale_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req11"
+   ],
+   "derivation": "gate stale_quote (all failing: stale_quote,low_quote_coverage; regular updates in window=1; latest ev=-30s)"
+  },
+  {
+   "id": "OC6-B11",
+   "group": "OC6",
+   "design_ref": "PO ruling D6",
+   "case": "single_venue affects OC5 only (D6)",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "single_venue",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9700",
+      "ask": "10.0300",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/5",
+     "decimal": "0.6000",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "3/50",
+     "midpoint": "10",
+     "spread_bps": "60",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s over valid time 300s; average=100 bps; current=60 bps; ratio=(60)/(100)=3/5=0.6000; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=6"
+  },
+  {
+   "id": "OC6-NSTD",
+   "group": "OC6",
+   "design_ref": "OC 2.3 non-standard",
+   "case": "non-standard contract: quote-only unaffected",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": false,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9700",
+      "ask": "10.0300",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "fired",
+    "reason": null,
+    "value": {
+     "exact": "3/5",
+     "decimal": "0.6000",
+     "precision": 4
+    },
+    "label": "narrower",
+    "aux": {
+     "current_spread": "3/50",
+     "midpoint": "10",
+     "spread_bps": "60",
+     "average_spread_bps": "100"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s + 100bps*60s over valid time 300s; average=100 bps; current=60 bps; ratio=(60)/(100)=3/5=0.6000; narrower<=0.7500 wider>=1.5000 -> narrower; regular updates in window=6"
+  },
+  {
+   "id": "OC6-BURST",
+   "group": "OC6",
+   "design_ref": "ruling Q3 time-weighting",
+   "case": "bursty updating: 40 updates in under 1 s, then quiet; time-weighted",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -299980000000,
+      "known_at_ns": -299980000000,
+      "bid": "9.8600",
+      "ask": "10.1400",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -299960000000,
+      "known_at_ns": -299960000000,
+      "bid": "9.8500",
+      "ask": "10.1500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -299940000000,
+      "known_at_ns": -299940000000,
+      "bid": "9.8600",
+      "ask": "10.1400",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -299920000000,
+      "known_at_ns": -299920000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": -299900000000,
+      "known_at_ns": -299900000000,
+      "bid": "9.8600",
+      "ask": "10.1400",
+      "condition": "regular"
+     },
+     {
+      "rev": 7,
+      "event_ns": -299880000000,
+      "known_at_ns": -299880000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 8,
+      "event_ns": -299860000000,
+      "known_at_ns": -299860000000,
+      "bid": "9.8600",
+      "ask": "10.1400",
+      "condition": "regular"
+     },
+     {
+      "rev": 9,
+      "event_ns": -299840000000,
+      "known_at_ns": -299840000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 10,
+      "event_ns": -299830000000,
+      "known_at_ns": -299830000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 11,
+      "event_ns": -299820000000,
+      "known_at_ns": -299820000000,
+      "bid": "9.8500",
+      "ask": "10.1500",
+      "condition": "regular"
+     },
+     {
+      "rev": 12,
+      "event_ns": -299800000000,
+      "known_at_ns": -299800000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 13,
+      "event_ns": -299790000000,
+      "known_at_ns": -299790000000,
+      "bid": "9.8600",
+      "ask": "10.1400",
+      "condition": "regular"
+     },
+     {
+      "rev": 14,
+      "event_ns": -299780000000,
+      "known_at_ns": -299780000000,
+      "bid": "9.8500",
+      "ask": "10.1500",
+      "condition": "regular"
+     },
+     {
+      "rev": 15,
+      "event_ns": -299760000000,
+      "known_at_ns": -299760000000,
+      "bid": "9.8600",
+      "ask": "10.1400",
+      "condition": "regular"
+     },
+     {
+      "rev": 16,
+      "event_ns": -299740000000,
+      "known_at_ns": -299740000000,
+      "bid": "9.8500",
+      "ask": "10.1500",
+      "condition": "regular"
+     },
+     {
+      "rev": 17,
+      "event_ns": -299730000000,
+      "known_at_ns": -299730000000,
+      "bid": "9.8600",
+      "ask": "10.1400",
+      "condition": "regular"
+     },
+     {
+      "rev": 18,
+      "event_ns": -299720000000,
+      "known_at_ns": -299720000000,
+      "bid": "9.8600",
+      "ask": "10.1400",
+      "condition": "regular"
+     },
+     {
+      "rev": 19,
+      "event_ns": -299710000000,
+      "known_at_ns": -299710000000,
+      "bid": "9.8500",
+      "ask": "10.1500",
+      "condition": "regular"
+     },
+     {
+      "rev": 20,
+      "event_ns": -299700000000,
+      "known_at_ns": -299700000000,
+      "bid": "9.8600",
+      "ask": "10.1400",
+      "condition": "regular"
+     },
+     {
+      "rev": 21,
+      "event_ns": -299680000000,
+      "known_at_ns": -299680000000,
+      "bid": "9.8500",
+      "ask": "10.1500",
+      "condition": "regular"
+     },
+     {
+      "rev": 22,
+      "event_ns": -299660000000,
+      "known_at_ns": -299660000000,
+      "bid": "9.8600",
+      "ask": "10.1400",
+      "condition": "regular"
+     },
+     {
+      "rev": 23,
+      "event_ns": -299650000000,
+      "known_at_ns": -299650000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 24,
+      "event_ns": -299630000000,
+      "known_at_ns": -299630000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 25,
+      "event_ns": -299610000000,
+      "known_at_ns": -299610000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 26,
+      "event_ns": -299590000000,
+      "known_at_ns": -299590000000,
+      "bid": "9.8500",
+      "ask": "10.1500",
+      "condition": "regular"
+     },
+     {
+      "rev": 27,
+      "event_ns": -299570000000,
+      "known_at_ns": -299570000000,
+      "bid": "9.8600",
+      "ask": "10.1400",
+      "condition": "regular"
+     },
+     {
+      "rev": 28,
+      "event_ns": -299550000000,
+      "known_at_ns": -299550000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 29,
+      "event_ns": -299540000000,
+      "known_at_ns": -299540000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 30,
+      "event_ns": -299520000000,
+      "known_at_ns": -299520000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 31,
+      "event_ns": -299500000000,
+      "known_at_ns": -299500000000,
+      "bid": "9.8500",
+      "ask": "10.1500",
+      "condition": "regular"
+     },
+     {
+      "rev": 32,
+      "event_ns": -299480000000,
+      "known_at_ns": -299480000000,
+      "bid": "9.8600",
+      "ask": "10.1400",
+      "condition": "regular"
+     },
+     {
+      "rev": 33,
+      "event_ns": -299460000000,
+      "known_at_ns": -299460000000,
+      "bid": "9.8500",
+      "ask": "10.1500",
+      "condition": "regular"
+     },
+     {
+      "rev": 34,
+      "event_ns": -299440000000,
+      "known_at_ns": -299440000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 35,
+      "event_ns": -299430000000,
+      "known_at_ns": -299430000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 36,
+      "event_ns": -299410000000,
+      "known_at_ns": -299410000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 37,
+      "event_ns": -299400000000,
+      "known_at_ns": -299400000000,
+      "bid": "9.8500",
+      "ask": "10.1500",
+      "condition": "regular"
+     },
+     {
+      "rev": 38,
+      "event_ns": -299380000000,
+      "known_at_ns": -299380000000,
+      "bid": "9.8500",
+      "ask": "10.1500",
+      "condition": "regular"
+     },
+     {
+      "rev": 39,
+      "event_ns": -299360000000,
+      "known_at_ns": -299360000000,
+      "bid": "9.8500",
+      "ask": "10.1500",
+      "condition": "regular"
+     },
+     {
+      "rev": 40,
+      "event_ns": -299340000000,
+      "known_at_ns": -299340000000,
+      "bid": "9.8400",
+      "ask": "10.1600",
+      "condition": "regular"
+     },
+     {
+      "rev": 41,
+      "event_ns": -299000000000,
+      "known_at_ns": -299000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 42,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "9.9600",
+      "ask": "10.0400",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "not_fired",
+    "reason": null,
+    "value": {
+     "exact": "20000/25173",
+     "decimal": "0.7945",
+     "precision": 4
+    },
+    "label": null,
+    "aux": {
+     "current_spread": "2/25",
+     "midpoint": "10",
+     "spread_bps": "80",
+     "average_spread_bps": "25173/250"
+    },
+    "model_label": null
+   },
+   "tags": [
+    "pending:req3"
+   ],
+   "derivation": "simple mean would be dominated by the burst (M17). window=[-300s,0s] (open -18000s); time-weighted spread in bps of midpoint = 320bps*20000000ns + 280bps*20000000ns + 300bps*20000000ns + 280bps*20000000ns + 320bps*20000000ns + 280bps*20000000ns + 320bps*20000000ns + 280bps*20000000ns + 320bps*10000000ns + 320bps*10000000ns + 300bps*20000000ns + 320bps*10000000ns + 280bps*10000000ns + 300bps*20000000ns + 280bps*20000000ns + 300bps*10000000ns + 280bps*10000000ns + 280bps*10000000ns + 300bps*10000000ns + 280bps*20000000ns + 300bps*20000000ns + 280bps*10000000ns + 320bps*20000000ns + 320bps*20000000ns + 320bps*20000000ns + 300bps*20000000ns + 280bps*20000000ns + 320bps*10000000ns + 320bps*20000000ns + 320bps*20000000ns + 300bps*20000000ns + 280bps*20000000ns + 300bps*20000000ns + 320bps*10000000ns + 320bps*20000000ns + 320bps*10000000ns + 300bps*20000000ns + 300bps*20000000ns + 300bps*20000000ns + 320bps*340000000ns + 100bps*299s over valid time 300s; average=25173/250 bps; current=80 bps; ratio=(80)/(25173/250)=20000/25173=0.7945; narrower<=0.7500 wider>=1.5000 -> neither; regular updates in window=42"
+  },
+  {
+   "id": "OC6-G1",
+   "group": "OC6",
+   "design_ref": "PO ruling gate order",
+   "case": "excluded latest + crossed: excluded_condition first",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "10.0500",
+      "ask": "9.9500",
+      "condition": "excluded"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "excluded_condition",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [],
+   "derivation": "gate excluded_condition (all failing: excluded_condition,crossed_market; regular updates in window=5; latest ev=0s)"
+  },
+  {
+   "id": "OC6-G2",
+   "group": "OC6",
+   "design_ref": "PO ruling gate order",
+   "case": "crossed + stale: crossed_market first",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "bid": "10.0500",
+      "ask": "9.9500",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "crossed_market",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req11"
+   ],
+   "derivation": "gate crossed_market (all failing: crossed_market,stale_quote; regular updates in window=6; latest ev=-30s)"
+  },
+  {
+   "id": "OC6-S01",
+   "group": "OC6",
+   "design_ref": "R25 BOUNDARY",
+   "case": "non-monotone event time",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "structural_error",
+    "code": "non_monotone_event_time"
+   },
+   "tags": [
+    "structural"
+   ],
+   "derivation": ""
+  },
+  {
+   "id": "OC6-S02",
+   "group": "OC6",
+   "design_ref": "PO ruling D15",
+   "case": "negative bid price is invalid_quote (D15)",
+   "op": "oc6",
+   "inputs": {
+    "T_ns": 0,
+    "feed_kind": "consolidated",
+    "contract_style": null,
+    "contract_standard": true,
+    "quotes": [
+     {
+      "rev": 1,
+      "event_ns": -300000000000,
+      "known_at_ns": -300000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 2,
+      "event_ns": -240000000000,
+      "known_at_ns": -240000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 3,
+      "event_ns": -180000000000,
+      "known_at_ns": -180000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 4,
+      "event_ns": -120000000000,
+      "known_at_ns": -120000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 5,
+      "event_ns": -60000000000,
+      "known_at_ns": -60000000000,
+      "bid": "9.9500",
+      "ask": "10.0500",
+      "condition": "regular"
+     },
+     {
+      "rev": 6,
+      "event_ns": 0,
+      "known_at_ns": 0,
+      "bid": "-0.0500",
+      "ask": "10.0500",
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "session_open_ns": -18000000000000,
+    "stale_limit_ns": 10000000000,
+    "narrower_max": "0.75",
+    "wider_min": "1.50",
+    "window_ns": 300000000000,
+    "coverage_min": 5
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "label": null,
+    "model_label": null
+   },
+   "tags": [
+    "pending:req2"
+   ],
+   "derivation": "gate invalid_quote (all failing: invalid_quote; regular updates in window=6; latest ev=0s)"
+  }
+ ]
+}

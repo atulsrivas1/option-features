@@ -1,0 +1,5658 @@
+{
+ "dataset": {
+  "provenance": "SYNTHETIC",
+  "seed": 20261029,
+  "generator": "gen_p1.py",
+  "authored_by": "Tester, from design text only",
+  "time_unit": "integer ns relative to T (evaluation time = 0)",
+  "value_format": "exact decimal string if terminating else p/q",
+  "closed_reasons": [
+   "invalid_quote",
+   "locked_market",
+   "crossed_market",
+   "stale_quote",
+   "low_quote_coverage",
+   "no_quote",
+   "missing_reference",
+   "inside_spread",
+   "no_classified_premium",
+   "ambiguous_touch"
+  ],
+  "qualification_label": "mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12"
+ },
+ "rows": [
+  {
+   "id": "A01",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "1.0000",
+     "ask": "1.0200",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.02",
+     "midpoint": "1.01",
+     "spread_bps": "20000/101"
+    }
+   },
+   "derivation": "spread=ask-bid=1.0000-1.0200=0.02; midpoint=(1.0200+1.0000)/2=1.01; spread_bps=0.02/1.01*10000=20000/101",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "A02",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "0.9500",
+     "ask": "1.0500",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.1",
+     "midpoint": "1",
+     "spread_bps": "1000"
+    }
+   },
+   "derivation": "spread=ask-bid=0.9500-1.0500=0.1; midpoint=(1.0500+0.9500)/2=1; spread_bps=0.1/1*10000=1000",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "A03",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "2.0000",
+     "ask": "2.5000",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.5",
+     "midpoint": "2.25",
+     "spread_bps": "20000/9"
+    }
+   },
+   "derivation": "spread=ask-bid=2.0000-2.5000=0.5; midpoint=(2.5000+2.0000)/2=2.25; spread_bps=0.5/2.25*10000=20000/9",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "A04",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "0.0100",
+     "ask": "0.0200",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.01",
+     "midpoint": "0.015",
+     "spread_bps": "20000/3"
+    }
+   },
+   "derivation": "spread=ask-bid=0.0100-0.0200=0.01; midpoint=(0.0200+0.0100)/2=0.015; spread_bps=0.01/0.015*10000=20000/3",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A05",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "4.9500",
+     "ask": "5.0500",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.1",
+     "midpoint": "5",
+     "spread_bps": "200"
+    }
+   },
+   "derivation": "spread=ask-bid=4.9500-5.0500=0.1; midpoint=(5.0500+4.9500)/2=5; spread_bps=0.1/5*10000=200",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A06",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "0.0100",
+     "ask": "0.0101",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.0001",
+     "midpoint": "0.01005",
+     "spread_bps": "20000/201"
+    }
+   },
+   "derivation": "spread=ask-bid=0.0100-0.0101=0.0001; midpoint=(0.0101+0.0100)/2=0.01005; spread_bps=0.0001/0.01005*10000=20000/201",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A07",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.3 invalid quote",
+   "pending_design_request": [
+    2
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "0.0000",
+     "ask": "0.0500",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "value": null
+   },
+   "derivation": "quote bid=0.0000 ask=0.0500 age=0ns -> invalid_quote by OC 2.3 gate table (bid not above 0)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A08",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.3 invalid quote",
+   "pending_design_request": [
+    2
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "-0.0100",
+     "ask": "0.0500",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "value": null
+   },
+   "derivation": "quote bid=-0.0100 ask=0.0500 age=0ns -> invalid_quote by OC 2.3 gate table (negative bid)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A09",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.3 invalid quote",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": null,
+     "ask": "1.0000",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "value": null
+   },
+   "derivation": "quote bid=None ask=1.0000 age=0ns -> invalid_quote by OC 2.3 gate table (one-sided: bid null)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A10",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.3 invalid quote",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "1.0000",
+     "ask": null,
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "value": null
+   },
+   "derivation": "quote bid=1.0000 ask=None age=0ns -> invalid_quote by OC 2.3 gate table (one-sided: ask null)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A11",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.3 gates, data capability",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": null
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_quote",
+    "value": null
+   },
+   "derivation": "quote bid=None ask=None age=0ns -> no_quote by OC 2.3 gate table (no quote record)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A12",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.3 crossed",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "1.0500",
+     "ask": "1.0000",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "crossed_market",
+    "value": null
+   },
+   "derivation": "quote bid=1.0500 ask=1.0000 age=0ns -> crossed_market by OC 2.3 gate table",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A13",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.3 invalid vs locked precedence",
+   "pending_design_request": [
+    2
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "0.0000",
+     "ask": "0.0000",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "value": null
+   },
+   "derivation": "quote bid=0.0000 ask=0.0000 age=0ns -> invalid_quote by OC 2.3 gate table (bid 0 == ask 0; invalid first by assumption)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A14",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.3 invalid vs crossed precedence",
+   "pending_design_request": [
+    2
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "-2.0000",
+     "ask": "-3.0000",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "value": null
+   },
+   "derivation": "quote bid=-2.0000 ask=-3.0000 age=0ns -> invalid_quote by OC 2.3 gate table (bid<=0 and ask<bid; invalid first by assumption)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A15",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.3 invalid quote (both null in a record)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": null,
+     "ask": null,
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_quote",
+    "value": null
+   },
+   "derivation": "quote bid=None ask=None age=0ns -> no_quote by OC 2.3 gate table (record present, both fields null)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A16",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4 (seeded random)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "seeded"
+   ],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "6.9948",
+     "ask": "7.0175",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.0227",
+     "midpoint": "7.00615",
+     "spread_bps": "4540000/140123"
+    }
+   },
+   "derivation": "spread=ask-bid=6.9948-7.0175=0.0227; midpoint=(7.0175+6.9948)/2=7.00615; spread_bps=0.0227/7.00615*10000=4540000/140123",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A17",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4 (seeded random)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "seeded"
+   ],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "2.9569",
+     "ask": "2.9897",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.0328",
+     "midpoint": "2.9733",
+     "spread_bps": "3280000/29733"
+    }
+   },
+   "derivation": "spread=ask-bid=2.9569-2.9897=0.0328; midpoint=(2.9897+2.9569)/2=2.9733; spread_bps=0.0328/2.9733*10000=3280000/29733",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A18",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4 (seeded random)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "seeded"
+   ],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "4.5744",
+     "ask": "4.5980",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.0236",
+     "midpoint": "4.5862",
+     "spread_bps": "1180000/22931"
+    }
+   },
+   "derivation": "spread=ask-bid=4.5744-4.5980=0.0236; midpoint=(4.5980+4.5744)/2=4.5862; spread_bps=0.0236/4.5862*10000=1180000/22931",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A19",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4 (seeded random)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "seeded"
+   ],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "3.7159",
+     "ask": "3.7252",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.0093",
+     "midpoint": "3.72055",
+     "spread_bps": "1860000/74411"
+    }
+   },
+   "derivation": "spread=ask-bid=3.7159-3.7252=0.0093; midpoint=(3.7252+3.7159)/2=3.72055; spread_bps=0.0093/3.72055*10000=1860000/74411",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A20",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4 (seeded random)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "seeded"
+   ],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "9.4498",
+     "ask": "9.4849",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.0351",
+     "midpoint": "9.46735",
+     "spread_bps": "7020000/189347"
+    }
+   },
+   "derivation": "spread=ask-bid=9.4498-9.4849=0.0351; midpoint=(9.4849+9.4498)/2=9.46735; spread_bps=0.0351/9.46735*10000=7020000/189347",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A21",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4 (seeded random)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "seeded"
+   ],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "6.0095",
+     "ask": "6.0450",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.0355",
+     "midpoint": "6.02725",
+     "spread_bps": "1420000/24109"
+    }
+   },
+   "derivation": "spread=ask-bid=6.0095-6.0450=0.0355; midpoint=(6.0450+6.0095)/2=6.02725; spread_bps=0.0355/6.02725*10000=1420000/24109",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A22",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4 (seeded random)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "seeded"
+   ],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "5.5588",
+     "ask": "5.6041",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.0453",
+     "midpoint": "5.58145",
+     "spread_bps": "9060000/111629"
+    }
+   },
+   "derivation": "spread=ask-bid=5.5588-5.6041=0.0453; midpoint=(5.6041+5.5588)/2=5.58145; spread_bps=0.0453/5.58145*10000=9060000/111629",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A23",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4 (seeded random)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "seeded"
+   ],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "1.1405",
+     "ask": "1.1806",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.0401",
+     "midpoint": "1.16055",
+     "spread_bps": "8020000/23211"
+    }
+   },
+   "derivation": "spread=ask-bid=1.1405-1.1806=0.0401; midpoint=(1.1806+1.1405)/2=1.16055; spread_bps=0.0401/1.16055*10000=8020000/23211",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A24",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4 (seeded random)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "seeded"
+   ],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "3.5562",
+     "ask": "3.5919",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.0357",
+     "midpoint": "3.57405",
+     "spread_bps": "2380000/23827"
+    }
+   },
+   "derivation": "spread=ask-bid=3.5562-3.5919=0.0357; midpoint=(3.5919+3.5562)/2=3.57405; spread_bps=0.0357/3.57405*10000=2380000/23827",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A25",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4 (seeded random)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "seeded"
+   ],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "3.4304",
+     "ask": "3.4380",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.0076",
+     "midpoint": "3.4342",
+     "spread_bps": "380000/17171"
+    }
+   },
+   "derivation": "spread=ask-bid=3.4304-3.4380=0.0076; midpoint=(3.4380+3.4304)/2=3.4342; spread_bps=0.0076/3.4342*10000=380000/17171",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A26",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4 (seeded random)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "seeded"
+   ],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "5.5524",
+     "ask": "5.5992",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.0468",
+     "midpoint": "5.5758",
+     "spread_bps": "780000/9293"
+    }
+   },
+   "derivation": "spread=ask-bid=5.5524-5.5992=0.0468; midpoint=(5.5992+5.5524)/2=5.5758; spread_bps=0.0468/5.5758*10000=780000/9293",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "A27",
+   "group": "spread_oc4",
+   "design_ref": "OC 2.2 OC4 (seeded random)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "seeded"
+   ],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "8.6382",
+     "ask": "8.6501",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.0119",
+     "midpoint": "8.64415",
+     "spread_bps": "2380000/172883"
+    }
+   },
+   "derivation": "spread=ask-bid=8.6382-8.6501=0.0119; midpoint=(8.6501+8.6382)/2=8.64415; spread_bps=0.0119/8.64415*10000=2380000/172883",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "B01",
+   "group": "locked_g2",
+   "design_ref": "OC 2.3 locked market",
+   "pending_design_request": [
+    1
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "2.0000",
+     "ask": "2.0000",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "locked_market",
+    "value": null
+   },
+   "derivation": "quote bid=2.0000 ask=2.0000 age=0ns -> locked_market by OC 2.3 gate table",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "B02",
+   "group": "locked_g2",
+   "design_ref": "OC 2.3 locked market",
+   "pending_design_request": [
+    1
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "0.0500",
+     "ask": "0.0500",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "locked_market",
+    "value": null
+   },
+   "derivation": "quote bid=0.0500 ask=0.0500 age=0ns -> locked_market by OC 2.3 gate table",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "B03",
+   "group": "locked_g2",
+   "design_ref": "OC 2.3 locked market",
+   "pending_design_request": [
+    1
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "0.0001",
+     "ask": "0.0001",
+     "t_rel_ns": 0
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "locked_market",
+    "value": null
+   },
+   "derivation": "quote bid=0.0001 ask=0.0001 age=0ns -> locked_market by OC 2.3 gate table",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "B04",
+   "group": "locked_g2",
+   "design_ref": "DSR req 1 option A: signing unaffected",
+   "pending_design_request": [
+    1,
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "2.0000",
+     "ask": "2.0000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "2.0100",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0000",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "ask",
+    "label": "ask-side proxy",
+    "value": null
+   },
+   "derivation": "quote 2.0000/2.0000 age=1000000000ns (limit 3000000000); price 2.0100; ask-eps=2 bid+eps=2 -> ask side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "B05",
+   "group": "locked_g2",
+   "design_ref": "DSR req 1 option A: signing unaffected",
+   "pending_design_request": [
+    1,
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "2.0000",
+     "ask": "2.0000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "1.9900",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0000",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "bid",
+    "label": "bid-side proxy",
+    "value": null
+   },
+   "derivation": "quote 2.0000/2.0000 age=1000000000ns (limit 3000000000); price 1.9900; ask-eps=2 bid+eps=2 -> bid side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "B06",
+   "group": "locked_g2",
+   "design_ref": "DSR req 1: trade at the locked price",
+   "pending_design_request": [
+    1,
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "2.0000",
+     "ask": "2.0000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "2.0000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0000",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "ambiguous_touch",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 2.0000/2.0000 age=1000000000ns (limit 3000000000); price 2.0000; -> unclassified (ambiguous_touch)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E01",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow F13-F16, DSR req 8 option A",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "ask",
+    "label": "ask-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.1000; ask-eps=10.09 bid+eps=10.01 -> ask side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E02",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow F13-F16, DSR req 8 option A",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.1100",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "ask",
+    "label": "ask-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.1100; ask-eps=10.09 bid+eps=10.01 -> ask side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E03",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow F13-F16, DSR req 8 option A",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.2000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "ask",
+    "label": "ask-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.2000; ask-eps=10.09 bid+eps=10.01 -> ask side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E04",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow F13-F16, DSR req 8 option A",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0900",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "ask",
+    "label": "ask-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.0900; ask-eps=10.09 bid+eps=10.01 -> ask side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E05",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow F13-F16, DSR req 8 option A",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0899",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "inside_spread",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.0899; -> unclassified (inside_spread)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E06",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow F13-F16, DSR req 8 option A",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "bid",
+    "label": "bid-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.0000; ask-eps=10.09 bid+eps=10.01 -> bid side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E07",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow F13-F16, DSR req 8 option A",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "9.9900",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "bid",
+    "label": "bid-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 9.9900; ask-eps=10.09 bid+eps=10.01 -> bid side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E08",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow F13-F16, DSR req 8 option A",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0100",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "bid",
+    "label": "bid-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.0100; ask-eps=10.09 bid+eps=10.01 -> bid side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E09",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow F13-F16, DSR req 8 option A",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0101",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "inside_spread",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.0101; -> unclassified (inside_spread)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E10",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow F13-F16, DSR req 8 option A",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0500",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "inside_spread",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.0500; -> unclassified (inside_spread)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E11",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow F13-F16, DSR req 8 option A",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0999",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0000",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "inside_spread",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.0999; -> unclassified (inside_spread)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E12",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow F13-F16, DSR req 8 option A",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0000",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "ask",
+    "label": "ask-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.1000; ask-eps=10.1 bid+eps=10 -> ask side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E13",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow F13-F16, DSR req 8 option A",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0001",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0000",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "inside_spread",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.0001; -> unclassified (inside_spread)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E14",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow F13-F16, DSR req 8 option A",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0000",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "bid",
+    "label": "bid-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.0000; ask-eps=10.1 bid+eps=10 -> bid side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E15",
+   "group": "touch_f13_f16",
+   "design_ref": "OC 2.3 invalid quote, DSR req 2 option A",
+   "pending_design_request": [
+    2,
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "0.0000",
+     "ask": "0.0500",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "0.0500",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "invalid_quote",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 0.0000/0.0500 age=1000000000ns (limit 3000000000); price 0.0500; -> unclassified (invalid_quote)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E16",
+   "group": "touch_f13_f16",
+   "design_ref": "OC 2.3 invalid quote, DSR req 2 option A",
+   "pending_design_request": [
+    2,
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "0.0000",
+     "ask": "0.0500",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "0.0000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "invalid_quote",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 0.0000/0.0500 age=1000000000ns (limit 3000000000); price 0.0000; -> unclassified (invalid_quote)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E17",
+   "group": "touch_f13_f16",
+   "design_ref": "OC 2.3 invalid quote",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": null,
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "invalid_quote",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote None/10.1000 age=1000000000ns (limit 3000000000); price 10.1000; -> unclassified (invalid_quote)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E18",
+   "group": "touch_f13_f16",
+   "design_ref": "OC 2.3 crossed (scope for signing unclear)",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.1000",
+     "ask": "10.0000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "crossed_market",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 10.1000/10.0000 age=1000000000ns (limit 3000000000); price 10.1000; -> unclassified (crossed_market)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E19",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow 2.3 unusable quote",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": null,
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "no_quote",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "no quote record -> unclassified no_quote",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E20",
+   "group": "touch_f13_f16",
+   "design_ref": "Flow F13-F16 right-independent",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "put"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "bid",
+    "label": "bid-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.0000; ask-eps=10.09 bid+eps=10.01 -> bid side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "Q01",
+   "group": "quote_age",
+   "design_ref": "Flow 2.3 quote within 3 s, DSR req 8",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -2999999999
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "ask",
+    "label": "ask-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=2999999999ns (limit 3000000000); price 10.1000; ask-eps=10.09 bid+eps=10.01 -> ask side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "Q02",
+   "group": "quote_age",
+   "design_ref": "Flow 2.3 quote within 3 s, DSR req 8",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -3000000000
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "ask",
+    "label": "ask-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=3000000000ns (limit 3000000000); price 10.1000; ask-eps=10.09 bid+eps=10.01 -> ask side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "Q03",
+   "group": "quote_age",
+   "design_ref": "Flow 2.3 quote within 3 s, DSR req 8",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -3000000001
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "stale_quote",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=3000000001ns (limit 3000000000); price 10.1000; -> unclassified (stale_quote)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "Q04",
+   "group": "quote_age",
+   "design_ref": "Flow 2.3 quote within 3 s, DSR req 8",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -3001000000
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "stale_quote",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=3001000000ns (limit 3000000000); price 10.1000; -> unclassified (stale_quote)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "Q05",
+   "group": "quote_age",
+   "design_ref": "Flow 2.3 quote within 3 s, DSR req 8",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "ask",
+    "label": "ask-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1ns (limit 3000000000); price 10.1000; ask-eps=10.09 bid+eps=10.01 -> ask side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "Q06",
+   "group": "quote_age",
+   "design_ref": "Flow 2.3 quote within 3 s, DSR req 8",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -10000000000
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "stale_quote",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=10000000000ns (limit 3000000000); price 10.1000; -> unclassified (stale_quote)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "Q07",
+   "group": "quote_age",
+   "design_ref": "Flow 2.3 quote within 3 s",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -3000000000
+    },
+    "trade": {
+     "price": "10.0000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "bid",
+    "label": "bid-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=3000000000ns (limit 3000000000); price 10.0000; ask-eps=10.09 bid+eps=10.01 -> bid side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "Q08",
+   "group": "quote_age",
+   "design_ref": "Flow 2.3 quote within 3 s",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -3000000001
+    },
+    "trade": {
+     "price": "10.0000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "stale_quote",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=3000000001ns (limit 3000000000); price 10.0000; -> unclassified (stale_quote)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "Q09",
+   "group": "quote_age",
+   "design_ref": "OC 2.3 stale quote (10 s, PO ruling Q4)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "1.0000",
+     "ask": "1.0200",
+     "t_rel_ns": -10000000000
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.02",
+     "midpoint": "1.01",
+     "spread_bps": "20000/101"
+    }
+   },
+   "derivation": "spread=ask-bid=1.0000-1.0200=0.02; midpoint=(1.0200+1.0000)/2=1.01; spread_bps=0.02/1.01*10000=20000/101",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "Q10",
+   "group": "quote_age",
+   "design_ref": "OC 2.3 stale quote (10 s, PO ruling Q4)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "1.0000",
+     "ask": "1.0200",
+     "t_rel_ns": -10000000001
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "stale_quote",
+    "value": null
+   },
+   "derivation": "quote bid=1.0000 ask=1.0200 age=10000000001ns -> stale_quote by OC 2.3 gate table",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "Q11",
+   "group": "quote_age",
+   "design_ref": "OC 2.3 stale (3 s limit does not apply to spread)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "1.0000",
+     "ask": "1.0200",
+     "t_rel_ns": -3000000001
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "spread": "0.02",
+     "midpoint": "1.01",
+     "spread_bps": "20000/101"
+    }
+   },
+   "derivation": "spread=ask-bid=1.0000-1.0200=0.02; midpoint=(1.0200+1.0000)/2=1.01; spread_bps=0.02/1.01*10000=20000/101",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "S01",
+   "group": "aggregate_f13_f16",
+   "design_ref": "Flow F13-F16, 2.3 unclassified",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign_aggregate",
+    "trades": [
+     {
+      "price": "10.1000",
+      "size": 2,
+      "right": "call",
+      "t_rel_ns": 0,
+      "quote": {
+       "bid": "10.0000",
+       "ask": "10.1000",
+       "t_rel_ns": -1000000000
+      }
+     },
+     {
+      "price": "10.0000",
+      "size": 3,
+      "right": "put",
+      "t_rel_ns": 0,
+      "quote": {
+       "bid": "10.0000",
+       "ask": "10.1000",
+       "t_rel_ns": -1000000000
+      }
+     },
+     {
+      "price": "10.0000",
+      "size": 1,
+      "right": "call",
+      "t_rel_ns": 0,
+      "quote": {
+       "bid": "10.0000",
+       "ask": "10.1000",
+       "t_rel_ns": -1000000000
+      }
+     },
+     {
+      "price": "10.1000",
+      "size": 1,
+      "right": "put",
+      "t_rel_ns": 0,
+      "quote": {
+       "bid": "10.0000",
+       "ask": "10.1000",
+       "t_rel_ns": -1000000000
+      }
+     },
+     {
+      "price": "10.0500",
+      "size": 4,
+      "right": "call",
+      "t_rel_ns": 0,
+      "quote": {
+       "bid": "10.0000",
+       "ask": "10.1000",
+       "t_rel_ns": -1000000000
+      }
+     },
+     {
+      "price": "10.0700",
+      "size": 1,
+      "right": "put",
+      "t_rel_ns": 0,
+      "quote": {
+       "bid": "10.0000",
+       "ask": "10.1000",
+       "t_rel_ns": -1000000000
+      }
+     }
+    ]
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "ask_premium": "3030",
+     "bid_premium": "4000",
+     "unclassified_premium": "5027",
+     "classified_premium": "7030",
+     "call_ask_plus_put_bid_premium": "5020",
+     "put_ask_plus_call_bid_premium": "2010",
+     "unclassified_share_of_total": "5027/12057",
+     "ask_share_of_classified": "303/703",
+     "bid_share_of_classified": "400/703"
+    },
+    "labels": {
+     "ask_premium": "ask-side proxy",
+     "bid_premium": "bid-side proxy"
+    }
+   },
+   "derivation": "premium=price*size*100 per print; ask=3030 bid=4000 unclassified=5027; classified=7030 total=12057; F13=call-ask+put-bid=5020 F14=put-ask+call-bid=2010",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "S02",
+   "group": "aggregate_f13_f16",
+   "design_ref": "Flow F13-F16, 2.3 unclassified",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign_aggregate",
+    "trades": [
+     {
+      "price": "10.0500",
+      "size": 2,
+      "right": "call",
+      "t_rel_ns": 0,
+      "quote": {
+       "bid": "10.0000",
+       "ask": "10.1000",
+       "t_rel_ns": -1000000000
+      }
+     },
+     {
+      "price": "10.0600",
+      "size": 3,
+      "right": "put",
+      "t_rel_ns": 0,
+      "quote": {
+       "bid": "10.0000",
+       "ask": "10.1000",
+       "t_rel_ns": -1000000000
+      }
+     }
+    ]
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_classified_premium",
+    "value": {
+     "ask_premium": "0",
+     "bid_premium": "0",
+     "unclassified_premium": "5028",
+     "classified_premium": "0",
+     "call_ask_plus_put_bid_premium": "0",
+     "put_ask_plus_call_bid_premium": "0",
+     "unclassified_share_of_total": "1",
+     "ask_share_of_classified": null,
+     "bid_share_of_classified": null
+    },
+    "labels": {
+     "ask_premium": "ask-side proxy",
+     "bid_premium": "bid-side proxy"
+    }
+   },
+   "derivation": "premium=price*size*100 per print; ask=0 bid=0 unclassified=5028; classified=0 total=5028; F13=call-ask+put-bid=0 F14=put-ask+call-bid=0",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "S03",
+   "group": "aggregate_f13_f16",
+   "design_ref": "Flow F13-F16, 2.3 unclassified",
+   "pending_design_request": [
+    2,
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign_aggregate",
+    "trades": [
+     {
+      "price": "10.1000",
+      "size": 1,
+      "right": "call",
+      "t_rel_ns": 0,
+      "quote": {
+       "bid": "10.0000",
+       "ask": "10.1000",
+       "t_rel_ns": -4000000000
+      }
+     },
+     {
+      "price": "0.0500",
+      "size": 10,
+      "right": "put",
+      "t_rel_ns": 0,
+      "quote": {
+       "bid": "0.0000",
+       "ask": "0.0500",
+       "t_rel_ns": -1000000000
+      }
+     },
+     {
+      "price": "10.1000",
+      "size": 1,
+      "right": "call",
+      "t_rel_ns": 0,
+      "quote": {
+       "bid": "10.0000",
+       "ask": "10.1000",
+       "t_rel_ns": -1000000000
+      }
+     }
+    ]
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "ask_premium": "1010",
+     "bid_premium": "0",
+     "unclassified_premium": "1060",
+     "classified_premium": "1010",
+     "call_ask_plus_put_bid_premium": "1010",
+     "put_ask_plus_call_bid_premium": "0",
+     "unclassified_share_of_total": "106/207",
+     "ask_share_of_classified": "1",
+     "bid_share_of_classified": "0"
+    },
+    "labels": {
+     "ask_premium": "ask-side proxy",
+     "bid_premium": "bid-side proxy"
+    }
+   },
+   "derivation": "premium=price*size*100 per print; ask=1010 bid=0 unclassified=1060; classified=1010 total=2070; F13=call-ask+put-bid=1010 F14=put-ask+call-bid=0",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "C01",
+   "group": "window_end_f3",
+   "design_ref": "Flow F3, PO plan V2 s1 F3",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "window_premium",
+    "prints": [
+     {
+      "t_rel_ns": -100000000000,
+      "right": "call",
+      "price": "1.0000",
+      "size": 10,
+      "multiplier": 100
+     },
+     {
+      "t_rel_ns": -85000000000,
+      "right": "put",
+      "price": "2.0000",
+      "size": 6,
+      "multiplier": 100
+     },
+     {
+      "t_rel_ns": -30000000000,
+      "right": "call",
+      "price": "0.5000",
+      "size": 30,
+      "multiplier": 100
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 60000000000,
+    "window_end_ns": 0
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "1500",
+     "call_premium": "1500",
+     "put_premium": "0",
+     "window_start_ns": -60000000000,
+     "window_end_ns": 0,
+     "included_count": 1,
+     "excluded_nonstandard_count": 0
+    }
+   },
+   "derivation": "explicit window_end: window=[-60000000000,0]; included=[-30000000000]; call=1500 put=0 total=1500; b (-85s) and a (-100s) are outside",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "C02",
+   "group": "window_end_f3",
+   "design_ref": "Flow F3, PO plan V2 s1 F3",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "window_premium",
+    "prints": [
+     {
+      "t_rel_ns": -100000000000,
+      "right": "call",
+      "price": "1.0000",
+      "size": 10,
+      "multiplier": 100
+     },
+     {
+      "t_rel_ns": -85000000000,
+      "right": "put",
+      "price": "2.0000",
+      "size": 6,
+      "multiplier": 100
+     },
+     {
+      "t_rel_ns": -30000000000,
+      "right": "call",
+      "price": "0.5000",
+      "size": 30,
+      "multiplier": 100
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 60000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "2700",
+     "call_premium": "1500",
+     "put_premium": "1200",
+     "window_start_ns": -90000000000,
+     "window_end_ns": -30000000000,
+     "included_count": 2,
+     "excluded_nonstandard_count": 0
+    }
+   },
+   "derivation": "legacy last-print anchor: window=[-90000000000,-30000000000]; included=[-85000000000, -30000000000]; call=1500 put=1200 total=2700; anchor is last print -30s so b is inside; differs from C01",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "C03",
+   "group": "window_end_f3",
+   "design_ref": "Flow F3, PO plan V2 s1 F3",
+   "pending_design_request": null,
+   "open_item": "window_closed_both_ends",
+   "tags": [],
+   "inputs": {
+    "op": "window_premium",
+    "prints": [
+     {
+      "t_rel_ns": -30000000000,
+      "right": "call",
+      "price": "0.5000",
+      "size": 30,
+      "multiplier": 100
+     },
+     {
+      "t_rel_ns": 0,
+      "right": "call",
+      "price": "1.0000",
+      "size": 5,
+      "multiplier": 100
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 60000000000,
+    "window_end_ns": 0
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "2000",
+     "call_premium": "2000",
+     "put_premium": "0",
+     "window_start_ns": -60000000000,
+     "window_end_ns": 0,
+     "included_count": 2,
+     "excluded_nonstandard_count": 0
+    }
+   },
+   "derivation": "explicit window_end: window=[-60000000000,0]; included=[-30000000000, 0]; call=2000 put=0 total=2000; print exactly at window_end is included",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "C04",
+   "group": "window_end_f3",
+   "design_ref": "Flow F3, PO plan V2 s1 F3",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "window_premium",
+    "prints": [
+     {
+      "t_rel_ns": -30000000000,
+      "right": "call",
+      "price": "0.5000",
+      "size": 30,
+      "multiplier": 100
+     },
+     {
+      "t_rel_ns": 0,
+      "right": "call",
+      "price": "1.0000",
+      "size": 5,
+      "multiplier": 100
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 60000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "2000",
+     "call_premium": "2000",
+     "put_premium": "0",
+     "window_start_ns": -60000000000,
+     "window_end_ns": 0,
+     "included_count": 2,
+     "excluded_nonstandard_count": 0
+    }
+   },
+   "derivation": "legacy last-print anchor: window=[-60000000000,0]; included=[-30000000000, 0]; call=2000 put=0 total=2000; last print at 0 == T",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "C05",
+   "group": "window_end_f3",
+   "design_ref": "Flow F3, PO plan V2 s1 F3",
+   "pending_design_request": null,
+   "open_item": "window_closed_both_ends",
+   "tags": [],
+   "inputs": {
+    "op": "window_premium",
+    "prints": [
+     {
+      "t_rel_ns": -30000000000,
+      "right": "call",
+      "price": "0.5000",
+      "size": 30,
+      "multiplier": 100
+     },
+     {
+      "t_rel_ns": 1,
+      "right": "call",
+      "price": "1.0000",
+      "size": 7,
+      "multiplier": 100
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 60000000000,
+    "window_end_ns": 0
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "1500",
+     "call_premium": "1500",
+     "put_premium": "0",
+     "window_start_ns": -60000000000,
+     "window_end_ns": 0,
+     "included_count": 1,
+     "excluded_nonstandard_count": 0
+    }
+   },
+   "derivation": "explicit window_end: window=[-60000000000,0]; included=[-30000000000]; call=1500 put=0 total=1500; print at +1ns is after window_end",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "C06",
+   "group": "window_end_f3",
+   "design_ref": "Flow F3, PO plan V2 s1 F3",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "window_premium",
+    "prints": [
+     {
+      "t_rel_ns": -30000000000,
+      "right": "call",
+      "price": "0.5000",
+      "size": 30,
+      "multiplier": 100
+     },
+     {
+      "t_rel_ns": 1,
+      "right": "call",
+      "price": "1.0000",
+      "size": 7,
+      "multiplier": 100
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 60000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "2200",
+     "call_premium": "2200",
+     "put_premium": "0",
+     "window_start_ns": -59999999999,
+     "window_end_ns": 1,
+     "included_count": 2,
+     "excluded_nonstandard_count": 0
+    }
+   },
+   "derivation": "legacy last-print anchor: window=[-59999999999,1]; included=[-30000000000, 1]; call=2200 put=0 total=2200; anchor moves to +1ns so the later print is inside",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "C07",
+   "group": "window_end_f3",
+   "design_ref": "Flow F3, PO plan V2 s1 F3",
+   "pending_design_request": null,
+   "open_item": "window_closed_both_ends",
+   "tags": [],
+   "inputs": {
+    "op": "window_premium",
+    "prints": [
+     {
+      "t_rel_ns": -60000000000,
+      "right": "put",
+      "price": "1.0000",
+      "size": 8,
+      "multiplier": 100
+     },
+     {
+      "t_rel_ns": -30000000000,
+      "right": "call",
+      "price": "0.5000",
+      "size": 30,
+      "multiplier": 100
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 60000000000,
+    "window_end_ns": 0
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "2300",
+     "call_premium": "1500",
+     "put_premium": "800",
+     "window_start_ns": -60000000000,
+     "window_end_ns": 0,
+     "included_count": 2,
+     "excluded_nonstandard_count": 0
+    }
+   },
+   "derivation": "explicit window_end: window=[-60000000000,0]; included=[-60000000000, -30000000000]; call=1500 put=800 total=2300; print exactly at start included (closed window, assumed by analogy to Q3)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "C08",
+   "group": "window_end_f3",
+   "design_ref": "Flow F3, PO plan V2 s1 F3",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "window_premium",
+    "prints": [
+     {
+      "t_rel_ns": -60000000001,
+      "right": "put",
+      "price": "1.0000",
+      "size": 8,
+      "multiplier": 100
+     },
+     {
+      "t_rel_ns": -30000000000,
+      "right": "call",
+      "price": "0.5000",
+      "size": 30,
+      "multiplier": 100
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 60000000000,
+    "window_end_ns": 0
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "1500",
+     "call_premium": "1500",
+     "put_premium": "0",
+     "window_start_ns": -60000000000,
+     "window_end_ns": 0,
+     "included_count": 1,
+     "excluded_nonstandard_count": 0
+    }
+   },
+   "derivation": "explicit window_end: window=[-60000000000,0]; included=[-30000000000]; call=1500 put=0 total=1500; print 1ns before start excluded",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "C09",
+   "group": "window_end_f3",
+   "design_ref": "Flow F3, PO plan V2 s1 F3",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "window_premium",
+    "prints": [
+     {
+      "t_rel_ns": -10000000000,
+      "right": "call",
+      "price": "1.0000",
+      "size": 10,
+      "multiplier": 10
+     },
+     {
+      "t_rel_ns": -30000000000,
+      "right": "call",
+      "price": "0.5000",
+      "size": 30,
+      "multiplier": 100
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 60000000000,
+    "window_end_ns": 0
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "1500",
+     "call_premium": "1500",
+     "put_premium": "0",
+     "window_start_ns": -60000000000,
+     "window_end_ns": 0,
+     "included_count": 1,
+     "excluded_nonstandard_count": 1
+    }
+   },
+   "derivation": "explicit window_end: window=[-60000000000,0]; included=[-30000000000]; call=1500 put=0 total=1500; non-standard multiplier excluded",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "C10",
+   "group": "window_end_f3",
+   "design_ref": "Flow F3, PO plan V2 s1 F3",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "window_premium",
+    "prints": [
+     {
+      "t_rel_ns": -100000000000,
+      "right": "call",
+      "price": "1.0000",
+      "size": 10,
+      "multiplier": 100
+     },
+     {
+      "t_rel_ns": -85000000000,
+      "right": "put",
+      "price": "2.0000",
+      "size": 6,
+      "multiplier": 100
+     },
+     {
+      "t_rel_ns": -30000000000,
+      "right": "call",
+      "price": "0.5000",
+      "size": 30,
+      "multiplier": 100
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 60000000000,
+    "window_end_ns": -30000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "2700",
+     "call_premium": "1500",
+     "put_premium": "1200",
+     "window_start_ns": -90000000000,
+     "window_end_ns": -30000000000,
+     "included_count": 2,
+     "excluded_nonstandard_count": 0
+    }
+   },
+   "derivation": "explicit window_end: window=[-90000000000,-30000000000]; included=[-85000000000, -30000000000]; call=1500 put=1200 total=2700; explicit end earlier than T is honoured; c exactly at end included",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "C11",
+   "group": "window_end_f3",
+   "design_ref": "Flow F3, PO plan V2 s1 F3",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "window_premium",
+    "prints": [
+     {
+      "t_rel_ns": -100000000000,
+      "right": "call",
+      "price": "1.0000",
+      "size": 10,
+      "multiplier": 100
+     },
+     {
+      "t_rel_ns": -85000000000,
+      "right": "put",
+      "price": "2.0000",
+      "size": 6,
+      "multiplier": 100
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 60000000000,
+    "window_end_ns": 0
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "0",
+     "call_premium": "0",
+     "put_premium": "0",
+     "window_start_ns": -60000000000,
+     "window_end_ns": 0,
+     "included_count": 0,
+     "excluded_nonstandard_count": 0
+    }
+   },
+   "derivation": "explicit window_end: window=[-60000000000,0]; included=[]; call=0 put=0 total=0; no print in window",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "D01",
+   "group": "single_ref_f5_f6",
+   "design_ref": "Flow F5/F6, DSR req 6 option A",
+   "pending_design_request": [
+    6
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "single_ref_shares",
+    "civil_date": "2026-03-02",
+    "prints": [
+     {
+      "id": "p1",
+      "right": "call",
+      "strike": "105.0000",
+      "expiry": "2026-03-03",
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "p2",
+      "right": "put",
+      "strike": "95.0000",
+      "expiry": "2026-03-04",
+      "spot": "100.0000",
+      "price": "2.0000",
+      "size": 5
+     },
+     {
+      "id": "p3",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": "2026-03-05",
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 20
+     },
+     {
+      "id": "p4",
+      "right": "call",
+      "strike": "110.0000",
+      "expiry": null,
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "p5",
+      "right": "put",
+      "strike": "90.0000",
+      "expiry": "2026-03-02",
+      "spot": null,
+      "price": "1.0000",
+      "size": 30
+     },
+     {
+      "id": "p6",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": null,
+      "spot": null,
+      "price": "1.0000",
+      "size": 10
+     }
+    ]
+   },
+   "params": {
+    "short_dte_max_days": 2
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "9000",
+     "short_dte": {
+      "status": "available",
+      "reason": null,
+      "premium": "5000",
+      "share": "5/9",
+      "coverage": "7/9",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "otm": {
+      "status": "available",
+      "reason": null,
+      "premium": "3000",
+      "share": "1/3",
+      "coverage": "5/9",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "joint_short_dte": {
+      "status": "available",
+      "reason": null,
+      "premium": "2000",
+      "share": "2/9",
+      "coverage": "4/9",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "joint_otm": {
+      "status": "available",
+      "reason": null,
+      "premium": "2000",
+      "share": "2/9",
+      "coverage": "4/9",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     }
+    }
+   },
+   "derivation": "premium p1..p6 = 1000,1000,2000,1000,3000,1000 total 9000. short (expiry known: p1,p2,p3,p5=7000 referenced): p1(dte1)+p2(dte2)+p5(dte0)=5000 -> 5000/9000=5/9, coverage 7000/9000=7/9. otm (spot known: p1..p4=5000): p1 call 105>100, p2 put 95<100, p4 call 110>100 = 3000 -> 1/3, p3 ATM strict not OTM, coverage 5/9. joint (both: p1,p2,p3=4000): short 2000 -> 2/9, otm 2000 -> 2/9, coverage 4/9",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "D02",
+   "group": "single_ref_f5_f6",
+   "design_ref": "Flow F5/F6, DSR req 6 option A",
+   "pending_design_request": [
+    6
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "single_ref_shares",
+    "civil_date": "2026-03-02",
+    "prints": [
+     {
+      "id": "p1",
+      "right": "call",
+      "strike": "105.0000",
+      "expiry": "2026-03-03",
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "p2",
+      "right": "put",
+      "strike": "95.0000",
+      "expiry": "2026-03-04",
+      "spot": "100.0000",
+      "price": "2.0000",
+      "size": 5
+     },
+     {
+      "id": "p3",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": "2026-03-05",
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 20
+     },
+     {
+      "id": "p4",
+      "right": "call",
+      "strike": "110.0000",
+      "expiry": null,
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "p5",
+      "right": "put",
+      "strike": "90.0000",
+      "expiry": "2026-03-02",
+      "spot": null,
+      "price": "1.0000",
+      "size": 30
+     },
+     {
+      "id": "p6",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": null,
+      "spot": null,
+      "price": "1.0000",
+      "size": 10
+     }
+    ]
+   },
+   "params": {
+    "short_dte_max_days": 2,
+    "short_min_share": "0.7000"
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "9000",
+     "short_dte": {
+      "status": "available",
+      "reason": null,
+      "premium": "5000",
+      "share": "5/9",
+      "coverage": "7/9",
+      "fired": false,
+      "lower_bound": true,
+      "label": "at least 70% of total eligible premium"
+     },
+     "otm": {
+      "status": "available",
+      "reason": null,
+      "premium": "3000",
+      "share": "1/3",
+      "coverage": "5/9",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "joint_short_dte": {
+      "status": "available",
+      "reason": null,
+      "premium": "2000",
+      "share": "2/9",
+      "coverage": "4/9",
+      "fired": false,
+      "lower_bound": true,
+      "label": "at least 70% of total eligible premium"
+     },
+     "joint_otm": {
+      "status": "available",
+      "reason": null,
+      "premium": "2000",
+      "share": "2/9",
+      "coverage": "4/9",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     }
+    }
+   },
+   "derivation": "short share 5/9=0.5556 < 0.7 so not fired (denominator is total 9000); a referenced-only denominator would give 5000/7000=0.7143 >= 0.7 and wrongly fire",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "D03",
+   "group": "single_ref_f5_f6",
+   "design_ref": "Flow F5/F6, DSR req 6 option A",
+   "pending_design_request": [
+    6
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "single_ref_shares",
+    "civil_date": "2026-03-02",
+    "prints": [
+     {
+      "id": "p1",
+      "right": "call",
+      "strike": "105.0000",
+      "expiry": "2026-03-03",
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "p2",
+      "right": "put",
+      "strike": "95.0000",
+      "expiry": "2026-03-04",
+      "spot": "100.0000",
+      "price": "2.0000",
+      "size": 5
+     },
+     {
+      "id": "p3",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": "2026-03-05",
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 20
+     },
+     {
+      "id": "p4",
+      "right": "call",
+      "strike": "110.0000",
+      "expiry": null,
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "p5",
+      "right": "put",
+      "strike": "90.0000",
+      "expiry": "2026-03-02",
+      "spot": null,
+      "price": "1.0000",
+      "size": 30
+     },
+     {
+      "id": "p6",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": null,
+      "spot": null,
+      "price": "1.0000",
+      "size": 10
+     }
+    ]
+   },
+   "params": {
+    "short_dte_max_days": 2,
+    "short_min_share": "0.5000"
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "9000",
+     "short_dte": {
+      "status": "available",
+      "reason": null,
+      "premium": "5000",
+      "share": "5/9",
+      "coverage": "7/9",
+      "fired": true,
+      "lower_bound": true,
+      "label": "at least 50% of total eligible premium"
+     },
+     "otm": {
+      "status": "available",
+      "reason": null,
+      "premium": "3000",
+      "share": "1/3",
+      "coverage": "5/9",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "joint_short_dte": {
+      "status": "available",
+      "reason": null,
+      "premium": "2000",
+      "share": "2/9",
+      "coverage": "4/9",
+      "fired": false,
+      "lower_bound": true,
+      "label": "at least 50% of total eligible premium"
+     },
+     "joint_otm": {
+      "status": "available",
+      "reason": null,
+      "premium": "2000",
+      "share": "2/9",
+      "coverage": "4/9",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     }
+    }
+   },
+   "derivation": "5/9 >= 0.5 fired; label states lower bound",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "D04",
+   "group": "single_ref_f5_f6",
+   "design_ref": "Flow F5/F6, DSR req 6 option A",
+   "pending_design_request": [
+    6
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "single_ref_shares",
+    "civil_date": "2026-03-02",
+    "prints": [
+     {
+      "id": "p1",
+      "right": "call",
+      "strike": "105.0000",
+      "expiry": "2026-03-03",
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "p2",
+      "right": "put",
+      "strike": "95.0000",
+      "expiry": "2026-03-04",
+      "spot": "100.0000",
+      "price": "2.0000",
+      "size": 5
+     },
+     {
+      "id": "p3",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": "2026-03-05",
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 20
+     },
+     {
+      "id": "p4",
+      "right": "call",
+      "strike": "110.0000",
+      "expiry": null,
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "p5",
+      "right": "put",
+      "strike": "90.0000",
+      "expiry": "2026-03-02",
+      "spot": null,
+      "price": "1.0000",
+      "size": 30
+     }
+    ]
+   },
+   "params": {
+    "short_dte_max_days": 2,
+    "otm_min_share": "0.3750"
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "8000",
+     "short_dte": {
+      "status": "available",
+      "reason": null,
+      "premium": "5000",
+      "share": "0.625",
+      "coverage": "0.875",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "otm": {
+      "status": "available",
+      "reason": null,
+      "premium": "3000",
+      "share": "0.375",
+      "coverage": "0.625",
+      "fired": true,
+      "lower_bound": true,
+      "label": "at least 37.5% of total eligible premium"
+     },
+     "joint_short_dte": {
+      "status": "available",
+      "reason": null,
+      "premium": "2000",
+      "share": "0.25",
+      "coverage": "0.5",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "joint_otm": {
+      "status": "available",
+      "reason": null,
+      "premium": "2000",
+      "share": "0.25",
+      "coverage": "0.5",
+      "fired": false,
+      "lower_bound": true,
+      "label": "at least 37.5% of total eligible premium"
+     }
+    }
+   },
+   "derivation": "D2 = p1..p5 total 8000; otm 3000/8000=0.375 equals threshold -> fired (at least)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "D05",
+   "group": "single_ref_f5_f6",
+   "design_ref": "Flow F5/F6, DSR req 6 option A",
+   "pending_design_request": [
+    6
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "single_ref_shares",
+    "civil_date": "2026-03-02",
+    "prints": [
+     {
+      "id": "p1",
+      "right": "call",
+      "strike": "105.0000",
+      "expiry": "2026-03-03",
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "p2",
+      "right": "put",
+      "strike": "95.0000",
+      "expiry": "2026-03-04",
+      "spot": "100.0000",
+      "price": "2.0000",
+      "size": 5
+     },
+     {
+      "id": "p3",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": "2026-03-05",
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 20
+     },
+     {
+      "id": "p4",
+      "right": "call",
+      "strike": "110.0000",
+      "expiry": null,
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "p5",
+      "right": "put",
+      "strike": "90.0000",
+      "expiry": "2026-03-02",
+      "spot": null,
+      "price": "1.0000",
+      "size": 30
+     }
+    ]
+   },
+   "params": {
+    "short_dte_max_days": 2,
+    "otm_min_share": "0.3751"
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "8000",
+     "short_dte": {
+      "status": "available",
+      "reason": null,
+      "premium": "5000",
+      "share": "0.625",
+      "coverage": "0.875",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "otm": {
+      "status": "available",
+      "reason": null,
+      "premium": "3000",
+      "share": "0.375",
+      "coverage": "0.625",
+      "fired": false,
+      "lower_bound": true,
+      "label": "at least 37.51% of total eligible premium"
+     },
+     "joint_short_dte": {
+      "status": "available",
+      "reason": null,
+      "premium": "2000",
+      "share": "0.25",
+      "coverage": "0.5",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "joint_otm": {
+      "status": "available",
+      "reason": null,
+      "premium": "2000",
+      "share": "0.25",
+      "coverage": "0.5",
+      "fired": false,
+      "lower_bound": true,
+      "label": "at least 37.51% of total eligible premium"
+     }
+    }
+   },
+   "derivation": "0.375 < 0.3751 -> not fired",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "D06",
+   "group": "single_ref_f5_f6",
+   "design_ref": "Flow F5/F6, DSR req 6 option A",
+   "pending_design_request": [
+    6
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "single_ref_shares",
+    "civil_date": "2026-03-02",
+    "prints": [
+     {
+      "id": "p1",
+      "right": "call",
+      "strike": "105.0000",
+      "expiry": "2026-03-03",
+      "spot": null,
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "p2",
+      "right": "put",
+      "strike": "95.0000",
+      "expiry": "2026-03-04",
+      "spot": null,
+      "price": "2.0000",
+      "size": 5
+     },
+     {
+      "id": "p3",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": "2026-03-05",
+      "spot": null,
+      "price": "1.0000",
+      "size": 20
+     },
+     {
+      "id": "p4",
+      "right": "call",
+      "strike": "110.0000",
+      "expiry": null,
+      "spot": null,
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "p5",
+      "right": "put",
+      "strike": "90.0000",
+      "expiry": "2026-03-02",
+      "spot": null,
+      "price": "1.0000",
+      "size": 30
+     },
+     {
+      "id": "p6",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": null,
+      "spot": null,
+      "price": "1.0000",
+      "size": 10
+     }
+    ]
+   },
+   "params": {
+    "short_dte_max_days": 2
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "9000",
+     "short_dte": {
+      "status": "available",
+      "reason": null,
+      "premium": "5000",
+      "share": "5/9",
+      "coverage": "7/9",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "otm": {
+      "status": "unavailable",
+      "reason": "missing_reference",
+      "premium": null,
+      "share": null,
+      "coverage": "0",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "joint_short_dte": {
+      "status": "unavailable",
+      "reason": "missing_reference",
+      "premium": null,
+      "share": null,
+      "coverage": "0",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "joint_otm": {
+      "status": "unavailable",
+      "reason": "missing_reference",
+      "premium": null,
+      "share": null,
+      "coverage": "0",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     }
+    }
+   },
+   "derivation": "no print has a spot: otm and joint unavailable missing_reference; short still available: 5000/9000 over referenced 7000 coverage 7/9",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "D07",
+   "group": "single_ref_f5_f6",
+   "design_ref": "Flow F5/F6, DSR req 6 option A",
+   "pending_design_request": [
+    6
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "single_ref_shares",
+    "civil_date": "2026-03-02",
+    "prints": [
+     {
+      "id": "p1",
+      "right": "call",
+      "strike": "105.0000",
+      "expiry": null,
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "p2",
+      "right": "put",
+      "strike": "95.0000",
+      "expiry": null,
+      "spot": "100.0000",
+      "price": "2.0000",
+      "size": 5
+     },
+     {
+      "id": "p3",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": null,
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 20
+     },
+     {
+      "id": "p4",
+      "right": "call",
+      "strike": "110.0000",
+      "expiry": null,
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "p5",
+      "right": "put",
+      "strike": "90.0000",
+      "expiry": null,
+      "spot": null,
+      "price": "1.0000",
+      "size": 30
+     },
+     {
+      "id": "p6",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": null,
+      "spot": null,
+      "price": "1.0000",
+      "size": 10
+     }
+    ]
+   },
+   "params": {
+    "short_dte_max_days": 2
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "9000",
+     "short_dte": {
+      "status": "unavailable",
+      "reason": "missing_reference",
+      "premium": null,
+      "share": null,
+      "coverage": "0",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "otm": {
+      "status": "available",
+      "reason": null,
+      "premium": "3000",
+      "share": "1/3",
+      "coverage": "5/9",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "joint_short_dte": {
+      "status": "unavailable",
+      "reason": "missing_reference",
+      "premium": null,
+      "share": null,
+      "coverage": "0",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "joint_otm": {
+      "status": "unavailable",
+      "reason": "missing_reference",
+      "premium": null,
+      "share": null,
+      "coverage": "0",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     }
+    }
+   },
+   "derivation": "no print has an expiry: short and joint unavailable missing_reference; otm available 3000/9000=1/3",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "D08",
+   "group": "single_ref_f5_f6",
+   "design_ref": "Flow F5/F6, DSR req 6 option A",
+   "pending_design_request": [
+    6
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "single_ref_shares",
+    "civil_date": "2026-03-02",
+    "prints": [
+     {
+      "id": "q1",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": "2026-03-02",
+      "spot": null,
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "q2",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": "2026-03-04",
+      "spot": null,
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "q3",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": "2026-03-05",
+      "spot": null,
+      "price": "1.0000",
+      "size": 10
+     }
+    ]
+   },
+   "params": {
+    "short_dte_max_days": 2
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "3000",
+     "short_dte": {
+      "status": "available",
+      "reason": null,
+      "premium": "2000",
+      "share": "2/3",
+      "coverage": "1",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "otm": {
+      "status": "unavailable",
+      "reason": "missing_reference",
+      "premium": null,
+      "share": null,
+      "coverage": "0",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "joint_short_dte": {
+      "status": "unavailable",
+      "reason": "missing_reference",
+      "premium": null,
+      "share": null,
+      "coverage": "0",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "joint_otm": {
+      "status": "unavailable",
+      "reason": "missing_reference",
+      "premium": null,
+      "share": null,
+      "coverage": "0",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     }
+    }
+   },
+   "derivation": "dte 0,2,3 each 1000 total 3000; dte<=2 inclusive -> 2000/3000=2/3; dte 3 excluded; no spot needed",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "D09",
+   "group": "single_ref_f5_f6",
+   "design_ref": "Flow F5/F6, DSR req 6 option A",
+   "pending_design_request": [
+    6
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "single_ref_shares",
+    "civil_date": "2026-03-02",
+    "prints": [
+     {
+      "id": "r1",
+      "right": "put",
+      "strike": "99.0000",
+      "expiry": null,
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "r2",
+      "right": "call",
+      "strike": "101.0000",
+      "expiry": null,
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "r3",
+      "right": "put",
+      "strike": "100.0000",
+      "expiry": null,
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "r4",
+      "right": "call",
+      "strike": "100.0000",
+      "expiry": null,
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     }
+    ]
+   },
+   "params": {
+    "short_dte_max_days": 2
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "total_premium": "4000",
+     "short_dte": {
+      "status": "unavailable",
+      "reason": "missing_reference",
+      "premium": null,
+      "share": null,
+      "coverage": "0",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "otm": {
+      "status": "available",
+      "reason": null,
+      "premium": "2000",
+      "share": "0.5",
+      "coverage": "1",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "joint_short_dte": {
+      "status": "unavailable",
+      "reason": "missing_reference",
+      "premium": null,
+      "share": null,
+      "coverage": "0",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     },
+     "joint_otm": {
+      "status": "unavailable",
+      "reason": "missing_reference",
+      "premium": null,
+      "share": null,
+      "coverage": "0",
+      "fired": null,
+      "lower_bound": true,
+      "label": null
+     }
+    }
+   },
+   "derivation": "otm needs spot only: put 99<100 yes, call 101>100 yes, put 100 and call 100 are at the money not OTM: 2000/4000=1/2; short unavailable missing_reference",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "D10",
+   "group": "single_ref_f5_f6",
+   "design_ref": "Flow F5/F6 joint outputs retained (legacy amounts)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "joint_amounts",
+    "civil_date": "2026-03-02",
+    "prints": [
+     {
+      "id": "j1",
+      "right": "call",
+      "strike": "105.0000",
+      "expiry": "2026-03-03",
+      "spot": "100.0000",
+      "price": "1.0000",
+      "size": 10
+     },
+     {
+      "id": "j2",
+      "right": "call",
+      "strike": "105.0000",
+      "expiry": "2026-03-03",
+      "spot": null,
+      "price": "2.0000",
+      "size": 10
+     },
+     {
+      "id": "j3",
+      "right": "call",
+      "strike": "110.0000",
+      "expiry": null,
+      "spot": "100.0000",
+      "price": "4.0000",
+      "size": 10
+     },
+     {
+      "id": "j4",
+      "right": "call",
+      "strike": "90.0000",
+      "expiry": "2026-03-07",
+      "spot": "100.0000",
+      "price": "8.0000",
+      "size": 10
+     }
+    ]
+   },
+   "params": {
+    "short_dte_max_days": 2
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "joint_short_premium": "1000",
+     "joint_otm_premium": "1000",
+     "reference_premium": "9000"
+    }
+   },
+   "derivation": "j1 1000 (both refs, dte1, call 105>100), j2 2000 (expiry only), j3 4000 (spot only, call 110>100), j4 8000 (both refs, dte5, call 90<100 so in the money). Joint needs both: reference=j1+j4=9000; joint short=j1=1000; joint otm=j1=1000. A single-reference reading would give short 3000 and otm 5000",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "R01",
+   "group": "gate_precedence",
+   "design_ref": "OC 2.3 precedence (PO ruling)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": null,
+     "ask": "1.0000",
+     "t_rel_ns": -11000000000
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "invalid_quote",
+    "value": null
+   },
+   "derivation": "quote bid=None ask=1.0000 age=11000000000ns -> invalid_quote by OC 2.3 gate table (stale and one-sided: invalid first)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "R02",
+   "group": "gate_precedence",
+   "design_ref": "OC 2.3 precedence (PO ruling)",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "1.0500",
+     "ask": "1.0000",
+     "t_rel_ns": -11000000000
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "crossed_market",
+    "value": null
+   },
+   "derivation": "quote bid=1.0500 ask=1.0000 age=11000000000ns -> crossed_market by OC 2.3 gate table (stale and crossed: crossed first)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "R03",
+   "group": "gate_precedence",
+   "design_ref": "OC 2.3 precedence (PO ruling)",
+   "pending_design_request": [
+    1
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "spread",
+    "quote": {
+     "bid": "2.0000",
+     "ask": "2.0000",
+     "t_rel_ns": -11000000000
+    }
+   },
+   "params": {
+    "stale_limit_ns": 10000000000
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "locked_market",
+    "value": null
+   },
+   "derivation": "quote bid=2.0000 ask=2.0000 age=11000000000ns -> locked_market by OC 2.3 gate table (stale and locked: locked first)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "R04",
+   "group": "gate_precedence",
+   "design_ref": "OC 2.3 precedence (PO ruling)",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": null,
+     "ask": "10.1000",
+     "t_rel_ns": -4000000000
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "invalid_quote",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote None/10.1000 age=4000000000ns (limit 3000000000); price 10.1000; -> unclassified (invalid_quote)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "R05",
+   "group": "gate_precedence",
+   "design_ref": "OC 2.3 precedence (PO ruling)",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.1000",
+     "ask": "10.0000",
+     "t_rel_ns": -4000000000
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "crossed_market",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 10.1000/10.0000 age=4000000000ns (limit 3000000000); price 10.1000; -> unclassified (crossed_market)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "R06",
+   "group": "gate_precedence",
+   "design_ref": "locked does not block signing; staleness does",
+   "pending_design_request": [
+    1,
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "2.0000",
+     "ask": "2.0000",
+     "t_rel_ns": -4000000000
+    },
+    "trade": {
+     "price": "2.0100",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0000",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "stale_quote",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 2.0000/2.0000 age=4000000000ns (limit 3000000000); price 2.0100; -> unclassified (stale_quote)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "T01",
+   "group": "quote_timing",
+   "design_ref": "quote at the same ns as the trade",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [
+    "same_ns_quote_usable"
+   ],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": 0
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "ask",
+    "label": "ask-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=0ns (limit 3000000000); price 10.1000; ask-eps=10.09 bid+eps=10.01 -> ask side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "T02",
+   "group": "quote_timing",
+   "design_ref": "quote after the trade",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": 1
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0100",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "no_quote",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=-1ns (limit 3000000000); price 10.1000; -> unclassified (no_quote)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E21",
+   "group": "touch_f13_f16",
+   "design_ref": "ambiguous_touch (PO ruling)",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0500",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0600",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "unclassified",
+    "reason": "ambiguous_touch",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.0500; -> unclassified (ambiguous_touch)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E22",
+   "group": "touch_f13_f16",
+   "design_ref": "wide epsilon, price beyond ask only",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0600",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "ask",
+    "label": "ask-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.1000; ask-eps=10.04 bid+eps=10.06 -> ask side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "E23",
+   "group": "touch_f13_f16",
+   "design_ref": "wide epsilon, price near bid only",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0300",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {
+    "inside_spread": "unknown",
+    "epsilon": "0.0600",
+    "max_quote_age_ns": 3000000000
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "bid",
+    "label": "bid-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.0300; ask-eps=10.04 bid+eps=10.06 -> bid side",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "G01",
+   "group": "g5_coverage",
+   "design_ref": "OC 2.3 low quote coverage, PO ruling Q3, DSR req 3",
+   "pending_design_request": [
+    3
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "quote_coverage_gate",
+    "updates": [
+     {
+      "t_rel_ns": -250000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -200000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -100000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -50000000000,
+      "cond": "regular"
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 300000000000,
+    "min_regular_updates": 5
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "low_quote_coverage",
+    "value": {
+     "regular_update_count": 4
+    },
+    "blocks": [
+     "OC6"
+    ]
+   },
+   "derivation": "regular updates in [-300e9,0]: 4, minimum 5 -> low_quote_coverage",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "G02",
+   "group": "g5_coverage",
+   "design_ref": "OC 2.3 low quote coverage, PO ruling Q3, DSR req 3",
+   "pending_design_request": [
+    3
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "quote_coverage_gate",
+    "updates": [
+     {
+      "t_rel_ns": -250000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -200000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -100000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -50000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -10000000000,
+      "cond": "regular"
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 300000000000,
+    "min_regular_updates": 5
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "regular_update_count": 5
+    },
+    "blocks": []
+   },
+   "derivation": "regular updates in [-300e9,0]: 5, minimum 5 -> ok",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "G03",
+   "group": "g5_coverage",
+   "design_ref": "OC 2.3 low quote coverage, PO ruling Q3, DSR req 3",
+   "pending_design_request": [
+    3
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "quote_coverage_gate",
+    "updates": [
+     {
+      "t_rel_ns": -250000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -200000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -100000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -50000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -10000000000,
+      "cond": "excluded"
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 300000000000,
+    "min_regular_updates": 5
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "low_quote_coverage",
+    "value": {
+     "regular_update_count": 4
+    },
+    "blocks": [
+     "OC6"
+    ]
+   },
+   "derivation": "regular updates in [-300e9,0]: 4, minimum 5 -> low_quote_coverage; excluded-condition update not counted",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "G04",
+   "group": "g5_coverage",
+   "design_ref": "OC 2.3 low quote coverage, PO ruling Q3, DSR req 3",
+   "pending_design_request": [
+    3
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "quote_coverage_gate",
+    "updates": [
+     {
+      "t_rel_ns": -300000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -200000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -100000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -50000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -10000000000,
+      "cond": "regular"
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 300000000000,
+    "min_regular_updates": 5
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "regular_update_count": 5
+    },
+    "blocks": []
+   },
+   "derivation": "regular updates in [-300e9,0]: 5, minimum 5 -> ok; update exactly 300 s before T is inside",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "G05",
+   "group": "g5_coverage",
+   "design_ref": "OC 2.3 low quote coverage, PO ruling Q3, DSR req 3",
+   "pending_design_request": [
+    3
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "quote_coverage_gate",
+    "updates": [
+     {
+      "t_rel_ns": -300000000001,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -200000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -100000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -50000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -10000000000,
+      "cond": "regular"
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 300000000000,
+    "min_regular_updates": 5
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "low_quote_coverage",
+    "value": {
+     "regular_update_count": 4
+    },
+    "blocks": [
+     "OC6"
+    ]
+   },
+   "derivation": "regular updates in [-300e9,0]: 4, minimum 5 -> low_quote_coverage; update 300 s + 1 ns before T is outside",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "G06",
+   "group": "g5_coverage",
+   "design_ref": "OC 2.3 low quote coverage, PO ruling Q3, DSR req 3",
+   "pending_design_request": [
+    3
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "quote_coverage_gate",
+    "updates": [
+     {
+      "t_rel_ns": -250000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -200000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -100000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -50000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": 0,
+      "cond": "regular"
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 300000000000,
+    "min_regular_updates": 5
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "regular_update_count": 5
+    },
+    "blocks": []
+   },
+   "derivation": "regular updates in [-300e9,0]: 5, minimum 5 -> ok; update exactly at T is inside",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "G07",
+   "group": "g5_coverage",
+   "design_ref": "OC 2.3 low quote coverage, PO ruling Q3, DSR req 3",
+   "pending_design_request": [
+    3
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "quote_coverage_gate",
+    "updates": [
+     {
+      "t_rel_ns": -250000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -200000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -100000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -50000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": 1,
+      "cond": "regular"
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 300000000000,
+    "min_regular_updates": 5
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "low_quote_coverage",
+    "value": {
+     "regular_update_count": 4
+    },
+    "blocks": [
+     "OC6"
+    ]
+   },
+   "derivation": "regular updates in [-300e9,0]: 4, minimum 5 -> low_quote_coverage; update after T not counted",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "G08",
+   "group": "g5_coverage",
+   "design_ref": "OC 2.3 low quote coverage, PO ruling Q3, DSR req 3",
+   "pending_design_request": [
+    3
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "quote_coverage_gate",
+    "updates": [
+     {
+      "t_rel_ns": -250000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -240000000000,
+      "cond": "excluded"
+     },
+     {
+      "t_rel_ns": -200000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -150000000000,
+      "cond": "excluded"
+     },
+     {
+      "t_rel_ns": -100000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -50000000000,
+      "cond": "excluded"
+     },
+     {
+      "t_rel_ns": -20000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -10000000000,
+      "cond": "regular"
+     },
+     {
+      "t_rel_ns": -5000000000,
+      "cond": "regular"
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 300000000000,
+    "min_regular_updates": 5
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "regular_update_count": 6
+    },
+    "blocks": []
+   },
+   "derivation": "regular updates in [-300e9,0]: 6, minimum 5 -> ok",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "G09",
+   "group": "g5_coverage",
+   "design_ref": "OC 2.3 low quote coverage, PO ruling Q3, DSR req 3",
+   "pending_design_request": [
+    3
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "quote_coverage_gate",
+    "updates": []
+   },
+   "params": {
+    "window_ns": 300000000000,
+    "min_regular_updates": 5
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "low_quote_coverage",
+    "value": {
+     "regular_update_count": 0
+    },
+    "blocks": [
+     "OC6"
+    ]
+   },
+   "derivation": "regular updates in [-300e9,0]: 0, minimum 5 -> low_quote_coverage",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "G10",
+   "group": "g5_coverage",
+   "design_ref": "OC 2.3 low quote coverage, PO ruling Q3, DSR req 3",
+   "pending_design_request": [
+    3
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "quote_coverage_gate",
+    "updates": [
+     {
+      "t_rel_ns": -250000000000,
+      "cond": "excluded"
+     },
+     {
+      "t_rel_ns": -240000000000,
+      "cond": "excluded"
+     },
+     {
+      "t_rel_ns": -230000000000,
+      "cond": "excluded"
+     },
+     {
+      "t_rel_ns": -220000000000,
+      "cond": "excluded"
+     },
+     {
+      "t_rel_ns": -210000000000,
+      "cond": "excluded"
+     },
+     {
+      "t_rel_ns": -200000000000,
+      "cond": "regular"
+     }
+    ]
+   },
+   "params": {
+    "window_ns": 300000000000,
+    "min_regular_updates": 5
+   },
+   "expected": {
+    "status": "unavailable",
+    "reason": "low_quote_coverage",
+    "value": {
+     "regular_update_count": 1
+    },
+    "blocks": [
+     "OC6"
+    ]
+   },
+   "derivation": "regular updates in [-300e9,0]: 1, minimum 5 -> low_quote_coverage; five excluded updates give 1",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "L01",
+   "group": "label_check",
+   "design_ref": "DSR req 8, plan V2 s1 F13-F16, V3 s5",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [],
+   "inputs": {
+    "op": "label_check",
+    "labels": [
+     "ask-side proxy",
+     "bid-side proxy"
+    ]
+   },
+   "params": {
+    "allowed_labels": [
+     "ask-side proxy",
+     "bid-side proxy"
+    ],
+    "forbidden_words": [
+     "bullish",
+     "bearish",
+     "bull",
+     "bear",
+     "buy",
+     "buying",
+     "sell",
+     "selling",
+     "bought",
+     "sold",
+     "trade",
+     "direction",
+     "outlook",
+     "conviction",
+     "protection",
+     "speculation",
+     "aggressor",
+     "aggressive"
+    ]
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "labels_allowed_only": true,
+     "forbidden_word_hits": []
+    }
+   },
+   "derivation": "every label emitted by the touch rows is exactly 'ask-side proxy' or 'bid-side proxy' and matches no forbidden word (case-insensitive, whole word)",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "L02",
+   "group": "label_check",
+   "design_ref": "DSR req 8 (checker control)",
+   "pending_design_request": [
+    8
+   ],
+   "open_item": null,
+   "tags": [
+    "checker_control"
+   ],
+   "inputs": {
+    "op": "label_check",
+    "labels": [
+     "bullish-side proxy",
+     "bid-side proxy",
+     "Buy-side proxy"
+    ]
+   },
+   "params": {
+    "allowed_labels": [
+     "ask-side proxy",
+     "bid-side proxy"
+    ],
+    "forbidden_words": [
+     "bullish",
+     "bearish",
+     "bull",
+     "bear",
+     "buy",
+     "buying",
+     "sell",
+     "selling",
+     "bought",
+     "sold",
+     "trade",
+     "direction",
+     "outlook",
+     "conviction",
+     "protection",
+     "speculation",
+     "aggressor",
+     "aggressive"
+    ]
+   },
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "value": {
+     "labels_allowed_only": false,
+     "forbidden_word_hits": [
+      "bullish",
+      "buy"
+     ]
+    }
+   },
+   "derivation": "control: a label with direction wording must be flagged; bullish and Buy hit, 'bullish-side proxy' also not in the allowed set",
+   "needs_byte_mapping": false
+  },
+  {
+   "id": "H01",
+   "group": "legacy_default",
+   "design_ref": "workers-vs-conditions F13 note, conflict item 4",
+   "pending_design_request": null,
+   "open_item": "legacy_midpoint_epsilon_not_probed",
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.1000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {},
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "ask",
+    "label": "ask-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.1000; at/beyond ask -> ask side",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "H02",
+   "group": "legacy_default",
+   "design_ref": "workers-vs-conditions F13 note, conflict item 4",
+   "pending_design_request": null,
+   "open_item": "legacy_midpoint_epsilon_not_probed",
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.1100",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {},
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "ask",
+    "label": "ask-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.1100; at/beyond ask -> ask side",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "H03",
+   "group": "legacy_default",
+   "design_ref": "workers-vs-conditions F13 note, conflict item 4",
+   "pending_design_request": null,
+   "open_item": "legacy_midpoint_epsilon_not_probed",
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0000",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {},
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "bid",
+    "label": "bid-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.0000; at/beyond bid -> bid side",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "H04",
+   "group": "legacy_default",
+   "design_ref": "workers-vs-conditions F13 note, conflict item 4",
+   "pending_design_request": null,
+   "open_item": "legacy_midpoint_epsilon_not_probed",
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "9.9900",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {},
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "bid",
+    "label": "bid-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 9.9900; at/beyond bid -> bid side",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "H05",
+   "group": "legacy_default",
+   "design_ref": "workers-vs-conditions F13 note, conflict item 4",
+   "pending_design_request": null,
+   "open_item": "legacy_midpoint_epsilon_not_probed",
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0600",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {},
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "ask",
+    "label": "ask-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.0600; inside spread, midpoint=10.05 -> ask side (legacy midpoint split)",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "H06",
+   "group": "legacy_default",
+   "design_ref": "workers-vs-conditions F13 note, conflict item 4",
+   "pending_design_request": null,
+   "open_item": "legacy_midpoint_epsilon_not_probed",
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0400",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {},
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "bid",
+    "label": "bid-side proxy",
+    "value": null
+   },
+   "derivation": "quote 10.0000/10.1000 age=1000000000ns (limit 3000000000); price 10.0400; inside spread, midpoint=10.05 -> bid side (legacy midpoint split)",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "H07",
+   "group": "legacy_default",
+   "design_ref": "legacy: bid<=0 already rejected",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "0.0000",
+     "ask": "0.0500",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "0.0500",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {},
+   "expected": {
+    "status": "unclassified",
+    "reason": "invalid_quote",
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "quote 0.0000/0.0500 age=1000000000ns (limit 3000000000); price 0.0500; -> unclassified (invalid_quote)",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "H08",
+   "group": "legacy_default",
+   "design_ref": "legacy: locked quote still signs",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "2.0000",
+     "ask": "2.0000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "2.0100",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {},
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "ask",
+    "label": "ask-side proxy",
+    "value": null
+   },
+   "derivation": "quote 2.0000/2.0000 age=1000000000ns (limit 3000000000); price 2.0100; at/beyond ask -> ask side",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "H09",
+   "group": "legacy_default",
+   "design_ref": "legacy: locked quote still signs",
+   "pending_design_request": null,
+   "open_item": null,
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "2.0000",
+     "ask": "2.0000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "1.9900",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {},
+   "expected": {
+    "status": "available",
+    "reason": null,
+    "side": "bid",
+    "label": "bid-side proxy",
+    "value": null
+   },
+   "derivation": "quote 2.0000/2.0000 age=1000000000ns (limit 3000000000); price 1.9900; at/beyond bid -> bid side",
+   "needs_byte_mapping": true
+  },
+  {
+   "id": "H10",
+   "group": "legacy_default",
+   "design_ref": "legacy: trade exactly at the midpoint",
+   "pending_design_request": null,
+   "open_item": "legacy_midpoint_tie_side_unknown",
+   "tags": [
+    "legacy_mode"
+   ],
+   "inputs": {
+    "op": "sign",
+    "quote": {
+     "bid": "10.0000",
+     "ask": "10.1000",
+     "t_rel_ns": -1000000000
+    },
+    "trade": {
+     "price": "10.0500",
+     "size": 1,
+     "t_rel_ns": 0,
+     "right": "call"
+    }
+   },
+   "params": {},
+   "expected": {
+    "status": "not_asserted",
+    "reason": null,
+    "side": null,
+    "label": null,
+    "value": null
+   },
+   "derivation": "midpoint tie side is not derivable from the design; record legacy bytes later. Legacy age-limit assertion intentionally omitted.",
+   "needs_byte_mapping": true
+  }
+ ],
+ "mutations": [
+  {
+   "id": "M01",
+   "desc": "spread treats bid = 0 as valid",
+   "rows": [
+    "A07",
+    "A13"
+   ]
+  },
+  {
+   "id": "M02",
+   "desc": "spread_bps divides by ask instead of midpoint",
+   "rows": [
+    "A01",
+    "A02"
+   ]
+  },
+  {
+   "id": "M03",
+   "desc": "locked quote gives spread 0 available",
+   "rows": [
+    "B01",
+    "B02",
+    "B03"
+   ]
+  },
+  {
+   "id": "M04",
+   "desc": "crossed quote returns an absolute-value spread",
+   "rows": [
+    "A12"
+   ]
+  },
+  {
+   "id": "M05",
+   "desc": "locked gate also withholds signing (request 1 option B)",
+   "rows": [
+    "B04",
+    "B05"
+   ]
+  },
+  {
+   "id": "M06",
+   "desc": "inside-spread price split at midpoint instead of unclassified",
+   "rows": [
+    "E05",
+    "E09",
+    "E10",
+    "S01",
+    "S02"
+   ]
+  },
+  {
+   "id": "M07",
+   "desc": "epsilon comparison exclusive at the boundary",
+   "rows": [
+    "E04",
+    "E08"
+   ]
+  },
+  {
+   "id": "M08",
+   "desc": "quote age 3 s treated as stale (exclusive limit)",
+   "rows": [
+    "Q02",
+    "Q07"
+   ]
+  },
+  {
+   "id": "M09",
+   "desc": "quote age limit off by one ns (3 s + 1 ns passes)",
+   "rows": [
+    "Q03",
+    "Q08"
+   ]
+  },
+  {
+   "id": "M10",
+   "desc": "window_end ignored, last-print anchor always used",
+   "rows": [
+    "C01",
+    "C05"
+   ]
+  },
+  {
+   "id": "M11",
+   "desc": "window excludes a print exactly at window_end",
+   "rows": [
+    "C03"
+   ]
+  },
+  {
+   "id": "M12",
+   "desc": "window includes a print after window_end",
+   "rows": [
+    "C05"
+   ]
+  },
+  {
+   "id": "M13",
+   "desc": "window start boundary exclusive",
+   "rows": [
+    "C07"
+   ]
+  },
+  {
+   "id": "M14",
+   "desc": "share denominator is referenced premium only",
+   "rows": [
+    "D02",
+    "D01"
+   ]
+  },
+  {
+   "id": "M15",
+   "desc": "short share also requires spot (joint coupling)",
+   "rows": [
+    "D06",
+    "D01"
+   ]
+  },
+  {
+   "id": "M16",
+   "desc": "OTM share also requires expiry",
+   "rows": [
+    "D07",
+    "D09"
+   ]
+  },
+  {
+   "id": "M17",
+   "desc": "joint output needs only one of civil date and spot",
+   "rows": [
+    "D01",
+    "D10"
+   ]
+  },
+  {
+   "id": "M18",
+   "desc": "short-dated limit off by one day (dte <= 3)",
+   "rows": [
+    "D08"
+   ]
+  },
+  {
+   "id": "M19",
+   "desc": "coverage counts excluded-condition updates",
+   "rows": [
+    "G03",
+    "G10"
+   ]
+  },
+  {
+   "id": "M20",
+   "desc": "coverage window excludes update at exactly -300 s",
+   "rows": [
+    "G04"
+   ]
+  },
+  {
+   "id": "M21",
+   "desc": "coverage minimum is 6 instead of 5",
+   "rows": [
+    "G02"
+   ]
+  },
+  {
+   "id": "M22",
+   "desc": "unclassified premium added to ask side",
+   "rows": [
+    "S01",
+    "S02"
+   ]
+  },
+  {
+   "id": "M23",
+   "desc": "signing accepts bid = 0",
+   "rows": [
+    "E15",
+    "E16",
+    "S03"
+   ]
+  },
+  {
+   "id": "M24",
+   "desc": "ask-side label reads 'bullish-side proxy'",
+   "rows": [
+    "E01",
+    "E02"
+   ]
+  },
+  {
+   "id": "M25",
+   "desc": "share threshold exclusive (> instead of >=)",
+   "rows": [
+    "D04"
+   ]
+  },
+  {
+   "id": "M26",
+   "desc": "window_end hard-coded to T instead of the request value",
+   "rows": [
+    "C10"
+   ]
+  },
+  {
+   "id": "M27",
+   "desc": "OTM test inclusive at the money",
+   "rows": [
+    "D01",
+    "D09"
+   ]
+  },
+  {
+   "id": "M29",
+   "desc": "joint short amount needs expiry only",
+   "rows": [
+    "D10"
+   ]
+  },
+  {
+   "id": "M30",
+   "desc": "double touch (locked or wide epsilon) resolved as ask",
+   "rows": [
+    "B06",
+    "E21"
+   ]
+  },
+  {
+   "id": "M31",
+   "desc": "stale checked before validity gates",
+   "rows": [
+    "R01",
+    "R02",
+    "R04",
+    "R05"
+   ]
+  },
+  {
+   "id": "M32",
+   "desc": "quote at the same ns as the trade is unusable",
+   "rows": [
+    "T01"
+   ]
+  },
+  {
+   "id": "M33",
+   "desc": "quote after the trade is usable",
+   "rows": [
+    "T02"
+   ]
+  },
+  {
+   "id": "M28",
+   "desc": "coverage gate also blocks nothing (blocks list empty)",
+   "rows": [
+    "G01"
+   ]
+  }
+ ]
+}

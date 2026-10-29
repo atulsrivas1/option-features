@@ -1,0 +1,6892 @@
+{
+ "provenance": "SYNTHETIC",
+ "qualification_label": "mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12",
+ "generator": "gen_m1_iv.py",
+ "seed": 20261029,
+ "schema_version": 1,
+ "note": "Flat-vol European BS prices from stated sigma. Expected IVs are the stated sigmas (or exact functions of them). Tolerance fixed before the run: IV 1e-4 absolute, forward 1e-6 absolute.",
+ "tolerance": {
+  "iv_abs": "0.0001",
+  "forward_abs": "0.000001"
+ },
+ "approx_label": "approximate: European model on an American-style contract",
+ "exact_label": "exact-model",
+ "closed_reasons": [
+  "excluded_condition",
+  "invalid_quote",
+  "crossed_market",
+  "locked_market",
+  "stale_quote",
+  "no_quote",
+  "no_atm_strike",
+  "no_bracketing_expiry",
+  "american_itm",
+  "style_unknown"
+ ],
+ "mutation_report": {
+  "V1": [
+   "IV-A03",
+   "IV-A04",
+   "IV-A05",
+   "IV-A14",
+   "IV-A16"
+  ],
+  "V2": [
+   "IV-A02",
+   "IV-A15"
+  ],
+  "V3": [
+   "IV-A01",
+   "IV-A02",
+   "IV-A03",
+   "IV-A04",
+   "IV-A05",
+   "IV-A09",
+   "IV-A12",
+   "IV-A13",
+   "IV-A14",
+   "IV-A15",
+   "IV-A16",
+   "IV-T01",
+   "IV-T02",
+   "IV-T07",
+   "IV-T08",
+   "IV-T10a",
+   "IV-T11",
+   "IV-T14",
+   "IV-T16"
+  ],
+  "V4": [
+   "IV-T01",
+   "IV-T07",
+   "IV-T08",
+   "IV-T10a",
+   "IV-T11"
+  ],
+  "V5": [
+   "IV-C02",
+   "IV-C05",
+   "IV-C06",
+   "IV-C09",
+   "IV-A09",
+   "IV-A12",
+   "IV-T10a",
+   "IV-T16"
+  ],
+  "V6": [
+   "IV-C02",
+   "IV-C05",
+   "IV-C06",
+   "IV-C09"
+  ],
+  "V7": [
+   "IV-T03",
+   "IV-T04"
+  ],
+  "V8": [
+   "IV-T02",
+   "IV-T14",
+   "IV-T16",
+   "IV-T13"
+  ],
+  "V9": [
+   "IV-A04",
+   "IV-A05",
+   "IV-A06",
+   "IV-A14",
+   "IV-T09",
+   "IV-T12",
+   "IV-T13"
+  ],
+  "V10": [
+   "IV-C04",
+   "IV-A05",
+   "IV-A08",
+   "IV-A14"
+  ],
+  "V12": [
+   "IV-C03",
+   "IV-A10",
+   "IV-T10b"
+  ],
+  "V13": [
+   "IV-C09"
+  ],
+  "V14": [
+   "IV-T09",
+   "IV-T12",
+   "IV-T13"
+  ]
+ },
+ "rows": [
+  {
+   "id": "IV-C01",
+   "group": "contract_iv",
+   "design_ref": "ruling Q5; OC 2.2 OC3 (European)",
+   "case": "flat vol European, call 0.21 put 0.19",
+   "op": "contract_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.4647",
+      "ask": "0.4667",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.0872",
+      "ask": "2.0892",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.4183",
+      "ask": "5.4203",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.4795",
+      "ask": "2.4815",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.7615",
+      "ask": "0.7635",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.7617",
+      "ask": "5.7637",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.2100",
+     "30d-P-95.0000": "0.1900",
+     "30d-C-100.0000": "0.2100",
+     "30d-P-100.0000": "0.1900",
+     "30d-C-105.0000": "0.2100",
+     "30d-P-105.0000": "0.1900"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "contracts": {
+     "30d-P-95.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "exact-model"
+     },
+     "30d-P-100.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "exact-model"
+     },
+     "30d-P-105.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "exact-model"
+     },
+     "30d-C-100.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "exact-model"
+     },
+     "30d-C-105.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "exact-model"
+     },
+     "30d-C-95.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "exact-model"
+     }
+    },
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "each contract priced from its stated sigma (ACT/365, r=0.0300 q=0.0100); American ITM test: call K<F, put K>F, exempt the strike nearest F.",
+   "tags": [
+    "pending:req12"
+   ]
+  },
+  {
+   "id": "IV-C02",
+   "group": "contract_iv",
+   "design_ref": "ruling section 2 items 1-2",
+   "case": "American: OTM and nearest-to-forward approximate, ITM american_itm",
+   "op": "contract_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "5.5850",
+      "ask": "5.5870",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "0.5948",
+      "ask": "0.5968",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "5.6165",
+      "ask": "5.6185",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "0.6099",
+      "ask": "0.6119",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "2.2513",
+      "ask": "2.2533",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "2.3154",
+      "ask": "2.3174",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1900",
+     "30d-P-95.0000": "0.2100",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-105.0000": "0.1900",
+     "30d-P-105.0000": "0.2100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "contracts": {
+     "30d-P-105.0000": {
+      "status": "unavailable",
+      "reason": "american_itm",
+      "iv": null,
+      "label": null
+     },
+     "30d-C-105.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "approximate: European model on an American-style contract"
+     },
+     "30d-C-95.0000": {
+      "status": "unavailable",
+      "reason": "american_itm",
+      "iv": null,
+      "label": null
+     },
+     "30d-P-95.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "approximate: European model on an American-style contract"
+     },
+     "30d-C-100.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "approximate: European model on an American-style contract"
+     },
+     "30d-P-100.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "approximate: European model on an American-style contract"
+     }
+    },
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "F=100.1645: call 95 ITM, call 100 nearest, call 105 OTM; put 95 OTM, put 100 OTM, put 105 ITM. each contract priced from its stated sigma (ACT/365, r=0.0300 q=0.0100); American ITM test: call K<F, put K>F, exempt the strike nearest F.",
+   "tags": [
+    "pending:req12"
+   ]
+  },
+  {
+   "id": "IV-C03",
+   "group": "contract_iv",
+   "design_ref": "ruling section 2 item 3",
+   "case": "unknown style (ITM and OTM alike)",
+   "op": "contract_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": null,
+      "bid": "0.6099",
+      "ask": "0.6119",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": null,
+      "bid": "0.5948",
+      "ask": "0.5968",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": null,
+      "bid": "5.5850",
+      "ask": "5.5870",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": null,
+      "bid": "2.2513",
+      "ask": "2.2533",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": null,
+      "bid": "5.6165",
+      "ask": "5.6185",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": null,
+      "bid": "2.3154",
+      "ask": "2.3174",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1900",
+     "30d-P-95.0000": "0.2100",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-105.0000": "0.1900",
+     "30d-P-105.0000": "0.2100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "contracts": {
+     "30d-P-95.0000": {
+      "status": "unavailable",
+      "reason": "style_unknown",
+      "iv": null,
+      "label": null
+     },
+     "30d-C-105.0000": {
+      "status": "unavailable",
+      "reason": "style_unknown",
+      "iv": null,
+      "label": null
+     },
+     "30d-P-105.0000": {
+      "status": "unavailable",
+      "reason": "style_unknown",
+      "iv": null,
+      "label": null
+     },
+     "30d-C-100.0000": {
+      "status": "unavailable",
+      "reason": "style_unknown",
+      "iv": null,
+      "label": null
+     },
+     "30d-C-95.0000": {
+      "status": "unavailable",
+      "reason": "style_unknown",
+      "iv": null,
+      "label": null
+     },
+     "30d-P-100.0000": {
+      "status": "unavailable",
+      "reason": "style_unknown",
+      "iv": null,
+      "label": null
+     }
+    },
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "each contract priced from its stated sigma (ACT/365, r=0.0300 q=0.0100); American ITM test: call K<F, put K>F, exempt the strike nearest F.",
+   "tags": [
+    "pending:req12"
+   ]
+  },
+  {
+   "id": "IV-C04",
+   "group": "contract_iv",
+   "design_ref": "OC 2.3 gates on modeled values",
+   "case": "quote gates block modeled values",
+   "op": "contract_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "0.0000",
+      "ask": "2.3174",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.2513",
+      "ask": "2.2533",
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.5850",
+      "ask": "5.5870",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.6119",
+      "ask": "0.6099",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.5948",
+      "ask": null,
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.6175",
+      "ask": "5.6175",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1900",
+     "30d-P-95.0000": "0.2100",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-105.0000": "0.1900",
+     "30d-P-105.0000": "0.2100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "contracts": {
+     "30d-P-100.0000": {
+      "status": "unavailable",
+      "reason": "invalid_quote",
+      "iv": null,
+      "label": null
+     },
+     "30d-C-100.0000": {
+      "status": "unavailable",
+      "reason": "stale_quote",
+      "iv": null,
+      "label": null
+     },
+     "30d-P-105.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "exact-model"
+     },
+     "30d-P-95.0000": {
+      "status": "unavailable",
+      "reason": "crossed_market",
+      "iv": null,
+      "label": null
+     },
+     "30d-C-105.0000": {
+      "status": "unavailable",
+      "reason": "invalid_quote",
+      "iv": null,
+      "label": null
+     },
+     "30d-C-95.0000": {
+      "status": "unavailable",
+      "reason": "locked_market",
+      "iv": null,
+      "label": null
+     }
+    },
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "each contract priced from its stated sigma (ACT/365, r=0.0300 q=0.0100); American ITM test: call K<F, put K>F, exempt the strike nearest F.",
+   "tags": [
+    "pending:req1",
+    "pending:req11",
+    "pending:req12",
+    "pending:req2"
+   ]
+  },
+  {
+   "id": "IV-C05",
+   "group": "contract_iv",
+   "design_ref": "ruling section 2",
+   "case": "American, seven strikes",
+   "op": "contract_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "2.3154",
+      "ask": "2.3174",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-97.5000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "97.5000",
+      "style": "american",
+      "bid": "1.2710",
+      "ask": "1.2730",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-102.5000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "102.5000",
+      "style": "american",
+      "bid": "1.2242",
+      "ask": "1.2262",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "5.5850",
+      "ask": "5.5870",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-97.5000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "97.5000",
+      "style": "american",
+      "bid": "3.7272",
+      "ask": "3.7292",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "0.6099",
+      "ask": "0.6119",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "2.2513",
+      "ask": "2.2533",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-102.5000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "102.5000",
+      "style": "american",
+      "bid": "3.7670",
+      "ask": "3.7690",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "5.6165",
+      "ask": "5.6185",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "0.5948",
+      "ask": "0.5968",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1900",
+     "30d-P-95.0000": "0.2100",
+     "30d-C-97.5000": "0.1900",
+     "30d-P-97.5000": "0.2100",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-102.5000": "0.1900",
+     "30d-P-102.5000": "0.2100",
+     "30d-C-105.0000": "0.1900",
+     "30d-P-105.0000": "0.2100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "contracts": {
+     "30d-P-100.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "approximate: European model on an American-style contract"
+     },
+     "30d-P-97.5000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "approximate: European model on an American-style contract"
+     },
+     "30d-C-102.5000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "approximate: European model on an American-style contract"
+     },
+     "30d-P-105.0000": {
+      "status": "unavailable",
+      "reason": "american_itm",
+      "iv": null,
+      "label": null
+     },
+     "30d-C-97.5000": {
+      "status": "unavailable",
+      "reason": "american_itm",
+      "iv": null,
+      "label": null
+     },
+     "30d-P-95.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "approximate: European model on an American-style contract"
+     },
+     "30d-C-100.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "approximate: European model on an American-style contract"
+     },
+     "30d-P-102.5000": {
+      "status": "unavailable",
+      "reason": "american_itm",
+      "iv": null,
+      "label": null
+     },
+     "30d-C-95.0000": {
+      "status": "unavailable",
+      "reason": "american_itm",
+      "iv": null,
+      "label": null
+     },
+     "30d-C-105.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "approximate: European model on an American-style contract"
+     }
+    },
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "each contract priced from its stated sigma (ACT/365, r=0.0300 q=0.0100); American ITM test: call K<F, put K>F, exempt the strike nearest F.",
+   "tags": [
+    "pending:req12"
+   ]
+  },
+  {
+   "id": "IV-C06",
+   "group": "contract_iv",
+   "design_ref": "ruling section 2",
+   "case": "American, strike exactly at forward (r=q)",
+   "op": "contract_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0200",
+    "dividend_yield": "0.0200",
+    "contracts": [
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "2.3965",
+      "ask": "2.3985",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "2.1683",
+      "ask": "2.1703",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "5.7175",
+      "ask": "5.7195",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "5.4836",
+      "ask": "5.4856",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "0.6408",
+      "ask": "0.6428",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "0.5629",
+      "ask": "0.5649",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1900",
+     "30d-P-95.0000": "0.2100",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-105.0000": "0.1900",
+     "30d-P-105.0000": "0.2100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "contracts": {
+     "30d-P-100.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "approximate: European model on an American-style contract"
+     },
+     "30d-C-100.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "approximate: European model on an American-style contract"
+     },
+     "30d-P-105.0000": {
+      "status": "unavailable",
+      "reason": "american_itm",
+      "iv": null,
+      "label": null
+     },
+     "30d-C-95.0000": {
+      "status": "unavailable",
+      "reason": "american_itm",
+      "iv": null,
+      "label": null
+     },
+     "30d-P-95.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "approximate: European model on an American-style contract"
+     },
+     "30d-C-105.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "approximate: European model on an American-style contract"
+     }
+    },
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "F=100 exactly: call 100 is neither ITM nor OTM. each contract priced from its stated sigma (ACT/365, r=0.0200 q=0.0200); American ITM test: call K<F, put K>F, exempt the strike nearest F.",
+   "tags": [
+    "pending:req12"
+   ]
+  },
+  {
+   "id": "IV-C07",
+   "group": "contract_iv",
+   "design_ref": "ruling Q5 smile",
+   "case": "European smile, 60 days",
+   "op": "contract_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "60d-C-90.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "90.0000",
+      "style": "european",
+      "bid": "10.6628",
+      "ask": "10.6648",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-90.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "90.0000",
+      "style": "european",
+      "bid": "0.5298",
+      "ask": "0.5318",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-100.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "3.2280",
+      "ask": "3.2300",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-110.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "110.0000",
+      "style": "european",
+      "bid": "0.6329",
+      "ask": "0.6349",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-110.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "110.0000",
+      "style": "european",
+      "bid": "10.4543",
+      "ask": "10.4563",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-100.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "3.2222",
+      "ask": "3.2242",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-95.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "6.4793",
+      "ask": "6.4813",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-105.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "1.4856",
+      "ask": "1.4876",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-105.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "6.4194",
+      "ask": "6.4214",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-95.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "1.4317",
+      "ask": "1.4337",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0
+   },
+   "oracle": {
+    "sigma": {
+     "60d-C-90.0000": "0.2100",
+     "60d-P-90.0000": "0.2300",
+     "60d-C-95.0000": "0.2000",
+     "60d-P-95.0000": "0.2200",
+     "60d-C-100.0000": "0.1900",
+     "60d-P-100.0000": "0.2100",
+     "60d-C-105.0000": "0.2000",
+     "60d-P-105.0000": "0.2200",
+     "60d-C-110.0000": "0.2100",
+     "60d-P-110.0000": "0.2300"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "contracts": {
+     "60d-C-90.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "exact-model"
+     },
+     "60d-P-90.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2300",
+      "label": "exact-model"
+     },
+     "60d-C-100.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "exact-model"
+     },
+     "60d-C-110.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "exact-model"
+     },
+     "60d-P-110.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2300",
+      "label": "exact-model"
+     },
+     "60d-P-100.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "exact-model"
+     },
+     "60d-C-95.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2000",
+      "label": "exact-model"
+     },
+     "60d-C-105.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2000",
+      "label": "exact-model"
+     },
+     "60d-P-105.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2200",
+      "label": "exact-model"
+     },
+     "60d-P-95.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2200",
+      "label": "exact-model"
+     }
+    },
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "each contract priced from its stated sigma (ACT/365, r=0.0300 q=0.0100); American ITM test: call K<F, put K>F, exempt the strike nearest F.",
+   "tags": [
+    "pending:req12"
+   ]
+  },
+  {
+   "id": "IV-C08",
+   "group": "contract_iv",
+   "design_ref": "ruling Q5",
+   "case": "European, one year, r=0.10 q=0",
+   "op": "contract_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.1000",
+    "dividend_yield": "0.0000",
+    "contracts": [
+     {
+      "id": "365d-C-115.0000",
+      "expiry_days": 365,
+      "right": "call",
+      "strike": "115.0000",
+      "style": "european",
+      "bid": "5.8608",
+      "ask": "5.8628",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-C-105.0000",
+      "expiry_days": 365,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "10.1402",
+      "ask": "10.1422",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-P-100.0000",
+      "expiry_days": 365,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.0875",
+      "ask": "4.0895",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-C-110.0000",
+      "expiry_days": 365,
+      "right": "call",
+      "strike": "110.0000",
+      "style": "european",
+      "bid": "7.7860",
+      "ask": "7.7880",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-P-105.0000",
+      "expiry_days": 365,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.8969",
+      "ask": "5.8989",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-P-110.0000",
+      "expiry_days": 365,
+      "right": "put",
+      "strike": "110.0000",
+      "style": "european",
+      "bid": "8.1100",
+      "ask": "8.1120",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-P-115.0000",
+      "expiry_days": 365,
+      "right": "put",
+      "strike": "115.0000",
+      "style": "european",
+      "bid": "10.7111",
+      "ask": "10.7131",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-C-100.0000",
+      "expiry_days": 365,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "12.9376",
+      "ask": "12.9396",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0
+   },
+   "oracle": {
+    "sigma": {
+     "365d-C-100.0000": "0.1900",
+     "365d-P-100.0000": "0.2100",
+     "365d-C-105.0000": "0.1900",
+     "365d-P-105.0000": "0.2100",
+     "365d-C-110.0000": "0.1900",
+     "365d-P-110.0000": "0.2100",
+     "365d-C-115.0000": "0.1900",
+     "365d-P-115.0000": "0.2100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "contracts": {
+     "365d-C-115.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "exact-model"
+     },
+     "365d-C-105.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "exact-model"
+     },
+     "365d-P-100.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "exact-model"
+     },
+     "365d-C-110.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "exact-model"
+     },
+     "365d-P-105.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "exact-model"
+     },
+     "365d-P-110.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "exact-model"
+     },
+     "365d-P-115.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "exact-model"
+     },
+     "365d-C-100.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "exact-model"
+     }
+    },
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "each contract priced from its stated sigma (ACT/365, r=0.1000 q=0.0000); American ITM test: call K<F, put K>F, exempt the strike nearest F.",
+   "tags": [
+    "pending:req12"
+   ]
+  },
+  {
+   "id": "IV-C09",
+   "group": "contract_iv",
+   "design_ref": "PO ruling D13",
+   "case": "nearest strike overall (call 100 absent): put 105 is ITM",
+   "op": "contract_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "5.5850",
+      "ask": "5.5870",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "0.6099",
+      "ask": "0.6119",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "5.6165",
+      "ask": "5.6185",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "2.3154",
+      "ask": "2.3174",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "0.5948",
+      "ask": "0.5968",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1900",
+     "30d-P-95.0000": "0.2100",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-105.0000": "0.1900",
+     "30d-P-105.0000": "0.2100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "contracts": {
+     "30d-P-105.0000": {
+      "status": "unavailable",
+      "reason": "american_itm",
+      "iv": null,
+      "label": null
+     },
+     "30d-P-95.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "approximate: European model on an American-style contract"
+     },
+     "30d-C-95.0000": {
+      "status": "unavailable",
+      "reason": "american_itm",
+      "iv": null,
+      "label": null
+     },
+     "30d-P-100.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.2100",
+      "label": "approximate: European model on an American-style contract"
+     },
+     "30d-C-105.0000": {
+      "status": "value",
+      "reason": null,
+      "iv": "0.1900",
+      "label": "approximate: European model on an American-style contract"
+     }
+    },
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "nearest-to-forward is the single strike nearest F across all listed strikes (100), not the ATM-IV candidate (105). each contract priced from its stated sigma (ACT/365, r=0.0300 q=0.0100); American ITM test: call K<F, put K>F, exempt the strike nearest F.",
+   "tags": [
+    "pending:req12"
+   ]
+  },
+  {
+   "id": "IV-A01",
+   "group": "atm_iv",
+   "design_ref": "ruling Q5",
+   "case": "European nearest forward, mean of call and put",
+   "op": "atm_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.6109",
+      "ask": "0.6129",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.3154",
+      "ask": "2.3174",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.2513",
+      "ask": "2.2533",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.6023",
+      "ask": "5.6043",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.6027",
+      "ask": "5.6047",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.5948",
+      "ask": "0.5968",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "expiry_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1880",
+     "30d-P-95.0000": "0.2080",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-105.0000": "0.1920",
+     "30d-P-105.0000": "0.2120"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "strike": "100.0000",
+    "forward": "100.16451875",
+    "call_iv": "0.1900",
+    "put_iv": "0.2100",
+    "iv": "0.200000",
+    "label": "exact-model",
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "F=S*exp((r-q)T)=100.16451875; nearest eligible-both-rights strike (ties lower) = 100.0000; ATM IV = mean(call 0.1900, put 0.2100) = 0.200000.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-A02",
+   "group": "atm_iv",
+   "design_ref": "ruling Q5 ties",
+   "case": "tie between 100 and 101 goes to 100",
+   "op": "atm_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.5000",
+    "rate": "0.0200",
+    "dividend_yield": "0.0200",
+    "contracts": [
+     {
+      "id": "30d-C-101.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "101.0000",
+      "style": "european",
+      "bid": "2.0585",
+      "ask": "2.0605",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-102.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "102.0000",
+      "style": "european",
+      "bid": "3.4732",
+      "ask": "3.4752",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-99.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "99.0000",
+      "style": "european",
+      "bid": "2.8841",
+      "ask": "2.8861",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-99.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "99.0000",
+      "style": "european",
+      "bid": "1.6058",
+      "ask": "1.6078",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.4324",
+      "ask": "2.4344",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-101.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "101.0000",
+      "style": "european",
+      "bid": "2.7869",
+      "ask": "2.7889",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-102.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "102.0000",
+      "style": "european",
+      "bid": "1.7508",
+      "ask": "1.7528",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.1612",
+      "ask": "2.1632",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "expiry_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-99.0000": "0.1800",
+     "30d-P-99.0000": "0.2000",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-101.0000": "0.2000",
+     "30d-P-101.0000": "0.2200",
+     "30d-C-102.0000": "0.2100",
+     "30d-P-102.0000": "0.2300"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "strike": "100.0000",
+    "forward": "100.50000000",
+    "call_iv": "0.1900",
+    "put_iv": "0.2100",
+    "iv": "0.200000",
+    "label": "exact-model",
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "r=q so F=S=100.5 exactly. F=S*exp((r-q)T)=100.50000000; nearest eligible-both-rights strike (ties lower) = 100.0000; ATM IV = mean(call 0.1900, put 0.2100) = 0.200000.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-A03",
+   "group": "atm_iv",
+   "design_ref": "ruling Q5 forward",
+   "case": "forward 110.52, strike 110 not spot-nearest 100",
+   "op": "atm_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.1000",
+    "dividend_yield": "0.0000",
+    "contracts": [
+     {
+      "id": "365d-P-110.0000",
+      "expiry_days": 365,
+      "right": "put",
+      "strike": "110.0000",
+      "style": "european",
+      "bid": "8.2683",
+      "ask": "8.2703",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-P-105.0000",
+      "expiry_days": 365,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.9720",
+      "ask": "5.9740",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-P-115.0000",
+      "expiry_days": 365,
+      "right": "put",
+      "strike": "115.0000",
+      "style": "european",
+      "bid": "10.9497",
+      "ask": "10.9517",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-C-105.0000",
+      "expiry_days": 365,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "10.2149",
+      "ask": "10.2169",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-C-115.0000",
+      "expiry_days": 365,
+      "right": "call",
+      "strike": "115.0000",
+      "style": "european",
+      "bid": "6.0987",
+      "ask": "6.1007",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-C-110.0000",
+      "expiry_days": 365,
+      "right": "call",
+      "strike": "110.0000",
+      "style": "european",
+      "bid": "7.9445",
+      "ask": "7.9465",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-P-100.0000",
+      "expiry_days": 365,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.0875",
+      "ask": "4.0895",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-P-120.0000",
+      "expiry_days": 365,
+      "right": "put",
+      "strike": "120.0000",
+      "style": "european",
+      "bid": "13.9763",
+      "ask": "13.9783",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-C-100.0000",
+      "expiry_days": 365,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "12.9376",
+      "ask": "12.9396",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "365d-C-120.0000",
+      "expiry_days": 365,
+      "right": "call",
+      "strike": "120.0000",
+      "style": "european",
+      "bid": "4.6313",
+      "ask": "4.6333",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "expiry_days": 365
+   },
+   "oracle": {
+    "sigma": {
+     "365d-C-100.0000": "0.1900",
+     "365d-P-100.0000": "0.2100",
+     "365d-C-105.0000": "0.1920",
+     "365d-P-105.0000": "0.2120",
+     "365d-C-110.0000": "0.1940",
+     "365d-P-110.0000": "0.2140",
+     "365d-C-115.0000": "0.1960",
+     "365d-P-115.0000": "0.2160",
+     "365d-C-120.0000": "0.1980",
+     "365d-P-120.0000": "0.2180"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "strike": "110.0000",
+    "forward": "110.51709181",
+    "call_iv": "0.1940",
+    "put_iv": "0.2140",
+    "iv": "0.204000",
+    "label": "exact-model",
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "F=S*exp((r-q)T)=110.51709181; nearest eligible-both-rights strike (ties lower) = 110.0000; ATM IV = mean(call 0.1940, put 0.2140) = 0.204000.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-A04",
+   "group": "atm_iv",
+   "design_ref": "ruling Q5 both rights",
+   "case": "call missing at the nearest strike",
+   "op": "atm_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.6027",
+      "ask": "5.6047",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.6109",
+      "ask": "0.6129",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.6023",
+      "ask": "5.6043",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.5948",
+      "ask": "0.5968",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.3154",
+      "ask": "2.3174",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "expiry_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1880",
+     "30d-P-95.0000": "0.2080",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-105.0000": "0.1920",
+     "30d-P-105.0000": "0.2120"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "strike": "105.0000",
+    "forward": "100.16451875",
+    "call_iv": "0.1920",
+    "put_iv": "0.2120",
+    "iv": "0.202000",
+    "label": "exact-model",
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "F=S*exp((r-q)T)=100.16451875; nearest eligible-both-rights strike (ties lower) = 105.0000; ATM IV = mean(call 0.1920, put 0.2120) = 0.202000.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-A05",
+   "group": "atm_iv",
+   "design_ref": "ruling Q5 eligible",
+   "case": "put crossed at the nearest strike",
+   "op": "atm_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.6027",
+      "ask": "5.6047",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.2513",
+      "ask": "2.2533",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.6109",
+      "ask": "0.6129",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.6023",
+      "ask": "5.6043",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.5948",
+      "ask": "0.5968",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.3174",
+      "ask": "2.3154",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "expiry_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1880",
+     "30d-P-95.0000": "0.2080",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-105.0000": "0.1920",
+     "30d-P-105.0000": "0.2120"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "strike": "105.0000",
+    "forward": "100.16451875",
+    "call_iv": "0.1920",
+    "put_iv": "0.2120",
+    "iv": "0.202000",
+    "label": "exact-model",
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "F=S*exp((r-q)T)=100.16451875; nearest eligible-both-rights strike (ties lower) = 105.0000; ATM IV = mean(call 0.1920, put 0.2120) = 0.202000.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-A06",
+   "group": "atm_iv",
+   "design_ref": "ruling Q5",
+   "case": "no strike has both rights",
+   "op": "atm_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.6165",
+      "ask": "5.6185",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.2513",
+      "ask": "2.2533",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.5850",
+      "ask": "5.5870",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "expiry_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1900",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-105.0000": "0.2100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_atm_strike",
+    "strike": null,
+    "forward": null,
+    "call_iv": null,
+    "put_iv": null,
+    "iv": null,
+    "label": null,
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "no usable ATM strike or style: no_atm_strike",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-A07",
+   "group": "atm_iv",
+   "design_ref": "ruling Q5",
+   "case": "requested expiry has no contracts",
+   "op": "atm_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.5850",
+      "ask": "5.5870",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.5948",
+      "ask": "0.5968",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.3154",
+      "ask": "2.3174",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.2513",
+      "ask": "2.2533",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.6165",
+      "ask": "5.6185",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.6099",
+      "ask": "0.6119",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "expiry_days": 60
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1900",
+     "30d-P-95.0000": "0.2100",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-105.0000": "0.1900",
+     "30d-P-105.0000": "0.2100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_atm_strike",
+    "strike": null,
+    "forward": null,
+    "call_iv": null,
+    "put_iv": null,
+    "iv": null,
+    "label": null,
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "no usable ATM strike or style: no_atm_strike",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-A08",
+   "group": "atm_iv",
+   "design_ref": "ruling Q5 / OC 2.3 stale",
+   "case": "all quotes stale",
+   "op": "atm_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.6165",
+      "ask": "5.6185",
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.5948",
+      "ask": "0.5968",
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.3154",
+      "ask": "2.3174",
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.6099",
+      "ask": "0.6119",
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.5850",
+      "ask": "5.5870",
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.2513",
+      "ask": "2.2533",
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "expiry_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1900",
+     "30d-P-95.0000": "0.2100",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-105.0000": "0.1900",
+     "30d-P-105.0000": "0.2100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_atm_strike",
+    "strike": null,
+    "forward": null,
+    "call_iv": null,
+    "put_iv": null,
+    "iv": null,
+    "label": null,
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "no usable ATM strike or style: no_atm_strike",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-A09",
+   "group": "atm_iv",
+   "design_ref": "ruling section 2",
+   "case": "American ATM labelled approximate (call 100 is ITM side but nearest)",
+   "op": "atm_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "0.5948",
+      "ask": "0.5968",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "5.6027",
+      "ask": "5.6047",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "2.2513",
+      "ask": "2.2533",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "5.6023",
+      "ask": "5.6043",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "2.3154",
+      "ask": "2.3174",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "0.6109",
+      "ask": "0.6129",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "expiry_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1880",
+     "30d-P-95.0000": "0.2080",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-105.0000": "0.1920",
+     "30d-P-105.0000": "0.2120"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "strike": "100.0000",
+    "forward": "100.16451875",
+    "call_iv": "0.1900",
+    "put_iv": "0.2100",
+    "iv": "0.200000",
+    "label": "approximate: European model on an American-style contract",
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "F=S*exp((r-q)T)=100.16451875; nearest eligible-both-rights strike (ties lower) = 100.0000; ATM IV = mean(call 0.1900, put 0.2100) = 0.200000.",
+   "tags": [
+    "pending:req11",
+    "pending:req12"
+   ]
+  },
+  {
+   "id": "IV-A10",
+   "group": "atm_iv",
+   "design_ref": "ruling section 2 item 3",
+   "case": "unknown style",
+   "op": "atm_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": null,
+      "bid": "5.5850",
+      "ask": "5.5870",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": null,
+      "bid": "0.5948",
+      "ask": "0.5968",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": null,
+      "bid": "2.3154",
+      "ask": "2.3174",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": null,
+      "bid": "2.2513",
+      "ask": "2.2533",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": null,
+      "bid": "0.6099",
+      "ask": "0.6119",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": null,
+      "bid": "5.6165",
+      "ask": "5.6185",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "expiry_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1900",
+     "30d-P-95.0000": "0.2100",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-105.0000": "0.1900",
+     "30d-P-105.0000": "0.2100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "style_unknown",
+    "strike": "100.0000",
+    "forward": "100.16451875",
+    "call_iv": null,
+    "put_iv": null,
+    "iv": null,
+    "label": null,
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "no usable ATM strike or style: style_unknown",
+   "tags": [
+    "pending:req11",
+    "pending:req12"
+   ]
+  },
+  {
+   "id": "IV-A12",
+   "op": "atm_iv",
+   "group": "atm_iv",
+   "design_ref": "ruling section 2 (pending)",
+   "case": "call European, put American at the ATM strike",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.6165",
+      "ask": "5.6185",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "0.6099",
+      "ask": "0.6119",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.2513",
+      "ask": "2.2533",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "2.3154",
+      "ask": "2.3174",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.5948",
+      "ask": "0.5968",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "5.5850",
+      "ask": "5.5870",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "cutoff_ns": 0,
+    "expiry_days": 30,
+    "price_input": "midpoint of bid and ask",
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff"
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1900",
+     "30d-P-95.0000": "0.2100",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-105.0000": "0.1900",
+     "30d-P-105.0000": "0.2100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "strike": "100.0000",
+    "forward": "100.16451875",
+    "call_iv": "0.1900",
+    "put_iv": "0.2100",
+    "iv": "0.200000",
+    "label": "approximate: European model on an American-style contract",
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "PO ruling D13: any American leg at the ATM strike gives the approximate label.",
+   "tags": [
+    "pending:req12"
+   ]
+  },
+  {
+   "id": "IV-A17",
+   "group": "atm_iv",
+   "design_ref": "ruling Q5; parity-consistent chain",
+   "case": "put-call parity consistent: same sigma on both rights",
+   "op": "atm_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.8488",
+      "ask": "0.8508",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.5936",
+      "ask": "2.5956",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.6723",
+      "ask": "5.6743",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.6868",
+      "ask": "0.6888",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.4295",
+      "ask": "2.4315",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.8386",
+      "ask": "5.8406",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "expiry_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.2200",
+     "30d-P-95.0000": "0.2200",
+     "30d-C-100.0000": "0.2200",
+     "30d-P-100.0000": "0.2200",
+     "30d-C-105.0000": "0.2200",
+     "30d-P-105.0000": "0.2200"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "strike": "100.0000",
+    "forward": "100.16451875",
+    "call_iv": "0.2200",
+    "put_iv": "0.2200",
+    "iv": "0.220000",
+    "label": "exact-model",
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "C - P = S*exp(-qT) - K*exp(-rT) at every strike, so call IV = put IV = 0.22 (checked by the self-check). F=S*exp((r-q)T)=100.16451875; nearest eligible-both-rights strike (ties lower) = 100.0000; ATM IV = mean(call 0.2200, put 0.2200) = 0.220000.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-A13",
+   "group": "atm_iv",
+   "design_ref": "ruling Q5",
+   "case": "two expiries in the chain; request uses only 30d",
+   "op": "atm_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "60d-P-105.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "7.7733",
+      "ask": "7.7753",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-100.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.8373",
+      "ask": "4.8393",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-105.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "2.8181",
+      "ask": "2.8201",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.6109",
+      "ask": "0.6129",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.3154",
+      "ask": "2.3174",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.6027",
+      "ask": "5.6047",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-95.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "2.6686",
+      "ask": "2.6706",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-95.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "7.6881",
+      "ask": "7.6901",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-100.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.8313",
+      "ask": "4.8333",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.5948",
+      "ask": "0.5968",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.6023",
+      "ask": "5.6043",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.2513",
+      "ask": "2.2533",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "expiry_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1880",
+     "30d-P-95.0000": "0.2080",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-105.0000": "0.1920",
+     "30d-P-105.0000": "0.2120",
+     "60d-C-95.0000": "0.2900",
+     "60d-P-95.0000": "0.3100",
+     "60d-C-100.0000": "0.2900",
+     "60d-P-100.0000": "0.3100",
+     "60d-C-105.0000": "0.2900",
+     "60d-P-105.0000": "0.3100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "strike": "100.0000",
+    "forward": "100.16451875",
+    "call_iv": "0.1900",
+    "put_iv": "0.2100",
+    "iv": "0.200000",
+    "label": "exact-model",
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "F=S*exp((r-q)T)=100.16451875; nearest eligible-both-rights strike (ties lower) = 100.0000; ATM IV = mean(call 0.1900, put 0.2100) = 0.200000.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-A14",
+   "group": "atm_iv",
+   "design_ref": "ruling Q5 eligible",
+   "case": "put stale at the nearest strike",
+   "op": "atm_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.5948",
+      "ask": "0.5968",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.6027",
+      "ask": "5.6047",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.2513",
+      "ask": "2.2533",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.6023",
+      "ask": "5.6043",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.3154",
+      "ask": "2.3174",
+      "event_ns": -30000000000,
+      "known_at_ns": -30000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.6109",
+      "ask": "0.6129",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "expiry_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.1880",
+     "30d-P-95.0000": "0.2080",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-105.0000": "0.1920",
+     "30d-P-105.0000": "0.2120"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "strike": "105.0000",
+    "forward": "100.16451875",
+    "call_iv": "0.1920",
+    "put_iv": "0.2120",
+    "iv": "0.202000",
+    "label": "exact-model",
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "F=S*exp((r-q)T)=100.16451875; nearest eligible-both-rights strike (ties lower) = 105.0000; ATM IV = mean(call 0.1920, put 0.2120) = 0.202000.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-A15",
+   "group": "atm_iv",
+   "design_ref": "ruling Q5 ties",
+   "case": "tie with a smile; upper strike has a different IV",
+   "op": "atm_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.5000",
+    "rate": "0.0200",
+    "dividend_yield": "0.0200",
+    "contracts": [
+     {
+      "id": "30d-C-101.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "101.0000",
+      "style": "european",
+      "bid": "2.0585",
+      "ask": "2.0605",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-101.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "101.0000",
+      "style": "european",
+      "bid": "2.7869",
+      "ask": "2.7889",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.4324",
+      "ask": "2.4344",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.1612",
+      "ask": "2.1632",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "expiry_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-101.0000": "0.2000",
+     "30d-P-101.0000": "0.2200"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "strike": "100.0000",
+    "forward": "100.50000000",
+    "call_iv": "0.1900",
+    "put_iv": "0.2100",
+    "iv": "0.200000",
+    "label": "exact-model",
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "F=S*exp((r-q)T)=100.50000000; nearest eligible-both-rights strike (ties lower) = 100.0000; ATM IV = mean(call 0.1900, put 0.2100) = 0.200000.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-A16",
+   "group": "atm_iv",
+   "design_ref": "ruling Q5 forward",
+   "case": "forward 100.1645 picks 100.25 over spot-nearest 100",
+   "op": "atm_iv",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-P-100.5000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.5000",
+      "style": "european",
+      "bid": "2.8021",
+      "ask": "2.8041",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.2500",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.2500",
+      "style": "european",
+      "bid": "2.2429",
+      "ask": "2.2449",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-99.7500",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "99.7500",
+      "style": "european",
+      "bid": "2.2649",
+      "ask": "2.2669",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.5000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.5000",
+      "style": "european",
+      "bid": "2.2389",
+      "ask": "2.2409",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.2500",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.2500",
+      "style": "european",
+      "bid": "2.5567",
+      "ask": "2.5587",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.3154",
+      "ask": "2.3174",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-99.7500",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "99.7500",
+      "style": "european",
+      "bid": "2.0788",
+      "ask": "2.0808",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.2513",
+      "ask": "2.2533",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "expiry_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-99.7500": "0.1800",
+     "30d-P-99.7500": "0.2000",
+     "30d-C-100.0000": "0.1900",
+     "30d-P-100.0000": "0.2100",
+     "30d-C-100.2500": "0.2000",
+     "30d-P-100.2500": "0.2200",
+     "30d-C-100.5000": "0.2100",
+     "30d-P-100.5000": "0.2300"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "strike": "100.2500",
+    "forward": "100.16451875",
+    "call_iv": "0.2000",
+    "put_iv": "0.2200",
+    "iv": "0.210000",
+    "label": "exact-model",
+    "tolerance_iv": "0.0001",
+    "tolerance_forward": "0.000001"
+   },
+   "derivation": "F=S*exp((r-q)T)=100.16451875; nearest eligible-both-rights strike (ties lower) = 100.2500; ATM IV = mean(call 0.2000, put 0.2200) = 0.210000.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-T01",
+   "group": "iv_30d",
+   "design_ref": "ruling Q6",
+   "case": "21d 0.20 and 49d 0.30 interpolate in total variance",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "21d-C-95.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.3804",
+      "ask": "5.3824",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-100.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.9491",
+      "ask": "1.9511",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-95.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.3765",
+      "ask": "0.3785",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-100.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.3598",
+      "ask": "4.3618",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-105.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "2.3750",
+      "ask": "2.3770",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-P-95.0000",
+      "expiry_days": 49,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "2.2666",
+      "ask": "2.2686",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-P-100.0000",
+      "expiry_days": 49,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.3831",
+      "ask": "4.3851",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-100.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.8729",
+      "ask": "1.8749",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-P-105.0000",
+      "expiry_days": 49,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "7.3603",
+      "ask": "7.3623",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-105.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.3552",
+      "ask": "0.3572",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-105.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.3511",
+      "ask": "5.3531",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-95.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "7.2628",
+      "ask": "7.2648",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "21d-C-95.0000": "0.1900",
+     "21d-P-95.0000": "0.2100",
+     "21d-C-100.0000": "0.1900",
+     "21d-P-100.0000": "0.2100",
+     "21d-C-105.0000": "0.1900",
+     "21d-P-105.0000": "0.2100",
+     "49d-C-95.0000": "0.2900",
+     "49d-P-95.0000": "0.3100",
+     "49d-C-100.0000": "0.2900",
+     "49d-P-100.0000": "0.3100",
+     "49d-C-105.0000": "0.2900",
+     "49d-P-105.0000": "0.3100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "iv": "0.2573907535",
+    "label": "exact-model",
+    "expiries_used": [
+     21,
+     49
+    ],
+    "method": "variance_interpolation",
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "linear-in-IV would be 0.2321, variance gives 0.2574. expiries used [21, 49] (variance_interpolation); variance interpolation w=IV^2*d/365 linear in days to 30d, IV=sqrt(w/(30/365)) = 0.2573907535.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-T02",
+   "group": "iv_30d",
+   "design_ref": "ruling Q6",
+   "case": "exact 30d expiry used as is",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.8217",
+      "ask": "2.8237",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-105.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.3552",
+      "ask": "0.3572",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-95.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "7.2628",
+      "ask": "7.2648",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.8858",
+      "ask": "2.8878",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-105.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "2.3750",
+      "ask": "2.3770",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "1.0298",
+      "ask": "1.0318",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-105.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.3511",
+      "ask": "5.3531",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-100.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.9491",
+      "ask": "1.9511",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-100.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.3598",
+      "ask": "4.3618",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "6.0417",
+      "ask": "6.0437",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-95.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.3765",
+      "ask": "0.3785",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-P-105.0000",
+      "expiry_days": 49,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "7.3603",
+      "ask": "7.3623",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "1.0172",
+      "ask": "1.0192",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-P-100.0000",
+      "expiry_days": 49,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.3831",
+      "ask": "4.3851",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-P-95.0000",
+      "expiry_days": 49,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "2.2666",
+      "ask": "2.2686",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.9997",
+      "ask": "6.0017",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-95.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.3804",
+      "ask": "5.3824",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-100.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.8729",
+      "ask": "1.8749",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "21d-C-95.0000": "0.1900",
+     "21d-P-95.0000": "0.2100",
+     "21d-C-100.0000": "0.1900",
+     "21d-P-100.0000": "0.2100",
+     "21d-C-105.0000": "0.1900",
+     "21d-P-105.0000": "0.2100",
+     "30d-C-95.0000": "0.2400",
+     "30d-P-95.0000": "0.2600",
+     "30d-C-100.0000": "0.2400",
+     "30d-P-100.0000": "0.2600",
+     "30d-C-105.0000": "0.2400",
+     "30d-P-105.0000": "0.2600",
+     "49d-C-95.0000": "0.2900",
+     "49d-P-95.0000": "0.3100",
+     "49d-C-100.0000": "0.2900",
+     "49d-P-100.0000": "0.3100",
+     "49d-C-105.0000": "0.2900",
+     "49d-P-105.0000": "0.3100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "iv": "0.2500000000",
+    "label": "exact-model",
+    "expiries_used": [
+     30
+    ],
+    "method": "as_is",
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "expiries used [30] (as_is); variance interpolation w=IV^2*d/365 linear in days to 30d, IV=sqrt(w/(30/365)) = 0.2500000000.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-T03",
+   "group": "iv_30d",
+   "design_ref": "ruling Q6",
+   "case": "all expiries below 30d",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "7d-C-100.0000",
+      "expiry_days": 7,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "0.9571",
+      "ask": "0.9591",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-105.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.3552",
+      "ask": "0.3572",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "7d-C-99.0000",
+      "expiry_days": 7,
+      "right": "call",
+      "strike": "99.0000",
+      "style": "european",
+      "bid": "1.5423",
+      "ask": "1.5443",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-100.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.9491",
+      "ask": "1.9511",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-95.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.3765",
+      "ask": "0.3785",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-100.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.8729",
+      "ask": "1.8749",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-95.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.3804",
+      "ask": "5.3824",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "7d-P-100.0000",
+      "expiry_days": 7,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.0292",
+      "ask": "1.0312",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "7d-P-99.0000",
+      "expiry_days": 7,
+      "right": "put",
+      "strike": "99.0000",
+      "style": "european",
+      "bid": "0.6052",
+      "ask": "0.6072",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "7d-C-101.0000",
+      "expiry_days": 7,
+      "right": "call",
+      "strike": "101.0000",
+      "style": "european",
+      "bid": "0.5388",
+      "ask": "0.5408",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-105.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.3511",
+      "ask": "5.3531",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "7d-P-101.0000",
+      "expiry_days": 7,
+      "right": "put",
+      "strike": "101.0000",
+      "style": "european",
+      "bid": "1.6030",
+      "ask": "1.6050",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "7d-C-99.0000": "0.1700",
+     "7d-P-99.0000": "0.1900",
+     "7d-C-100.0000": "0.1700",
+     "7d-P-100.0000": "0.1900",
+     "7d-C-101.0000": "0.1700",
+     "7d-P-101.0000": "0.1900",
+     "21d-C-95.0000": "0.1900",
+     "21d-P-95.0000": "0.2100",
+     "21d-C-100.0000": "0.1900",
+     "21d-P-100.0000": "0.2100",
+     "21d-C-105.0000": "0.1900",
+     "21d-P-105.0000": "0.2100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_bracketing_expiry",
+    "iv": null,
+    "label": null,
+    "expiries_used": [],
+    "method": null,
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "unavailable: no_bracketing_expiry",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-T04",
+   "group": "iv_30d",
+   "design_ref": "ruling Q6",
+   "case": "all expiries above 30d",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "35d-C-95.0000",
+      "expiry_days": 35,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "6.1810",
+      "ask": "6.1830",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "35d-P-105.0000",
+      "expiry_days": 35,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "6.2222",
+      "ask": "6.2242",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-100.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.8373",
+      "ask": "4.8393",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "35d-C-100.0000",
+      "expiry_days": 35,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "3.0542",
+      "ask": "3.0562",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-100.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.8313",
+      "ask": "4.8333",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-105.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "7.7733",
+      "ask": "7.7753",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "35d-P-95.0000",
+      "expiry_days": 35,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "1.1935",
+      "ask": "1.1955",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "35d-C-105.0000",
+      "expiry_days": 35,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "1.2178",
+      "ask": "1.2198",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-95.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "7.6881",
+      "ask": "7.6901",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-95.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "2.6686",
+      "ask": "2.6706",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-105.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "2.8181",
+      "ask": "2.8201",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "35d-P-100.0000",
+      "expiry_days": 35,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "3.1092",
+      "ask": "3.1112",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "35d-C-95.0000": "0.2400",
+     "35d-P-95.0000": "0.2600",
+     "35d-C-100.0000": "0.2400",
+     "35d-P-100.0000": "0.2600",
+     "35d-C-105.0000": "0.2400",
+     "35d-P-105.0000": "0.2600",
+     "60d-C-95.0000": "0.2900",
+     "60d-P-95.0000": "0.3100",
+     "60d-C-100.0000": "0.2900",
+     "60d-P-100.0000": "0.3100",
+     "60d-C-105.0000": "0.2900",
+     "60d-P-105.0000": "0.3100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_bracketing_expiry",
+    "iv": null,
+    "label": null,
+    "expiries_used": [],
+    "method": null,
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "unavailable: no_bracketing_expiry",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-T05",
+   "group": "iv_30d",
+   "design_ref": "ruling Q6",
+   "case": "single expiry at 29d",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "29d-P-95.0000",
+      "expiry_days": 29,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.5844",
+      "ask": "0.5864",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "29d-P-100.0000",
+      "expiry_days": 29,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.2779",
+      "ask": "2.2799",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "29d-P-105.0000",
+      "expiry_days": 29,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.5595",
+      "ask": "5.5615",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "29d-C-105.0000",
+      "expiry_days": 29,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.5682",
+      "ask": "0.5702",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "29d-C-95.0000",
+      "expiry_days": 29,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.5904",
+      "ask": "5.5924",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "29d-C-100.0000",
+      "expiry_days": 29,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.2122",
+      "ask": "2.2142",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "29d-C-95.0000": "0.1900",
+     "29d-P-95.0000": "0.2100",
+     "29d-C-100.0000": "0.1900",
+     "29d-P-100.0000": "0.2100",
+     "29d-C-105.0000": "0.1900",
+     "29d-P-105.0000": "0.2100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_bracketing_expiry",
+    "iv": null,
+    "label": null,
+    "expiries_used": [],
+    "method": null,
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "unavailable: no_bracketing_expiry",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-T06",
+   "group": "iv_30d",
+   "design_ref": "ruling Q6",
+   "case": "single expiry at 31d",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "31d-C-95.0000",
+      "expiry_days": 31,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.6426",
+      "ask": "5.6446",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "31d-P-95.0000",
+      "expiry_days": 31,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.6352",
+      "ask": "0.6372",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "31d-P-100.0000",
+      "expiry_days": 31,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.3522",
+      "ask": "2.3542",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "31d-C-100.0000",
+      "expiry_days": 31,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.2898",
+      "ask": "2.2918",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "31d-P-105.0000",
+      "expiry_days": 31,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.6104",
+      "ask": "5.6124",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "31d-C-105.0000",
+      "expiry_days": 31,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.6213",
+      "ask": "0.6233",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "31d-C-95.0000": "0.1900",
+     "31d-P-95.0000": "0.2100",
+     "31d-C-100.0000": "0.1900",
+     "31d-P-100.0000": "0.2100",
+     "31d-C-105.0000": "0.1900",
+     "31d-P-105.0000": "0.2100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_bracketing_expiry",
+    "iv": null,
+    "label": null,
+    "expiries_used": [],
+    "method": null,
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "unavailable: no_bracketing_expiry",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-T07",
+   "group": "iv_30d",
+   "design_ref": "ruling Q6",
+   "case": "four expiries, bracket is 21d and 35d",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "35d-C-95.0000",
+      "expiry_days": 35,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "6.2749",
+      "ask": "6.2769",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-95.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "2.6686",
+      "ask": "2.6706",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-95.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.4828",
+      "ask": "5.4848",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-100.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.8313",
+      "ask": "4.8333",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "7d-C-99.0000",
+      "expiry_days": 7,
+      "right": "call",
+      "strike": "99.0000",
+      "style": "european",
+      "bid": "1.5423",
+      "ask": "1.5443",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-105.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.4747",
+      "ask": "0.4767",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-100.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.8373",
+      "ask": "4.8393",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "7d-C-101.0000",
+      "expiry_days": 7,
+      "right": "call",
+      "strike": "101.0000",
+      "style": "european",
+      "bid": "0.5388",
+      "ask": "0.5408",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "7d-P-99.0000",
+      "expiry_days": 7,
+      "right": "put",
+      "strike": "99.0000",
+      "style": "european",
+      "bid": "0.6052",
+      "ask": "0.6072",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "7d-P-101.0000",
+      "expiry_days": 7,
+      "right": "put",
+      "strike": "101.0000",
+      "style": "european",
+      "bid": "1.6030",
+      "ask": "1.6050",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-100.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.0640",
+      "ask": "2.0660",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "35d-C-105.0000",
+      "expiry_days": 35,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "1.3221",
+      "ask": "1.3241",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-95.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.4901",
+      "ask": "0.4921",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-105.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "2.8181",
+      "ask": "2.8201",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "7d-C-100.0000",
+      "expiry_days": 7,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "0.9571",
+      "ask": "0.9591",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "7d-P-100.0000",
+      "expiry_days": 7,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.0292",
+      "ask": "1.0312",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-100.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.1401",
+      "ask": "2.1421",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-105.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.4813",
+      "ask": "5.4833",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "35d-P-100.0000",
+      "expiry_days": 35,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "3.2323",
+      "ask": "3.2343",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-105.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "7.7733",
+      "ask": "7.7753",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "35d-P-95.0000",
+      "expiry_days": 35,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "1.2908",
+      "ask": "1.2928",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "35d-P-105.0000",
+      "expiry_days": 35,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "6.3294",
+      "ask": "6.3314",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "35d-C-100.0000",
+      "expiry_days": 35,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "3.1774",
+      "ask": "3.1794",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-95.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "7.6881",
+      "ask": "7.6901",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "7d-C-99.0000": "0.1700",
+     "7d-P-99.0000": "0.1900",
+     "7d-C-100.0000": "0.1700",
+     "7d-P-100.0000": "0.1900",
+     "7d-C-101.0000": "0.1700",
+     "7d-P-101.0000": "0.1900",
+     "21d-C-95.0000": "0.2100",
+     "21d-P-95.0000": "0.2300",
+     "21d-C-100.0000": "0.2100",
+     "21d-P-100.0000": "0.2300",
+     "21d-C-105.0000": "0.2100",
+     "21d-P-105.0000": "0.2300",
+     "35d-C-95.0000": "0.2500",
+     "35d-P-95.0000": "0.2700",
+     "35d-C-100.0000": "0.2500",
+     "35d-P-100.0000": "0.2700",
+     "35d-C-105.0000": "0.2500",
+     "35d-P-105.0000": "0.2700",
+     "60d-C-95.0000": "0.2900",
+     "60d-P-95.0000": "0.3100",
+     "60d-C-100.0000": "0.2900",
+     "60d-P-100.0000": "0.3100",
+     "60d-C-105.0000": "0.2900",
+     "60d-P-105.0000": "0.3100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "iv": "0.2505992817",
+    "label": "exact-model",
+    "expiries_used": [
+     21,
+     35
+    ],
+    "method": "variance_interpolation",
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "expiries used [21, 35] (variance_interpolation); variance interpolation w=IV^2*d/365 linear in days to 30d, IV=sqrt(w/(30/365)) = 0.2505992817.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-T08",
+   "group": "iv_30d",
+   "design_ref": "ruling Q6",
+   "case": "29d and 31d",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "31d-P-105.0000",
+      "expiry_days": 31,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "6.5839",
+      "ask": "6.5859",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "29d-P-95.0000",
+      "expiry_days": 29,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.5844",
+      "ask": "0.5864",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "29d-C-105.0000",
+      "expiry_days": 29,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.5682",
+      "ask": "0.5702",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "29d-P-100.0000",
+      "expiry_days": 29,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.2779",
+      "ask": "2.2799",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "29d-C-100.0000",
+      "expiry_days": 29,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.2122",
+      "ask": "2.2142",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "31d-P-100.0000",
+      "expiry_days": 31,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "3.5117",
+      "ask": "3.5137",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "31d-C-105.0000",
+      "expiry_days": 31,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "1.5607",
+      "ask": "1.5627",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "31d-C-100.0000",
+      "expiry_days": 31,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "3.4494",
+      "ask": "3.4514",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "31d-P-95.0000",
+      "expiry_days": 31,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "1.5136",
+      "ask": "1.5156",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "31d-C-95.0000",
+      "expiry_days": 31,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "6.4824",
+      "ask": "6.4844",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "29d-P-105.0000",
+      "expiry_days": 29,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.5595",
+      "ask": "5.5615",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "29d-C-95.0000",
+      "expiry_days": 29,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.5904",
+      "ask": "5.5924",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "29d-C-95.0000": "0.1900",
+     "29d-P-95.0000": "0.2100",
+     "29d-C-100.0000": "0.1900",
+     "29d-P-100.0000": "0.2100",
+     "29d-C-105.0000": "0.1900",
+     "29d-P-105.0000": "0.2100",
+     "31d-C-95.0000": "0.2900",
+     "31d-P-95.0000": "0.3100",
+     "31d-C-100.0000": "0.2900",
+     "31d-P-100.0000": "0.3100",
+     "31d-C-105.0000": "0.2900",
+     "31d-P-105.0000": "0.3100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "iv": "0.2565800720",
+    "label": "exact-model",
+    "expiries_used": [
+     29,
+     31
+    ],
+    "method": "variance_interpolation",
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "expiries used [29, 31] (variance_interpolation); variance interpolation w=IV^2*d/365 linear in days to 30d, IV=sqrt(w/(30/365)) = 0.2565800720.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-T09",
+   "group": "iv_30d",
+   "design_ref": "PO ruling D14",
+   "case": "upper bracket has no eligible strike",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "21d-P-105.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.3511",
+      "ask": "5.3531",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-95.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.3765",
+      "ask": "0.3785",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-105.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "2.3750",
+      "ask": "2.3770",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-95.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.3804",
+      "ask": "5.3824",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-100.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.8729",
+      "ask": "1.8749",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-105.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.3552",
+      "ask": "0.3572",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-100.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.9491",
+      "ask": "1.9511",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-100.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.3598",
+      "ask": "4.3618",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-95.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "7.2628",
+      "ask": "7.2648",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "21d-C-95.0000": "0.1900",
+     "21d-P-95.0000": "0.2100",
+     "21d-C-100.0000": "0.1900",
+     "21d-P-100.0000": "0.2100",
+     "21d-C-105.0000": "0.1900",
+     "21d-P-105.0000": "0.2100",
+     "49d-C-95.0000": "0.2900",
+     "49d-C-100.0000": "0.2900",
+     "49d-C-105.0000": "0.2900"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_bracketing_expiry",
+    "iv": null,
+    "label": null,
+    "expiries_used": [
+     21,
+     49
+    ],
+    "method": null,
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "unavailable: no_bracketing_expiry",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-T10a",
+   "group": "iv_30d",
+   "design_ref": "ruling section 2",
+   "case": "American expiries: approximate label",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "49d-C-100.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "4.3598",
+      "ask": "4.3618",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-105.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "2.3750",
+      "ask": "2.3770",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-P-105.0000",
+      "expiry_days": 49,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "7.3603",
+      "ask": "7.3623",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-105.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "5.3511",
+      "ask": "5.3531",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-100.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "1.8729",
+      "ask": "1.8749",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-95.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "5.3804",
+      "ask": "5.3824",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-95.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "0.3765",
+      "ask": "0.3785",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-105.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "0.3552",
+      "ask": "0.3572",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-P-95.0000",
+      "expiry_days": 49,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "2.2666",
+      "ask": "2.2686",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-95.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "7.2628",
+      "ask": "7.2648",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-100.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "1.9491",
+      "ask": "1.9511",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-P-100.0000",
+      "expiry_days": 49,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "4.3831",
+      "ask": "4.3851",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "21d-C-95.0000": "0.1900",
+     "21d-P-95.0000": "0.2100",
+     "21d-C-100.0000": "0.1900",
+     "21d-P-100.0000": "0.2100",
+     "21d-C-105.0000": "0.1900",
+     "21d-P-105.0000": "0.2100",
+     "49d-C-95.0000": "0.2900",
+     "49d-P-95.0000": "0.3100",
+     "49d-C-100.0000": "0.2900",
+     "49d-P-100.0000": "0.3100",
+     "49d-C-105.0000": "0.2900",
+     "49d-P-105.0000": "0.3100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "iv": "0.2573907535",
+    "label": "approximate: European model on an American-style contract",
+    "expiries_used": [
+     21,
+     49
+    ],
+    "method": "variance_interpolation",
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "expiries used [21, 49] (variance_interpolation); variance interpolation w=IV^2*d/365 linear in days to 30d, IV=sqrt(w/(30/365)) = 0.2573907535.",
+   "tags": [
+    "pending:req11",
+    "pending:req12"
+   ]
+  },
+  {
+   "id": "IV-T10b",
+   "group": "iv_30d",
+   "design_ref": "ruling section 2 item 3",
+   "case": "unknown style",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "49d-P-95.0000",
+      "expiry_days": 49,
+      "right": "put",
+      "strike": "95.0000",
+      "style": null,
+      "bid": "2.2666",
+      "ask": "2.2686",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-100.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "100.0000",
+      "style": null,
+      "bid": "1.8729",
+      "ask": "1.8749",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-105.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "105.0000",
+      "style": null,
+      "bid": "0.3552",
+      "ask": "0.3572",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-P-100.0000",
+      "expiry_days": 49,
+      "right": "put",
+      "strike": "100.0000",
+      "style": null,
+      "bid": "4.3831",
+      "ask": "4.3851",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-P-105.0000",
+      "expiry_days": 49,
+      "right": "put",
+      "strike": "105.0000",
+      "style": null,
+      "bid": "7.3603",
+      "ask": "7.3623",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-95.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "95.0000",
+      "style": null,
+      "bid": "0.3765",
+      "ask": "0.3785",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-100.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "100.0000",
+      "style": null,
+      "bid": "1.9491",
+      "ask": "1.9511",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-105.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "105.0000",
+      "style": null,
+      "bid": "5.3511",
+      "ask": "5.3531",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-100.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "100.0000",
+      "style": null,
+      "bid": "4.3598",
+      "ask": "4.3618",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-95.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "95.0000",
+      "style": null,
+      "bid": "5.3804",
+      "ask": "5.3824",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-95.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "95.0000",
+      "style": null,
+      "bid": "7.2628",
+      "ask": "7.2648",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-105.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "105.0000",
+      "style": null,
+      "bid": "2.3750",
+      "ask": "2.3770",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "21d-C-95.0000": "0.1900",
+     "21d-P-95.0000": "0.2100",
+     "21d-C-100.0000": "0.1900",
+     "21d-P-100.0000": "0.2100",
+     "21d-C-105.0000": "0.1900",
+     "21d-P-105.0000": "0.2100",
+     "49d-C-95.0000": "0.2900",
+     "49d-P-95.0000": "0.3100",
+     "49d-C-100.0000": "0.2900",
+     "49d-P-100.0000": "0.3100",
+     "49d-C-105.0000": "0.2900",
+     "49d-P-105.0000": "0.3100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "style_unknown",
+    "iv": null,
+    "label": null,
+    "expiries_used": [
+     21,
+     49
+    ],
+    "method": null,
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "unavailable: style_unknown",
+   "tags": [
+    "pending:req11",
+    "pending:req12"
+   ]
+  },
+  {
+   "id": "IV-T11",
+   "group": "iv_30d",
+   "design_ref": "ruling Q6",
+   "case": "14d and 91d",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "91d-P-100.0000",
+      "expiry_days": 91,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "5.2997",
+      "ask": "5.3017",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "91d-P-105.0000",
+      "expiry_days": 91,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "8.1921",
+      "ask": "8.1941",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "14d-P-100.0000",
+      "expiry_days": 14,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.7564",
+      "ask": "1.7584",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "14d-P-99.0000",
+      "expiry_days": 14,
+      "right": "put",
+      "strike": "99.0000",
+      "style": "european",
+      "bid": "1.2990",
+      "ask": "1.3010",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "14d-C-101.0000",
+      "expiry_days": 14,
+      "right": "call",
+      "strike": "101.0000",
+      "style": "european",
+      "bid": "1.2264",
+      "ask": "1.2284",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "14d-P-101.0000",
+      "expiry_days": 14,
+      "right": "put",
+      "strike": "101.0000",
+      "style": "european",
+      "bid": "2.3019",
+      "ask": "2.3039",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "91d-P-95.0000",
+      "expiry_days": 91,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "3.1080",
+      "ask": "3.1100",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "91d-C-105.0000",
+      "expiry_days": 91,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "3.3411",
+      "ask": "3.3431",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "14d-C-100.0000",
+      "expiry_days": 14,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.6770",
+      "ask": "1.6790",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "14d-C-99.0000",
+      "expiry_days": 14,
+      "right": "call",
+      "strike": "99.0000",
+      "style": "european",
+      "bid": "2.2240",
+      "ask": "2.2260",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "91d-C-95.0000",
+      "expiry_days": 91,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "8.2136",
+      "ask": "8.2156",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "91d-C-100.0000",
+      "expiry_days": 91,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "5.4006",
+      "ask": "5.4026",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "14d-C-99.0000": "0.2100",
+     "14d-P-99.0000": "0.2300",
+     "14d-C-100.0000": "0.2100",
+     "14d-P-100.0000": "0.2300",
+     "14d-C-101.0000": "0.2100",
+     "14d-P-101.0000": "0.2300",
+     "91d-C-95.0000": "0.2600",
+     "91d-P-95.0000": "0.2800",
+     "91d-C-100.0000": "0.2600",
+     "91d-P-100.0000": "0.2800",
+     "91d-C-105.0000": "0.2600",
+     "91d-P-105.0000": "0.2800"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "iv": "0.2526705844",
+    "label": "exact-model",
+    "expiries_used": [
+     14,
+     91
+    ],
+    "method": "variance_interpolation",
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "expiries used [14, 91] (variance_interpolation); variance interpolation w=IV^2*d/365 linear in days to 30d, IV=sqrt(w/(30/365)) = 0.2526705844.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-T14",
+   "group": "iv_30d",
+   "design_ref": "ruling Q6",
+   "case": "only a 30d expiry",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.8858",
+      "ask": "2.8878",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "1.0172",
+      "ask": "1.0192",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "1.0298",
+      "ask": "1.0318",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "6.0417",
+      "ask": "6.0437",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.9997",
+      "ask": "6.0017",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.8217",
+      "ask": "2.8237",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.2400",
+     "30d-P-95.0000": "0.2600",
+     "30d-C-100.0000": "0.2400",
+     "30d-P-100.0000": "0.2600",
+     "30d-C-105.0000": "0.2400",
+     "30d-P-105.0000": "0.2600"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "iv": "0.2500000000",
+    "label": "exact-model",
+    "expiries_used": [
+     30
+    ],
+    "method": "as_is",
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "expiries used [30] (as_is); variance interpolation w=IV^2*d/365 linear in days to 30d, IV=sqrt(w/(30/365)) = 0.2500000000.",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-T16",
+   "group": "iv_30d",
+   "design_ref": "ruling section 2",
+   "case": "American exact 30d expiry",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-P-100.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "2.8858",
+      "ask": "2.8878",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-95.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "1.0172",
+      "ask": "1.0192",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-P-105.0000",
+      "expiry_days": 30,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "6.0417",
+      "ask": "6.0437",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "american",
+      "bid": "1.0298",
+      "ask": "1.0318",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "american",
+      "bid": "2.8217",
+      "ask": "2.8237",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "american",
+      "bid": "5.9997",
+      "ask": "6.0017",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "30d-C-95.0000": "0.2400",
+     "30d-P-95.0000": "0.2600",
+     "30d-C-100.0000": "0.2400",
+     "30d-P-100.0000": "0.2600",
+     "30d-C-105.0000": "0.2400",
+     "30d-P-105.0000": "0.2600"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "value",
+    "reason": null,
+    "iv": "0.2500000000",
+    "label": "approximate: European model on an American-style contract",
+    "expiries_used": [
+     30
+    ],
+    "method": "as_is",
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "expiries used [30] (as_is); variance interpolation w=IV^2*d/365 linear in days to 30d, IV=sqrt(w/(30/365)) = 0.2500000000.",
+   "tags": [
+    "pending:req11",
+    "pending:req12"
+   ]
+  },
+  {
+   "id": "IV-T12",
+   "group": "iv_30d",
+   "design_ref": "PO ruling D14",
+   "case": "21d ok, 49d ineligible, 60d ok: bracket is 21d/49d (D14)",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "21d-P-105.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.3511",
+      "ask": "5.3531",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-95.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "7.6881",
+      "ask": "7.6901",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-100.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "3.6321",
+      "ask": "3.6341",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-100.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.8729",
+      "ask": "1.8749",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-95.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "6.6556",
+      "ask": "6.6576",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-95.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "2.6686",
+      "ask": "2.6706",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-100.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.8313",
+      "ask": "4.8333",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-105.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "1.7092",
+      "ask": "1.7112",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-95.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.3765",
+      "ask": "0.3785",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-95.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.3804",
+      "ask": "5.3824",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-P-105.0000",
+      "expiry_days": 60,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "7.7733",
+      "ask": "7.7753",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-100.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.9491",
+      "ask": "1.9511",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-100.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.8373",
+      "ask": "4.8393",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "60d-C-105.0000",
+      "expiry_days": 60,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "2.8181",
+      "ask": "2.8201",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-105.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.3552",
+      "ask": "0.3572",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "21d-C-95.0000": "0.1900",
+     "21d-P-95.0000": "0.2100",
+     "21d-C-100.0000": "0.1900",
+     "21d-P-100.0000": "0.2100",
+     "21d-C-105.0000": "0.1900",
+     "21d-P-105.0000": "0.2100",
+     "49d-C-95.0000": "0.2400",
+     "49d-C-100.0000": "0.2400",
+     "49d-C-105.0000": "0.2400",
+     "60d-C-95.0000": "0.2900",
+     "60d-P-95.0000": "0.3100",
+     "60d-C-100.0000": "0.2900",
+     "60d-P-100.0000": "0.3100",
+     "60d-C-105.0000": "0.2900",
+     "60d-P-105.0000": "0.3100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_bracketing_expiry",
+    "iv": null,
+    "label": null,
+    "expiries_used": [
+     21,
+     49
+    ],
+    "method": null,
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "unavailable: no_bracketing_expiry",
+   "tags": [
+    "pending:req11"
+   ]
+  },
+  {
+   "id": "IV-T13",
+   "group": "iv_30d",
+   "design_ref": "PO ruling D14",
+   "case": "30d expiry listed but no ATM strike: no_atm_strike, no fallback (D14)",
+   "op": "iv_30d",
+   "inputs": {
+    "T_ns": 0,
+    "spot": "100.0000",
+    "rate": "0.0300",
+    "dividend_yield": "0.0100",
+    "contracts": [
+     {
+      "id": "30d-C-105.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "1.0298",
+      "ask": "1.0318",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-95.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "0.3765",
+      "ask": "0.3785",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-105.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "5.3511",
+      "ask": "5.3531",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-95.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.3804",
+      "ask": "5.3824",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-P-100.0000",
+      "expiry_days": 21,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.9491",
+      "ask": "1.9511",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-100.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "2.8217",
+      "ask": "2.8237",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-95.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "7.2628",
+      "ask": "7.2648",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-100.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "1.8729",
+      "ask": "1.8749",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-P-105.0000",
+      "expiry_days": 49,
+      "right": "put",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "7.3603",
+      "ask": "7.3623",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-100.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.3598",
+      "ask": "4.3618",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-P-100.0000",
+      "expiry_days": 49,
+      "right": "put",
+      "strike": "100.0000",
+      "style": "european",
+      "bid": "4.3831",
+      "ask": "4.3851",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-P-95.0000",
+      "expiry_days": 49,
+      "right": "put",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "2.2666",
+      "ask": "2.2686",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "49d-C-105.0000",
+      "expiry_days": 49,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "2.3750",
+      "ask": "2.3770",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "30d-C-95.0000",
+      "expiry_days": 30,
+      "right": "call",
+      "strike": "95.0000",
+      "style": "european",
+      "bid": "5.9997",
+      "ask": "6.0017",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     },
+     {
+      "id": "21d-C-105.0000",
+      "expiry_days": 21,
+      "right": "call",
+      "strike": "105.0000",
+      "style": "european",
+      "bid": "0.3552",
+      "ask": "0.3572",
+      "event_ns": -2000000000,
+      "known_at_ns": -2000000000,
+      "condition": "regular"
+     }
+    ]
+   },
+   "request": {
+    "stale_limit_ns": 10000000000,
+    "year_basis_days": 365,
+    "time_to_expiry": "calendar days, expiry N*24h after cutoff",
+    "price_input": "midpoint of bid and ask",
+    "cutoff_ns": 0,
+    "target_days": 30
+   },
+   "oracle": {
+    "sigma": {
+     "21d-C-95.0000": "0.1900",
+     "21d-P-95.0000": "0.2100",
+     "21d-C-100.0000": "0.1900",
+     "21d-P-100.0000": "0.2100",
+     "21d-C-105.0000": "0.1900",
+     "21d-P-105.0000": "0.2100",
+     "30d-C-95.0000": "0.2400",
+     "30d-C-100.0000": "0.2400",
+     "30d-C-105.0000": "0.2400",
+     "49d-C-95.0000": "0.2900",
+     "49d-P-95.0000": "0.3100",
+     "49d-C-100.0000": "0.2900",
+     "49d-P-100.0000": "0.3100",
+     "49d-C-105.0000": "0.2900",
+     "49d-P-105.0000": "0.3100"
+    },
+    "note": "stated flat-vol sigma per contract; not an input to the library"
+   },
+   "gating": true,
+   "expected": {
+    "status": "unavailable",
+    "reason": "no_atm_strike",
+    "iv": null,
+    "label": null,
+    "expiries_used": [],
+    "method": null,
+    "tolerance_iv": "0.0001"
+   },
+   "derivation": "unavailable: no_atm_strike",
+   "tags": [
+    "pending:req11"
+   ]
+  }
+ ]
+}
