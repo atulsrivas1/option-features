@@ -121,10 +121,14 @@ class BoundaryTests(unittest.TestCase):
                         if enc_kind == "enc":
                             return arithmetic.Ends(enc=arithmetic_legacy.PriceEnclosure("option-arb-bsm1", "1", arithmetic_legacy.outward_decimal(lo, False), arithmetic_legacy.outward_decimal(hi, True)))
                         return arithmetic.Ends(arithmetic._finish(*self._parts(lo, False)), arithmetic._finish(*self._parts(hi, True)))
-                    e = mk()
-                    L, H = e.fractions()
+                    L, H = mk().fractions()   # a separate instance: fractions() would switch sign_vs to the Fraction branch
                     for t in (L, H, (L + H) / 2, L - Fraction(1, 10**9), H + Fraction(1, 10**9)):
+                        e = mk()   # fresh per target
+                        if enc_kind == "parts":
+                            self.assertIsNone(e._fr)   # the integer branch really runs
                         self.assertEqual(e.sign_vs(t), -1 if H < t else (1 if L > t else 0), (sign, enc_kind, t))
+                        if enc_kind == "parts":
+                            self.assertIsNone(e._fr)
                     tol = Fraction(1, 8)
                     for t in (L + tol, H - tol, L + tol + Fraction(1, 10**9), H - tol - Fraction(1, 10**9), L, H):
                         want = abs(L - t) <= tol and abs(H - t) <= tol

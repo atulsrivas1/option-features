@@ -184,6 +184,30 @@ def targets(rng, low_f, high_f):
     return pool
 
 
+def edge_grid():
+    """Deterministic edge magnitudes: -8194..-8191 and 4095..4097 x bit lengths x both signs x with/without low
+    bits x both directions (checked for every bound; see run_edge_grid)."""
+    for mag in (-8194, -8193, -8192, -8191, 4095, 4096, 4097):
+        for bits in (1, 2, 53, 100, 127):
+            for sign in (1, -1):
+                for low_bits in (False, True):
+                    m = (1 << (bits - 1)) | ((1 if low_bits and bits > 1 else 0))
+                    yield Bound(sign * m, mag - m.bit_length() + 1)
+
+
+def run_edge_grid():
+    _paths()
+    from option_features import arithmetic as new
+    from option_features import arithmetic_legacy as old
+    n, bad = 0, []
+    for b in edge_grid():
+        for upper in (False, True):
+            n += 1
+            if call(old.dyadic_endpoint, b, upper) != call(new.dyadic_endpoint, b, upper):
+                bad.append((b.m.bit_length(), b.e, upper))
+    return n, bad
+
+
 def run_chunk(spec):
     """spec = (seed, count, kinds_weights). Returns counts and the first mismatches."""
     seed, count, tiers = spec
@@ -269,6 +293,9 @@ def run(n, workers, seed, tiers=(128, 256, 512, 1024, 2048)):
         i += 1
     total, bad = {}, []
     t0 = time.time()
+    grid_n, grid_bad = run_edge_grid()
+    total["edge_grid"] = grid_n
+    bad += [{"kind": "edge_grid", "what": repr(g)} for g in grid_bad]
     if workers <= 1:
         results = map(run_chunk, specs)
     else:
