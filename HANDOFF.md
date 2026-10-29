@@ -1,6 +1,6 @@
 # Handoff (keep under 60 lines; update after every merge)
 
-Updated 2026-10-28 (candidate14). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
+Updated 2026-10-29 (candidate14; qualified-gate evidence in RELEASE_NOTES section 15). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
 ## PO decision 2026-10-28: R26 stays PRERELEASE (Windows x64 cp312, partial Windows evidence)
 - Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (see PR 51; Next item 8 is done once that PR merges). Scoped qualified label is a next-release gate; candidate13 stays the baseline.
