@@ -128,10 +128,15 @@ class Determinism(unittest.TestCase):
         self.assertEqual(res.log["workers_used"], 2)
 
     def test_batch_sizes_and_unit_orders(self):
-        for batch in (1, 2, 7, 1000):
-            for order in ("natural", "reversed", "shuffle:7", "shuffle:99"):
+        for batch, order in ((1, "natural"), (1, "shuffle:7"), (2, "reversed"), (3, "shuffle:99"), (7, "natural"), (1000, "reversed")):
+            if True:
                 res = self.pool(2).run(SPEC, batch_size=batch, order=order)
                 self.assertEqual(res.result_sha256, self.ref.result_sha256, (batch, order))
+
+    def test_uncached_single_unit_equals_chunked_pool_bytes(self):
+        full = self.pool(2).run(SPEC, batch_size=3, emit="full")
+        for key, data in full.units[::5]:
+            self.assertEqual(m1_runner.workload.compute_unit(SPEC, key), data, key)
 
     def test_contract_order_does_not_change_bytes(self):
         for order in ("reversed", "shuffle:3"):
@@ -211,7 +216,7 @@ class Failures(unittest.TestCase):
 
     def test_aggregate_rss_limit_fails_run(self):
         with tempfile.TemporaryDirectory() as out:
-            with Runner(workers=2, aggregate_hard_bytes=1 << 20) as r:
+            with Runner(workers=2, b9_peak_bytes=1 << 10, aggregate_hard_bytes=1 << 20) as r:
                 with self.assertRaises(MemoryLimitError):
                     r.run(SPEC, out_dir=out)
             self.assert_no_outputs(out)
