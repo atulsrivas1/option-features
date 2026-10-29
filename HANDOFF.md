@@ -1,6 +1,6 @@
 # Handoff (keep under 60 lines; update after every merge)
 
-Updated 2026-10-29 (candidate14; scoped label ratified, RELEASE_NOTES section 15). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
+Updated 2026-10-29 (candidate15 frozen as R27 candidate, docs/r26-variants/CANDIDATE15_FREEZE_RECORD.md: 2666 of 2668 frozen, harness v15; Windows T5-wheel and Linux R27 evidence PENDING; scoped label per RELEASE_NOTES section 15 unchanged, PRERELEASE). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
 ## PO decision 2026-10-28: R26 stays PRERELEASE (Windows x64 cp312, partial Windows evidence)
 - Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (see PR 51; Next item 8 is done once that PR merges). The scoped label was ratified 2026-10-29 (see below); candidate13 stays the baseline.

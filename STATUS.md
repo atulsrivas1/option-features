@@ -1,5 +1,8 @@
 # Status (newest first)
 
+## 2026-10-29 - Candidate15 frozen as the R27 candidate (2666 frozen of 2668 rows; label stays PRERELEASE)
+- Record docs/r26-variants/CANDIDATE15_FREEZE_RECORD.md: tree 8d713f61...b466, one-row change (N5 extra-stream control, NON-PROOF masked negative control), harness v15, independent review approve with 4 disclosed limits. Docs only: R27 candidate evidence on Windows (T5 wheels) and Linux is PENDING, no claim made. T9 banners added to docs/r26 (output vocabulary not implemented).
+
 ## 2026-10-29 - Label ratified (scoped): Qualified for Windows x64, CPython 3.12, synthetic data only, with disclosed exclusions (PRERELEASE)
 - Docs only: RELEASE_NOTES (header, 1, 11, 12, 13, 14, 15), HANDOFF and DECISIONS aligned to the PO ratification. Gate met with disclosed exclusions (atomic replace of demo output, demo page provenance, wheel-to-source provenance, flagged rows: 39 W3 ids, N5 flagged rows, N6 row 21). Not a claim for other platforms or Python versions, real data, performance or confinement. Release stays PRERELEASE.
 
