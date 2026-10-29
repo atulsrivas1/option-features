@@ -17,6 +17,7 @@ Each solver run happens in a fresh subprocess against one checkout's source tree
 Usage: python tools/m1_solver_compare.py compare --base-root B --changed-root C
 """
 import argparse
+import dataclasses
 import hashlib
 import json
 import math
@@ -60,6 +61,22 @@ def setup(root):
     return numerical_owner, inv.solve, prepare, cfg, inv.__file__
 
 
+def canon(o):
+    """Exact-field canonical form: floats via .hex(), Decimal/Fraction via str with type, arb balls via
+    midpoint and radius at full precision (str(more=True) style), dataclasses field by field."""
+    if dataclasses.is_dataclass(o):
+        return [[f.name, canon(getattr(o, f.name))] for f in dataclasses.fields(o)]
+    if isinstance(o, float):
+        return o.hex()
+    if isinstance(o, (list, tuple)):
+        return [canon(x) for x in o]
+    if isinstance(o, (bool, int, str)) or o is None:
+        return o
+    if type(o).__name__ in ("arb", "acb"):
+        return [type(o).__name__, o.str(radius=True, more=True) if hasattr(o, "str") else str(o)]
+    return [type(o).__name__, str(o)]
+
+
 def run_one(owner_cm, solve, prep, cfg):
     ops, target, conv = prep
     with owner_cm() as o:
@@ -78,7 +95,7 @@ def worker(a):
         for k, i, p in preps:
             try:
                 r = run_one(numerical_owner, solve, p, cfg)
-                rep, st, rs = repr(r), r.status, r.reason
+                rep, st, rs = json.dumps(canon(r), sort_keys=True), r.status, r.reason
             except Exception as e:  # recorded, must match too
                 rep, st, rs = "EXC:" + repr(e), "exception", type(e).__name__
             out["%s:%06d" % (k, i)] = [hashlib.sha256(rep.encode()).hexdigest(), st, rs]

@@ -12,8 +12,10 @@ class Operands:
     time: Fraction
     sigma: Fraction
     eta: int
-    # Stage 0 hoist: optional per-contract memo of sigma-independent conversions, shared by every
-    # sigma-variant of the same contract; not part of identity, equality or repr.
+    # Stage 0 hoist: optional per-contract memo of sigma-independent conversions. WARNING: valid only
+    # across sigma variants of the SAME contract (spot, strike, rate, carry, time, eta); it is created
+    # only inside inverse.solve and must never be shared between contracts. Keyed by precision tier.
+    # Not part of identity, equality or repr.
     cache: dict | None = field(default=None, compare=False, repr=False)
 
 class Undefined(ArithmeticError):
