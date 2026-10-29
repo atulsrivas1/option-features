@@ -1,7 +1,7 @@
 """Original option-bsm1 equations and explicit one-sided endpoints."""
 from dataclasses import dataclass, field
 from fractions import Fraction
-from .arithmetic import TIERS, NumericalFailure, ball_rational, enclosure, certify, certify_exact
+from .arithmetic import TIERS, NumericalFailure, ball_rational, enclosure, enclosure_ends, certify, certify_exact, Ends
 
 @dataclass(frozen=True, slots=True)
 class Operands:
@@ -150,13 +150,17 @@ def forward(operands, output_id, owner):
             last_failure = exc
     raise last_failure
 
-def price_interval(operands, owner, bits):
-    """A price enclosure without a point-value certificate, for inverse ordering."""
+def price_interval_ends(operands, owner, bits):
+    """price_interval in lazy form (arithmetic.Ends): the same endpoints, Decimals built only on demand."""
     owner[2].prec = bits
     value = equation(operands, "pricing.price", owner)
     if type(value) is Fraction:
-        return certify_exact(value).enclosure
-    return enclosure(value)
+        return Ends(enc=certify_exact(value).enclosure)
+    return enclosure_ends(value)
+
+def price_interval(operands, owner, bits):
+    """A price enclosure without a point-value certificate, for inverse ordering."""
+    return price_interval_ends(operands, owner, bits).enclosure()
 
 def bounds(operands, owner, bits):
     owner[2].prec = bits
