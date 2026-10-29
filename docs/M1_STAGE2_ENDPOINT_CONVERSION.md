@@ -84,10 +84,79 @@ that is not exactly a `Decimal` or is NaN or an infinity (same exceptions). Conv
 bits (above 4214 decimal digits, where CPython's integer-to-string limit of 4300 digits can raise `ValueError` in the
 old `len(str(...))`) are routed to the legacy code, so even that class is the old behaviour by construction.
 
-## Evidence (reproduce with the commands in the PR)
-
-See "Results" below; all counts come from the committed tools.
-
 ## Results
 
-RESULTS_PLACEHOLDER
+Machine: Intel Xeon (Skylake-SP, 96 logical cores, Windows 11 x64, CPython 3.12.10, python-flint 0.9.0); one worker,
+library single-threaded; benchmark processes run one at a time. Raw numbers: `docs/m1/M1_STAGE2_RESULTS.json`.
+
+**Identity (changed versus origin/main, every InverseResult and SolverEvidence field, exact-field SHA-256).**
+
+| Check | Inputs | Identical | Different |
+|---|---|---|---|
+| `m1_solver_compare.py compare`: flat 10000 + mixed 10000 + adversarial 2800 (22,800 contracts) | 22,800 | 22,800 | 0 |
+| same plus the 400 mutation-tie contracts (23,200 contracts; 771 unsolvable, all identical) | 23,200 | 23,200 | 0 |
+| same, float filter off (Stage 1 switch) | 23,200 | 23,200 | 0 |
+| same, `--conv legacy` (Stage 2 switch off) | 23,200 | 23,200 | 0 |
+| `m1_conversion_equivalence.py`: 1,000,000 random inputs (5 classes), 9,124,284 old-versus-new comparisons | 1,000,000 | 9,124,284 | 0 |
+| `m1_solver_compare.py mutation` (Stage 1 acceptance test 3) | | controls identical, mutants detected | |
+
+The equivalence run covers all five precision tiers, both directed roundings on both endpoints, zero, tiny
+(`< 2^-8192` clamp), huge (`> 2^4096`, 4096 boundary), non-finite balls, balls computed by exp, sqrt, log and erfc,
+rationals with up to 3200 bits and beyond the 4300-digit limit, Decimals including NaN, sNaN, infinities and wrong
+types, and exceptions (type and arguments must match). Two deliberate mutants of `_outward_parts` are caught at once
+(3,910 and 5,017 mismatches in 3,000 inputs). No input class differs, so the fast path ships enabled.
+
+**Per-solve wall time** (`m1_solver_compare.py bench`, 200 contracts (flat 100 + mixed 100), 30 repeats after one
+warm-up, base and changed interleaved as base, changed, base, changed, one process each, 6,000 samples each).
+
+| Run | p50 us | p95 us | mean us | Peak working set |
+|---|---|---|---|---|
+| base | 2930 | 5071 | 3108 | 32.6 MB |
+| changed | 958 | 1568 | 1009 | 32.5 MB |
+| base (second) | 2854 | 4962 | 3017 | 32.7 MB |
+| changed (second) | 1024 | 1699 | 1072 | 32.3 MB |
+
+Speedup p50 3.06x and 2.79x, p95 3.23x and 2.92x (mean 3.08x and 2.81x). Memory is unchanged.
+
+**Calls per solve** (flat + mixed, 200 solves, mean): arb enclosure calls 9.61 (p50 9, p95 16) in both versions,
+unchanged: Stage 2 does not reduce arb work, it makes each enclosure cheap. Endpoint conversions (dyadic endpoints
+and outward_decimal calls) 41.37 to 21.22 (p50 38 to 20, p95 66 to 34): each remaining conversion is the integer
+version. Decimal materialisations 22.1 to 8.7 per solve (the remaining ones are the reported lower, upper and
+candidate enclosures and the exact bounds).
+
+**B6 proxy** (`tools/m1_chain_benchmark.py`, size M, 2000 contracts, B6 IV part: per-contract IV for every contract
+plus all-expiry ATM IV plus 30-day IV; 6 alternating rounds of 5 repeats, 30 samples each, nearest-rank p95).
+Label: synthetic workload, relative engineering budget. Budget 5 s, hard 15 s.
+
+| Chain | Solves | base p50 / p95 | changed p50 / p95 | Speedup p50 / p95 |
+|---|---|---|---|---|
+| default chain (american ITM contracts are not solved) | 992 | 4.07 / 4.17 s | 1.27 / 1.35 s | 3.20x / 3.08x |
+| `--all-european`: valid quotes everywhere, every contract reaches the solver (72 price_out_of_bounds, 1664 available) | 1736 | 7.19 / 7.38 s | 2.24 / 2.29 s | 3.21x / 3.22x |
+
+About 4.1 ms per solve at base (4.1 s for 992, 7.2 s for 1736) and about 1.3 ms per solve changed. The all-valid
+chain, which was over the 5 s budget at base (7.4 s p95, within the 15 s hard limit), is within it changed
+(2.29 s p95), leaving 2.7 s for the other outputs of B6 (OC5, OC6 and the rest are other stories, so B6 as a whole is
+still not measurable). Peak working set for one all-european B6 run: 33.5 MB base, 33.2 MB changed.
+The Tester's own all-valid chain is not available to the Developer; the all-european variant above is the Developer's
+stand-in, so the independent Tester must re-run on its chain.
+
+## Reproduce
+
+```
+PYTHONPATH=<changed>/packages/features/src;<changed>/packages/option-contracts/src
+python tools/m1_conversion_equivalence.py --n 1000000
+python tools/m1_solver_compare.py compare  --base-root BASE --changed-root CHANGED --n 10000 --adv 2400 --mut 400
+python tools/m1_solver_compare.py mutation --base-root BASE --changed-root CHANGED
+python tools/m1_solver_compare.py bench    --base-root BASE --changed-root CHANGED --subset 100 --repeats 30
+python tools/m1_chain_benchmark.py --sizes M --b6-sizes M --repeats 5 --all-european   # run per root, alternate
+```
+
+## Not done, and why
+
+* Skipping the conversion of an endpoint the decision does not read (for example the lower endpoint when the upper
+  is already below the target) would save about a quarter of the remaining conversions (about 3 percent of solve time),
+  but a conversion can raise `NumericalFailure` for tiny or huge values, and the old code raised it before any
+  decision. Deferring it needs a proof that the failure cannot occur, which holds only for values inside about
+  1e-300..1e300; not worth the added proof surface for 3 percent.
+* The 13 arb enclosure calls per solve are unchanged (the second lever; any change to how many are made must be
+  argued separately, since each call is a certified decision).
