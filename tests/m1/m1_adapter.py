@@ -36,16 +36,18 @@ def run_row(row):
             sizes = [QuoteSize(s["rev"], s["bid_size"], s["ask_size"]) for s in inputs["sizes"]]
             params = OC5Params(req["imbalance_threshold"], req["stale_limit_ns"])
             return oc5(_updates(inputs["quotes"]), sizes, inputs["T_ns"], params,
-                       consolidated=inputs["feed_kind"] == "consolidated")
+                       consolidated=inputs["feed_kind"] == "consolidated", standard=inputs["contract_standard"])
         from option_features.spreadwin import OC6Params, oc6
         params = OC6Params(req["window_ns"], req["stale_limit_ns"], req["coverage_min"], req["narrower_max"], req["wider_min"])
-        return oc6(_updates(inputs["quotes"]), inputs["T_ns"], req["session_open_ns"], params)
+        return oc6(_updates(inputs["quotes"]), inputs["T_ns"], req["session_open_ns"], params,
+                   consolidated=inputs["feed_kind"] == "consolidated", standard=inputs["contract_standard"])
     except OCStructuralError as exc:
         return exc
 
 
 def _dec(x):
-    return str((Decimal(x.numerator) / Decimal(x.denominator)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
+    text = str((Decimal(x.numerator) / Decimal(x.denominator)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP))
+    return "0.0000" if text == "-0.0000" else text
 
 
 def check_row(row):

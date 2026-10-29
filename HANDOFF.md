@@ -2,6 +2,9 @@
 
 Updated 2026-10-29 (P1 DONE, 0.2.0a1 on main, merge 62a178c; candidate15 frozen, CANDIDATE15_FREEZE_RECORD.md: 2666 of 2668; R27 evidence recorded in RELEASE_NOTES section 16 (T8 draft, docs review and PO accept pending): harness v15.1 is the gate harness, label extended to candidate15 on Windows, Linux evidence on WSL2 is not a label; PRERELEASE). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
+## M1 story A (OC5, OC6): PR open (branch m1/oc5-oc6), Developer evidence only, awaiting Tester re-run and PO acceptance
+- Done: quotehist.py, imbalance.py, spreadwin.py (additive, pure, no wire change); 110 of 110 rows, 13 property tests, mutation tool 43 of 43 caught, all suites green. B2 p95 13 us (budget 50), B3 50-update p95 164 us (budget 200), 5,000 p95 8.6 ms (hard 20). Details and seven Developer rulings for the PO: DECISIONS.md last entry. Next: ATM IV, 30-day IV, then the opt-in runner.
+
 ## PO release plan V3 (2026-10-29, authoritative; DECISIONS.md has the entries)
 - Main goal (owner): performance. Use cores, memory and caches fully to calculate faster without breaking correctness. B1-B12 are hard acceptance gates (synthetic-size stage until RQ; label "synthetic workload, relative engineering budget"). Developer designs for multi-core, vectorised/batched calculation, caching, minimal allocation; Tester authors independent perf, parallelism-determinism, batched-vs-single, cache and memory fixtures.
 - Order: R27 done, P1 (0.2.0a1), M1 (was R28b, OC5/OC6/ATM IV/30-day IV), M2 flow, M3 surface, M4 positioning, M5 scanners, RQ last. R28a is DROPPED; ALL adapter/Databento/network work only in the final RQ release.
