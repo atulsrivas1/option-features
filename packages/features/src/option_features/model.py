@@ -1,5 +1,5 @@
 """Original option-bsm1 equations and explicit one-sided endpoints."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from fractions import Fraction
 from .arithmetic import TIERS, NumericalFailure, ball_rational, enclosure, certify, certify_exact
 
@@ -12,6 +12,11 @@ class Operands:
     time: Fraction
     sigma: Fraction
     eta: int
+    # Stage 0 hoist: optional per-contract memo of sigma-independent conversions. WARNING: valid only
+    # across sigma variants of the SAME contract (spot, strike, rate, carry, time, eta); it is created
+    # only inside inverse.solve and must never be shared between contracts. Keyed by precision tier.
+    # Not part of identity, equality or repr.
+    cache: dict | None = field(default=None, compare=False, repr=False)
 
 class Undefined(ArithmeticError):
     def __init__(self, reason):
@@ -19,7 +24,23 @@ class Undefined(ArithmeticError):
         super().__init__(reason)
 
 def _discounted(operands, owner):
-    arb, fmpq, _ = owner
+    arb, fmpq, ctx = owner
+    cache = operands.cache
+    if cache is not None:
+        # Stage 0 hoist: the sigma-independent guard and the five ball conversions are computed once
+        # per contract (balls once per precision tier), not once per solver iteration. Same values.
+        guard = cache.get("guard")
+        if guard is None:
+            guard = cache["guard"] = abs(operands.rate*operands.time) > 512 or abs(operands.carry*operands.time) > 512
+        if guard or operands.sigma > 4096:
+            raise NumericalFailure()
+        balls = cache.get(ctx.prec)
+        if balls is None:
+            balls = cache[ctx.prec] = tuple(ball_rational(x, arb, fmpq) for x in (operands.spot, operands.strike, operands.rate, operands.carry, operands.time))
+        S, K, r, q, T = balls
+        sigma = ball_rational(operands.sigma, arb, fmpq)
+        A, B = S*(-q*T).exp(), K*(-r*T).exp()
+        return S, K, r, q, T, sigma, A, B
     if abs(operands.rate*operands.time) > 512 or abs(operands.carry*operands.time) > 512 or operands.sigma > 4096:
         raise NumericalFailure()
     S, K, r, q, T, sigma = (ball_rational(x, arb, fmpq) for x in (operands.spot, operands.strike, operands.rate, operands.carry, operands.time, operands.sigma))
