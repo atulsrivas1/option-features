@@ -1,10 +1,10 @@
 # Handoff (keep under 60 lines; update after every merge)
 
-Updated 2026-10-29 (candidate14; qualified-gate evidence in RELEASE_NOTES section 15). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
+Updated 2026-10-29 (candidate14; scoped label ratified, RELEASE_NOTES section 15). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
 ## PO decision 2026-10-28: R26 stays PRERELEASE (Windows x64 cp312, partial Windows evidence)
-- Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (see PR 51; Next item 8 is done once that PR merges). Scoped qualified label is a next-release gate; candidate13 stays the baseline.
-- Windows c14 evidence: RELEASE_NOTES section 14 (PR 54; label "Windows evidence recorded, not qualified"). A1 approve-with-conditions (independent reviewer); A2 done with limits (tags -> commits recorded in 14g; receipts keep placeholders; no wheel-to-commit provenance).
+- Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (see PR 51; Next item 8 is done once that PR merges). The scoped label was ratified 2026-10-29 (see below); candidate13 stays the baseline.
+- Windows c14 evidence: RELEASE_NOTES section 14 (PR 54; its label wording is superseded by section 15). A1 approve-with-conditions (independent reviewer); A2 done with limits (tags -> commits recorded in 14g; receipts keep placeholders; no wheel-to-commit provenance).
 
 ## Where we are: candidate14 frozen with flags, PR open (2026-10-28)
 - Record: docs/r26-variants/CANDIDATE14_FREEZE_RECORD.md (2665 frozen of 2668; index.json 11165e90...1203; controller 7afa68a1..., manifest 5233264e...). Merge is blocked until: independent docs review of the five docs, auditor addendum (conditions a, b), CI, PO acceptance and a retro entry in DECISIONS.
@@ -12,7 +12,7 @@ Updated 2026-10-29 (candidate14; qualified-gate evidence in RELEASE_NOTES sectio
 - Replay: harness-c14 run_all with explicit pins (option-features 8285cf70, io e1569636, workers 8795f3e83, fixture tree sha); no --expect overrides.
 - R27: unflag gates per group (N5 independent adjudication; N6 independent adjudication, route disagreements to a fix candidate; W3 spec-based or field-level regeneration, graphs only by spec-based). One DECISIONS entry per group, no bulk unflag. Ask PO whether the 3 null rows count in the flagged register.
 - Caveats: the workers partial count 42 is partly harness-reported (independent reviewer reproduced 32 by his own mechanism count). Per-row flag keys exist only on the 21 N6 rows; N5 flagged 28 (3 nulls frozen-unflagged; census 31), W3 39 are in the census/record (register 110 = 61 + 28 + 21, incl. excluded N6 row; 109 frozen-and-flagged; arithmetic). Public-safety scan: independent re-scan on d540276 clean, two one-line edits at 963a855 coordinator-reviewed. PO: ACCEPT-WITH-CONDITIONS, applied.
-- Do not claim "qualified". Frozen means reproducible, not validated. Gate evidence: RELEASE_NOTES section 15 (2026-10-29); label unchanged until PO ratifies in writing.
+- Label (PO ratified 2026-10-29): "Qualified for Windows x64, CPython 3.12, synthetic data only, with disclosed exclusions (PRERELEASE)." Use it only with the scope and exclusions in RELEASE_NOTES section 15. Frozen means reproducible, not validated. Stays PRERELEASE.
 
 ## Earlier: candidate13 proposed (2026-10-28); R26 prerelease out
 - Freeze record: docs/r26-variants/CANDIDATE13_FREEZE_RECORD.md (supersedes candidate12; its PR is not final until merged; independent freeze review of the record DONE: approve-with-conditions, conditions applied). index.json 518539dd...efac; 2647 rows in files, 5 N5 rows excluded by id, frozen 2642 (candidate12's 2614 byte-identical, +28 N5 rows, no new graphs). Audit approve; source and controller reviews approve-with-conditions (applied; hardened rerun byte-identical).
@@ -22,7 +22,7 @@ Updated 2026-10-29 (candidate14; qualified-gate evidence in RELEASE_NOTES sectio
 - Freeze record: docs/r26-variants/CANDIDATE12_FREEZE_RECORD.md (supersedes candidate11; its PR is not final until merged; independent freeze review done: approve-with-conditions, conditions applied, independent re-run of the five v9 harnesses matched; audit approve): 2614 rows in files (2304 + 310 graphs), nothing excluded, frozen 2614 (candidate11 + 6 = 4 rows + 2 graphs). index.json 4e2f6428...
 - Replay v9 at option-features 0f37caa / io e156963 / workers 8795f3e: library 405/405 (+2 skipped), N4 49/49, graphs 306/306, I/O 1764/1764, workers 87/87 (32 partial); all exit 0, no expected-to-fail. Mutation proof for all five harnesses (first graph mutation redone).
 
-- Windows qualification (2026-10-27): PO decision PRERELEASE, Windows x64 cp312 partial Windows evidence, not qualified (docs/r26-variants/WINDOWS_PARTIAL_QUALIFICATION_RECORD.md; must-fix list there; python-flint LGPL-3.0-or-later needs a licence review). Release notes must include the candidate12 flagged rows and gaps. Decided, accepted by PO.
+- Windows qualification (2026-10-27): PO decision PRERELEASE, Windows x64 cp312 partial Windows evidence, not qualified (docs/r26-variants/WINDOWS_PARTIAL_QUALIFICATION_RECORD.md; must-fix list there; python-flint LGPL-3.0-or-later needs a licence review). Release notes must include the candidate12 flagged rows and gaps. Decided, accepted by PO. (superseded 2026-10-29: see RELEASE_NOTES section 15)
 
 ## Next
 0. Independent freeze review of CANDIDATE13_FREEZE_RECORD: DONE (approve-with-conditions, applied); next coordinator freeze and merge. Then candidate14 (PO R27 rulings): lift exclusion of the 3 null-nondict rows, harness assertion for the extra-stream control row, re-issue filter, hashes, counts and release notes. PO to review: N5 rows flagged (proposed), assumption-2 confirmation, A>K disclosure, sorted-literal excluded_ids, nonexpected two-control rows as negative controls (the last three already PO-ruled; see DECISIONS.md).
