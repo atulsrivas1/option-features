@@ -15,7 +15,7 @@ Updated 2026-10-29 (M1 runner PR open (stories A and B merged); P1 DONE, 0.2.0a1
 
 ## P1 (0.2.0a1): DONE, PO accepted 2026-10-29 (PR 63, merge 62a178c on main)
 - Accepted after independent code review (approve-with-conditions, then delta re-check approve) and an independent Tester re-run with python-flint 0.9.0 (DECISIONS.md, last entries). Interim design rulings stay pending ratification; wire exposure of quotes/windows/shares is a candidate16 item.
-- Next, in order: workers pin PR 11 (io PR 9 merged), then M1 Stage 0 (Fraction hoist), Stage 1 (float filter with proven bound), OC5/OC6/ATM/30-day IV, opt-in process-pool runner last. Owner goal: performance. Also still open: tag and wheel rebuild from the tag (no publication), Linux process check (not claimed).
+- M1 state (2026-10-29): merged Stage 0, Stage 1, Stage 2, story A (OC5/OC6), story B (chain IV), extra IV rows; pending PR 72 (opt-in, default single-process runner). Measured (synthetic workload, relative engineering budget; details in DECISIONS.md): B4 M 0.06 s, B5 M 0.02 s, B6 IV part all-valid chain 2.8 s p95 after Stage 2 (8.6 s before); B2/B3 margins thin (string path ~10%). Owner goal: performance. Also open: tag and wheel rebuild from the tag (no publication), Linux process check, owner items (python-flint scratch venv, B7 machine).
 
 ## R26: stays PRERELEASE (Windows x64 cp312); notes docs/r26-variants/RELEASE_NOTES.md, scoped label in RELEASE_NOTES section 15
 
