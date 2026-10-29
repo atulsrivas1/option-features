@@ -4,6 +4,7 @@ Updated 2026-10-28 (candidate14). Read this, then STATUS.md, DECISIONS.md, the c
 
 ## PO decision 2026-10-28: R26 stays PRERELEASE (Windows x64 cp312, partial Windows evidence)
 - Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (see PR 51; Next item 8 is done once that PR merges). Scoped qualified label is a next-release gate; candidate13 stays the baseline.
+- Windows c14 evidence: RELEASE_NOTES section 14 (PR 54; label "Windows evidence recorded, not qualified"). A1 approve-with-conditions (independent reviewer); A2 needs owner O1.
 
 ## Where we are: candidate14 frozen with flags, PR open (2026-10-28)
 - Record: docs/r26-variants/CANDIDATE14_FREEZE_RECORD.md (2665 frozen of 2668; index.json 11165e90...1203; controller 7afa68a1..., manifest 5233264e...). Merge is blocked until: independent docs review of the five docs, auditor addendum (conditions a, b), CI, PO acceptance and a retro entry in DECISIONS.
@@ -20,8 +21,6 @@ Updated 2026-10-28 (candidate14). Read this, then STATUS.md, DECISIONS.md, the c
 ## Earlier: R26 prerelease out; candidate12 proposed as the post-release candidate (2026-10-27)
 - Freeze record: docs/r26-variants/CANDIDATE12_FREEZE_RECORD.md (supersedes candidate11; its PR is not final until merged; independent freeze review done: approve-with-conditions, conditions applied, independent re-run of the five v9 harnesses matched; audit approve): 2614 rows in files (2304 + 310 graphs), nothing excluded, frozen 2614 (candidate11 + 6 = 4 rows + 2 graphs). index.json 4e2f6428...
 - Replay v9 at option-features 0f37caa / io e156963 / workers 8795f3e: library 405/405 (+2 skipped), N4 49/49, graphs 306/306, I/O 1764/1764, workers 87/87 (32 partial); all exit 0, no expected-to-fail. Mutation proof for all five harnesses (first graph mutation redone).
-- Integer-op incomplete capture and /checkpoint, /config shape order ratified (inferred); rollup rows and missing-member rows now authored. Two-control fix (PR 42) and demo (PR 41, synthetic-only) merged.
-- Flagged frozen-subject-to-regeneration: 61 rows and 30 graphs. Gaps G1 to G26 in the record. Rulings ratified by the Product Owner.
 
 - Windows qualification (2026-10-27): PO decision PRERELEASE, Windows x64 cp312 partial Windows evidence, not qualified (docs/r26-variants/WINDOWS_PARTIAL_QUALIFICATION_RECORD.md; must-fix list there; python-flint LGPL-3.0-or-later needs a licence review). Release notes must include the candidate12 flagged rows and gaps. Decided, accepted by PO.
 
