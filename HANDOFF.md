@@ -2,6 +2,9 @@
 
 Updated 2026-10-29 (M1 Stage 2 PR open, story B merged; P1 DONE, 0.2.0a1 on main, merge 62a178c; candidate15 frozen, CANDIDATE15_FREEZE_RECORD.md: 2666 of 2668; R27 evidence recorded in RELEASE_NOTES section 16 (T8 draft, docs review and PO accept pending): harness v15.1 is the gate harness, label extended to candidate15 on Windows, Linux evidence on WSL2 is not a label; PRERELEASE). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
+## M1 story A (OC5, OC6): PR 69 merged (Fix B lazy validation), awaiting re-run and PO
+- Done: quotehist, imbalance, spreadwin; 110 rows, mutation 48 of 48, B2 p95 10.5 us, B3 50-update documented path p95 about 165 us at any history length. validate=scanned is the default (errors outside the scanned portion need validate=full or validate_history); see DECISIONS.md last entries.
+
 ## PO release plan V3 (2026-10-29, authoritative; DECISIONS.md has the entries)
 - Main goal (owner): performance. Use cores, memory and caches fully to calculate faster without breaking correctness. B1-B12 are hard acceptance gates (synthetic-size stage until RQ; label "synthetic workload, relative engineering budget"). Developer designs for multi-core, vectorised/batched calculation, caching, minimal allocation; Tester authors independent perf, parallelism-determinism, batched-vs-single, cache and memory fixtures.
 - Order: R27 done, P1 (0.2.0a1), M1 (was R28b, OC5/OC6/ATM IV/30-day IV), M2 flow, M3 surface, M4 positioning, M5 scanners, RQ last. R28a is DROPPED; ALL adapter/Databento/network work only in the final RQ release.
@@ -19,11 +22,9 @@ Updated 2026-10-29 (M1 Stage 2 PR open, story B merged; P1 DONE, 0.2.0a1 on main
 - Accepted after independent code review (approve-with-conditions, then delta re-check approve) and an independent Tester re-run with python-flint 0.9.0 (DECISIONS.md, last entries). Interim design rulings stay pending ratification; wire exposure of quotes/windows/shares is a candidate16 item.
 - Next, in order: workers pin PR 11 (io PR 9 merged), then M1 Stage 0 (Fraction hoist), Stage 1 (float filter with proven bound), OC5/OC6/ATM/30-day IV, opt-in process-pool runner last. Owner goal: performance. Also still open: tag and wheel rebuild from the tag (no publication), Linux process check (not claimed).
 
-## PO decision 2026-10-28: R26 stays PRERELEASE (Windows x64 cp312, partial Windows evidence)
-- Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (see PR 51; Next item 8 is done once that PR merges). The scoped label was ratified 2026-10-29 (see below); candidate13 stays the baseline (history: the baseline is now candidate15, RELEASE_NOTES section 16).
-- Windows c14 evidence: RELEASE_NOTES section 14 (PR 54; its label wording is superseded by section 15). A1 approve-with-conditions (independent reviewer); A2 done with limits (tags -> commits recorded in 14g; receipts keep placeholders; no wheel-to-commit provenance).
+## R26: stays PRERELEASE (Windows x64 cp312); notes docs/r26-variants/RELEASE_NOTES.md, scoped label in RELEASE_NOTES section 15
 
-## M1 Stage 2 (endpoint conversion, identical bytes): PR 71 open, Tester approve-with-conditions applied (Developer evidence only)
+## M1 Stage 2 (endpoint conversion, identical bytes): PR 71 open, Tester conditions applied (Developer evidence only). PO ruling: in-suite equivalence default 150,000 is fine; the FULL 1,000,000 run (python tools/m1_conversion_equivalence.py) is a required release-gate step, recorded per candidate
 - Done: integer endpoint conversion, lazy Ends (Decimals only for reported enclosures), exact integer ordering and residual tests; arithmetic_legacy.py is the pinned verbatim oracle and the switch fallback (arithmetic.set_fast_endpoints(False)). Proofs: docs/M1_STAGE2_ENDPOINT_CONVERSION.md; raw numbers docs/m1/M1_STAGE2_RESULTS.json.
 - Identity: 23,200 of 23,200 contracts hash-identical (22,800 flat+mixed+adversarial plus 400 mutation ties) with the fast path, the Stage 1 switch off and the Stage 2 switch off; 1,000,000 random inputs, 9.1 million old-versus-new comparisons, 0 differences. No input class differs; fast path ships on.
 - Measured (synthetic workload, relative engineering budget; one worker, 30 repeats, interleaved): per solve p50 2.93 to 0.96 ms (about 3x), p95 5.07 to 1.57 ms; B6 IV part size M default chain (992 solves) 4.17 to 1.35 s p95, all-european chain with valid quotes (1736 solves) 7.38 to 2.29 s p95. Arb calls per solve unchanged (about 13); memory unchanged (33 MB).
@@ -49,7 +50,6 @@ Team items:
 - Contract-versus-code conflict: BOUNDARY_CONTRACT line 322 may mandate canonicalizing -0.0, while variants1 rejects -0.0 permanently. Resolve in variants2.
 - -0.0 pinning row already exists: N4-premium-b64-negative-zero-price-rejected (invalid_scalar, stage 4); no new row needed, only the pointer flag remains (analysis finding, PO acceptance pending via PR 49 review).
 - Before any "qualified" release: independent controller review.
-
 ## Gotchas
 - Controller runs need absolute paths; contained run via python -I -B, never reuse a failed attempt dir.
 - Add .gitignore for bytecode before any run; commit-then-remove leaks into branch history.

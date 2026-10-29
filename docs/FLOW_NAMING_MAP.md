@@ -32,13 +32,13 @@ Gate precedence (PO-P1-02): no_quote, invalid_quote, crossed_market, locked_mark
 | OC2 | Strike over price | `contract.moneyness` | spot staleness from eligibility | match | R25 |
 | OC3 | Modeled absolute delta | `greeks.delta` | supplied sigma, rate, carry; European | match | R25 |
 | OC4 | Spread in bps of midpoint | `liquidity.spread_bps` (also `liquidity.spread`, `liquidity.midpoint`) | gate above; stale limit = eligibility max_quote_age_ns | match | P1 (bytes change for bid <= 0 and locked) |
-| OC5 | Bid/ask size imbalance | none | needs a sized-quote record (M1) | missing | |
-| OC6 | Spread against own 5-minute average | none | time-weighted average and the count gate (M1) | missing | |
+| OC5 | Bid/ask size imbalance | `option_features.imbalance.oc5`, `oc5_many` (inputs: `quotehist.QuoteUpdate`, `QuoteSize` keyed by quote revision) | (bid_size - ask_size) / (bid_size + ask_size) of the latest causal quote; |imbalance| >= `imbalance_threshold` (0.60, inclusive) fires bid or ask; gates no_quote, excluded_condition, not_consolidated, invalid_quote, crossed_market, stale_quote (event time, 10 s, exactly 10 s fresh), missing_size, zero_displayed_size; locked evaluates; low OC6 coverage never blocks | match (library modules only; not on the wire) | M1 |
+| OC6 | Spread against own 5-minute average | `option_features.spreadwin.oc6`, `oc6_many` | current spread bps of midpoint over the time-weighted average of the closed window [T-300 s, T] (carry-in at the window start, current quote weighted to T, intervals start at known_at, valid regular quotes only, denominator = valid weighted time, clipped at session open); ratio <= 0.75 narrower, >= 1.50 wider (inclusive); gates no_quote, excluded_condition, invalid_quote, crossed_market, locked_market, stale_quote, low_quote_coverage (G5, min 5), no_window_spread | match (library modules only; not on the wire) | M1 |
 | G1 | Invalid quote gate (bid <= 0) | `liquidity.spread_bps` / `.spread` / `.midpoint`: nonpositive_bid, negative_quote, one_sided_quote | modeled values (IV) still accept a bid of 0 until M1 | partial | P1 (spread) |
 | G2 | Locked market blocks spread and modeled values | same outputs: locked_market | signing proceeds (request 1, interim option A); IV unchanged until M1 | partial | P1 (spread) |
 | G3 | Crossed market withheld | crossed_quote (spread, IV) | | match | R25 |
 | G4 | Stale quote | stale_quote | limit is supplied: eligibility.max_quote_age_ns (spread), `max_quote_age_ns` (signing, default 3 s) | partial | R25 |
-| G5 | Fewer than 5 regular updates in 5 minutes | `option_features.windows.quote_count_coverage`, `QuoteUpdateIndex` | window_ns 300 s, closed [T-W, T], min_regular_updates 5, excluded-condition updates never count; blocks OC6 only | match (gate rule); blocking needs OC6 | P1 |
+| G5 | Fewer than 5 regular updates in 5 minutes | `option_features.windows.quote_count_coverage`, `QuoteUpdateIndex` | window_ns 300 s, closed [T-W, T], min_regular_updates 5, excluded-condition updates never count; blocks OC6 only | match (gate rule; blocks OC6 in `spreadwin.oc6`, not OC5) | P1, M1 |
 | G5 extra | Slot ratio of declared sampling plan | `quality.quote_coverage` | unchanged; not the design rule | extra (renamed "slot coverage") | R25 |
 | G6 | Unavailable with reason | status and reason on every result | | match | R25 |
 | G7 | Baseline unavailable | variants1 `baseline` (empty_baseline, insufficient_history) | minimum samples is a request field | partial | R26 |
@@ -75,7 +75,7 @@ Gate precedence (PO-P1-02): no_quote, invalid_quote, crossed_market, locked_mark
 
 ## Volatility, positioning, presets
 
-V1-V22 (V2 and V20 partial through `volatility.implied_volatility` and the Greeks, the rest missing), PO1-PO19 and the scanner presets are unchanged by P1: missing except where noted. M1 adds OC5, OC6, ATM IV and 30-day IV.
+V1-V22 (V2 and V20 partial through `volatility.implied_volatility` and the Greeks, the rest missing), PO1-PO19 and the scanner presets are unchanged by P1: missing except where noted. M1 adds OC5 and OC6 (this table, story A), ATM IV and 30-day IV (later stories).
 
 ## M1 story B: contract IV, ATM IV, 30-day IV (`option_features.chainiv`; library module, not on the wire)
 

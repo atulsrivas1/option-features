@@ -101,6 +101,10 @@ tests and diagnosis, not a runtime option: set it before solving, never while an
 again in every spawned worker (a `spawn` child imports a fresh module and ignores the parent's setting; a forked
 child inherits the value at fork time). The default is on in every new process.
 
+**Release gate (PO ruling 2026-10-29).** The in-suite equivalence test defaults to 150,000 inputs for CI speed. The full
+1,000,000-input run (`python tools/m1_conversion_equivalence.py`, or `M1S2_EQUIV_N=1000000` with the unit test) is a
+REQUIRED release-gate step, recorded as evidence per candidate. The B6 gate chain is the Tester's all-valid-quote chain.
+
 ## Results
 
 Machine: Intel Xeon (Skylake-SP, 96 logical cores, Windows 11 x64, CPython 3.12.10, python-flint 0.9.0); one worker,
