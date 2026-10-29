@@ -95,3 +95,60 @@ Record: [CANDIDATE14_FREEZE_RECORD.md](CANDIDATE14_FREEZE_RECORD.md). Label stay
 - **Frozen means reproducible, not validated.** Provisional (flagged) groups: N5 28 rows (the 3 null rows are frozen-unflagged; frozen N5 census 31 = 28 + 3), N6 21 rows (18 proof rows, 2 NON-PROOF controls, 1 excluded; no independent adjudication; two groundings by precedent: the worker input_invalid wrapper and the half-open end of the capture domain), and 39 W3 ids (assumption-2: 9 B, 9 B3, 9 graphs; PR 34: 6 rows, 6 graphs). Carried flags from candidate13 (61 rows and 30 graphs) are unchanged. W3 disclosure: independent regeneration was attempted in candidate14 and found infeasible at byte level; no difference was found and none was disproven; these ids are not independently confirmed (NOT_REGENERATED 39/39).
 - Replay (harness-c14, all exit 0): library 405/405, N4 58/58, graphs 306/306, I/O 1793/1793, workers 100 (58 full, 42 partial), tamper pass, isolation 14/48/24. The independent replay review reproduced 32 of the 42 partial rows by his own mechanism count and relied on the harness count for the other 10, so the 42 is partly harness-reported.
 - Q4 and the narrower-rollup clause are scoped out by PO ruling (not held). Unreviewed harness scripts, controller non-claims, digest-level graph evidence and the python-flint notice (section 9) are unchanged.
+
+### 14. Windows c14 evidence (recorded 2026-10-28; PO final ruling A3/A4)
+Label: **Windows evidence recorded, not qualified.** Counts, hashes and limits only; no fixture values and no private paths. This section supersedes the Windows evidence wording of sections 1 and 11 for the c14 cohort (option-features a25c9d1, option-feature-io e156963, option-feature-workers 8795f3e); the release label remains PRERELEASE.
+
+Final wording (PO):
+> Windows evidence recorded, not qualified: on Windows 11 x64 with CPython 3.12, installed packages built from the pinned commits were checked offline: 108 unit tests, c14 replay (library 405, N4 58, graphs 306, I/O 1793, workers 100 with 2 disclosed gaps), tamper and isolation checks, a 5-scenario integration, a 111-case direct versus stored full-payload parity run (378 rows, passed), and a stored demo (exit 0, outputs hashed; read-only census after the run: 5 runs, 45 result rows, 4 tables, 56 rows). Limits: single run, synthetic data, Windows x64 cp312 only; atomic replace of an existing output file was not verified; demo page provenance text not verified; the trust digest was computed in-project and its independent re-review is pending; python-flint and duckdb receipt source commits are wheel-hash stand-ins; no production data, performance or other-platform proof.
+
+#### 14a. A5 requalification result (CPython 3.12.10, cp312 win_amd64)
+- Packages built offline from the pinned commits; all four wheels rebuilt byte-identically from the sdists. Wheel sha256: contracts 99c7d32ccc180a3767eceea90cc2d9fd33af4e70306675ca3e4c01f9a00a3b1f; features bff933e69ef9ab9f21b404ce76292fc35ae50290898f8f8c33b1dcc611c78c31; io 41fdd6534add0eebcdb1e4e2aa366387e3d83ad0e1445996b9359248b3f7eadd; workers 0cb39281ecb639aacd4b83779756b47d146f5ad6f5ffef378bfc2ebfe112ecf3. Third-party wheels matched recorded hashes (python-flint 0.9.0, duckdb 1.5.6).
+- 108 unit tests OK (contracts 14, features 48, qualification 8, io 24, workers 14). The qualification suite needs both R25_INDEPENDENT_WIRE_FIXTURES and R25_INDEPENDENT_WIRE_FIXTURES_SHA256 set.
+- c14 replay on installed packages: library 405/405, N4 58/58, graphs 306/306, I/O 1793/1793, workers 100 run (58 full, 42 partial, 0 failed) with 2 disclosed gaps (W3-admission-monotone-extension, W3-admission-null-to-nonempty). Equal to the candidate14 replay counts.
+- Tamper: control accepted, T1 to T7 rejected, T8 and T9 rejected at verify. Isolation: 14, 48 and 24 tests, post-test check ok. Both are reconstructions, and their exit codes are not verdicts (see 11c).
+- 5-scenario integration: full parity, retry verified, changed-source conflict rejected; 283 files verified.
+- The trusted manifest digest ce4913556d48a46067b4fb61a82041a3170422f2349137ebc100879c6e834c15 was computed in-project and not independently reviewed; its independent re-review (A1) is pending.
+- Harness changes were limited to replacing the source-path override with a module-origin assertion in the five replay scripts, one wheel-directory line in the isolation script, and a CRLF-to-LF conversion; expectations and the fixture pin were untouched.
+
+#### 14b. A3: 111-case direct versus stored parity, pass
+- integrate (state passed, 111 cases, 111 replayed) and compare (state passed, 111 cases, 378 result rows), both exit 0 with empty stderr, run on the installed c14 cohort with the R25 precedent runner, comparison helper and fixture. fixture-r25.json sha256 37f79537ebbf69cd0f39d4f52745954ab6e9e90a0f486dca7e7bacdc5945eb23; FOUR_COHORT_FULL_PAYLOAD_PARITY.json sha256 8e4f3d677bc60378dc38402aba724e48bcb7aeb2bb3d2db8ee7334fcf4946a9f.
+- Counts recomputed independently: 111 cases, 378 expected rows, 378 rows in both reports, 111 stored result files, 111 replays.
+- Output sha256: integration-report.json a4ddc869520238d6eee44d5bb2d9369e0d7b0a3f7d6e285abebd7f9933b8a540; DIRECT_WORKER_STORED_FULL_PARITY.json 3a3e46a4d829a4ab9d35f402c165b9324a39aca78979402faf60ddbcc4865aea; synthetic-results.duckdb 5b443571923d522e15f3faa89f4f6d65bd893bea960fa3246a6328232af542a4.
+- Glue only: the candidate configuration was generated from the c14 cohort configuration; no R25 file was edited.
+
+#### 14c. A4: stored demo, exit 0 with outputs hashed and a read-only census
+- Demo exit 0, empty stderr. Outputs are hashed, not independently reviewed. synthetic-output.duckdb sha256 prefix 0b6c4912.
+- Read-only census after the run, made by an independent script that reopened the database read-only (sha256 unchanged before and after): 5 runs, 45 result rows, 4 tables, 56 rows (generations 5, option_schema 1, result_rows 45, source_bindings 5). The earlier "5 tables, 45 rows" wording was a misstatement and is withdrawn.
+- The read-only reopen was an independent census, not a feature of the demo.
+- Known gaps, not run for R26: (1) atomic replace of an existing output file was not verified (the scratch swap used identical files and exercised neither a content change nor a failed replace); R26 makes no atomic-replace claim. (2) The demo page provenance text was not verified; the check string was a file hash prefix, not page text, so that check is dropped and not counted as passed.
+
+#### 14d. Containment residual risk
+Containment is process-tree kill plus hash pins; it does not restrict network, filesystem writes, memory or environment; hash checks are not atomic with use. The independent review of the helper (approve-with-conditions) found no network or filesystem confinement, no memory, CPU or process-count limit, an inherited environment, trusted but unpinned interpreter-side site code, an advisory lease and lock, and no protection against a hostile same-user process. It is not a sandbox. The 15 contract pins were recomputed from files and match.
+
+#### 14e. Contract inputs held in private records (hashes only)
+Fourteen of the fifteen contract inputs pinned by the controller are private-record inputs: they are not in this repository and not at a repo commit. The fifteenth, the fixture completion clarification, is in this repository. sha256 of the 14:
+1. 9252fe9daddf996a64df7d4847f9f28cbf356287d7e4266717a9165a0491eabd
+2. bbd0d64300073132224ab08cb21972d4791a70bbef075daf697308c540e7e500
+3. 3f5b5e8d696ff468a7398f9e5c5fb2fbfabb49d436e9fbba5d81de944f549eee
+4. e1e5b8801cd84268cf1187de56cbf9a3e2b36f54e248dd11afc8dc655016611c
+5. f1560f234da478d12653281d5c93023379a44b6893f44b6793815e8f47716511
+6. 49c1600c63ac5c84dfcd95a3e5774391fd13f72f96f8c22fb8dffa2d0557e120
+7. f7fa65402ed467c0f316ca0ae471762aadd96f712c55a22fc3900e740aefae80
+8. e8a007d11612ed36c8b745e6c7c3b910db4c078ffabb4274b2545bae7d30a573
+9. 73a2e9a252c197f14d3885fccdc0dcf5c461ef6a6329d8b659cd74ec228a8363
+10. 348e6ce7d042e80f1a9e1013f349fa445393c71eeea35497328e8cd216f1e520
+11. 587cb0e13fb6648edf8356529529ef77dc3313b1adf057c1b987c2ba99be093e
+12. e7a7e5aff68391123454ba0222185b8159c353c527909f65f9f5a424d244d76c
+13. 461a3d136124d7f54ae38e975b1c89045389205d362496c5ecfab91ed44277a8
+14. 755583c02ad975ad8dfe547170c8a2b2569047f6bf8cec5868a9ed6e7a9ff7b8
+
+#### 14f. python-flint licence wording
+python-flint 0.9.0 is installed by pip and is not vendored or shipped by us. Its Python bindings are MIT; the wheel bundles LGPL-3.0-or-later GMP, MPFR and FLINT as separate DLLs that the user may replace (plus winpthreads and the gcc runtime under a GCC exception); see the python-flint licences. Reviewed verdict: accepted for pip-dependency use with this notice; not accepted for vendoring or bundling (frozen executable, image, vendored wheel) without a separate review, which would require the COPYING files and a source offer.
+
+#### 14g. Disclosed as pending or not done
+- A1: independent re-review of the trust digest against the c14 hashes is pending; this section is updated when it lands. It does not block R26.
+- A2: python-flint and duckdb receipt source commits remain wheel-hash stand-ins; no upstream fetch was done.
+- Not run: a content-change or failed-replace check of the demo output (known gap in 14c).
+- Evidence is a single run on synthetic data, Windows x64 cp312 only. No production data, performance or other-platform proof.
+- The R27 harness findings in 11c remain open.

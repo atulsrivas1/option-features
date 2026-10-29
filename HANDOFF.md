@@ -2,6 +2,9 @@
 
 Updated 2026-10-28 (candidate14). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
+## Windows c14 evidence PR (2026-10-28)
+- Docs PR records Windows c14 evidence in RELEASE_NOTES section 14 (label: Windows evidence recorded, not qualified). Next: independent docs review, then merge; A1 trust-digest re-review by a reviewer (not Dev) updates section 14 when done; A2 needs owner O1.
+
 ## PO decision 2026-10-28: R26 stays PRERELEASE (Windows x64 cp312, partial Windows evidence)
 - Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (see PR 51; Next item 8 is done once that PR merges). Scoped qualified label is a next-release gate; candidate13 stays the baseline.
 
@@ -54,7 +57,4 @@ Team items:
 ## Gotchas
 - Controller runs need absolute paths; contained run via python -I -B, never reuse a failed attempt dir.
 - Add .gitignore for bytecode before any run; commit-then-remove leaks into branch history.
-- Fixture-vs-contract triage before bending code; Sonnet (not Haiku) for storage/restore work.
-- Pinned counts learned from a first run (workers partial 32) must be recomputed by a reviewer.
-- A mutation that does not trip proves nothing: confirm the mutated field is one the harness reads.
 - Check gh auth (atulsrivas1) before every push.

@@ -1,5 +1,9 @@
 # Status (newest first)
 
+## 2026-10-28 - Windows c14 evidence recorded (label: Windows evidence recorded, not qualified; PRERELEASE unchanged)
+- Docs only: docs/r26-variants/RELEASE_NOTES.md section 14. A5 requalification on installed c14 packages (108 unit tests, replay library 405, N4 58, graphs 306, I/O 1793, workers 100 with 2 disclosed gaps, tamper, isolation, 5-scenario integration). A3 passed: 111 cases, 378 rows. A4: exit 0, outputs hashed, read-only census 5 runs, 45 result rows, 4 tables, 56 rows; atomic replace and demo page provenance not verified (known gaps).
+- Pending: A1 independent re-review of the trust digest (not blocking); A2 stand-in python-flint and duckdb commits. Independent docs review required before merge.
+
 ## 2026-10-28 - Candidate14 frozen with flags (2665 frozen of 2668 rows; label stays PRERELEASE; not final until its PR merges)
 - Record docs/r26-variants/CANDIDATE14_FREEZE_RECORD.md (supersedes candidate13). Post-rerun hashes: controller 7afa68a1...0f19a, manifest 5233264e...0153, index.json 11165e90...1203 (first-run manifest f5bc80b9... and controller d4e29861... superseded; rows and index byte-identical after the source-copy correction). 2668 rows (2358 + 310 graphs); 3 excluded by id (2 N5, N6-restore-q3-with-knowledge-regression); 3 null rows adopted with no per-row flag; candidate13 rows byte-identical except those 3; 21 N6 rows added.
 - Replay (harness-c14, all exit 0): library 405/405, N4 58/58, graphs 306/306, I/O 1793/1793, workers 100 (58 full, 42 partial), tamper pass, isolation 14/48/24. Independent replay review reproduced 32 of the 42 partial rows by his own mechanism count; the other 10 rest on the harness count (42 is partly harness-reported).
