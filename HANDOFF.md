@@ -1,6 +1,6 @@
 # Handoff (keep under 60 lines; update after every merge)
 
-Updated 2026-10-28 (candidate14). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
+Updated 2026-10-29 (candidate14; qualified-gate evidence in RELEASE_NOTES section 15). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
 ## PO decision 2026-10-28: R26 stays PRERELEASE (Windows x64 cp312, partial Windows evidence)
 - Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (see PR 51; Next item 8 is done once that PR merges). Scoped qualified label is a next-release gate; candidate13 stays the baseline.
@@ -12,7 +12,7 @@ Updated 2026-10-28 (candidate14). Read this, then STATUS.md, DECISIONS.md, the c
 - Replay: harness-c14 run_all with explicit pins (option-features 8285cf70, io e1569636, workers 8795f3e83, fixture tree sha); no --expect overrides.
 - R27: unflag gates per group (N5 independent adjudication; N6 independent adjudication, route disagreements to a fix candidate; W3 spec-based or field-level regeneration, graphs only by spec-based). One DECISIONS entry per group, no bulk unflag. Ask PO whether the 3 null rows count in the flagged register.
 - Caveats: the workers partial count 42 is partly harness-reported (independent reviewer reproduced 32 by his own mechanism count). Per-row flag keys exist only on the 21 N6 rows; N5 flagged 28 (3 nulls frozen-unflagged; census 31), W3 39 are in the census/record (register 110 = 61 + 28 + 21, incl. excluded N6 row; 109 frozen-and-flagged; arithmetic). Public-safety scan: independent re-scan on d540276 clean, two one-line edits at 963a855 coordinator-reviewed. PO: ACCEPT-WITH-CONDITIONS, applied.
-- Do not claim "qualified". Frozen means reproducible, not validated.
+- Do not claim "qualified". Frozen means reproducible, not validated. Gate evidence: RELEASE_NOTES section 15 (2026-10-29); label unchanged until PO ratifies in writing.
 
 ## Earlier: candidate13 proposed (2026-10-28); R26 prerelease out
 - Freeze record: docs/r26-variants/CANDIDATE13_FREEZE_RECORD.md (supersedes candidate12; its PR is not final until merged; independent freeze review of the record DONE: approve-with-conditions, conditions applied). index.json 518539dd...efac; 2647 rows in files, 5 N5 rows excluded by id, frozen 2642 (candidate12's 2614 byte-identical, +28 N5 rows, no new graphs). Audit approve; source and controller reviews approve-with-conditions (applied; hardened rerun byte-identical).
