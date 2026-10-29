@@ -127,7 +127,7 @@ def make_ball(rng, arb, ctx, tiers):
 
 
 def make_bound(rng):
-    m = rbits(rng, rng.choice((53, 128, 512, 2048, 3000))) * rng.choice((1, -1, 1))
+    m = rbits(rng, rng.choice((53, 128, 512, 2048, 3000, 3000, 5000, 5001, 9000, 16000))) * rng.choice((1, -1, 1))
     if rng.random() < 0.05:
         m = 0
     mag = rmagnitude(rng)
@@ -147,11 +147,15 @@ def make_rational(rng):
         return Fraction(s * rbits(rng, 3200), 1 << rng.randint(0, 3200))
     if r < 0.50:
         return Fraction(0)
+    if r < 0.52:   # beyond the 4300-digit str() limit: routed to the legacy code
+        return Fraction(s * rbits(rng, 16000), rbits(rng, rng.choice((60, 3000, 15000, 16000))))
     return Fraction(s * rbits(rng, 3200), rbits(rng, 3200))
 
 
 def make_decimal(rng):
     r = rng.random()
+    if r < 0.02:   # wrong types behave as before (legacy route)
+        return rng.choice((5, 2.5, Fraction(1, 3), "1.5", None))
     if r < 0.05:
         return rng.choice((Decimal("NaN"), Decimal("sNaN"), Decimal("Infinity"), Decimal("-Infinity"), Decimal("-NaN")))
     if r < 0.12:
@@ -211,7 +215,11 @@ def run_chunk(spec):
             if oe[0] == "ok":
                 oenc = old.enclosure(ball)
                 lof, hif = old.decimal_exact(oenc.value_low), old.decimal_exact(oenc.value_high)
-                ends = new.enclosure_ends(ball)
+                try:
+                    ends = new.enclosure_ends(ball)
+                except Exception as exc:
+                    check(kind, "ends.build", ("ok",), ("exc", type(exc).__name__), info)
+                    continue
                 check(kind, "ends.fractions", ("ok", norm((lof, hif))), call(lambda: ends.fractions()), info)
                 for t in targets(rng, lof, hif):
                     expect = -1 if hif < t else (1 if lof > t else 0)

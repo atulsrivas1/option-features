@@ -48,7 +48,7 @@ def bs(right, K, T, sigma):
     return A * _ncdf(d1) - B * _ncdf(d2) if right == "call" else B * _ncdf(-d2) - A * _ncdf(-d1)
 
 
-def make_chain(size):
+def make_chain(size, all_european=False):
     rows = []
     for i in range(gen.chain_size(size)):
         m = gen.chain_contract(size, i)
@@ -57,7 +57,8 @@ def make_chain(size):
         mid = round(bs(right, K, days / 365.0, sigma), 4)
         bid, ask = max(mid - 0.001, 0.0), mid + 0.001
         rows.append(chainiv.ChainContract("%dd-%s-%s" % (days, m["right"], m["strike"]), days, right, m["strike"],
-                                          "%.4f" % bid, "%.4f" % ask, -2_000_000_000, -2_000_000_000, m["style"]))
+                                          "%.4f" % bid, "%.4f" % ask, -2_000_000_000, -2_000_000_000,
+                                          "european" if all_european else m["style"]))
     return rows
 
 
@@ -146,6 +147,8 @@ def main():
     ap.add_argument("--sizes", default="M,L")
     ap.add_argument("--b6-sizes", default="M")
     ap.add_argument("--max-seconds", type=float, default=240.0, help="stop repeating one measurement after this long (min 5 repeats)")
+    ap.add_argument("--all-european", action="store_true",
+                    help="every contract european, so no american-ITM gate skips a solve (Stage 2 'valid quotes everywhere' chain)")
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
     report = {"label": "synthetic workload, relative engineering budget (no claim about recorded data); single worker",
@@ -159,7 +162,7 @@ def main():
         plan.append(("B6", size, run_b6))
     chains = {}
     for gate, size, fn in plan:
-        rows = chains.setdefault(size, make_chain(size))
+        rows = chains.setdefault(size, make_chain(size, a.all_european))
         r = measure(fn, rows, a.repeats, a.max_seconds)
         r.update(gate=gate, size=size, contracts=len(rows), counters=counters(fn, rows))
         budget = BUDGETS.get((gate, size))

@@ -63,7 +63,7 @@ def sample():
 
 class OracleTests(unittest.TestCase):
     def test_oracle_is_the_pinned_verbatim_copy(self):
-        data = Path(arithmetic_legacy.__file__).read_bytes()
+        data = Path(arithmetic_legacy.__file__).read_bytes().replace(bytes((13, 10)), bytes((10,)))   # normalise checkout line endings
         self.assertEqual(hashlib.sha256(data).hexdigest(), LEGACY_SHA256)
 
     def test_fast_path_is_on_by_default_and_switchable(self):
@@ -103,8 +103,8 @@ class EquivalenceTests(unittest.TestCase):
                 self.assertEqual(canon(ends.enclosure()), canon(enc))
                 low, high = ends.fractions()
                 self.assertEqual((low, high), (decimal_exact(enc.value_low), decimal_exact(enc.value_high)))
-                self.assertEqual(ends.sign_vs(Fraction(2)), -1)
-                self.assertEqual(ends.sign_vs(Fraction(3)), 1)
+                self.assertEqual(ends.sign_vs(Fraction(2)), 1)
+                self.assertEqual(ends.sign_vs(Fraction(3)), -1)
                 self.assertEqual(ends.sign_vs(Fraction(7, 3)), 0)
 
 

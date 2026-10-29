@@ -293,8 +293,7 @@ def count(a):
     tmp.mkdir(parents=True, exist_ok=True)
     sets = "flat:%d,mixed:%d" % (a.n, a.n)
     out = {}
-    for name, root, kw in (("base", a.base_root, {}), ("changed", a.changed_root, {}), ("changed_switch_off", a.changed_root, {"filter": "off"}),
-                           ("changed_legacy_conv", a.changed_root, {"conv": "legacy"})):
+    for name, root, kw in (("base", a.base_root, {}), ("changed", a.changed_root, {}), ("changed_switch_off", a.changed_root, {"filter": "off"})):
         p = spawn(root, "count", tmp / (name + "_count.json"), sets=sets, **kw)
         if p.wait():
             sys.exit("count worker failed")
