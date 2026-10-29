@@ -103,8 +103,8 @@ def price_ticks(value):
 
 
 def quote_fault(bid, ask):
-    """Validity gate on tick values (precedence invalid, crossed, locked); None when the quote is usable."""
-    if bid is None or ask is None or bid <= 0 or ask <= 0:
+    """Validity gate on tick values (precedence invalid: a missing side or bid <= 0; crossed: bid > ask, so ask <= 0 with bid > 0 is crossed; locked); None when the quote is usable."""
+    if bid is None or ask is None or bid <= 0:
         return "invalid_quote"
     if bid > ask:
         return "crossed_market"

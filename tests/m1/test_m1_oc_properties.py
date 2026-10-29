@@ -54,7 +54,7 @@ def ref_oc6(updates, t, open_ns, p):
     b, a = price(cur.bid), price(cur.ask)
     if not cur.regular:
         return ("excluded_condition", None)
-    for gate, bad in (("invalid_quote", b is None or a is None or b <= 0 or a <= 0),
+    for gate, bad in (("invalid_quote", b is None or a is None or b <= 0),
                       ("crossed_market", b is not None and a is not None and b > a),
                       ("locked_market", b == a)):
         if bad:
@@ -97,7 +97,7 @@ def ref_oc5(updates, sizes, t, consolidated, stale):
         return ("not_consolidated",)
     b = None if cur.bid is None else Fraction(cur.bid)
     a = None if cur.ask is None else Fraction(cur.ask)
-    if b is None or a is None or b <= 0 or a <= 0:
+    if b is None or a is None or b <= 0:
         return ("invalid_quote",)
     if b > a:
         return ("crossed_market",)
@@ -253,6 +253,16 @@ class Validation(unittest.TestCase):
         keep = list(ups)
         oc5(ups, [QuoteSize(2, 600, 100), QuoteSize(1, 100, 600)], 0)
         self.assertEqual(ups, keep)
+
+    def test_nonpositive_ask_is_crossed(self):
+        """PO ruling on PR 69 item 4: bid > 0 with ask <= 0 is crossed_market; bid <= 0 stays invalid_quote."""
+        for bid, ask, reason in (("1.0000", "0.0000", "crossed_market"), ("1.0000", "-0.0500", "crossed_market"),
+                                 ("0.0000", "0.0000", "invalid_quote"), ("-0.0500", "1.0500", "invalid_quote")):
+            ups = [QuoteUpdate(i + 1, (-9 + i) * NS, (-9 + i) * NS, "1.0000", "1.0500", True) for i in range(5)]
+            ups.append(QuoteUpdate(9, -NS, -NS, bid, ask, True))
+            r5 = oc5(ups, [QuoteSize(9, 600, 100)], 0)
+            r6 = oc6(ups, 0, OPEN)
+            self.assertEqual((r5.reason, r6.reason), (reason, reason), (bid, ask))
 
     def test_structural_codes(self):
         good = QuoteUpdate(1, 0, 0, "1.0000", "1.0500", True)
