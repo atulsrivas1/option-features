@@ -250,26 +250,34 @@ class StreamClassification:
 def classify_stream(records, *, epsilon=0, max_quote_age_ns=DEFAULT_MAX_QUOTE_AGE_NS):
     """Spread gate for every quote and touch-policy sign for every trade, in one pass.
 
-    records: iterable of tuples ordered by non-decreasing time (anything else raises ValueError):
-      ("q", contract, t_ns, bid, ask)    bid and ask are decimal strings, ints or None
-      ("t", contract, t_ns, price, size) price is a decimal string or int, size is an int
+    records: sequence (an iterable is materialised once) of tuples ordered by non-decreasing time, else
+    ValueError. Records at equal time apply in input order.
+      ("q", contract, t_ns, bid, ask)    bid and ask are decimal strings or None
+      ("t", contract, t_ns, price, size) price is a decimal string, size is an int
     A trade is signed against the latest quote of its contract at or before it (touch policy,
     inside_spread="unknown"); a quote with neither bid nor ask replaces the state and reads as no_quote.
     The legacy midpoint split is not a batch mode: use `sign_trade(..., inside_spread="split")`.
+
+    Hoisted out of the loop: parameter checks, epsilon in ticks, preallocated columnar outputs and the
+    per-contract `(time, bid + epsilon, ask - epsilon, validity)` quote state. A decimal string with exactly
+    four places (the common tick format, 10**-8 ticks = text without the point x 10**4) is parsed inline;
+    any other format falls back to `to_ticks`, with identical results.
     """
     eps = _check_params("unknown", epsilon, max_quote_age_ns)
+    if not isinstance(records, (list, tuple)):
+        records = list(records)
+    n = len(records)
     tk = to_ticks
-    codes = bytearray()
-    spread = array("q")
-    mid2 = array("q")
-    code_add, spread_add, mid_add = codes.append, spread.append, mid2.append
+    codes = bytearray(n)
+    spread = array("q", bytes(8 * n))
+    mid2 = array("q", bytes(8 * n))
     last = {}
     last_get = last.get
     ask_sum = bid_sum = unc_sum = 0
-    quotes = trades = 0
+    quotes = 0
     prev = None
     base = TRADE_CODE_BASE
-    for kind, c, t, x, y in records:
+    for i, (kind, c, t, x, y) in enumerate(records):
         if prev is not None and t < prev:
             raise ValueError("records must be ordered by time")
         prev = t
@@ -279,11 +287,11 @@ def classify_stream(records, *, epsilon=0, max_quote_age_ns=DEFAULT_MAX_QUOTE_AG
                 gate, bid, ask = (G_NO_QUOTE if y is None else G_INVALID), 0, 0
                 qcode = S_NO_QUOTE if y is None else S_INVALID
             else:
-                bid = tk(x)
+                bid = int(x.replace(".", "")) * 10000 if x[-5:-4] == "." else tk(x)
                 if y is None:
                     gate, ask, qcode = G_INVALID, 0, S_INVALID
                 else:
-                    ask = tk(y)
+                    ask = int(y.replace(".", "")) * 10000 if y[-5:-4] == "." else tk(y)
                     if bid <= 0:
                         gate, qcode = G_INVALID, S_INVALID
                     elif bid > ask:
@@ -292,17 +300,12 @@ def classify_stream(records, *, epsilon=0, max_quote_age_ns=DEFAULT_MAX_QUOTE_AG
                         gate, qcode = G_LOCKED, 0
                     else:
                         gate, qcode = G_OK, 0
-            code_add(gate)
-            if gate:
-                spread_add(0)
-                mid_add(0)
-            else:
-                spread_add(ask - bid)
-                mid_add(ask + bid)
+                        spread[i] = ask - bid
+                        mid2[i] = ask + bid
+            codes[i] = gate
             last[c] = (t, bid + eps, ask - eps, qcode)
         else:
-            trades += 1
-            p = tk(x)
+            p = int(x.replace(".", "")) * 10000 if x[-5:-4] == "." else tk(x)
             prem = p * y
             q = last_get(c)
             if q is None or q[3] == S_NO_QUOTE:
@@ -327,8 +330,6 @@ def classify_stream(records, *, epsilon=0, max_quote_age_ns=DEFAULT_MAX_QUOTE_AG
                 bid_sum += prem
             else:
                 unc_sum += prem
-            code_add(base + code)
-            spread_add(0)
-            mid_add(0)
+            codes[i] = base + code
     m = STANDARD_MULTIPLIER
-    return StreamClassification(codes, spread, mid2, ask_sum * m, bid_sum * m, unc_sum * m, quotes, trades)
+    return StreamClassification(codes, spread, mid2, ask_sum * m, bid_sum * m, unc_sum * m, quotes, n - quotes)
