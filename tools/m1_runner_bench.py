@@ -172,9 +172,13 @@ def phase_b6(a, rep):
     one = Spec(shape="M", underlyings=("SYN1",), sessions=(1,), cutoffs=(39,), gating="valid")
     with make_runner(1, a) as r:
         r.run(one)  # warm-up, not counted
-        walls = [r.run(one).log["wall_s"] for _ in range(a.b6_repeats)]
-    out["one_worker"] = {"repeats": len(walls), "p50_s": pct(walls, 50), "p95_s": pct(walls, 95), "max_s": max(walls), "samples_s": walls,
-                         "verdict_p95": "within budget" if pct(walls, 95) <= 5 else ("over budget, within hard" if pct(walls, 95) <= 15 else "OVER HARD")}
+        logs = [r.run(one).log for _ in range(a.b6_repeats)]
+    walls = [lg["wall_s"] for lg in logs]
+    comp = [lg["wall_s"] - sum(c["history_s"] for c in lg["chunk_wall_s"]) for lg in logs]
+    out["one_worker"] = {"repeats": len(walls), "p50_s": pct(comp, 50), "p95_s": pct(comp, 95), "max_s": max(comp), "samples_s": comp,
+                         "basis": "wall excluding input synthesis (the quote-history generator), the B6 compute: IV, ATM, 30-day, OC5, OC6 for 2000 contracts",
+                         "with_input_synthesis": {"p50_s": pct(walls, 50), "p95_s": pct(walls, 95), "max_s": max(walls), "samples_s": walls},
+                         "verdict_p95": "within budget" if pct(comp, 95) <= 5 else ("over budget, within hard" if pct(comp, 95) <= 15 else "OVER HARD")}
     print("B6 1 worker p50 %.2f p95 %.2f max %.2f (n=%d)" % (out["one_worker"]["p50_s"], out["one_worker"]["p95_s"], out["one_worker"]["max_s"], len(walls)), flush=True)
     save(a.report, rep)
     n = a.n
@@ -188,14 +192,14 @@ def phase_b6(a, rep):
         for _ in range(a.b6_repeats):
             res = r.run(conc, batch_size=1)
             run_walls.append(res.log["wall_s"])
-            unit_walls += [c["wall_s"] for c in res.log["chunk_wall_s"]]
+            unit_walls += [c["wall_s"] - c["history_s"] for c in res.log["chunk_wall_s"]]
             rss.append(res.log["aggregate_peak_rss_bytes"])
         out["n_workers"] = {"workers": n, "units_per_run": res.unit_count, "repeats": len(run_walls),
                             "per_unit_wall_p50_s": pct(unit_walls, 50), "per_unit_wall_p95_s": pct(unit_walls, 95), "per_unit_wall_max_s": max(unit_walls),
                             "run_wall_p50_s": pct(run_walls, 50), "run_wall_p95_s": pct(run_walls, 95), "run_wall_max_s": max(run_walls),
                             "aggregate_peak_rss_bytes": max(rss), "peak_rss_per_worker_bytes": res.log["peak_rss_per_worker_bytes"],
                             "verdict_unit_p95": "within budget" if pct(unit_walls, 95) <= 5 else ("over budget, within hard" if pct(unit_walls, 95) <= 15 else "OVER HARD"),
-                            "note": "%d units run concurrently (one per worker); per-unit wall is the B6 wall under %d-way concurrency" % (res.unit_count, n)}
+                            "note": "%d units run concurrently (one per worker); per-unit wall (excluding input synthesis) is the B6 wall under %d-way concurrency" % (res.unit_count, n)}
     print("B6 N=%d per-unit p50 %.2f p95 %.2f max %.2f; run wall p50 %.2f" % (n, out["n_workers"]["per_unit_wall_p50_s"], out["n_workers"]["per_unit_wall_p95_s"], out["n_workers"]["per_unit_wall_max_s"], out["n_workers"]["run_wall_p50_s"]), flush=True)
 
 
@@ -214,8 +218,10 @@ def phase_b7(a, rep):
     out.update(summarize_run(res))
     out.update({"units": res.unit_count, "wall_s": lg["wall_s"], "wall_min": lg["wall_s"] / 60, "worker_cap": lg["worker_cap"],
                 "clamp": lg["clamp"], "physical_cores": rep["frozen"]["machine"].get("physical_cores"),
-                "cpu_s_sum": sum(c["cpu_s"] for c in lg["chunk_wall_s"]), "chunk_count": len(lg["chunk_wall_s"])})
+                "cpu_s_sum": sum(c["cpu_s"] for c in lg["chunk_wall_s"]), "history_s_sum": sum(c["history_s"] for c in lg["chunk_wall_s"]), "chunk_count": len(lg["chunk_wall_s"])})
     out["utilisation_cpu_over_workers_x_wall"] = out["cpu_s_sum"] / (a.n * lg["wall_s"])
+    out["input_synthesis_share_of_cpu"] = out["history_s_sum"] / out["cpu_s_sum"]
+    out["wall_min_excluding_input_synthesis_estimate"] = out["wall_min"] * (1 - out["input_synthesis_share_of_cpu"])
     if a.subset > 1:
         out["extrapolated_full_wall_min"] = out["wall_min"] * len(keys) / res.unit_count
         out["label"] = "extrapolated (1/%d subset)" % a.subset
