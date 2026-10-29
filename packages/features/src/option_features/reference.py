@@ -4,6 +4,7 @@ from fractions import Fraction
 import math
 from . import selection
 
+SPREAD_OUTPUTS = frozenset({"liquidity.spread_bps", "liquidity.spread", "liquidity.midpoint"})
 PRECEDENCE = ("unsupported_profile", "invalid_input", "missing_input", "ineligible_input", "not_applicable", "undefined", "nonidentifiable_inverse", "bracket_exceeded", "iteration_limit", "numerical_failure", "available")
 
 @dataclass(frozen=True, slots=True)
@@ -50,6 +51,33 @@ def quote_faults(quote, definition, request):
     if quote.bid is None or quote.ask is None:
         faults.append(("ineligible_input", "one_sided_quote"))
     elif Fraction(quote.bid) + Fraction(quote.ask) == 0:
+        faults.append(("undefined", "zero_midpoint"))
+    return tuple(faults)
+
+def spread_quote_faults(quote, definition, request):
+    """P1 gate for the spread outputs only (OC4/G1, PO-P1-02); quote_faults stays as is for every other output.
+
+    Precedence no_quote (handled by the caller), invalid, crossed, locked, stale: a bid <= 0 is invalid
+    and suppresses the crossed and locked gates; locked is its own reason; stale is checked last.
+    """
+    faults = []
+    bid, ask = quote.bid, quote.ask
+    if quote.currency != definition.currency:
+        faults.append(("invalid_input", "currency_mismatch"))
+    if any(x is not None and x < 0 for x in (bid, ask)):
+        faults.append(("invalid_input", "negative_quote"))
+    elif bid is not None and bid == 0:
+        faults.append(("invalid_input", "nonpositive_bid"))
+    if bid is not None and ask is not None and bid > 0:
+        if bid > ask:
+            faults.append(("invalid_input", "crossed_quote"))
+        elif bid == ask:
+            faults.append(("invalid_input", "locked_market"))
+    if request.valuation_ns - quote.event_ns > request.eligibility.max_quote_age_ns:
+        faults.append(("ineligible_input", "stale_quote"))
+    if bid is None or ask is None:
+        faults.append(("ineligible_input", "one_sided_quote"))
+    elif Fraction(bid) + Fraction(ask) == 0:
         faults.append(("undefined", "zero_midpoint"))
     return tuple(faults)
 
@@ -110,16 +138,20 @@ def evaluate_reference(snapshot, request, definition, output_id):
         if request.valuation_ns-spot.event_ns > request.eligibility.max_spot_age_ns:
             faults.append(("ineligible_input", "stale_spot"))
         return Outcome(None, tuple(faults), records) if faults else rational_value(Fraction(definition.strike)/Fraction(spot.value), records)
-    if output_id == "liquidity.spread_bps":
+    if output_id in SPREAD_OUTPUTS:
         quote = selection.quote(snapshot, request, definition.contract_id)
         if quote is None:
             result = missing((r for r in snapshot.quotes if r.contract_id == definition.contract_id), request, "missing_quote")
             return Outcome(None, result.faults, records+result.records)
         records += (quote,)
-        faults = quote_faults(quote, definition, request)
+        faults = spread_quote_faults(quote, definition, request)
         if faults:
             return Outcome(None, faults, records)
         bid, ask = Fraction(quote.bid), Fraction(quote.ask)
+        if output_id == "liquidity.spread":
+            return rational_value(ask-bid, records)
+        if output_id == "liquidity.midpoint":
+            return rational_value((ask+bid)/2, records)
         return rational_value(20000*(ask-bid)/(ask+bid), records)
     if output_id == "quality.quote_coverage":
         return quote_coverage(snapshot, request, definition)

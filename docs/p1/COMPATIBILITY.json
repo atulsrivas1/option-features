@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "status": "p1_source_candidate_synthetic_fixtures_only_not_runtime_qualified",
+  "release": "P1",
+  "label": "mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12",
+  "supersedes_for_new_builds": "docs/r25/COMPATIBILITY.json (0.1.0a1 history, not edited)",
+  "decision": "PO P1 version bump plan (docs/P1_VERSION_BUMP_PLAN.md), PO-P1-02",
+  "reason": "R25 results embed the package versions and P1 changes two R25 results (spread_bps for bid = 0 and for a locked quote)",
+  "packages": {
+    "option-feature-contracts": {
+      "version": "0.2.0a1",
+      "import": "option_feature_contracts",
+      "directory": "packages/option-contracts",
+      "requires": [],
+      "artifact_sha256": null,
+      "qualified": false
+    },
+    "option-features": {
+      "version": "0.2.0a1",
+      "import": "option_features",
+      "directory": "packages/features",
+      "requires": ["option-feature-contracts==0.2.0a1", "python-flint==0.9.0"],
+      "artifact_sha256": null,
+      "qualified": false
+    }
+  },
+  "sibling_repositories": {
+    "option-feature-io": {"pin_change": "own pull request after P1 acceptance", "requires_after": ["option-feature-contracts==0.2.0a1"], "moving_references": false},
+    "option-feature-workers": {"pin_change": "own pull request after P1 acceptance", "requires_after": ["option-feature-contracts==0.2.0a1", "option-features==0.2.0a1"], "moving_references": false}
+  },
+  "supported_candidate_environments": {
+    "python_requires": ">=3.12,<3.13",
+    "platform_ids": ["win-amd64"],
+    "linux": "run as a process check only, not claimed",
+    "wheels": "rebuilt from the tagged commit; no download and no publication"
+  },
+  "schema_versions": {
+    "snapshot": "option-canonical1",
+    "request": "option-request1",
+    "result": "option-result1",
+    "formula_version": "r25-formulas1",
+    "note": "unchanged identifiers; the closed reason set grows by nonpositive_bid and locked_market and the closed output set by liquidity.spread and liquidity.midpoint (additive); a 0.1.0a1 decoder rejects those new values"
+  },
+  "changed_results_vs_0.1.0a1": [
+    "liquidity.spread_bps, bid = 0: unavailable invalid_input / nonpositive_bid (was available, or undefined / zero_midpoint for 0/0)",
+    "liquidity.spread_bps, locked quote: unavailable invalid_input / locked_market (was available 0)",
+    "liquidity.spread_bps, negative and crossed together: reason negative_quote (was crossed_quote); gate precedence invalid before crossed before locked before stale",
+    "every result: contracts_package_version and calculation_package_version are 0.2.0a1"
+  ],
+  "unchanged_vs_0.1.0a1": [
+    "every other R25 output and fault (quote_faults is untouched, so IV, quality.quote_coverage and chain.activity keep their behaviour)",
+    "all variants1 code, schemas and bytes (no file under variants1 changed)"
+  ],
+  "additive": {
+    "outputs": ["liquidity.spread", "liquidity.midpoint"],
+    "reasons": ["invalid_input/nonpositive_bid", "invalid_input/locked_market"],
+    "modules": ["option_features.quotes", "option_features.windows", "option_features.shares"]
+  },
+  "legacy_modes_reachable_by_default": [
+    "sign_trade inside_spread=split (ask-first epsilon, midpoint split; delegates to variants1 epsilon_side)",
+    "window_premium window_end_ns=None (last standard print anchor)",
+    "joint_amounts and the variants1 joint operation"
+  ],
+  "frozen_fixture_effects": {
+    "qualification/fixtures/r25-independent-wire-fixtures.json": "not edited; cases quote-locked and quote-zero are superseded by P1 and asserted with their P1 results in tests/qualification (P1_SUPERSEDED)"
+  }
+}

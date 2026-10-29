@@ -1,6 +1,22 @@
 # Calculation API and qualification checkpoint
 
-`option-features==0.1.0a1` exposes `option_features.evaluate(snapshot, request)` and returns ordered immutable results. Nine selected matrix outputs plus five foundation pricing/Greek outputs retain their frozen units, model, causal admission, status, provenance, coverage and solver-evidence contracts. Only batch snapshots and replay of independent snapshots are admitted; no fetching, file/database access, credentials, clock reads or scheduling occurs in kernels.
+`option-features==0.2.0a1` exposes `option_features.evaluate(snapshot, request)` and returns ordered immutable results. Nine selected matrix outputs plus five foundation pricing/Greek outputs retain their frozen units, model, causal admission, status, provenance, coverage and solver-evidence contracts. Only batch snapshots and replay of independent snapshots are admitted; no fetching, file/database access, credentials, clock reads or scheduling occurs in kernels.
+
+## P1 parity closure (0.2.0a1)
+
+mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12
+
+Changed R25 results (the reason for the version bump): `liquidity.spread_bps` with a bid of 0 is now `invalid_input` / `nonpositive_bid` (was available, or `undefined` / `zero_midpoint` for 0/0), and a locked quote is `invalid_input` / `locked_market` (was available 0). Gate precedence for the spread outputs is no_quote, invalid, crossed, locked, stale. Results embed `0.2.0a1`. Nothing else in the R25 outputs changed: valid quotes, crossed, negative, one-sided and stale results, IV, quote coverage and chain activity keep their values.
+
+Additive: outputs `liquidity.spread` and `liquidity.midpoint`; reasons `nonpositive_bid` and `locked_market`; and pure modules beside `evaluate` (no I/O, no clocks, single-threaded, exact integer and `Fraction` arithmetic, defaults reproduce the legacy behaviour):
+
+| Module | Purpose | Legacy default |
+|---|---|---|
+| `option_features.quotes` | `spread_reason`, `quote_spread`, `sign_trade` (touch policy `inside_spread="unknown"`: inclusive epsilon, 3 s default quote age, `ambiguous_touch`, `inside_spread` unclassified), `sign_aggregate`, `classify_stream` (batched single pass) | `inside_spread="split"`: the shipped ask-first epsilon with midpoint split |
+| `option_features.windows` | `window_premium`, `WindowIndex` (explicit `window_end_ns`, closed window), G5 `quote_count_coverage`, `QuoteUpdateIndex` | `window_end_ns=None`: window ends at the last standard print |
+| `option_features.shares` | `single_reference_shares` (short-dated share needs civil date and expiry, OTM share needs spot, joint measures kept, total-premium denominator, coverage), `joint_amounts` | joint measures as in the legacy joint operation |
+
+The design-to-repository id map, with the reason vocabulary and the match/partial/missing class of every touched row, is `docs/FLOW_NAMING_MAP.md`. The P1 modules are not operations of the frozen `variants1` wire schema. Compatibility: `docs/p1/COMPATIBILITY.json` (the 0.1.0a1 and R26 manifests stay as history). Throughput gate P1-T1 (synthetic workload, relative engineering budget): `tools/p1_throughput.py`, report in `docs/p1/P1_T1_REPORT.json`. The October 21 evidence below describes the 0.1.0a1 builds.
 
 ## Current evidence — October 21, 2026
 
@@ -53,7 +69,7 @@ remains the operator trust anchor. A digest-shaped review field alone does not
 authenticate an independent reviewer. Full reviewed-fixture execution and new
 exact-artifact qualification remain coordinator gates.
 
-`option-features==0.1.0a1` exposes `option_features.evaluate(snapshot, request)`.
+`option-features==0.2.0a1` exposes `option_features.evaluate(snapshot, request)`.
 It returns ordered frozen Results and owns all nine R25 feature producers plus
 the five named foundation outputs. Source has been authored; implementation
 review and actual numerical acceptance remain open. No tests/builds/installs,
@@ -68,7 +84,7 @@ no fetching, filesystem/database, scheduling, credential, wall-clock or metadata
 reads in kernels. Supplied spot is a fact, so no unused equity dependency is added.
 
 Contracts are independently packaged. Numerical dependencies are exact alpha
-`option-feature-contracts==0.1.0a1` and `python-flint==0.9.0`. The module imports
+`option-feature-contracts==0.2.0a1` and `python-flint==0.9.0`. The module imports
 without loading flint; actual nonterminal model arithmetic acquires one exclusive
 numerical owner and lazily imports the backend. It restores precision/thread state
 on success and failure, rejects reentrancy and uses native threads1. Foreign flint

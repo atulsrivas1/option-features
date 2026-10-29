@@ -36,6 +36,7 @@ FIELDS = {cls: tuple(token.split(":", 1) for token in declaration.split()) for c
 OUTPUT_UNITS = {
     "contract.dte": "calendar_days", "contract.multiplier": "underlying_units_per_contract",
     "contract.moneyness": "strike_spot_ratio", "liquidity.spread_bps": "bps",
+    "liquidity.spread": "currency_per_underlying_payoff_unit", "liquidity.midpoint": "currency_per_underlying_payoff_unit",
     "quality.quote_coverage": "ratio", "chain.activity": "score",
     "pricing.price": "currency_per_underlying_payoff_unit", "greeks.delta": "absolute_delta",
     "greeks.signed_delta": "signed_delta", "greeks.gamma": "inverse_currency",
@@ -47,7 +48,7 @@ SUPPLIED_OUTPUTS = frozenset({"greeks.delta", "greeks.signed_delta", "greeks.gam
 REASONS_BY_STATUS = {
     "available": frozenset({"ok"}),
     "unsupported_profile": frozenset({"unsupported_dividend_profile", "unsupported_volatility_profile", "unsupported_model_profile", "profile_uncertified", "unsupported_exercise", "unsupported_deliverable", "unsupported_payment_lag"}),
-    "invalid_input": frozenset({"currency_mismatch", "action_basis_mismatch", "nonpositive_strike", "nonpositive_multiplier", "nonpositive_spot", "negative_volatility", "negative_quote", "crossed_quote", "negative_supplied_measure", "civil_binding_mismatch", "price_out_of_bounds"}),
+    "invalid_input": frozenset({"currency_mismatch", "action_basis_mismatch", "nonpositive_strike", "nonpositive_multiplier", "nonpositive_spot", "negative_volatility", "negative_quote", "crossed_quote", "nonpositive_bid", "locked_market", "negative_supplied_measure", "civil_binding_mismatch", "price_out_of_bounds"}),
     "missing_input": frozenset({"missing_definition", "missing_civil_binding", "missing_spot", "missing_rate", "missing_carry", "missing_volatility", "missing_quote", "missing_supplied_metric", "missing_population", "missing_activity", "missing_sampling_plan"}),
     "ineligible_input": frozenset({"completeness_unknown", "incomplete_source", "future_known", "future_event", "inactive_interval", "stale_spot", "stale_quote", "stale_supplied_metric", "one_sided_quote"}),
     "not_applicable": frozenset({"expired"}),

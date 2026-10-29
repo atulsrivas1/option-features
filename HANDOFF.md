@@ -1,6 +1,6 @@
 # Handoff (keep under 60 lines; update after every merge)
 
-Updated 2026-10-29 (candidate15 frozen, CANDIDATE15_FREEZE_RECORD.md: 2666 of 2668; R27 evidence recorded in RELEASE_NOTES section 16 (T8 draft, docs review and PO accept pending): harness v15.1 is the gate harness, label extended to candidate15 on Windows, Linux evidence on WSL2 is not a label; PRERELEASE). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
+Updated 2026-10-29 (P1 PR open, see the P1 section; candidate15 frozen, CANDIDATE15_FREEZE_RECORD.md: 2666 of 2668; R27 evidence recorded in RELEASE_NOTES section 16 (T8 draft, docs review and PO accept pending): harness v15.1 is the gate harness, label extended to candidate15 on Windows, Linux evidence on WSL2 is not a label; PRERELEASE). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
 
 ## PO release plan V3 (2026-10-29, authoritative; DECISIONS.md has the entries)
 - Main goal (owner): performance. Use cores, memory and caches fully to calculate faster without breaking correctness. B1-B12 are hard acceptance gates (synthetic-size stage until RQ; label "synthetic workload, relative engineering budget"). Developer designs for multi-core, vectorised/batched calculation, caching, minimal allocation; Tester authors independent perf, parallelism-determinism, batched-vs-single, cache and memory fixtures.
@@ -9,17 +9,20 @@ Updated 2026-10-29 (candidate15 frozen, CANDIDATE15_FREEZE_RECORD.md: 2666 of 26
 - Performance rulings (DECISIONS.md, D4 amended): opt-in process-pool runner (opt-in, default single-process) = LAST M1 story (workers <= min(cores, RAM/B9), merge by unit key); solver stages: Fraction hoist, float-filtered bisection with certified fallback and proven bound, Stage 0 then Stage 1 both in M1; Newton only as verified bracket seed; true-value change = separate PO ruling and candidate bump; governing B7 = 170/240 min; Linux process check, not claimed; eight acceptance tests authored by the independent Tester. Owner-only: python-flint scratch venv approval, B7 machine cores/RAM.
 - P1 and M1 fixtures authored independently (Tester, no implementation read), reviewed by an independent reviewer; interim rulings on design requests 1-3 (option A each) are pending design ratification; a changed answer redoes fixtures. M1 code starts when P1 is accepted. P1 bump plan: docs/P1_VERSION_BUMP_PLAN.md.
 
+## P1 (0.2.0a1) Developer status (2026-10-29): PR open on branch p1/parity-closure, not merged; needs independent code review and PO acceptance
+- Done: ruled R25 change (spread: bid <= 0 invalid, locked_market), additive outputs liquidity.spread/midpoint, modules quotes/windows/shares (touch policy, window_end, single-reference shares, G5 count coverage, batched classify_stream), FLOW_NAMING_MAP.md, 0.2.0a1 bump with docs/p1/COMPATIBILITY.json. P1 rows 121 of 121; selfcheck unchanged; 24 implementation mutants all caught.
+- Legacy: 109 of 111 frozen R25 cases identical to 7e74976 (version fields masked; tools/p1_legacy_diff.py); quote-locked and quote-zero superseded (ruled); no variants1 file changed. Gate P1-T1 (synthetic workload, relative engineering budget; p95, machine-dependent, 30 repeats): 695,324 rec/s for 1e5, 663,933 for 1e6 (budget 100,000, hard 20,000), ratio 10.74 (<= 12).
+- Open for the PO (docs/p1/P1_DEV_NOTES.md): variants1 wire integration of touch policy/window_end/shares (candidate bump), nine fixture-silent choices, r26 notices still say the map is "planned".
+- After acceptance: tag, rebuild wheels from the tag (no publication), sibling pin PRs (io, workers), Linux process check; M1 code starts.
+
 ## PO decision 2026-10-28: R26 stays PRERELEASE (Windows x64 cp312, partial Windows evidence)
 - Release notes with full disclosures: docs/r26-variants/RELEASE_NOTES.md (see PR 51; Next item 8 is done once that PR merges). The scoped label was ratified 2026-10-29 (see below); candidate13 stays the baseline (history: the baseline is now candidate15, RELEASE_NOTES section 16).
 - Windows c14 evidence: RELEASE_NOTES section 14 (PR 54; its label wording is superseded by section 15). A1 approve-with-conditions (independent reviewer); A2 done with limits (tags -> commits recorded in 14g; receipts keep placeholders; no wheel-to-commit provenance).
 
 ## History (2026-10-28, superseded by candidate15 and RELEASE_NOTES section 16): candidate14 frozen with flags, PR open
 - Record: docs/r26-variants/CANDIDATE14_FREEZE_RECORD.md (2665 frozen of 2668; index.json 11165e90...1203; controller 7afa68a1..., manifest 5233264e...). Merge is blocked until: independent docs review of the five docs, auditor addendum (conditions a, b), CI, PO acceptance and a retro entry in DECISIONS.
-- Reproduce: contained controller run_completion_candidate14b.py with the 14b manifest and both sha pins, python -I -B, absolute paths, a NEW output dir (the controller refuses an existing one; move the generated dir between runs). Rerun note: the corrected authoring file made only the manifest and controller identities change; all 8 outputs were byte-identical (first-run hashes are superseded in the record).
-- Replay: harness-c14 run_all with explicit pins (option-features 8285cf70, io e1569636, workers 8795f3e83, fixture tree sha); no --expect overrides.
-- R27: unflag gates per group (N5 independent adjudication; N6 independent adjudication, route disagreements to a fix candidate; W3 spec-based or field-level regeneration, graphs only by spec-based). One DECISIONS entry per group, no bulk unflag. Ask PO whether the 3 null rows count in the flagged register.
-- Caveats: the workers partial count 42 is partly harness-reported (independent reviewer reproduced 32 by his own mechanism count). Per-row flag keys exist only on the 21 N6 rows; N5 flagged 28 (3 nulls frozen-unflagged; census 31), W3 39 are in the census/record (register 110 = 61 + 28 + 21, incl. excluded N6 row; 109 frozen-and-flagged; arithmetic). Public-safety scan: independent re-scan on d540276 clean, two one-line edits at 963a855 coordinator-reviewed. PO: ACCEPT-WITH-CONDITIONS, applied.
 - Label (PO ratified 2026-10-29): "Qualified for Windows x64, CPython 3.12, synthetic data only, with disclosed exclusions (PRERELEASE)." Use it only with the scope and exclusions in RELEASE_NOTES section 15. Frozen means reproducible, not validated. Stays PRERELEASE.
+- Reproduce, replay, R27 unflag rules and caveats (workers partial 42 partly harness-reported; N5/N6/W3 flag arithmetic) are in CANDIDATE14_FREEZE_RECORD.md and RELEASE_NOTES section 16; reproduce with the contained controller (python -I -B, absolute paths, a NEW output dir each run).
 
 ## Next
 0. Independent freeze review of CANDIDATE13_FREEZE_RECORD: DONE (approve-with-conditions, applied); next coordinator freeze and merge. Then candidate14 (PO R27 rulings): lift exclusion of the 3 null-nondict rows, harness assertion for the extra-stream control row, re-issue filter, hashes, counts and release notes. PO to review: N5 rows flagged (proposed), assumption-2 confirmation, A>K disclosure, sorted-literal excluded_ids, nonexpected two-control rows as negative controls (the last three already PO-ruled; see DECISIONS.md).
@@ -35,12 +38,7 @@ Team items:
 8. Release notes finalization (record section 8 items; filter re-issued for candidate13 hashes, counts and the 5 excluded ids; draft kept in the private work folder).
 8b. New fixtures for uncovered Q3 / field_set positions; code and codec changes land together (PO condition).
 9. Regenerate the flagged rows, assumption-2 block first (18 rows/graphs plus the 9 held rows).
-9b. A>K over merge identity_conflict (open condition): author a fixture first that fails on current code and passes after the workers change; no frozen row may change.
-9c. PR 34 entries (open condition): regenerate the 6 rows and graphs under Reading B; order of excluded_ids not asserted.
-9d. Two-control F4 fix (open condition): frozen rows byte-identical per v9 replay; new two-control fixtures must fail before the fix and pass after.
-9e. Release notes must disclose that c-domain and c-completeness are untested (rollup-wider row removed).
-9f. CP3 compatibility ratified: Q2 combined-defect order unspecified and not asserted; Q4 held.
-9g. Assumption 2: the 9 B and 9 B3 rows already encode it in candidate12 (analysis finding, PO acceptance pending via PR 49 review); no regeneration needed, so the flagged-rows item 9 assumption-2 block is satisfied pending that acceptance; the 9 graphs were not separately inspected.
+9b-9g. Open conditions (full text in DECISIONS.md): A>K merge identity_conflict fixture first; PR 34 six rows under Reading B; two-control F4 fix with frozen rows unchanged per the v9 replay; release notes disclose c-domain/c-completeness untested; CP3 Q2 order not asserted and Q4 held; assumption 2 already encoded in the 9 B and 9 B3 rows (PO acceptance pending via PR 49).
 
 ## variants2 backlog
 - Contract-versus-code conflict: BOUNDARY_CONTRACT line 322 may mandate canonicalizing -0.0, while variants1 rejects -0.0 permanently. Resolve in variants2.

@@ -1,6 +1,6 @@
 # Contracts source bootstrap
 
-This source implements independently packaged `option-feature-contracts==0.1.0a1`
+This source implements independently packaged `option-feature-contracts==0.2.0a1`
 under `packages/option-contracts`. It uses only the Python standard library and
 imports no numerical backend, I/O package or worker package. Source authoring is
 not runtime, build, numerical or platform qualification.
