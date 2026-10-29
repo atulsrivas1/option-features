@@ -73,7 +73,8 @@ Changes vs v14: EXCLUDED_IDS 3 to 2 in five scripts; workers expect 43 partial +
 
 Harness v15 REJECTS candidate14 (each of the five layers exits 1 on the excluded-id mismatch); comparer FAIL on candidate14, PASS on candidate15. negtest_v15: 27/27. Independent tester mutation of one data row in each layer fails the gate; mutating the control to carry the error fails; misspelling its assertion key fails.
 
-## 7. Independent review: C15_V15_REVIEW.md, APPROVE (4 notes, disclosed limits, not defects)
+## 7. Independent review: C15_V15_REVIEW.md, APPROVE (3 non-blocking notes; with the PO split of note 3 and the PO-added Windows-only limit, four disclosed limits, not defects)
+Review notes 1, 2 and 3 are items 1, 2 and 3 below; the review states the Windows-only limit (item 4) within its note 3 and its scope line, and the PO ruling lists it separately. The independent nullability check (r27-t2/NULLABILITY_CHECK.md, private record, cited by name only) found all 8 members non-nullable.
 1. The control row's Results, Publication and Checkpoint are unasserted (NON-PROOF). Only absence of one exact error is proven.
 2. No literal NON-PROOF key in the row; the label is emitted by the harness. Release notes and the fixture README MUST carry the label. No second row change.
 3. The I/O N5_NONWIRE sha pin came from a derive run (circular by nature); counts were independently reproduced by the reviewer. Disclosed. Rule going forward: pin from independent derivation.
@@ -109,6 +110,8 @@ The register is authoritative. 21 fixture rows still carry an in-row `flagged: t
 - N6: rows 1-20 flags lifted per PO ruling (overlay disclosure unchanged); row 21 excluded. Rows 19-20 (F4 span two-controls, expected two roots outside second domain) are adjudicated, masked: AnchorReadiness status and reason are not asserted until the design session rules.
 - Q4 (suffix checks) and the narrower-rollup clause stay scoped out; c-domain and c-completeness remain untested.
 - Mandatory non-claim: numeric, wire and earliest-error correctness is not claimed beyond the audit and the replays.
+
+Supersession: this record is superseded by CANDIDATE15_FREEZE_RECORD.md for the control row, the exclusion count (3->2) and the N5/N6 flag decisions; release-note reconciliation owed in R27 T8. It supersedes CANDIDATE14_FREEZE_RECORD.md section 3 and 5 for those items.
 
 ## 10. Pending (no claims)
 - R27 candidate evidence on Windows (candidate15, harness v15, T5 wheels) and on Linux x64 (T7) is PENDING. The wording "frozen, adjudicated, qualified on Windows/Linux per R27 evidence" is allowed only after both pass; until then: FROZEN, replay-qualified on Windows (qual2 wheels).
