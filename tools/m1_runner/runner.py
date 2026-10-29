@@ -29,8 +29,8 @@ from .workload import Spec, apply_order, parse_key  # noqa: F401  (Spec re-expor
 
 GIB = 1 << 30
 DEFAULT_WORKERS = 1
-PLACEHOLDER_B9_PEAK_BYTES = 2 * GIB    # until the first B7 run measures the per-process peak
-AGGREGATE_HARD_BYTES = 8 * GIB         # aggregate worker RSS hard limit
+B9_BUDGET_BYTES = 2 * GIB              # B9 budget per process, the value used in the cap (the measured peak is only reported)
+# aggregate worker RSS limit: configurable, default 50 percent of host RAM
 HASHSEED = "0"
 HELLO_TIMEOUT_S = 180.0
 
@@ -114,16 +114,57 @@ def peak_rss_bytes():
     return int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss) * (1 if sys.platform == "darwin" else 1024)
 
 
-def worker_cap(cores=None, ram_bytes=None, b9_peak_bytes=PLACEHOLDER_B9_PEAK_BYTES, aggregate_hard_bytes=AGGREGATE_HARD_BYTES):
-    """cap = min(cores, RAM / B9 peak, aggregate hard limit / B9 peak), at least 1. Inputs are injectable."""
-    cores = system_cores() if cores is None else cores
+def physical_cores():
+    """Physical core count (not logical). Windows: GetLogicalProcessorInformationEx; Linux: /proc/cpuinfo; else logical."""
+    try:
+        if os.name == "nt":
+            import ctypes
+            k32 = ctypes.windll.kernel32
+            k32.GetLogicalProcessorInformationEx.argtypes = [ctypes.c_int, ctypes.c_void_p, ctypes.POINTER(ctypes.c_ulong)]
+            size = ctypes.c_ulong(0)
+            k32.GetLogicalProcessorInformationEx(0, None, ctypes.byref(size))  # RelationProcessorCore, size query
+            buf = ctypes.create_string_buffer(size.value)
+            if k32.GetLogicalProcessorInformationEx(0, buf, ctypes.byref(size)):
+                n, off = 0, 0
+                while off < size.value:
+                    rel, rec = int.from_bytes(buf.raw[off:off + 4], "little"), int.from_bytes(buf.raw[off + 4:off + 8], "little")
+                    n += rel == 0
+                    off += rec
+                if n:
+                    return n
+        elif os.path.exists("/proc/cpuinfo"):
+            pairs, cur = set(), {}
+            for line in open("/proc/cpuinfo"):
+                if ":" in line:
+                    k, v = [x.strip() for x in line.split(":", 1)]
+                    cur[k] = v
+                if not line.strip() and cur:
+                    pairs.add((cur.get("physical id"), cur.get("core id")))
+                    cur = {}
+            if cur:
+                pairs.add((cur.get("physical id"), cur.get("core id")))
+            if pairs and (None, None) not in pairs:
+                return len(pairs)
+    except Exception:
+        pass
+    return system_cores()
+
+
+def worker_cap(cores=None, ram_bytes=None, b9_peak_bytes=B9_BUDGET_BYTES, aggregate_hard_bytes=None, logical_cores=None):
+    """PO ruling: cap = min(PHYSICAL cores, floor(aggregate limit / B9 value)), at least 1. The aggregate limit defaults to
+    50 percent of host RAM and is configurable; B9 value is the 2 GB budget (not the measured peak). `cores` means physical
+    cores; logical cores are only reported. All inputs are injectable."""
+    cores = physical_cores() if cores is None else cores
     ram_bytes = system_ram_bytes() if ram_bytes is None else ram_bytes
+    logical_cores = system_cores() if logical_cores is None else logical_cores
+    if aggregate_hard_bytes is None:
+        aggregate_hard_bytes = ram_bytes // 2
     if cores < 1 or ram_bytes < 1 or b9_peak_bytes < 1 or aggregate_hard_bytes < 1:
         raise ValueError("cores, ram_bytes, b9_peak_bytes and aggregate_hard_bytes must be positive")
-    by_ram, by_agg = ram_bytes // b9_peak_bytes, aggregate_hard_bytes // b9_peak_bytes
-    return {"cores": cores, "ram_bytes": ram_bytes, "b9_peak_bytes": b9_peak_bytes, "aggregate_hard_bytes": aggregate_hard_bytes,
-            "cap_by_cores": cores, "cap_by_ram": by_ram, "cap_by_aggregate": by_agg,
-            "cap": max(1, min(cores, by_ram, by_agg))}
+    by_agg = aggregate_hard_bytes // b9_peak_bytes
+    return {"physical_cores": cores, "logical_cores": logical_cores, "ram_bytes": ram_bytes, "b9_peak_bytes": b9_peak_bytes,
+            "aggregate_hard_bytes": aggregate_hard_bytes, "cap_by_cores": cores, "cap_by_aggregate": by_agg,
+            "cap": max(1, min(cores, by_agg))}
 
 
 def resolve_workers(requested, cap):
@@ -364,13 +405,13 @@ def _exitcode(proc):
 class Runner:
     """workers=1: in-process reference path. workers>=2: persistent spawn pool (opt-in). Use as a context manager."""
 
-    def __init__(self, workers=DEFAULT_WORKERS, b9_peak_bytes=PLACEHOLDER_B9_PEAK_BYTES, aggregate_hard_bytes=AGGREGATE_HARD_BYTES,
+    def __init__(self, workers=DEFAULT_WORKERS, b9_peak_bytes=B9_BUDGET_BYTES, aggregate_hard_bytes=None,
                  cores=None, ram_bytes=None, timeout_s=7200.0, fault=None, count_arb=False, log=None):
         self.cap = worker_cap(cores, ram_bytes, b9_peak_bytes, aggregate_hard_bytes)
         self.workers_requested = workers
         self.workers_used, self.clamp = resolve_workers(workers, self.cap)
         self.fault = _check_fault(fault, self.workers_used)
-        self.aggregate_hard_bytes, self.timeout_s, self.count_arb, self.log_path = aggregate_hard_bytes, timeout_s, count_arb, log
+        self.aggregate_hard_bytes, self.timeout_s, self.count_arb, self.log_path = self.cap["aggregate_hard_bytes"], timeout_s, count_arb, log
         self._procs, self._conns, self._env, self._broken, self._rss = [], [], [], False, {}
         self._seq = 0
 

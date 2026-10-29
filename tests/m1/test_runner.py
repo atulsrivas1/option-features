@@ -30,19 +30,28 @@ FORBIDDEN = ("real-data", "market data", "production", "validated against vendor
 
 
 class CapLogic(unittest.TestCase):
-    def test_cap_is_min_of_cores_ram_and_aggregate(self):
-        c = worker_cap(cores=96, ram_bytes=256 * GIB, b9_peak_bytes=2 * GIB, aggregate_hard_bytes=8 * GIB)
-        self.assertEqual((c["cap_by_cores"], c["cap_by_ram"], c["cap_by_aggregate"], c["cap"]), (96, 128, 4, 4))
-        c = worker_cap(cores=8, ram_bytes=64 * GIB, b9_peak_bytes=GIB // 4, aggregate_hard_bytes=8 * GIB)
-        self.assertEqual((c["cap_by_cores"], c["cap_by_ram"], c["cap_by_aggregate"], c["cap"]), (8, 256, 32, 8))
-        c = worker_cap(cores=64, ram_bytes=6 * GIB, b9_peak_bytes=GIB, aggregate_hard_bytes=8 * GIB)
+    def test_cap_is_min_of_physical_cores_and_half_ram_over_b9(self):
+        c = worker_cap(cores=96, ram_bytes=256 * GIB, b9_peak_bytes=2 * GIB, logical_cores=192)
+        self.assertEqual((c["cap_by_cores"], c["aggregate_hard_bytes"], c["cap_by_aggregate"], c["cap"]), (96, 128 * GIB, 64, 64))
+        c = worker_cap(cores=48, ram_bytes=254 * GIB, logical_cores=96)
+        self.assertEqual((c["physical_cores"], c["logical_cores"], c["cap"]), (48, 96, 48))
+        c = worker_cap(cores=8, ram_bytes=64 * GIB, b9_peak_bytes=GIB // 4)
+        self.assertEqual(c["cap"], 8)
+        c = worker_cap(cores=64, ram_bytes=12 * GIB, b9_peak_bytes=GIB)
         self.assertEqual(c["cap"], 6)
-        for key in ("cores", "ram_bytes", "b9_peak_bytes", "aggregate_hard_bytes"):
+        self.assertEqual(worker_cap(cores=64, ram_bytes=12 * GIB, b9_peak_bytes=GIB, aggregate_hard_bytes=3 * GIB)["cap"], 3)
+        for key in ("physical_cores", "logical_cores", "ram_bytes", "b9_peak_bytes", "aggregate_hard_bytes"):
             self.assertIn(key, c)
+
+    def test_logical_cores_are_reported_not_counted(self):
+        self.assertEqual(worker_cap(cores=4, ram_bytes=512 * GIB, logical_cores=128)["cap"], 4)
 
     def test_cap_never_below_one(self):
         self.assertEqual(worker_cap(cores=4, ram_bytes=GIB, b9_peak_bytes=2 * GIB)["cap"], 1)
         self.assertEqual(worker_cap(cores=1, ram_bytes=64 * GIB, b9_peak_bytes=GIB)["cap"], 1)
+
+    def test_default_aggregate_limit_is_half_of_ram(self):
+        self.assertEqual(worker_cap(cores=2, ram_bytes=100 * GIB)["aggregate_hard_bytes"], 50 * GIB)
 
     def test_clamp_is_reported_not_an_error(self):
         cap = worker_cap(cores=4, ram_bytes=64 * GIB, b9_peak_bytes=GIB // 2)
@@ -288,7 +297,7 @@ class Docs(unittest.TestCase):
 
     def test_doc_covers_required_topics(self):
         text = self.DOC.read_text(encoding="utf-8")
-        for needle in ("--workers", "min(cores", "no partial output", "PYTHONHASHSEED", "unit key", "synthetic workload, relative engineering budget"):
+        for needle in ("--workers", "min(physical cores", "no partial output", "PYTHONHASHSEED", "unit key", "synthetic workload, relative engineering budget"):
             self.assertIn(needle, text)
 
     def test_runner_never_enabled_by_default(self):

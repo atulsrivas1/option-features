@@ -33,7 +33,7 @@ from m1_runner import runner as R  # noqa: E402
 LABEL = "synthetic workload, relative engineering budget"
 BUDGET = {"B6": "<= 5 s p95, hard 15 s (all outputs, 1 underlying, size M, 1 cutoff)",
           "B7": "<= 170 min, hard 240 min (5 x 5 x 78 cutoffs, size M, run once; under 10 min on 8 cores is reported, not promised)",
-          "B9": "<= 2 GB per process, aggregate <= 8 GB, hard 4 GB per process",
+          "B9": "<= 2 GB per process, hard 4 GB per process; cap uses the 2 GB budget, aggregate limit 50 percent of host RAM (configurable)",
           "S01": "speedup at 4 workers >= 2.0x on multi-underlying work (5 underlyings)"}
 GIB = 1 << 30
 
@@ -56,7 +56,7 @@ def machine():
             "logical_cores": os.cpu_count(), "ram_bytes": R.system_ram_bytes(), "label": LABEL}
     if os.name == "nt":
         info["cpu_name"] = ps("(Get-CimInstance Win32_Processor | Select -First 1).Name")
-        info["physical_cores"] = ps("(Get-CimInstance Win32_Processor | Measure-Object NumberOfCores -Sum).Sum")
+        info["physical_cores"] = R.physical_cores()
         info["sockets"] = ps("(Get-CimInstance Win32_Processor | Measure-Object).Count")
         info["power_plan"] = ps("powercfg /getactivescheme")
         info["cpu_load_percent_before"] = ps("(Get-CimInstance Win32_Processor | Measure-Object LoadPercentage -Average).Average")
@@ -209,7 +209,7 @@ def phase_b7(a, rep):
     if a.subset > 1:   # proportional subset: every subset-th cutoff of every underlying x session (all 25 groups kept)
         spec = Spec(shape="M", cutoffs=tuple(range(0, 78, a.subset)))
     out = {"budget": BUDGET["B7"], "workers_requested": a.n, "n_subset": a.subset}
-    rep["b7"] = out
+    rep["b7_N%d" % a.n] = out
     with make_runner(a.n, a) as r:
         t0 = time.perf_counter()
         res = r.run(spec, emit="digest")
@@ -217,7 +217,7 @@ def phase_b7(a, rep):
     lg = res.log
     out.update(summarize_run(res))
     out.update({"units": res.unit_count, "wall_s": lg["wall_s"], "wall_min": lg["wall_s"] / 60, "worker_cap": lg["worker_cap"],
-                "clamp": lg["clamp"], "physical_cores": rep["frozen"]["machine"].get("physical_cores"),
+                "clamp": lg["clamp"], "physical_cores": rep["frozen"]["machine"].get("physical_cores"), "workers_vs_physical": "%d of %s" % (a.n, rep["frozen"]["machine"].get("physical_cores")),
                 "cpu_s_sum": sum(c["cpu_s"] for c in lg["chunk_wall_s"]), "history_s_sum": sum(c["history_s"] for c in lg["chunk_wall_s"]), "chunk_count": len(lg["chunk_wall_s"])})
     out["utilisation_cpu_over_workers_x_wall"] = out["cpu_s_sum"] / (a.n * lg["wall_s"])
     out["input_synthesis_share_of_cpu"] = out["history_s_sum"] / out["cpu_s_sum"]
@@ -244,9 +244,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--report", required=True)
     ap.add_argument("--phase", required=True, choices=sorted(PHASES))
-    ap.add_argument("--n", type=int, default=24, help="N workers for the N-worker runs")
-    ap.add_argument("--b9-peak-bytes", type=int, default=340 * (1 << 20), help="per-process peak used for the cap (placeholder 2 GiB until measured)")
-    ap.add_argument("--aggregate-hard-bytes", type=int, default=8 * GIB)
+    ap.add_argument("--n", type=int, default=0, help="N workers for the N-worker runs (0 = the cap: min(physical cores, 0.5 x RAM / 2 GB))")
+    ap.add_argument("--b9-peak-bytes", type=int, default=R.B9_BUDGET_BYTES, help="B9 value used in the cap (the 2 GB budget)")
+    ap.add_argument("--aggregate-hard-bytes", type=int, default=None, help="default 50 percent of host RAM")
     ap.add_argument("--cores", type=int, default=None)
     ap.add_argument("--timeout-s", type=float, default=3600.0)
     ap.add_argument("--underlying", default="SYN1")
@@ -255,6 +255,8 @@ def main():
     ap.add_argument("--b6-repeats", type=int, default=30)
     ap.add_argument("--subset", type=int, default=1)
     a = ap.parse_args()
+    if a.n == 0:
+        a.n = R.worker_cap(a.cores, None, a.b9_peak_bytes, a.aggregate_hard_bytes)["cap"]
     rep = load(a.report)
     if a.phase != "freeze" and "frozen" not in rep:
         sys.exit("run --phase freeze first: machine and workload are frozen before the first measured run")
