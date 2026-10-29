@@ -1,0 +1,46 @@
+{
+ "classes": [
+  "deep_itm",
+  "deep_otm",
+  "atm",
+  "short_expiry",
+  "extreme_vol",
+  "long_expiry",
+  "ordinary"
+ ],
+ "extreme_fraction_pct": 10,
+ "generator": "gen_m1_solver_sets.py",
+ "label": "synthetic workload, relative engineering budget",
+ "pricing": "Black-Scholes European float math, rounded to 4 places; some contracts unsolvable by design",
+ "provenance": "SYNTHETIC",
+ "qualification_label": "mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12",
+ "reference_result": "CURRENT solver output captured by the Tester at run time; not authored",
+ "sample_files": [
+  "sample_m1_flat.jsonl",
+  "sample_m1_mixed.jsonl"
+ ],
+ "schema_version": 1,
+ "seed": 20261029,
+ "set_size": 10000,
+ "sets": {
+  "flat": {
+   "class_counts": {
+    "atm": 1473,
+    "ordinary": 8527
+   },
+   "sha256_of_canonical_jsonl": "5e69265a4c9870f5342a381ac15ec05ef61df0f4a4658d1de95df220aafa9d93"
+  },
+  "mixed": {
+   "class_counts": {
+    "deep_itm": 1015,
+    "deep_otm": 965,
+    "extreme_vol": 963,
+    "long_expiry": 1008,
+    "ordinary": 3488,
+    "short_expiry": 2561
+   },
+   "sha256_of_canonical_jsonl": "481294f9cffff4f06a7f8c3a5b730df454afcaf8c5b68c422720e75efa78c410"
+  }
+ },
+ "unit_key": "set:i (zero-padded index)"
+}

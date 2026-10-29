@@ -1,0 +1,323 @@
+#!/usr/bin/env python3
+"""Generates perf_resource_rows.json (SYNTHETIC, deterministic, LF). Rows are data in this script."""
+import json, os, sys
+
+DATA = {
+ "b12_row_reconciliation": "B12 = identical result bytes over 3 repeats on the subset of one underlying, one session (PO_R28_DESIGN_RULINGS section 3 item 2, as relayed by PO); D01-D08 and S01 cover the wider workload",
+ "label": "synthetic workload, relative engineering budget",
+ "provenance": "SYNTHETIC",
+ "qualification_label": "mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12",
+ "quote_count_tolerance_pct": 10,
+ "rows": [
+  {
+   "expect": "per-cutoff and whole-run sha256 identical",
+   "group": "determinism",
+   "id": "D01",
+   "values": [
+    1,
+    2,
+    4,
+    "N"
+   ],
+   "vary": "workers",
+   "workload": "B6 M SYN1 s1 cutoffs 1..78"
+  },
+  {
+   "expect": "identical sha256",
+   "group": "determinism",
+   "id": "D02",
+   "values": [
+    1,
+    2,
+    4,
+    "N"
+   ],
+   "vary": "workers",
+   "workload": "5 underlyings x 1 session x 78 cutoffs, M"
+  },
+  {
+   "expect": "identical sha256",
+   "group": "determinism",
+   "id": "D03",
+   "values": [
+    1,
+    7,
+    64,
+    "all"
+   ],
+   "vary": "batch_size",
+   "workload": "B6 M SYN1 s1"
+  },
+  {
+   "expect": "identical sha256 after canonical ordering of output",
+   "group": "determinism",
+   "id": "D04",
+   "values": [
+    "ascending",
+    "descending",
+    "shuffle seed 1",
+    "shuffle seed 2"
+   ],
+   "vary": "cutoff_order",
+   "workload": "B6 M SYN1 s1"
+  },
+  {
+   "expect": "identical sha256",
+   "group": "determinism",
+   "id": "D05",
+   "values": [
+    "SYN1..5",
+    "SYN5..1",
+    "shuffle seed 1"
+   ],
+   "vary": "underlying_order",
+   "workload": "5 underlyings x 1 session"
+  },
+  {
+   "expect": "identical chain-level ATM IV and CM IV bytes (ties resolved by rule, not by order)",
+   "group": "determinism",
+   "id": "D06",
+   "values": [
+    "natural",
+    "reversed",
+    "shuffle seed 1"
+   ],
+   "vary": "contract_order_in_chain",
+   "workload": "chain M one cutoff"
+  },
+  {
+   "expect": "identical sha256 of classified output in input order",
+   "group": "determinism",
+   "id": "D07",
+   "values": [
+    [
+     1,
+     1
+    ],
+    [
+     2,
+     2
+    ],
+    [
+     4,
+     4
+    ],
+    [
+     4,
+     16
+    ]
+   ],
+   "vary": "workers_and_shard_count",
+   "workload": "stream 1e5"
+  },
+  {
+   "expect": "3 repeats identical at every worker count",
+   "group": "determinism",
+   "id": "D08",
+   "values": [
+    3
+   ],
+   "vary": "repeat",
+   "workload": "D01 and D07"
+  },
+  {
+   "expect": "bytes equal per record",
+   "group": "batched_vs_single",
+   "id": "E01",
+   "outputs": [
+    "spread",
+    "midpoint",
+    "spread_bps",
+    "touch_side"
+   ],
+   "workload": "stream 1e5 all classes"
+  },
+  {
+   "expect": "bytes equal per contract incl. status and reason",
+   "group": "batched_vs_single",
+   "id": "E02",
+   "outputs": [
+    "OC5"
+   ],
+   "workload": "chain M quotes at cutoff"
+  },
+  {
+   "expect": "bytes equal (exact rational)",
+   "group": "batched_vs_single",
+   "id": "E03",
+   "outputs": [
+    "OC6"
+   ],
+   "workload": "windows 1, 50, 5000"
+  },
+  {
+   "expect": "bytes equal",
+   "group": "batched_vs_single",
+   "id": "E04",
+   "outputs": [
+    "premium"
+   ],
+   "workload": "stream 1e5 trades"
+  },
+  {
+   "expect": "abs diff <= 1e-4 per contract; status and closed reason identical",
+   "group": "batched_vs_single",
+   "id": "E05",
+   "outputs": [
+    "IV"
+   ],
+   "workload": "chain M, one cutoff, all contracts"
+  },
+  {
+   "expect": "abs diff <= 1e-4; same unavailable reasons",
+   "group": "batched_vs_single",
+   "id": "E06",
+   "outputs": [
+    "chain ATM IV",
+    "chain 30-day CM IV"
+   ],
+   "workload": "chain S, M, L one cutoff"
+  },
+  {
+   "check": "cold_vs_warm",
+   "expect": "same bytes; warm run not slower than cold p95 by more than noise",
+   "group": "cache",
+   "id": "C01",
+   "workload": "B6 M SYN1 s1 cutoff 40"
+  },
+  {
+   "check": "single_field_change",
+   "expect": "warm result equals cold result of changed input; differs from unchanged result when the field is output-relevant",
+   "fields": [
+    "bid",
+    "ask",
+    "bid_size",
+    "ask_size",
+    "t_rel_ns",
+    "strike",
+    "expiry_days",
+    "right",
+    "style",
+    "spot",
+    "rate",
+    "dividend",
+    "window_ns",
+    "stale_limit_ns"
+   ],
+   "group": "cache",
+   "id": "C02",
+   "workload": "B6 M one cutoff, change one field of one contract"
+  },
+  {
+   "check": "cross_scope",
+   "expect": "no cross-contamination of ids or timestamps in output",
+   "group": "cache",
+   "id": "C03",
+   "workload": "SYN1 s1 vs SYN2 s2 identical inputs under different ids"
+  },
+  {
+   "check": "eviction",
+   "expect": "bytes equal to unbounded-cache run",
+   "group": "cache",
+   "id": "C04",
+   "workload": "cache size limited to 1 percent of working set"
+  },
+  {
+   "check": "param_change",
+   "expect": "changed parameter invalidates; bytes equal cold result of new params",
+   "fields": [
+    "tolerance",
+    "iteration_limit",
+    "stale_limit",
+    "eps"
+   ],
+   "group": "cache",
+   "id": "C05"
+  },
+  {
+   "check": "restart",
+   "expect": "same bytes",
+   "group": "cache",
+   "id": "C06",
+   "workload": "cold process vs warm process vs cache cleared"
+  },
+  {
+   "check": "parallel_shared_cache",
+   "expect": "same bytes as 1 worker; no race-dependent result",
+   "group": "cache",
+   "id": "C07",
+   "workload": "4 workers sharing/duplicating cache"
+  },
+  {
+   "gate": "peak RSS per process <= 2 GB budget, 4 GB hard",
+   "group": "memory",
+   "id": "R01",
+   "workload": "B7 whole workload M"
+  },
+  {
+   "gate": "peak RSS <= 2 GB budget, 4 GB hard",
+   "group": "memory",
+   "id": "R02",
+   "workload": "B4L chain L one cutoff, 1 worker"
+  },
+  {
+   "gate": "post-GC RSS slope <= 1 MB per repeat; mean of last 10 within 5 percent of first 10",
+   "group": "memory",
+   "id": "R03",
+   "workload": "B6 repeated 30 times in one process"
+  },
+  {
+   "gate": "per-process RSS within B9; sum of worker RSS reported (proposed aggregate hard 8 GB)",
+   "group": "memory",
+   "id": "R04",
+   "workload": "B7 at 1, 2, 4, N workers"
+  },
+  {
+   "gate": "peak RSS growth sub-linear in records (streaming, no full materialisation): RSS(1e6) <= RSS(1e5) + 256 MB",
+   "group": "memory",
+   "id": "R05",
+   "workload": "stream 1e5 then 1e6"
+  },
+  {
+   "gate": "p50 wall(1 worker) / p50 wall(4 workers) >= 2.0",
+   "group": "scaling",
+   "id": "S01",
+   "on_miss": "PO ruling, not budget edit",
+   "workload": "5 underlyings, M, 78 cutoffs, one session"
+  },
+  {
+   "gate": "speedup(4 workers) >= 1.8",
+   "group": "scaling",
+   "id": "S02",
+   "on_miss": "PO ruling, not budget edit",
+   "workload": "stream 1e6 sharded by contract"
+  },
+  {
+   "gate": "report speedup and efficiency; no pass/fail; N/A if fewer than 4 physical cores",
+   "group": "scaling",
+   "id": "S03",
+   "workload": "S01 at N workers"
+  }
+ ],
+ "tolerance": {
+  "exact_outputs": "byte equal",
+  "iv_abs": "0.0001"
+ },
+ "worker_counts": [
+  1,
+  2,
+  4,
+  "N"
+ ],
+ "workload_source": "gen_perf_workloads.py seed 20261029"
+}
+
+
+def main():
+    out = sys.argv[1] if len(sys.argv) > 1 else "."
+    with open(os.path.join(out, "perf_resource_rows.json"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(json.dumps(DATA, indent=1, sort_keys=True) + "\n")
+
+
+if __name__ == "__main__":
+    main()
