@@ -50,11 +50,11 @@ Author: Architect, 2026-10-29. Status: DRAFT, reviewed (PR 75), PO rulings appli
 | F12 | M2-11 | 48 | G6 list, N episodes threshold, quiet_gap 1 (default) and 5 (optional) boundaries, unavailable-as-quiet, no look-ahead (appending later points never changes earlier episodes), session to date |
 | Store | M2-12 | 40 | append, seal, retention ring at K and K+1, content hash stable under shuffled series arrival, view as of a session, no look-ahead, structural errors |
 | Lane | Q16 | 6 | lane isolation for shares and baselines |
-| Session-open window rule | Q7 | 12 | F1, F2, F10 and F12 give insufficient_window before open + W (900 s for F1), exactly at W, after; windows are not clipped; F12 in the first 900 s |
+| Session-open window rule | Q7 | 12 | F1, F2, F10 and F12 give insufficient_window before open + W (900 s for F1), exactly at W, after; windows are not clipped; F12 in the first 900 s; history n after exclusion (grid points before open + W dropped per session; n, rank and median asserted) |
 | F2d direction | Q14 | 8 | percentile = 1 - upper_share, average exact, higher = more unusual, ties, one part unavailable |
 | F2c definition | Q18 | 8 | prints per minute over the window, exact Fraction, window lengths 60 to 3600 s |
 | Half-day sessions | Q1, Q3 | 10 | shorter grids, history mixing full and half days, counts use actual length, calendar supplies the length |
-| Delayed-feed tag | M2-1 | 8 | F1, F12 and intraday F2 give invalid_input delayed_feed_tag; end-of-day forms computed and labelled delayed |
+| Delayed-feed tag | M2-1 | 8 | F1, F12, intraday F2 and intraday F10 give invalid_input delayed_feed_tag; end-of-day forms computed and labelled delayed |
 | Structural | all | 24 | one row per invalid_input code in matrix section 4 |
 Total at least 498 hand-derivable rows (452 in the first fourteen lines of the table plus 46 in the five lines added after review: 12 + 8 + 8 + 10 + 8); the reviewer recomputes the sum. Differential: at least 20,000 randomized cases each for percentile rank (upper_share and rank_le), median baseline ratio and episode detection, expected values from the Tester reference; zero differences allowed. Row counts are minimums; the final counts are pinned in the manifest and recomputed by the reviewer (HANDOFF gotcha: pinned counts learned from a first run are never trusted).
 
