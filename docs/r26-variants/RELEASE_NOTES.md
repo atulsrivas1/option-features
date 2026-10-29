@@ -7,6 +7,7 @@ This page carries counts, hashes, ids and limits only. It carries no fixture row
 ## Known limitations and disclosures
 
 ### 1. Label and platform scope
+- Windows evidence: superseded by section 14 for the c14 cohort; label is "Windows evidence recorded, not qualified".
 - Label: PRERELEASE. Platform scope: Windows x64, CPython 3.12.10 only, partial Windows evidence. Do not describe any R26 artifact as "qualified".
 - No Linux parity. Package versions stay 0.1.0a1.
 - The label does not claim sandbox confinement. It claims only: frozen fixtures replay on installed packages, a reproducible build, and the limits listed here.
@@ -42,7 +43,7 @@ The first three: nullability of a record or union object is not declared in the 
 
 ### 6. Containment and confinement: non-claims
 - Network confinement, file-system confinement (only pins and a post-run census check), environment and other-process isolation, and memory reservation are NOT verified. Nothing here claims sandboxing.
-- The independent controller review is partial. Unreviewed: the containment helper internals (including the Windows job object) and the 15 contract hashes. The standard library and site packages are not hashed (the interpreter is pinned by path and hash).
+- The independent controller review is partial. The containment helper internals and the 15 contract hashes were later reviewed independently (approve-with-conditions; see 14d and 14e). The standard library and site packages are not hashed (the interpreter is pinned by path and hash).
 - Earlier controller deviations (dropped independent source-review gate, dropped source receipts and others) were accepted by the coordinator and PO and are listed in DECISIONS.md.
 - Whether this meets the PO condition of an independent controller review before a stronger label is not claimed.
 
@@ -61,6 +62,7 @@ python-flint 0.9.0 (win_amd64 wheel, sha256 8f1059536b7393e48b1444894c3b54ce1b96
 The three root-A-after-K rows are accepted by the PO (A>K temporal_cut wins) with this disclosure: the authorship of that fixture's provenance is unrecorded. A standing open condition remains: author a fixture that fails on current code and passes after a workers change, with no frozen row changed.
 
 ### 11. Partial Windows evidence items
+(Superseded by section 14 for the c14 cohort; label is "Windows evidence recorded, not qualified".)
 Windows replay evidence used candidate12 (library 405/405, N4 49/49, I/O 1764/1764, workers 87/87 with 32 partial, 108 unit tests OK); candidate13 was replayed on read-only exports, not re-run on Windows.
 - candidate13 replays ran against read-only exports of option-features 8951003, while the Windows build used option-features c0db18e.
 - The 31 fixture-defect rows excluded in the 2026-10-23 tagged release (see STATUS 2026-10-23) predate candidate13 and are covered by the earlier candidate records; the tag itself carries them.
@@ -100,15 +102,15 @@ Record: [CANDIDATE14_FREEZE_RECORD.md](CANDIDATE14_FREEZE_RECORD.md). Label stay
 Label: **Windows evidence recorded, not qualified.** Counts, hashes and limits only; no fixture values and no private paths. This section supersedes the Windows evidence wording of sections 1 and 11 for the c14 cohort (option-features a25c9d1, option-feature-io e156963, option-feature-workers 8795f3e); the release label remains PRERELEASE.
 
 Final wording (PO):
-> Windows evidence recorded, not qualified: on Windows 11 x64 with CPython 3.12, installed packages built from the pinned commits were checked offline: 108 unit tests, c14 replay (library 405, N4 58, graphs 306, I/O 1793, workers 100 with 2 disclosed gaps), tamper and isolation checks, a 5-scenario integration, a 111-case direct versus stored full-payload parity run (378 rows, passed), and a stored demo (exit 0, outputs hashed; read-only census after the run: 5 runs, 45 result rows, 4 tables, 56 rows). Limits: single run, synthetic data, Windows x64 cp312 only; atomic replace of an existing output file was not verified; demo page provenance text not verified; the trust digest was computed in-project and its independent re-review is pending; python-flint and duckdb receipt source commits are wheel-hash stand-ins; no production data, performance or other-platform proof.
+> Windows evidence recorded, not qualified: on Windows 11 x64 with CPython 3.12, installed packages built from the pinned commits were checked offline: 108 unit tests, c14 replay (library 405, N4 58, graphs 306, I/O 1793, workers 100 with 2 disclosed gaps), tamper and isolation checks, a 5-scenario integration, a 111-case direct versus stored full-payload parity run (378 rows, passed), and a stored demo (exit 0, outputs hashed; read-only census after the run: 5 runs, 45 result rows, 4 tables, 56 rows). Limits: single run, synthetic data, Windows x64 cp312 only; atomic replace of an existing output file was not verified; demo page provenance text not verified; the trust digest was computed in-project and its independent re-review is A1 approve-with-conditions (independent reviewer); python-flint and duckdb receipt source commits are wheel-hash stand-ins; no production data, performance or other-platform proof.
 
 #### 14a. A5 requalification result (CPython 3.12.10, cp312 win_amd64)
-- Packages built offline from the pinned commits; all four wheels rebuilt byte-identically from the sdists. Wheel sha256: contracts 99c7d32ccc180a3767eceea90cc2d9fd33af4e70306675ca3e4c01f9a00a3b1f; features bff933e69ef9ab9f21b404ce76292fc35ae50290898f8f8c33b1dcc611c78c31; io 41fdd6534add0eebcdb1e4e2aa366387e3d83ad0e1445996b9359248b3f7eadd; workers 0cb39281ecb639aacd4b83779756b47d146f5ad6f5ffef378bfc2ebfe112ecf3. Third-party wheels matched recorded hashes (python-flint 0.9.0, duckdb 1.5.6).
+- Packages built offline from the pinned commits; all four wheels rebuilt byte-identically from the sdists. Wheel sha256: contracts 99c7d32ccc180a3767eceea90cc2d9fd33af4e70306675ca3e4c01f9a00a3b1f; features bff933e69ef9ab9f21b404ce76292fc35ae50290898f8f8c33b1dcc611c78c31; io 41fdd6534add0eebcdb1e4e2aa366387e3d83ad0e1445996b9359248b3f7eadd; workers 0cb39281ecb639aacd4b83779756b47d146f5ad6f5ffef378bfc2ebfe112ecf3. Third-party wheel hashes recorded (python-flint 0.9.0, duckdb 1.5.6).
 - 108 unit tests OK (contracts 14, features 48, qualification 8, io 24, workers 14). The qualification suite needs both R25_INDEPENDENT_WIRE_FIXTURES and R25_INDEPENDENT_WIRE_FIXTURES_SHA256 set.
 - c14 replay on installed packages: library 405/405, N4 58/58, graphs 306/306, I/O 1793/1793, workers 100 run (58 full, 42 partial, 0 failed) with 2 disclosed gaps (W3-admission-monotone-extension, W3-admission-null-to-nonempty). Equal to the candidate14 replay counts.
 - Tamper: control accepted, T1 to T7 rejected, T8 and T9 rejected at verify. Isolation: 14, 48 and 24 tests, post-test check ok. Both are reconstructions, and their exit codes are not verdicts (see 11c).
 - 5-scenario integration: full parity, retry verified, changed-source conflict rejected; 283 files verified.
-- The trusted manifest digest ce4913556d48a46067b4fb61a82041a3170422f2349137ebc100879c6e834c15 was computed in-project and not independently reviewed; its independent re-review (A1) is pending.
+- The trusted manifest digest ce4913556d48a46067b4fb61a82041a3170422f2349137ebc100879c6e834c15 was computed in-project and not independently reviewed; its independent re-review is A1 approve-with-conditions (independent reviewer); the conditions are in 14h.
 - Harness changes were limited to replacing the source-path override with a module-origin assertion in the five replay scripts, one wheel-directory line in the isolation script, and a CRLF-to-LF conversion; expectations and the fixture pin were untouched.
 
 #### 14b. A3: 111-case direct versus stored parity, pass
@@ -124,7 +126,9 @@ Final wording (PO):
 - Known gaps, not run for R26: (1) atomic replace of an existing output file was not verified (the scratch swap used identical files and exercised neither a content change nor a failed replace); R26 makes no atomic-replace claim. (2) The demo page provenance text was not verified; the check string was a file hash prefix, not page text, so that check is dropped and not counted as passed.
 
 #### 14d. Containment residual risk
-Containment is process-tree kill plus hash pins; it does not restrict network, filesystem writes, memory or environment; hash checks are not atomic with use. The independent review of the helper (approve-with-conditions) found no network or filesystem confinement, no memory, CPU or process-count limit, an inherited environment, trusted but unpinned interpreter-side site code, an advisory lease and lock, and no protection against a hostile same-user process. It is not a sandbox. The 15 contract pins were recomputed from files and match.
+Containment is process-tree kill-on-close plus hash pins. It does not restrict network, filesystem writes, memory, or environment; hash checks are not atomic with use.
+
+Detail from the independent review of the helper (approve-with-conditions): no network or filesystem confinement, no memory, CPU or process-count limit, an inherited environment, trusted but unpinned interpreter-side site code, an advisory lease and lock, and no protection against a hostile same-user process. It is not a sandbox. The 15 contract pins were recomputed from files and match.
 
 #### 14e. Contract inputs held in private records (hashes only)
 Fourteen of the fifteen contract inputs pinned by the controller are private-record inputs: they are not in this repository and not at a repo commit. The fifteenth, the fixture completion clarification, is in this repository. sha256 of the 14:
@@ -147,8 +151,14 @@ Fourteen of the fifteen contract inputs pinned by the controller are private-rec
 python-flint 0.9.0 is installed by pip and is not vendored or shipped by us. Its Python bindings are MIT; the wheel bundles LGPL-3.0-or-later GMP, MPFR and FLINT as separate DLLs that the user may replace (plus winpthreads and the gcc runtime under a GCC exception); see the python-flint licences. Reviewed verdict: accepted for pip-dependency use with this notice; not accepted for vendoring or bundling (frozen executable, image, vendored wheel) without a separate review, which would require the COPYING files and a source offer.
 
 #### 14g. Disclosed as pending or not done
-- A1: independent re-review of the trust digest against the c14 hashes is pending; this section is updated when it lands. It does not block R26.
+- A1: approve-with-conditions (independent reviewer); the conditions are in 14h.
 - A2: python-flint and duckdb receipt source commits remain wheel-hash stand-ins; no upstream fetch was done.
 - Not run: a content-change or failed-replace check of the demo output (known gap in 14c).
 - Evidence is a single run on synthetic data, Windows x64 cp312 only. No production data, performance or other-platform proof.
 - The R27 harness findings in 11c remain open.
+
+#### 14h. A1 trust-digest review conditions
+- (a) The receipt tree ids a4bb890c, c437d758 and 6bb46e80 are the commit root tree, not the package-path tree. This is not a trust break; the receipts were not edited.
+- (b) The duckdb and python-flint source_commit values are sha1-of-wheel stand-ins (A2 open). The digest attests wheel bytes and project commits only.
+- (c) The trusted digest ce4913556d48a46067b4fb61a82041a3170422f2349137ebc100879c6e834c15 is pinned; any rebuild or receipt edit invalidates it.
+- (d) The A1 reviewer did not rebuild the sdists, did not rerun install, tamper, isolation or integration, and did not compare the third-party wheels with PyPI (offline).
