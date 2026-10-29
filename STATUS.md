@@ -62,3 +62,4 @@
 ## 2026-10-22 - earlier checkpoint (superseded above)
 - Fresh read-only reviews of the private completion3 fixture source rejected B3 (1 blocking: a bucket-key-mismatch case that does not mismatch) and F3 (2 blocking: no strike/right/expiry partition cases under one contract_id; flow_residual_cases.py unsealed). Correction authors were started; results need a fresh re-review.
 - Not done: W3 pending clarification reviews (UTF-8 BOM, restore pointer, DailyCore multi-Scope), root aggregator/controller, contained generation, independent audit, literal freeze, layer workers. Nothing released or published.
+- 2026-10-29: Qualified-gate evidence recorded in RELEASE_NOTES section 15 (harness v13.1 accepted, repeat Windows run c14e accepted, digest recomputed, demo atomic write not claimed, demo page provenance partial, N6 rows 1-20 adjudicated). Label unchanged: PRERELEASE, Windows evidence recorded, not qualified; PO ratifies the label separately.
