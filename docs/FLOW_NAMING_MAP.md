@@ -77,6 +77,14 @@ Gate precedence (PO-P1-02): no_quote, invalid_quote, crossed_market, locked_mark
 
 V1-V22 (V2 and V20 partial through `volatility.implied_volatility` and the Greeks, the rest missing), PO1-PO19 and the scanner presets are unchanged by P1: missing except where noted. M1 adds OC5, OC6, ATM IV and 30-day IV.
 
+## M1 story B: contract IV, ATM IV, 30-day IV (`option_features.chainiv`; library module, not on the wire)
+
+| Design id | Design meaning (short) | Repository id | Mode and parameters | Class | Since |
+|---|---|---|---|---|---|
+| V-contract IV | Per-contract IV with American-style label | `IVChain.contract_iv` | D12 ACT/365, midpoint, continuous r and q; European `exact-model`; American modeled for nearest-to-forward and OTM only (`approximate: European model on an American-style contract`), else `american_itm`; unknown style `style_unknown`; gates no_quote, excluded_condition, invalid_quote, crossed_market, locked_market, stale_quote | match (synthetic rows) | M1 B |
+| V-ATM IV | Chain ATM IV | `IVChain.atm_iv`, `atm_iv_all` | strike nearest F = S exp((r-q)T) among strikes eligible for both rights, ties lower; mean of call and put IV; strike, forward, both IVs returned; reason `no_atm_strike` | match (synthetic rows) | M1 B |
+| V-30d IV | 30-day constant-maturity IV | `IVChain.iv_30d` | exact 30-day expiry as is; else linear in total variance between the bracketing listed expiries; no extrapolation; reason `no_bracketing_expiry` (a bracketing expiry without an ATM strike); exact expiry without ATM strike gives `no_atm_strike` | match (synthetic rows) | M1 B |
+
 ## Shipped ids with no design row (extra)
 
 `chain.activity` (0-100 score; design excludes a 0-100 score, ruling requested), `pricing.price`, `greeks.signed_delta`, `greeks.rho`, `quality.quote_coverage`, variants1 `net`, `classified`, `unknown`, raw counts and the checkpoint/restore family. P1 adds the helper outputs `liquidity.spread` and `liquidity.midpoint` (support for OC4) and the pure modules listed above.
