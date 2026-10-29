@@ -50,7 +50,7 @@ Author: Architect, 2026-10-29. Status: DRAFT, reviewed (PR 75), PO rulings appli
 | F12 | M2-11 | 48 | G6 list, N episodes threshold, quiet_gap 1 (default) and 5 (optional) boundaries, unavailable-as-quiet, no look-ahead (appending later points never changes earlier episodes), session to date |
 | Store | M2-12 | 40 | append, seal, retention ring at K and K+1, content hash stable under shuffled series arrival, view as of a session, no look-ahead, structural errors |
 | Lane | Q16 | 6 | lane isolation for shares and baselines |
-| Session-open clipping | Q7 | 12 | F1 insufficient_window before 900 s since open, exactly 900 s, after; windows clipped to open; F12 behaviour in the first 900 s |
+| Session-open window rule | Q7 | 12 | F1, F2, F10 and F12 give insufficient_window before open + W (900 s for F1), exactly at W, after; windows are not clipped; F12 in the first 900 s |
 | F2d direction | Q14 | 8 | percentile = 1 - upper_share, average exact, higher = more unusual, ties, one part unavailable |
 | F2c definition | Q18 | 8 | prints per minute over the window, exact Fraction, window lengths 60 to 3600 s |
 | Half-day sessions | Q1, Q3 | 10 | shorter grids, history mixing full and half days, counts use actual length, calendar supplies the length |

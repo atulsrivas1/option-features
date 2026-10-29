@@ -20,11 +20,11 @@ Author: Architect, 2026-10-29. Status: DRAFT for the Tester and the Developer to
 | HistoryView | immutable, hashable; the K complete sessions strictly before a given session, per series | reads only; no look-ahead |
 | Calendar | ordered list of session ids with `minutes` | the 20-session window is taken from this list |
 | Request | `evaluation_ns` (T), `window_s` (60, 300, 900, 1800, 3600; F17 fixed 300), parameters of matrix section 3 (N, X, thresholds, K, minimum sessions, `quiet_gap` default 1), `filter` ("all", "calls", "puts"), `lane` | every parameter value used is echoed in the result |
-Structural errors (status invalid_input, `code`): `unordered_prints`, `negative_size_or_price`, `bad_multiplier`, `duplicate_session`, `non_monotone_grid`, `session_not_in_calendar`, `window_not_allowed`, `delayed_feed_tag` (F1, F12, intraday F2 under a delayed tag). Validation scope: full on build and at the store boundary, scanned on hot paths with an explicit `validate="full"` switch, as for OC5 and OC6.
+Structural errors (status invalid_input, `code`): `unordered_prints`, `negative_size_or_price`, `bad_multiplier`, `duplicate_session`, `non_monotone_grid`, `session_not_in_calendar`, `window_not_allowed`, `delayed_feed_tag` (the single status word everywhere: invalid_input with this code; F1, F12, intraday F2 and F10 under a delayed tag). Validation scope: full on build and at the store boundary, scanned on hot paths with an explicit `validate="full"` switch, as for OC5 and OC6.
 
 ## 3. Outputs
 One result per (output id, series or name, evaluation). Fields in canonical order:
-`output_id` (M2-1 to M2-11), `series_id`, `session_id`, `evaluation_ns`, `status` ("available", "unavailable", "invalid_input"), `reason` (closed set below, or null), `code` (structural, or null), `value` (object of exact rationals as "n/d" strings or integers; per output below), `fired` (bool or null), `params` (every parameter used), `coverage` (counts: eligible prints, excluded_nonstandard_count, excluded_condition_count, unavailable_points), `label` (statistic or side name), `lane`, `version`.
+`output_id` (M2-1 to M2-11), `series_id`, `session_id`, `evaluation_ns`, `status` ("available", "unavailable", "invalid_input"), `reason` (closed set below, or null); an unavailable or invalid_input result carries `value` null and `fired` null, `code` (structural, or null), `value` (object of exact rationals as "n/d" strings or integers; per output below), `fired` (bool or null), `params` (every parameter used), `coverage` (counts: eligible prints, excluded_nonstandard_count, excluded_condition_count, unavailable_points), `label` (statistic or side name), `lane`, `version`.
 | Output | `value` keys |
 |---|---|
 | M2-1 F1 | `p60`, `p900`, `ratio` |
@@ -34,10 +34,10 @@ One result per (output id, series or name, evaluation). Fields in canonical orde
 | M2-5 F17 | `window_premium` |
 | M2-6 F7 | `top_strike`, `strike_share`, `top_expiry`, `expiry_share`, `total_premium` |
 | M2-7, M2-8 F10, F20 | `x`, `median`, `mean`, `median_ratio`, `mean_ratio`, `consumer_default` ("median" or "mean") |
-| M2-9 F18 | `put_volume`, `call_volume`, `put_share`, `put_call_ratio` |
+| M2-9 F18 (params `at_least`, `at_most`) | `put_volume`, `call_volume`, `put_share`, `put_call_ratio` |
 | M2-10 F19 | `ratio`, `n`, `rank_le`, `upper_share` |
 | M2-11 F12 | `episode_count`, `first_ns`, `last_ns`, `peak_ratio`, `peak_ns`, `quiet_gap` |
-Reason closed set: `insufficient_history`, `session_not_complete`, `insufficient_window`, `zero_denominator`. Mapping to the existing vocabulary (no new synonyms): statistic equal to 0 -> `zero_denominator`; nothing stored or fewer sessions -> `insufficient_history`; `zero_mad` unused. Gate order: invalid_input, insufficient_history, session_not_complete, insufficient_window, zero_denominator.
+Reason closed set: `insufficient_history`, `session_not_complete`, `insufficient_window` (F1, F2, F10, F12: before session open + W), `zero_denominator`. Mapping to the existing vocabulary (no new synonyms): statistic equal to 0 -> `zero_denominator`; nothing stored or fewer sessions -> `insufficient_history`; `zero_mad` unused. Gate order: invalid_input, insufficient_history, session_not_complete, insufficient_window, zero_denominator.
 
 ## 4. Canonical serialization and hashing
 - One JSON object per result, keys in the order of section 3, separators `,` and `:` (no spaces), rationals as reduced "n/d" strings (integers as plain integers), booleans and null as JSON, one object per line, LF.
