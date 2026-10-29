@@ -84,6 +84,23 @@ that is not exactly a `Decimal` or is NaN or an infinity (same exceptions). Conv
 bits (above 4214 decimal digits, where CPython's integer-to-string limit of 4300 digits can raise `ValueError` in the
 old `len(str(...))`) are routed to the legacy code, so even that class is the old behaviour by construction.
 
+**Legacy routing thresholds and the dropped cause chain.** Two routes send an input to `arithmetic_legacy`:
+(1) an arb endpoint whose mantissa exceeds 5000 bits (`_LEGACY_MANTISSA_BITS`; real endpoints carry at most the tier
+precision, 2048 bits, so the solver never takes this route; with the magnitude limit `>= -8192` the largest shift is
+then `8192 + 5000 = 13192` bits); (2) a rational whose numerator or denominator exceeds 14000 bits (`_LEGACY_BITS`).
+CPython raises `ValueError` for `str()` of an integer with more than 4300 digits, that is from about 14284 bits
+(10^4300 is about 2^14284.3); 14000 bits leaves a margin of about 284 bits (2^14000 is about 10^4214), so no input
+that the old `len(str(...))` would reject is handled by the new code. Both routes are inside the equivalence grid
+(mantissas of 5000, 5001, 9000 and 16000 bits; rationals of 13990 to 14010 bits; binary exponents -8194 to 4097).
+One intentional difference: when the `decimal_text` check fails, the old code raised `NumericalFailure()` from the
+`ContractValidationError`; the new `_finish` raises `NumericalFailure()` directly, so `__cause__` is `None`. Nothing
+reads `__cause__` (the solver uses only `.reason`), it is no result field, and the tests compare type and arguments.
+
+**Process-global switch.** `arithmetic.set_fast_endpoints` sets a module global of the current process. It is for
+tests and diagnosis, not a runtime option: set it before solving, never while another thread is solving, and set it
+again in every spawned worker (a `spawn` child imports a fresh module and ignores the parent's setting; a forked
+child inherits the value at fork time). The default is on in every new process.
+
 ## Results
 
 Machine: Intel Xeon (Skylake-SP, 96 logical cores, Windows 11 x64, CPython 3.12.10, python-flint 0.9.0); one worker,

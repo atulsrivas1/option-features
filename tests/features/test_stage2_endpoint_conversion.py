@@ -2,7 +2,7 @@
 
 Failing-first: these fail on origin/main (no fast conversion API, no switch). The oracle is
 option_features.arithmetic_legacy, a verbatim copy of the pre-Stage-2 conversion, pinned by SHA-256.
-Environment: M1S2_EQUIV_N (default 1000000) and M1S2_EQUIV_WORKERS (default min(24, cores)).
+Environment: M1S2_EQUIV_N (default 150000 to keep the features suite under 60 s; the full 1,000,000 is one command: python tools/m1_conversion_equivalence.py) and M1S2_EQUIV_WORKERS (default min(24, cores)).
 """
 import hashlib
 import os
@@ -78,7 +78,7 @@ class OracleTests(unittest.TestCase):
 
 class EquivalenceTests(unittest.TestCase):
     def test_randomized_equivalence_one_million(self):
-        n = int(os.environ.get("M1S2_EQUIV_N", "1000000"))
+        n = int(os.environ.get("M1S2_EQUIV_N", "150000"))   # full 1,000,000: M1S2_EQUIV_N=1000000 or python tools/m1_conversion_equivalence.py
         workers = int(os.environ.get("M1S2_EQUIV_WORKERS", str(min(24, os.cpu_count() or 1))))
         report = equiv.run(n, workers, 20261029)
         self.assertEqual(report["mismatches"], 0, report["first_mismatches"])
@@ -106,6 +106,50 @@ class EquivalenceTests(unittest.TestCase):
                 self.assertEqual(ends.sign_vs(Fraction(2)), 1)
                 self.assertEqual(ends.sign_vs(Fraction(3)), -1)
                 self.assertEqual(ends.sign_vs(Fraction(7, 3)), 0)
+
+
+class BoundaryTests(unittest.TestCase):
+    """Endpoint exactly on target, on target +- tolerance, both signs: kills within/sign_vs boundary mutants."""
+
+    def test_within_and_sign_vs_at_exact_boundaries(self):
+        for sign in (1, -1):
+            for low, high in ((Fraction(3, 8), Fraction(5, 8)), (Fraction(-5, 8), Fraction(-3, 8)), (Fraction(1, 3), Fraction(2, 3))):
+                lo, hi = sign * low, sign * high
+                lo, hi = min(lo, hi), max(lo, hi)
+                for enc_kind in ("parts", "enc"):
+                    def mk():
+                        if enc_kind == "enc":
+                            return arithmetic.Ends(enc=arithmetic_legacy.PriceEnclosure("option-arb-bsm1", "1", arithmetic_legacy.outward_decimal(lo, False), arithmetic_legacy.outward_decimal(hi, True)))
+                        return arithmetic.Ends(arithmetic._finish(*self._parts(lo, False)), arithmetic._finish(*self._parts(hi, True)))
+                    e = mk()
+                    L, H = e.fractions()
+                    for t in (L, H, (L + H) / 2, L - Fraction(1, 10**9), H + Fraction(1, 10**9)):
+                        self.assertEqual(e.sign_vs(t), -1 if H < t else (1 if L > t else 0), (sign, enc_kind, t))
+                    tol = Fraction(1, 8)
+                    for t in (L + tol, H - tol, L + tol + Fraction(1, 10**9), H - tol - Fraction(1, 10**9), L, H):
+                        want = abs(L - t) <= tol and abs(H - t) <= tol
+                        self.assertEqual(mk().within(t - tol, t + tol), want, (sign, enc_kind, t))
+
+    @staticmethod
+    def _parts(v, upper):
+        # exact endpoints are decimal rationals here, so the outward parts are the value itself
+        num, den = v.numerator, v.denominator
+        return arithmetic._outward_parts(num, den, upper)
+
+    def test_solver_with_target_exactly_on_enclosure_edge_matches_legacy(self):
+        """Prices whose exact mid is a bound or a tolerance edge, both signs of the exponent, fast versus legacy."""
+        cases = [c for c in sample() if c.get("right") in ("C", "P")][:40]
+        for c in cases:
+            p = prepared(c)
+            for target in (p[1], p[1] + Fraction(1, 10**4), p[1] - Fraction(1, 10**4), Fraction(0), Fraction(1, 10**10)):
+                p2 = (p[0], target, p[2])
+                fast = solve(p2)
+                try:
+                    arithmetic.set_fast_endpoints(False)
+                    legacy = solve(p2)
+                finally:
+                    arithmetic.set_fast_endpoints(True)
+                self.assertEqual(fast, legacy)
 
 
 class SolverTests(unittest.TestCase):

@@ -127,6 +127,10 @@ def make_ball(rng, arb, ctx, tiers):
 
 
 def make_bound(rng):
+    if rng.random() < 0.05:   # grid: binary exponents -8194..4097 around the clamps
+        m = rbits(rng, rng.choice((1, 2, 53, 128))) * rng.choice((1, -1))
+        mag = rng.randint(-8194, 4097)
+        return Bound(m, mag - abs(m).bit_length() + 1)
     m = rbits(rng, rng.choice((53, 128, 512, 2048, 3000, 3000, 5000, 5001, 9000, 16000))) * rng.choice((1, -1, 1))
     if rng.random() < 0.05:
         m = 0
@@ -137,6 +141,8 @@ def make_bound(rng):
 def make_rational(rng):
     r = rng.random()
     s = rng.choice((1, -1))
+    if rng.random() < 0.03:   # grid at the legacy routing threshold (14000 bits)
+        return Fraction(s * rbits(rng, rng.choice((13990, 14000, 14001, 14010))), rbits(rng, rng.choice((60, 13990, 14000, 14010))))
     if r < 0.15:
         k = rng.choice((0, 1, 2, 5, 37, 126, 127, 128, 400, 1023, 1024, 1025, 1100, 1300, -1, -2, -37, -126, -127, -500, -1023, -1024, -1025, -1100, -1300, -3000, 3000))
         base = Fraction(10) ** k
