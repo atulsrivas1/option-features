@@ -7,8 +7,8 @@ Every release note, README and report header from P1 through M5 carries this sen
 ## Label rules
 1. Forbidden before the final real-data qualification release (RQ) passes: "real-data", "market data", "production", "validated against vendor", "Databento-qualified", "Linux parity" (write "Linux run as process check, not claimed"), any accuracy or latency number without the qualifier "synthetic workload", and "byte-identical" outside the 111 parity files.
 2. The release label stays PRERELEASE (D7). D7's trigger is the RQ release.
-3. Scanners stay shadow, ProductionAuthorized false (D6).
-4. Performance numbers are labelled "synthetic workload, relative engineering budget" and print the B1-B12 budget beside the measurement. No real-chain performance claim before RQ.
+3. Scanners stay shadow, ProductionAuthorized false (D6); proxy wording rules stand.
+4. (From V3 section 3.) Performance numbers are labelled "synthetic workload, relative engineering budget" and print the B1-B12 budget beside the measurement. No real-chain performance claim before RQ.
 5. A docs reviewer greps every doc for the forbidden list above as a release gate.
 6. RQ wording, when earned: "qualified on recorded real data for symbols/sessions X, Windows x64 and Linux x64", never broader than what was pulled.
 

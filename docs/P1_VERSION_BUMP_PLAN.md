@@ -10,8 +10,10 @@ P1 changes the R25 result for bid <= 0 (spread unavailable `invalid_quote`) and 
 - `packages/option-contracts/pyproject.toml`: version.
 - `packages/features/src/option_features/__init__.py` and `packages/option-contracts/src/option_feature_contracts/__init__.py`: `__version__`.
 - `packages/features/src/option_features/evaluator.py`: the version strings embedded in results.
-- `docs/r25/COMPATIBILITY.json` is frozen history and is not edited. A new compatibility manifest (0.2.0a1) is added beside it. `docs/r26/COMPATIBILITY.json` likewise stays as history.
+- `docs/r25/COMPATIBILITY.json` is frozen history and is not edited. A new compatibility manifest for 0.2.0a1 is added beside it. `docs/r26/COMPATIBILITY.json` (8 hits) likewise stays as history.
 - Sibling repositories (option-feature-io, option-feature-workers): pins moved in their own PRs after this repo's P1 is accepted; exact pins, no moving references (docs/VERSIONING.md).
+- `tools/demo/demo.html` and `tools/demo/sample/demo-export.json` (12 version fields each): the Developer decides per field whether it records the package version, and regenerates the sample.
+- Living docs naming the version: `docs/CONTRACTS_API.md`, `docs/FEATURES_API.md`, `docs/NUMERICAL_METHOD_QUALIFICATION.md`. R25/R26 release docs and freeze records are history and stay.
 - `docs/VERSIONING.md`: one paragraph recording the bump and its reason.
 
 ## Rules
