@@ -108,6 +108,16 @@ class Scalars(unittest.TestCase):
         self.assertEqual(v["skew25_fwd"], 20000000)
         self.assertNotIn("skew25_fwd", S.scalar_units(s))
 
+    def test_forward_floats_never_overwrite_spot_scalars(self):
+        s = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {30: 0.28, 91: 0.2})
+        w = floats_from_frame_inputs({30: (0.9, 0.45, 0.25)}, {30: 0.99, 91: 0.5})   # forward ATM and tenors differ
+        v = S.scalar_units(s, w)
+        self.assertEqual(v["atm_iv_close"], 30000000)
+        self.assertEqual(v["iv30_close"], 28000000)
+        self.assertEqual(v["term_30_91"], 8000000)
+        self.assertEqual(v["skew25_fwd"], 20000000)
+        self.assertEqual(S.scalar_units(None, w), {"skew25_fwd": 20000000})
+
     def test_exact_difference_matches_fraction_reference(self):
         rnd = random.Random(7)
         for _ in range(3000):
@@ -264,6 +274,38 @@ class MinuteValue(unittest.TestCase):
     def test_frames_path_uses_the_rule(self):
         frames = [floats_from_frame_inputs({30: (0.3, 0.5, 0.25), 7: (0.2, 0.5, 0.25)}, {30: 0.28}), None]
         self.assertEqual(S._minute_pair(frames), ([0.2, None], [0.28, None]))
+
+
+class GridExactness(unittest.TestCase):
+    """Review fixes: huge values (v * 1e8 beyond 2^53) and the tie guard."""
+
+    def test_huge_value_repros(self):
+        for x in (123456789.12345679, 1e12 + 0.123):
+            self.assertEqual(S.grid_units([x, x]), [exact_round(Fraction(x))] * 2, x)
+        self.assertEqual(S.grid_units([123456789.12345679] * 2), [12345678912345679] * 2)
+
+    def test_around_the_threshold(self):
+        rnd = random.Random(11)
+        for base in (2.0 ** 20, 1e8, 2.0 ** 26, 2.0 ** 30):
+            xs = []
+            for e in (-1, -1e-3, 0, 1e-3, 1):
+                xs += [base * (1 + e * 1e-6) + rnd.random() * 1e-3 for _ in range(300)]
+                xs += [-(base * (1 + e * 1e-6)) - rnd.random() * 1e-3 for _ in range(50)]
+            xs += [base - 1e-3, base, base + 1e-3, 2.0 ** 20 - 1e-9, 2.0 ** 20 + 1e-9]
+            self.assertEqual(S.grid_units(xs), [exact_round(Fraction(x)) for x in xs], base)
+
+    def test_mixed_huge_and_normal_grid(self):
+        xs = [0.25] * 100 + [123456789.12345679] + [0.3] * 100
+        self.assertEqual(S.grid_units(xs), [exact_round(Fraction(x)) for x in xs])
+
+    def test_ties_after_scaling_use_the_exact_path(self):
+        # (k + 0.5) / 1e8 is not a dyadic tie: the float product reads a tie, the exact value is not
+        xs = [(k + 0.5) / 1e8 for k in range(1, 4000)]
+        want = [exact_round(Fraction(x)) for x in xs]
+        self.assertNotEqual([round(x * 1e8) for x in xs], want)       # the plain float path would be wrong
+        self.assertEqual(S.grid_units(xs), want)
+        self.assertEqual(S.grid_units([7.5e-08]), [7])
+        self.assertEqual(S.grid_units([1.65e-07]), [17])
 
 
 class Records(unittest.TestCase):
