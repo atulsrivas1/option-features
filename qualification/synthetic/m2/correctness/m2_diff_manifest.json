@@ -1,0 +1,15 @@
+{
+ "cases_per_kind": {
+  "episodes": 20000,
+  "median_ratio": 20000,
+  "rank": 20000
+ },
+ "label": "mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12",
+ "provenance": "SYNTHETIC",
+ "seed": 20261029,
+ "sha256_of_case_stream": {
+  "episodes": "634f1d4baef457da088def094ee1e60ec47f3b4f745e1fe91c169f9dbdf90534",
+  "median_ratio": "3c092440e7c79fc9b8e4b345d09305735291d8d45d6b121e238b259f07699e49",
+  "rank": "393597b33a61c5d90d5c90079f3f349b38c5cc13934dc964e08356801e4410d1"
+ }
+}
