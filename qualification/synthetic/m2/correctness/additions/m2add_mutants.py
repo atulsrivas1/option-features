@@ -62,6 +62,8 @@ MUTANTS = [
     ("param_types_ignored", "parameter types not checked", ["param_malformed"]),
     ("grid_60_ignored", "grid step not checked", ["grid_not_60s"]),
     ("param_below_one_ok", "quiet_gap and n_episodes below 1 accepted", ["param_below_one"]),
+    ("negative_counts", "cutoff before open: window computed as in-window minus pre-open (negative counts)", ["cutoff_before_open"]),
+    ("cutoff_unavailable", "cutoff before open reported unavailable instead of an empty window", ["cutoff_before_open"]),
     ("g_sparse_zero_wrong", "grid: sparse zero_count off by one", ["contract_series"]),
 ]
 

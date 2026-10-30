@@ -18,7 +18,7 @@ LABEL = ("mock-data qualification only: passed on independently authored synthet
 _P = [("real", "-data"), ("market", " data"), ("produc", "tion"), ("validated against", " vendor"), ("data", "bento"),
       ("linux", " parity"), ("byte", "-identical")]
 FORBIDDEN = [a + b for a, b in _P]
-EXPECT = {"add_struct": 60, "add_data": 30, "add_grid": 23, "add_store": 24, "add_snapshot": 14, "add_params": 16}
+EXPECT = {"add_struct": 60, "add_data": 30, "add_grid": 23, "add_store": 24, "add_snapshot": 14, "add_params": 16, "add_cutoff": 18}
 CODES = {None, "unordered_prints", "negative_size_or_price", "bad_multiplier", "unknown_contract", "malformed_type",
          "duplicate_session", "non_monotone_grid", "session_not_in_calendar", "window_not_allowed", "threshold_required",
          "out_of_order_append", "delayed_feed_tag", "lane_mismatch", "record_length_mismatch", "snapshot_bad_magic", "snapshot_length_mismatch", "snapshot_hash_mismatch", "trailer_missing", "trailer_count_mismatch", "trailer_hash_mismatch", "grid_not_60s"}
@@ -84,6 +84,9 @@ def coverage(rows):
     for g in ("param_N", "param_threshold", "param_share", "param_quiet_gap", "param_n_episodes", "param_below_one", "prec_pair_store", "ring_lane_first", "sparse_hash"):
         need(t[g] >= 2, g)
     need(t["prec_pair_store"] >= 12, "store precedence pairs")
+    for o in ("M2-4", "M2-5", "M2-6", "M2-9"):
+        need(t[("cutoff_before_open", o)] >= 2, "cutoff before open " + o)
+    need(t["sweep"] >= 8 and t["repro"] >= 3, "cutoff sweep and repro rows")
 
 
 if __name__ == "__main__":
@@ -91,6 +94,6 @@ if __name__ == "__main__":
     rows, counts, bad = run(d)
     coverage(rows)
     print("rows", len(rows), counts, "mismatches", len(bad), bad[:5])
-    ok = not bad and all(EXPECT.get(k) == v for k, v in counts.items()) and len(rows) == 167
+    ok = not bad and all(EXPECT.get(k) == v for k, v in counts.items()) and len(rows) == 185
     print("ADD_SELFCHECK", "PASS" if ok else "FAIL")
     sys.exit(0 if ok else 1)
