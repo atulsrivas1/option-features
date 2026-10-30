@@ -45,3 +45,12 @@ Decided: the owner (relayed by the independent reviewer). The 25-delta points su
 - R-156: T = expiry_days/365, own IV, absolute value for puts, target 0.25 inclusive; spot delta call e^{-qT} N(d1), put e^{-qT} N(-d1); forward delta call N(d1), put N(-d1); R-09 and R-10 unchanged on the chosen convention. R-157: the certified delta is computed for the requested convention only; the 25-delta search gates apply per convention. R-158: the result echoes delta_convention next to iv_form.
 - R-159: series skew25 (spot) and skew25_fwd (forward), skew-type derived scalars <metric>_fwd; atm_iv, atm_iv_close, iv30, iv30_close, term_30_91 convention-free. R-160: a prior or history record of the other convention is the structural code convention_mismatch (position 17 of the request list after prior_not_before_cutoff, and at view read); a record without the field is spot. R-161: V6 and V7 take no convention; V9 and V10 history reads use the requested convention series.
 - Consequences: one more scalar series per name (skew25_fwd, 7 series, about 181,700 records in M3A-B6); no budget change proposed; fixtures total recomputed in the fixtures doc.
+
+## FINAL OWNER DECISIONS 1-5 (2026-10-30)
+Decided: the owner (relayed by the independent reviewer). These are FINAL (no longer interim); a design-session ratification may still amend them later. The ruling list marks the affected rows "owner-decided (final)": R-01 (V21), R-46, R-51 and R-151 to R-161. The three deliberate exceptions are R-46 and R-51 (owner-decided) and R-58 (stays PO interim).
+1. V21 is INCLUDED in M3a (M3A-11), R-01.
+2. V3 and V4 implement BOTH forms, atm and 30d (selector `iv_form`, default atm), R-151 to R-154 (OWNER DECISION 2 above).
+3. `delta_convention` in {spot, forward}, default spot, R-155 to R-161 (OWNER DECISION 3 above).
+4. A percentile over a zero-range (constant) history is UNAVAILABLE (`zero_range_history`, design VR P3): a deliberate exception to M2 Q2 (R-46).
+5. `scalar_baseline` ALLOWS partial history: missing days are skipped, at least 20 prior sessions are required; deliberately different from the strict all-days rule of M2 Q3 and AMB-17 (R-51).
+
