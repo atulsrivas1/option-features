@@ -12,7 +12,7 @@ negative_before_unordered  CAUGHT mapped  10 caught_mapped   2  e.g. M2A-STR-021
 multiplier_before_negative CAUGHT mapped  10 caught_mapped   2  e.g. M2A-STR-023,M2A-STR-024
 malformed_before_unknown   CAUGHT mapped  10 caught_mapped   2  e.g. M2A-STR-027,M2A-STR-028
 window_before_malformed    CAUGHT mapped  10 caught_mapped   2  e.g. M2A-STR-029,M2A-STR-030
-preopen_not_clipped        CAUGHT mapped   8 caught_mapped   8  e.g. M2A-DAT-001,M2A-DAT-002
+preopen_not_clipped        CAUGHT mapped  26 caught_mapped  24  e.g. M2A-CUT-001,M2A-CUT-002
 n_truncated                CAUGHT mapped   5 caught_mapped   3  e.g. M2A-DAT-023,M2A-DAT-024
 big_float                  CAUGHT mapped   4 caught_mapped   4  e.g. M2A-DAT-018,M2A-DAT-019
 f12_p60_window900          CAUGHT mapped   9 caught_mapped   9  e.g. M2A-DAT-009,M2A-DAT-010
@@ -50,5 +50,7 @@ prec_dup_before_mono       CAUGHT mapped  12 caught_mapped   2  e.g. M2A-STORE-0
 param_types_ignored        CAUGHT mapped  14 caught_mapped  14  e.g. M2A-PAR-001,M2A-PAR-002
 grid_60_ignored            CAUGHT mapped   2 caught_mapped   2  e.g. M2A-PAR-013,M2A-PAR-014
 param_below_one_ok         CAUGHT mapped   2 caught_mapped   2  e.g. M2A-PAR-015,M2A-PAR-016
+negative_counts            CAUGHT mapped  18 caught_mapped   9  e.g. M2A-CUT-001,M2A-CUT-002
+cutoff_unavailable         CAUGHT mapped  18 caught_mapped  13  e.g. M2A-CUT-001,M2A-CUT-002
 g_sparse_zero_wrong        CAUGHT mapped   4 caught_mapped   4  e.g. M2A-GRID-014,M2A-GRID-015
-mutants 52 caught 52 missed 0
+mutants 54 caught 54 missed 0

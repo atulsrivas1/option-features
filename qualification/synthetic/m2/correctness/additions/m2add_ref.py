@@ -321,6 +321,25 @@ def _eval(out, inp, prm):
         if code:
             return m2_ref.out("invalid_input", code=code)
         inp = _norm(inp)
+    T0_, OP_ = inp["t_ns"], inp["session"]["open_ns"]
+    if T0_ < OP_ and out in ("M2-4", "M2-5", "M2-6", "M2-9"):
+        if MU("cutoff_unavailable"):
+            return m2_ref.out("unavailable", "insufficient_window")
+        if MU("negative_counts"):
+            w_ = prm.get("window_s", 300)
+            mine = lambda p: out != "M2-5" or p[0] == inp["series_id"]
+            win = [p for p in inp["prints"] if T0_ - w_ * NS <= T0_ + p[1] <= T0_ and mine(p)]
+            before = [p for p in inp["prints"] if T0_ + p[1] < OP_ and mine(p)]
+            prem = lambda ps: sum(int(Fraction(p[2]) * 10000) * p[3] * p[4] for p in ps if p[4] == 100 and not p[5])
+            vol = lambda ps, right: sum(p[3] for p in ps if p[4] == 100 and not p[5] and inp["contracts"][p[0]]["right"] == right)
+            cv = m2_ref.cover(0, 0, 0)
+            if out == "M2-4":
+                return m2_ref.out(value={"large_count": len(win) - len(before), "large_premium": prem(win) - prem(before)}, fired=False, coverage=cv)
+            if out == "M2-5":
+                return m2_ref.out(value={"window_premium": prem(win) - prem(before)}, fired=False, coverage=cv)
+            if out == "M2-6":
+                return m2_ref.out(value={"total_premium": prem(win) - prem(before)}, fired=False, coverage=cv)
+            return m2_ref.out(value={"put_volume": vol(win, "P") - vol(before, "P"), "call_volume": vol(win, "C") - vol(before, "C")}, fired=False, coverage=cv)
     if window_bad(inp, prm, out):
         prm["window_s"] = -1
     if MU("n_truncated") and "N" in prm:
