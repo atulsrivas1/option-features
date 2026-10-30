@@ -21,7 +21,7 @@ Updated 2026-10-29 (M1 CLOSED, see docs/M1_CLOSE.md; P1 DONE, 0.2.0a1 on main, m
 ## M2 and the feature tracker (2026-10-30)
 - docs/FEATURE_STATUS.md is the single live tracker of every planned feature (status, release, PRs, evidence, pending reasons, counts, gates). RULE: every release PR updates it (docs/RELEASE_NOTE_TEMPLATE.md rule 7). Created by the M2 F-row re-audit docs PR (branch docs/feature-status, not merged).
 - M2: story B (PR 79), story A (PR 80), Result type alignment (PR 88) and FEATURE_STATUS (PR 85) merged; F2d stays partial (DR-M2-1). PR 93 (check_prints type-first), PR 96 (type-first fixtures) and PR 97 merged.
-- Open PRs: 86, 87, 98 (runner PR and any tape or mutation-tool follow-up not opened yet; add their numbers). Main is green after PR 93 (tests/m2 943 pass). tests/m2/test_feature_status.py fails if the tracker counts, additions line, manifest, Open PRs or Merged PRs line go stale.
+- Open PRs: 87, 98 (runner PR and any tape or mutation-tool follow-up not opened yet; add their numbers). Main is green after PR 93 (tests/m2 943 pass). tests/m2/test_feature_status.py fails if the tracker counts, additions line, manifest, Open PRs or Merged PRs line go stale.
 
 ## Next
 0. Independent freeze review of CANDIDATE13_FREEZE_RECORD: DONE (approve-with-conditions, applied); next coordinator freeze and merge. Then candidate14 (PO R27 rulings): lift exclusion of the 3 null-nondict rows, harness assertion for the extra-stream control row, re-issue filter, hashes, counts and release notes. PO to review: N5 rows flagged (proposed), assumption-2 confirmation, A>K disclosure, sorted-literal excluded_ids, nonexpected two-control rows as negative controls (the last three already PO-ruled; see DECISIONS.md).
