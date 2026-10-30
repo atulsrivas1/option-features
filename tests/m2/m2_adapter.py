@@ -132,7 +132,9 @@ def _dense(s):
 def _store(inp, hist, k=20, metrics=None):
     """HistoryStore from a raw history payload (non-strict calendar: history may hold sessions outside it)."""
     from option_features.flowstore import HistoryStore
-    store = HistoryStore(_calendar(inp), k=max(k, 20), strict_calendar=False)
+    # retention 60 (the hard cap): a raw fixture history may also hold today's own record or later sessions; a ring of
+    # K would evict a needed prior session. Reads never use them (baseline = K calendar sessions before today).
+    store = HistoryStore(_calendar(inp), k=60, strict_calendar=False)
     window = hist.get("window_s") or 300
     for s in sorted(hist["sessions"], key=lambda z: z["session_id"]):
         grid = _dense(s)
