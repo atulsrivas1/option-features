@@ -223,8 +223,8 @@ def _validate(contracts, spot, rate, dividend_yield, cutoff_ns, p):
 # ---------------------------------------------------------------- assembly
 def _params(params):
     p = dict(LOCAL_DEFAULTS)
-    if params:
-        p.update(params)
+    if params is not None:
+        p.update(dict(params))              # a plain copy: no subclass method is called after this point
     return p
 
 
@@ -349,7 +349,10 @@ def surface_frame(contracts, spot, rate, dividend_yield, cutoff_ns, params=None,
                   stats=None):
     if params is not None and not isinstance(params, dict):
         return Result.invalid(OUTPUT_ID, "malformed_type", evaluation_ns=cutoff_ns)
-    p = _params(params)
+    try:
+        p = _params(params)
+    except Exception:                       # a hostile mapping (raising keys/get/update): never raise
+        return Result.invalid(OUTPUT_ID, "malformed_type", evaluation_ns=cutoff_ns)
     echo = {k: p[k] for k in sorted(ECHO)}
     lane = p["lane"] if type(p["lane"]) is str else None
     ev = p.get("evaluation_ns", cutoff_ns)
