@@ -38,6 +38,7 @@ from decimal import Decimal
 from fractions import Fraction
 from math import isfinite
 
+from .chainiv import ChainContract as _CC
 from .flowresult import M2StructuralError
 
 REQUEST_LIST = (
@@ -88,6 +89,7 @@ _LEVEL_OUT = frozenset(("M3A-3", "M3A-4", "M3A-5", "M3A-6", "M3A-7", "M3A-9", "M
 _PRIOR_OUT = frozenset(("M3A-3", "M3A-6", "M3A-9"))
 _HISTORY_OUT = frozenset(("M3A-1", "M3A-2", "M3A-8"))
 _DELAY_INTRADAY = frozenset(("M3A-1", "M3A-3", "M3A-8"))
+_OUTPUTS = frozenset("M3A-%d" % i for i in range(12))
 _NO_DEFAULT_THRESHOLD = "M3A-11"          # V21 (R-116)
 
 
@@ -223,6 +225,9 @@ def _x_value(x):
     return None
 
 
+x_value = _x_value          # public: the one percentile-x type rule (R-190), shared with m3a_history (S02)
+
+
 def _level_ok(v):
     """A level threshold (`at_least`, `at_most`): non-bool int, Fraction or decimal text."""
     t = type(v)
@@ -308,16 +313,27 @@ def _priors(p):
         if tm is not list and tm is not tuple:
             return None
         out.extend(many)
+    readings = []
     for pr in out:
-        if type(pr) is not dict and (type(pr) in _SCALARS or not hasattr(pr, "time_ns")):
+        if type(pr) is dict:
+            readings.append(pr)
+            continue
+        if type(pr) in _SCALARS:
             return None
-    return out
+        try:                                   # a record object: read its three fields once, never trust it again
+            if isinstance(pr, (dict, list, tuple, str)) or not hasattr(pr, "time_ns"):
+                return None
+            readings.append({"time_ns": getattr(pr, "time_ns", None),
+                             "delta_convention": getattr(pr, "delta_convention", None),
+                             "convention": getattr(pr, "convention", None)})
+        except Exception:
+            return None
+    return readings
 
 
 def _prior_get(pr, name, default=None):
-    if type(pr) is dict:
-        return pr.get(name, default)
-    return getattr(pr, name, default)
+    v = pr.get(name)                     # readings are exact dicts (see _priors)
+    return default if v is None else v
 
 
 def _prior_convention(pr):
@@ -339,6 +355,9 @@ def _contracts_code(contracts):
     price = _PRICE8
     pair8 = _PAIR8
     for c in contracts:
+        tc = type(c)
+        if tc is not _CC and (tc is not tuple or len(c) != 10):
+            return 6, _MT                    # not a contract record: its expiry_days cannot be read
         cid, days, right, strike, bid, ask, ev, known, style, cond = c
         # position 6: expiry_days
         if type(days) is not int:
@@ -415,8 +434,13 @@ def validate_request(output_id, contracts, spot, rate, dividend_yield, cutoff_ns
     """First failing code of the request list (18 positions, 23 codes), or None."""
     if validate != "scanned" and validate != "full":
         raise ValueError('validate must be "scanned" or "full"')
-    p = params if params is not None else {}
-    oid = output_id
+    # caller-supplied containers: exact types, so no caller method (__eq__, __hash__, get, __iter__) ever runs
+    if type(params) is dict:
+        p, params_ok = params, True
+    else:
+        p, params_ok = {}, params is None
+    oid_ok = type(output_id) is str and output_id in _OUTPUTS
+    oid = output_id if oid_ok else None
     # 1 cutoff
     if type(cutoff_ns) is not int:
         return _MT
@@ -438,11 +462,16 @@ def validate_request(output_id, contracts, spot, rate, dividend_yield, cutoff_ns
     code = _selector(p, "lane", _LANES, "invalid_lane", "stock")
     if code:
         return code
-    # 6 to 11 on the contracts (position-major, one pass)
+    # 6 to 11 on the contracts (position-major, one pass); a container that is not a list or tuple is malformed_type
+    tc = type(contracts)
+    if tc is not list and tc is not tuple:
+        return _MT
     pos, code = _contracts_code(contracts)
     if pos <= 10:
         return code
     # 10: request fields without a value code, then cutoff_mismatch
+    if not (params_ok and oid_ok):
+        return _MT
     c10 = _slot10_params(oid, p)
     if c10:
         return c10
@@ -557,6 +586,8 @@ def validate_view_read(calendar, as_of, form, min_sessions, max_sessions, x=None
     pos = calendar.position(as_of)
     if pos is None:
         return "session_not_in_calendar"
+    if type(form) is not str:
+        return _MT
     if form == "same_minute_column" and minute is not None:
         if type(minute) is not int:
             return _MT
@@ -607,6 +638,8 @@ def m1_error_code(exc):
     places, not representable, wrong type) is malformed_type."""
     try:
         text = str(exc) if isinstance(exc, BaseException) else ""
+        if type(text) is not str:
+            return _MT
     except Exception:          # a hostile argument (deep nesting, a failing __str__) is no M1 message
         return _MT
     for prefix, code in _M1_MESSAGES:
