@@ -270,6 +270,9 @@ class StoreViews(unittest.TestCase):
         v1 = store.baseline("S", "premium", 60, as_of, 20)
         self.assertIs(v1, store.baseline("S", "premium", 60, as_of, 20))      # warm: same cached object
         r1 = v1.rank(2), v1.median(), v1.mean()
+        v19 = store.baseline("S", "premium", 60, as_of, 19)                  # another K is another cache entry
+        self.assertEqual(len(v19.sessions), 19)
+        self.assertEqual(len(store.baseline("S", "premium", 60, as_of, 20).sessions), 20)
         store.append("S", "premium", 60, cal.ids[20], [9] * 30)               # ring changes: cache cleared
         v2 = store.baseline("S", "premium", 60, as_of, 20)
         self.assertIsNot(v1, v2)
@@ -506,6 +509,7 @@ class KernelsEndToEnd(unittest.TestCase):
             tot = flowgrid.window_totals([p for p in tps if sid in ("SYN1", p[0])], contracts, cut, W, "stock", "all", "full")
             items.append((sid, tot.premium, tot.volume, tot.count, None))
         many = flowrank.flow_pack_many(store, session, cut, W, items)
+        self.assertEqual(len(many), len(items))
         order = list(range(len(items)))
         rng.shuffle(order)
         single = {}
