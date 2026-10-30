@@ -175,7 +175,9 @@ def _validate(contracts, spot, rate, dividend_yield, cutoff_ns, p):
                 return "malformed_type"
         if not _is_int(c.event_ns) or not (c.known_at_ns is None or _is_int(c.known_at_ns)):
             return "malformed_type"
-        if type(c.condition) is not str:      # any style value is accepted: not european/american = style_unknown
+        if type(c.condition) is not str:
+            return "malformed_type"
+        if c.style is not None and type(c.style) is not str:   # R-187: None or unknown text is style_unknown
             return "malformed_type"
     for key in ("stale_limit_ns", "min_strikes"):
         if not _is_int(p[key]) or p[key] < 0:
