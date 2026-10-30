@@ -16,7 +16,10 @@ Calls
     chain, contract_ivs   optional cache (trusted path, IO contract section 5): an IVChain already built for these
                   contracts and its contract_iv() map. When `chain` is None the inputs are validated in full and
                   the chain is built here. M3A-B1 measures the frame with both supplied.
-    stats         optional dict; receives "evaluations" (delta evaluations of the frame, M3A-B12 counter)
+    stats         optional dict; receives "evaluations" (delta evaluations of the frame, M3A-B12 counter) and
+                  "floats" (R-189): {"expiries": {days: {atm_iv, put25_iv, call25_iv}}, "tenors": {tenor: iv}}, the
+                  UNROUNDED binary64 values behind the frame text, keyed like `frame`, None where the frame is null
+                  (derived series difference these and round once, R-48, R-181)
 
 Result (IO contract section 8, R-141, R-142): value null; frame = {"expiries": {days: {status, reason, forward,
 atm_iv, put25_iv: {status, reason, value}, call25_iv: {...}}}, "tenors": {tenor: {status, reason, iv, method,
@@ -344,6 +347,8 @@ def _side(status, reason, value):
 
 def surface_frame(contracts, spot, rate, dividend_yield, cutoff_ns, params=None, chain=None, contract_ivs=None,
                   stats=None):
+    if params is not None and not isinstance(params, dict):
+        return Result.invalid(OUTPUT_ID, "malformed_type", evaluation_ns=cutoff_ns)
     p = _params(params)
     echo = {k: p[k] for k in sorted(ECHO)}
     lane = p["lane"] if type(p["lane"]) is str else None
@@ -368,13 +373,16 @@ def surface_frame(contracts, spot, rate, dividend_yield, cutoff_ns, params=None,
     evaluations = 0
     labels = set()
     frame_exp = {}
+    float_exp = {}
     side_fail = None
     with numerical_owner() as owner:
         for e in exps:
+            fl = {"atm_iv": None, "put25_iv": None, "call25_iv": None}
             item = {"status": e.status, "reason": e.reason, "forward": round_text(e.fwd.value()),
                     "atm_iv": None, "put25_iv": None, "call25_iv": None}
             if e.status == "available":
                 item["atm_iv"] = round_text(e.atm_iv)
+                fl["atm_iv"] = e.atm_iv
                 labels.add(e.atm_label)
                 for right, key in _SIDES:
                     legs = e.legs[right]
@@ -383,6 +391,7 @@ def surface_frame(contracts, spot, rate, dividend_yield, cutoff_ns, params=None,
                     evaluations += pt["evaluations"]
                     if pt["status"] == "available":
                         item[key] = _side("available", None, round_text(pt["value"]))
+                        fl[key] = pt["value"]
                         for k in pt["strikes_used"]:
                             labels.add(e.labels[(k, right)])
                     else:
@@ -393,19 +402,23 @@ def surface_frame(contracts, spot, rate, dividend_yield, cutoff_ns, params=None,
                 item["put25_iv"] = _side("unavailable", e.reason, None)
                 item["call25_iv"] = _side("unavailable", e.reason, None)
             frame_exp[str(e.days)] = item
+            float_exp[str(e.days)] = fl
     targets = sorted(set(p["tenors"]))
     ten = tenor_kernel(_records(exps), targets)
     frame_ten = {}
+    float_ten = {}
     tenor_fail = None
     for t in targets:
         r = ten[t]
         frame_ten[str(t)] = {"status": r.status, "reason": r.reason, "iv": None if r.iv is None else round_text(r.iv),
                              "method": r.method,
                              "expiries_used": None if r.expiries_used is None else list(r.expiries_used)}
+        float_ten[str(t)] = r.iv
         if r.status != "available" and tenor_fail is None:
             tenor_fail = r.reason
     if stats is not None:
         stats["evaluations"] = evaluations
+        stats["floats"] = {"expiries": float_exp, "tenors": float_ten}
     coverage = {"listed_strikes": sum(len(e.listed) for e in exps),
                 "eligible_strikes": sum(len(e.eligible) for e in exps),
                 "per_expiry": {str(e.days): {"listed_strikes": len(e.listed), "eligible_strikes": len(e.eligible)}
