@@ -69,6 +69,8 @@ MUTANTS = [
     ("decimal_price_ok", "Decimal price accepted", ["price_decimal"]),
     ("fraction_price_ok", "Fraction price accepted", ["price_fraction"]),
     ("bytes_price_ok", "bytes price accepted", ["price_bytes"]),
+    ("pair_float_compared", "pairs with a float time or seq are compared", ["order_skipped_pair"]),
+    ("stop_at_skipped", "ordering check stops at the first skipped pair", ["order_float_seq", "order_float_time", "order_mixed_fault"]),
     ("none_price_ok", "None price accepted", ["price_none"]),
     ("prec_malformed_first", "malformed_type checked before the ordering, negative, multiplier and contract checks", ["prec_multi"]),
     ("g_sparse_zero_wrong", "grid: sparse zero_count off by one", ["contract_series"]),

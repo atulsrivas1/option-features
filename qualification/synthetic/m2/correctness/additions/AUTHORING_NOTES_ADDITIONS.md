@@ -5,7 +5,7 @@ mock-data qualification only: passed on independently authored synthetic fixture
 Status: authored, not run against any implementation. Every dataset carries provenance SYNTHETIC. Seed 20261029, Python 3.12 stdlib only.
 The merged files (parent folder, MANIFEST.sha256) are unchanged; this folder only adds files. Reuses m2common.py, m2_ref.py and m2_load.py read-only.
 
-## 1. Scope (225 rows, 8 files)
+## 1. Scope (250 rows, 9 files)
 - m2_cases_add_struct.json (60): unknown_contract 10 and malformed_type 10 (2 rows each for F1, F4, F7, F17, F18; bool price 3, float price 3, float size,
   float time 2, bool multiplier 2, over-precision text 3), precedence pairs 10 (2 rows each: unordered+negative, negative+bad_multiplier,
   bad_multiplier+unknown_contract, unknown_contract+malformed_type, malformed_type+window_not_allowed), F1 delayed with unknown contract 2, trailing-zero text
@@ -20,7 +20,7 @@ The merged files (parent folder, MANIFEST.sha256) are unchanged; this folder onl
   nonstandard, excluded-condition and both-flag prints with coverage counts, lane tag, sparse contract series (3 rows), ties.
 Rows follow the merged compact format (m2_load.py). Generators gen_m2add_<name>.py (seeded, LF, no absolute paths, --out relative) use m2add_oracle.py
 (oracle A', wraps the merged oracle A). Independent second implementation: m2add_ref.py (wraps m2_ref, own validators and grammar scan, bisect prefix sums,
-own grid builder). m2add_selfcheck.py recomputes all 225 rows (0 mismatches) and asserts the per-category minimums by tag; m2add_mutants.py runs 61 mutants,
+own grid builder). m2add_selfcheck.py recomputes all 250 rows (0 mismatches) and asserts the per-category minimums by tag; m2add_mutants.py runs 63 mutants,
 each caught by at least 2 mapped rows (m2add_mutation_results.txt).
 
 ## 2. PO rulings encoded (extend the merged contract)
@@ -40,7 +40,7 @@ minute lies in no grid value and counts in the session total only; a print exact
   The contract text says bool; if ints must be rejected the merged rows would change. For the PO.
 - AMB-A6 A float time equal to an integer (1.0) is malformed_type like any float.
 
-## 4. Mutation table (61 mutants; see m2add_mutation_results.txt)
+## 4. Mutation table (63 mutants; see m2add_mutation_results.txt)
 Structural: unknown_ignored, bool_price_ok, float_price_ok, over_precision_ok, trailing_zero_rejected, float_window_ok, float_size_ok, float_time_ok,
 bool_multiplier_ok, grammar_lenient, int_price_as_usd, int_price_rejected, flag_any_ok, seq_bool_ok; precedence: negative_before_unordered,
 multiplier_before_negative, malformed_before_unknown, window_before_malformed. Data: preopen_not_clipped, n_truncated, big_float, f12_p60_window900,
@@ -90,6 +90,16 @@ g_half_day_390, g_sparse_zero_wrong.
   m2_load.py is unchanged so the merged manifest stays valid) decodes rows flagged requires_decoding, and assert_decoded() fails for a harness that did not decode.
   m2add_selfcheck.py asserts the decoded Python types. The ordering check compares adjacent prints only; a pair with a non-int time or seq is not compared (TYP-033 stays malformed_type).
 - New mutants: seq_bool_as_int, flag_float_ok, decimal_price_ok, fraction_price_ok, bytes_price_ok, none_price_ok, prec_malformed_first.
+
+## 10. Round 7 (adjacent-pair ordering; m2_cases_add_order.json, 25 rows)
+- Rule: unordered_prints compares adjacent prints only; a pair with a non-int time or seq (float, bool) is skipped and the rest of the stream is still checked.
+  Precedence (single list): unordered_prints before malformed_type, so a genuine unordered adjacent pair anywhere in the stream is reported even next to a malformed
+  key; with no genuine pair among the compared pairs the code is malformed_type. Contract section 9 items 13 and 14 are not in the copy of the contract I can read
+  (it ends at item 11), so the rows follow the rule as stated in the request; please check them against those items.
+- Five streams for each of F1, F4, F7, F17, F18: float seq next to a genuine out-of-order pair (unordered_prints), float time next to one (unordered_prints), mixed
+  typed and untyped with several pairs and no genuine fault (malformed_type), a malformed key first and a genuine pair later (unordered_prints), an apparent
+  decrease across a skipped pair (malformed_type, the pair is not compared).
+- New mutants: pair_float_compared, stop_at_skipped.
 
 ## 5. Files read and independence
 Read: docs/m2 IO contract (merged, sections 6 and 7), fixture requirements, capability matrix (as earlier) and the PO rulings in the requests. Nothing under
