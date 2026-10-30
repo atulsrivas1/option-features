@@ -17,6 +17,9 @@ Design (owner goal: performance)
 - Prefix arrays and per-threshold large-print lists are built lazily and cached on the (immutable after
   build) tape, so a family that does not need them never pays for them.
 
+TRUSTED INPUT: the `contracts` map (contract id to `(right, strike, expiry, lane)`) is trusted and validated by the adapter
+that builds it; a malformed record raises. Print data is never trusted: any object in any print field gets a code.
+
 Input rows are tuples `(contract_id, time_ns, price, size, multiplier, condition_excluded, seq[, side])`
 sorted by (time_ns, seq); `side` is ignored (AMB-2). `contracts` maps a contract id to
 `(right, strike_ticks, expiry, lane)` with right "C" or "P". Structural problems do not raise: the tape
