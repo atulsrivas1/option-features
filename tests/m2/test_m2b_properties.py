@@ -386,6 +386,7 @@ class Units(unittest.TestCase):
         self.assertEqual(PT.ticks4(Fraction(3, 2)), 15000)
         with self.assertRaises(ValueError):
             PT.ticks4("1.00001")
+        self.assertEqual(PT.ticks4("1.00000"), 10000)
 
     def test_structural_precedence_and_validate_off(self):
         cons = {"A": ("C", 1, "2026-11-20", "stock")}
@@ -404,11 +405,6 @@ class Units(unittest.TestCase):
         self.assertEqual((r["status"], r["code"]), ("invalid_input", "malformed_type"))
         with self.assertRaises(ValueError):
             PT.build_tape([], cons).select("stock", "bogus")
-
-    def test_f12_parameter_validation(self):
-        for kw in ({"quiet_gap": 0}, {"n_episodes": 0}, {"grid_s": 30}):
-            with self.assertRaises(ValueError):
-                E.f12_episodes([], [], OPEN + 1000 * NS, OPEN, **kw)
 
     def test_f12_early_points_are_never_available_and_missing_points_count(self):
         T = OPEN + 1200 * NS                      # grid points 0..20

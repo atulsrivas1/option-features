@@ -39,8 +39,8 @@ f4_large_premium_all               caught    failing tests   6 (rows   6) fixtur
 f17_exclusive                      caught    failing tests  20 (rows  20, mapped rows 13) fixture mutants f17_exclusive
 f17_tumbling                       caught    failing tests   5 (rows   5, mapped rows 3) fixture mutants f17_tumbling
 f17_per_name                       caught    failing tests   4 (rows   4, mapped rows 4) fixture mutants f17_per_name
-f17_sweep_no_removal               caught    failing tests   1 (rows   0) fixture mutants -  [sweep path]
-f17_sweep_start_exclusive          caught    failing tests   1 (rows   0) fixture mutants -  [sweep path]
+f17_sweep_no_removal               caught    failing tests   3 (rows   0) fixture mutants -  [sweep path]
+f17_sweep_start_exclusive          caught    failing tests   2 (rows   0) fixture mutants -  [sweep path]
 f7_strike_not_summed               caught    failing tests  37 (rows  37, mapped rows 12) fixture mutants f7_strike_not_summed
 f7_expiry_not_summed               caught    failing tests  37 (rows  37, mapped rows 5) fixture mutants f7_expiry_not_summed
 f7_tie_highest_strike              caught    failing tests   6 (rows   6, mapped rows 4) fixture mutants f7_tie_highest_strike
@@ -48,7 +48,7 @@ f7_tie_latest_expiry               caught    failing tests   3 (rows   3, mapped
 f7_fire_exclusive                  caught    failing tests   8 (rows   8) fixture mutants -  [share exactly 3/5]
 f7_fire_strike_only                caught    failing tests   6 (rows   6) fixture mutants -
 f7_zero_total_available            caught    failing tests   3 (rows   3) fixture mutants -
-f7_sweep_no_removal                caught    failing tests   1 (rows   0) fixture mutants -  [sweep path]
+f7_sweep_no_removal                caught    failing tests   2 (rows   0) fixture mutants -  [sweep path]
 f18_share_swapped                  caught    failing tests  21 (rows  21, mapped rows 5) fixture mutants f18_swap
 f18_exclusive                      caught    failing tests  14 (rows  14, mapped rows 6) fixture mutants f18_exclusive
 f18_ratio_zero_call_zero           caught    failing tests   3 (rows   3) fixture mutants -
@@ -62,5 +62,13 @@ f12_clip_not_unavailable           caught    failing tests   4 (rows   4, mapped
 f12_first_15_available             caught    failing tests   1 (rows   0) fixture mutants -  [points before 900 s]
 f12_unavailable_points_short       caught    failing tests   1 (rows   0) fixture mutants -  [unavailable_points count]
 f12_fire_exclusive                 caught    failing tests  42 (rows  42) fixture mutants -  [ratio exactly N]
+preopen_clip_ignored               caught    failing tests   1 (rows   0) fixture mutants -  [review: pre-open prints]
+float_window_allowed               caught    failing tests   1 (rows   0) fixture mutants -  [review: strict window type]
+float_param_converted              caught    failing tests   2 (rows   0) fixture mutants -  [review: float params]
+f12_sweep_state_not_advanced       caught    failing tests   1 (rows   0) fixture mutants -  [review: incremental F12]
+large_cache_unbounded              caught    failing tests   1 (rows   0) fixture mutants -  [review: bounded cache]
+ticks4_not_strict                  caught    failing tests   1 (rows   0) fixture mutants -  [review: strict price text]
+unknown_contract_silent            caught    failing tests   2 (rows   0) fixture mutants -  [PR 79 ruling 5]
+malformed_price_silent             caught    failing tests   3 (rows   0) fixture mutants -  [PR 79 ruling 5]
 f12_peak_not_exact                 caught    failing tests  23 (rows  23) fixture mutants -  [peak time sticks to the first point]
-mutants 65, caught 65, survived 0; fixture mutants realised and caught on mapped rows: both_nonstd_first, cond_excl_counted, delay_ignored, f12_gap_minus1, f12_gap_plus1, f12_lookahead, f12_peak_latest, f12_unavail_not_quiet, f17_exclusive, f17_per_name, f17_tumbling, f18_exclusive, f18_swap, f18_unknown_dropped, f1_factor15, f1_floor, f2_clip, f4_exclusive, f4_side_known, f7_denominator_all, f7_expiry_not_summed, f7_strike_not_summed, f7_tie_highest_strike, f7_tie_latest_expiry, float_ratio, gate_order_swap, lane_ignored, lookahead, nonstd_counted, ratio_inverted, skip_unordered, skip_window_check, w900_for_60, win_open_end, win_open_start, zero_before_window; not representable: f12_merge_sessions (the F12 API takes one session's grid and has no cross-session state; prior_session_points is not an input, so a merge cannot exist and row M2-F12-031 pins that); other fixture mutants (F2, F10, F19, F20, store, infrastructure) belong to story A and the Tester
+mutants 73, caught 73, survived 0; fixture mutants realised and caught on mapped rows: both_nonstd_first, cond_excl_counted, delay_ignored, f12_gap_minus1, f12_gap_plus1, f12_lookahead, f12_peak_latest, f12_unavail_not_quiet, f17_exclusive, f17_per_name, f17_tumbling, f18_exclusive, f18_swap, f18_unknown_dropped, f1_factor15, f1_floor, f2_clip, f4_exclusive, f4_side_known, f7_denominator_all, f7_expiry_not_summed, f7_strike_not_summed, f7_tie_highest_strike, f7_tie_latest_expiry, float_ratio, gate_order_swap, lane_ignored, lookahead, nonstd_counted, ratio_inverted, skip_unordered, skip_window_check, w900_for_60, win_open_end, win_open_start, zero_before_window; not representable: f12_merge_sessions (the F12 API takes one session's grid and has no cross-session state; prior_session_points is not an input, so a merge cannot exist and row M2-F12-031 pins that); other fixture mutants (F2, F10, F19, F20, store, infrastructure) belong to story A and the Tester

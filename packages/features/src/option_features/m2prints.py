@@ -37,8 +37,29 @@ INSUFFICIENT_WINDOW_NS = 900 * NS
 
 
 def frac(x):
-    """Exact Fraction of a rational given as int, "n/d", Fraction or None-free decimal text."""
-    return x if type(x) is Fraction else Fraction(x)
+    """Exact Fraction of a rational given as int, "n/d", decimal text or Fraction; None for anything else
+    (float, bool, None, unparsable text): a float parameter is rejected as malformed_type, never converted."""
+    k = type(x)
+    if k is Fraction:
+        return x
+    if k is int:
+        return Fraction(x)
+    if k is str:
+        try:
+            return Fraction(x)
+        except (ValueError, ZeroDivisionError):
+            return None
+    return None
+
+
+def is_int(x):
+    return type(x) is int
+
+
+def start_of(t_ns, width_ns, open_ns):
+    """Window start, clipped at session open when `open_ns` is given (prints before open are not counted)."""
+    start = t_ns - width_ns
+    return start if open_ns is None or start >= open_ns else open_ns
 
 
 def cov(ne, nn, nx, unavailable=0):
@@ -61,13 +82,18 @@ def invalid(output_id, code, series_id, session_id, t_ns, params, lane):
 
 
 def structural_code(tape, *, calendar_ok=True, window_s=None, fixed_window_s=None, threshold_missing=False,
-                    delayed=False):
-    """First failing structural code in the ruled order, or None."""
+                    delayed=False, bad_param=False):
+    """First failing structural code in the ruled order, or None: tape errors (unordered_prints,
+    negative_size_or_price, bad_multiplier, unknown_contract, malformed_type), session_not_in_calendar,
+    window_not_allowed (also a non-int window), threshold_required, malformed_type (a float, bool or unparsable
+    parameter), delayed_feed_tag."""
     if tape is not None and tape.error:
         return tape.error
     if not calendar_ok:
         return "session_not_in_calendar"
     if window_s is not None:
+        if type(window_s) is not int:
+            return "window_not_allowed"
         if fixed_window_s is not None:
             if window_s != fixed_window_s:
                 return "window_not_allowed"
@@ -75,6 +101,8 @@ def structural_code(tape, *, calendar_ok=True, window_s=None, fixed_window_s=Non
             return "window_not_allowed"
     if threshold_missing:
         return "threshold_required"
+    if bad_param:
+        return "malformed_type"
     if delayed:
         return "delayed_feed_tag"
     return None
@@ -98,8 +126,8 @@ def canonical_line(res):
 # ======================================================================================== F1 (M2-1)
 def _f1_prep(tape, n, flt, lane, delayed, series_id, session_id, session_in_calendar):
     nf = frac(n)
-    params = {"N": nf, "filter": flt}
-    code = structural_code(tape, calendar_ok=session_in_calendar, delayed=delayed)
+    params = {"N": n if nf is None else nf, "filter": flt}
+    code = structural_code(tape, calendar_ok=session_in_calendar, delayed=delayed, bad_param=nf is None)
     groups = None if code else tape.select(lane, flt)
     return nf, params, code, groups
 
@@ -141,14 +169,15 @@ def f1_sweep(tape, cutoffs, open_ns, *, n=3, flt="all", lane="stock", delayed=Fa
 # ======================================================================================== F4 (M2-4)
 def _f4_prep(tape, window_s, threshold_ticks, n, flt, lane, series_id, session_id, session_in_calendar):
     nf = frac(n)
-    params = {"N": nf, "threshold_ticks": threshold_ticks, "window_s": window_s}
-    code = structural_code(tape, calendar_ok=session_in_calendar, window_s=window_s)
+    params = {"N": n if nf is None else nf, "threshold_ticks": threshold_ticks, "window_s": window_s}
+    code = structural_code(tape, calendar_ok=session_in_calendar, window_s=window_s,
+                           bad_param=nf is None or not is_int(threshold_ticks))
     groups = None if code else tape.select(lane, flt)
     return nf, params, code, groups
 
 
-def _f4_at(tape, groups, nf, params, t_ns, window_s, threshold_ticks, series_id, session_id, lane):
-    start = t_ns - window_s * NS
+def _f4_at(tape, groups, nf, params, t_ns, window_s, threshold_ticks, series_id, session_id, lane, open_ns):
+    start = start_of(t_ns, window_s * NS, open_ns)
     count = large = 0
     for g in groups:
         lt, lpp = g.large(threshold_ticks)
@@ -162,30 +191,31 @@ def _f4_at(tape, groups, nf, params, t_ns, window_s, threshold_ticks, series_id,
 
 
 def f4_large_prints(tape, t_ns, *, window_s=300, threshold_ticks=DEFAULT_THRESHOLD_TICKS, n=1, flt="all",
-                    lane="stock", delayed=False, series_id=None, session_id=None, session_in_calendar=True):
+                    lane="stock", delayed=False, series_id=None, session_id=None, session_in_calendar=True, open_ns=None):
     """F4 (repository name flow.large_print_count): count of eligible prints with premium >= threshold ticks in
     the window, side-agnostic (unknown side counts); fires at count >= N. An empty window is available, count 0."""
     nf, params, code, groups = _f4_prep(tape, window_s, threshold_ticks, n, flt, lane, series_id, session_id,
                                         session_in_calendar)
     if code:
         return invalid("M2-4", code, series_id, session_id, t_ns, params, lane)
-    return _f4_at(tape, groups, nf, params, t_ns, window_s, threshold_ticks, series_id, session_id, lane)
+    return _f4_at(tape, groups, nf, params, t_ns, window_s, threshold_ticks, series_id, session_id, lane, open_ns)
 
 
 def f4_sweep(tape, cutoffs, *, window_s=300, threshold_ticks=DEFAULT_THRESHOLD_TICKS, n=1, flt="all", lane="stock",
-             delayed=False, series_id=None, session_id=None, session_in_calendar=True):
+             delayed=False, series_id=None, session_id=None, session_in_calendar=True, open_ns=None):
     nf, params, code, groups = _f4_prep(tape, window_s, threshold_ticks, n, flt, lane, series_id, session_id,
                                         session_in_calendar)
     if code:
         return [invalid("M2-4", code, series_id, session_id, t, params, lane) for t in cutoffs]
-    return [_f4_at(tape, groups, nf, params, t, window_s, threshold_ticks, series_id, session_id, lane)
+    return [_f4_at(tape, groups, nf, params, t, window_s, threshold_ticks, series_id, session_id, lane, open_ns)
             for t in cutoffs]
 
 
 # ======================================================================================= F17 (M2-5)
 def _f17_prep(tape, window_s, threshold_ticks, flt, lane, session_in_calendar):
     params = {"threshold_ticks": threshold_ticks, "window_s": F17_WINDOW_S}
-    code = structural_code(tape, calendar_ok=session_in_calendar, window_s=window_s, fixed_window_s=F17_WINDOW_S)
+    code = structural_code(tape, calendar_ok=session_in_calendar, window_s=window_s, fixed_window_s=F17_WINDOW_S,
+                           bad_param=not is_int(threshold_ticks))
     groups = None if code else tape.select(lane, flt)
     return params, code, groups
 
@@ -235,7 +265,7 @@ def _f17_scan(groups, start, end):
     return sums, cnts
 
 
-def _f17_slide(groups, cutoffs):
+def _f17_slide(groups, cutoffs, open_ns=None):
     """Yield (input index, T, window start, sums, cnts) in ascending T; the dicts are updated in place with two
     pointers per group (each print is added once and removed once) and are valid until the next yield."""
     sums, cnts = {}, {}
@@ -243,26 +273,28 @@ def _f17_slide(groups, cutoffs):
     width = F17_WINDOW_S * NS
     for idx in sorted(range(len(cutoffs)), key=cutoffs.__getitem__):
         t_ns = cutoffs[idx]
-        start = t_ns - width
+        start = start_of(t_ns, width, open_ns)
         for g, st in zip(groups, state):
             t, ci, p = g.t, g.ci, g.p
             hi, lo, n = st[1], st[0], len(t)
-            while hi < n and t[hi] <= t_ns:
-                c = ci[hi]
-                sums[c] = sums.get(c, 0) + p[hi]
-                cnts[c] = cnts.get(c, 0) + 1
-                hi += 1
             while lo < hi and t[lo] < start:
                 c = ci[lo]
                 sums[c] -= p[lo]
                 cnts[c] -= 1
                 lo += 1
+            if lo == hi and hi < n and t[hi] < start:       # nothing live: jump to the window, skip older prints
+                lo = hi = bisect_left(t, start, hi)
+            while hi < n and t[hi] <= t_ns:
+                c = ci[hi]
+                sums[c] = sums.get(c, 0) + p[hi]
+                cnts[c] = cnts.get(c, 0) + 1
+                hi += 1
             st[0], st[1] = lo, hi
         yield idx, t_ns, start, sums, cnts
 
 
 def f17_many(tape, t_ns, contract_ids=None, *, window_s=300, threshold_ticks=DEFAULT_THRESHOLD_TICKS, flt="all",
-             lane="stock", delayed=False, session_id=None, session_in_calendar=True):
+             lane="stock", delayed=False, session_id=None, session_in_calendar=True, open_ns=None):
     """F17 for many contracts in ONE scan of the window's prints (per-contract sum of eligible premium over the
     fixed trailing [T - 300 s, T]; fires at sum >= threshold; a contract with no prints is available with 0).
     `contract_ids` defaults to the contracts seen on the tape in first-seen order."""
@@ -270,7 +302,7 @@ def f17_many(tape, t_ns, contract_ids=None, *, window_s=300, threshold_ticks=DEF
     params, code, groups = _f17_prep(tape, window_s, threshold_ticks, flt, lane, session_in_calendar)
     if code:
         return [invalid("M2-5", code, cid, session_id, t_ns, params, lane) for cid in ids]
-    start = t_ns - F17_WINDOW_S * NS
+    start = start_of(t_ns, F17_WINDOW_S * NS, open_ns)
     sums, cnts = _f17_scan(groups, start, t_ns)
     gset = set(groups)
     return _f17_emit(tape, gset, ids, sums, cnts, _rare_counts(tape, gset, start, t_ns), threshold_ticks, params,
@@ -278,13 +310,13 @@ def f17_many(tape, t_ns, contract_ids=None, *, window_s=300, threshold_ticks=DEF
 
 
 def f17_window_premium(tape, t_ns, contract_id, *, window_s=300, threshold_ticks=DEFAULT_THRESHOLD_TICKS, flt="all",
-                       lane="stock", delayed=False, session_id=None, session_in_calendar=True):
+                       lane="stock", delayed=False, session_id=None, session_in_calendar=True, open_ns=None):
     return f17_many(tape, t_ns, [contract_id], window_s=window_s, threshold_ticks=threshold_ticks, flt=flt, lane=lane,
-                    session_id=session_id, session_in_calendar=session_in_calendar)[0]
+                    session_id=session_id, session_in_calendar=session_in_calendar, open_ns=open_ns)[0]
 
 
 def f17_sweep(tape, cutoffs, contract_ids=None, *, window_s=300, threshold_ticks=DEFAULT_THRESHOLD_TICKS, flt="all",
-              lane="stock", delayed=False, session_id=None, session_in_calendar=True):
+              lane="stock", delayed=False, session_id=None, session_in_calendar=True, open_ns=None):
     """F17 at many cutoffs: one list of per-contract results per cutoff (input order). The per-contract sums
     are kept incrementally with two pointers per group, so each print is added once and removed once."""
     ids = tape.c_id if contract_ids is None else contract_ids
@@ -293,13 +325,13 @@ def f17_sweep(tape, cutoffs, contract_ids=None, *, window_s=300, threshold_ticks
         return [[invalid("M2-5", code, cid, session_id, t, params, lane) for cid in ids] for t in cutoffs]
     gset = set(groups)
     out = [None] * len(cutoffs)
-    for idx, t_ns, start, sums, cnts in _f17_slide(groups, cutoffs):
+    for idx, t_ns, start, sums, cnts in _f17_slide(groups, cutoffs, open_ns):
         out[idx] = _f17_emit(tape, gset, ids, sums, cnts, _rare_counts(tape, gset, start, t_ns), threshold_ticks,
                              params, t_ns, session_id, lane)
     return out
 
 
-def f17_columns(tape, t_ns, contract_ids=None, *, flt="all", lane="stock"):
+def f17_columns(tape, t_ns, contract_ids=None, *, flt="all", lane="stock", open_ns=None, sparse=False):
     """Columnar F17 print pass at one cutoff: window premium sums (ticks) aligned with `contract_ids`, from one
     scan of the window; the single-cutoff counterpart of `f17_sweep_columns`."""
     ids = tape.c_id if contract_ids is None else contract_ids
@@ -307,12 +339,15 @@ def f17_columns(tape, t_ns, contract_ids=None, *, flt="all", lane="stock"):
         raise ValueError(tape.error)
     groups = tape.select(lane, flt)
     gset = set(groups)
-    sums, _ = _f17_scan(groups, t_ns - F17_WINDOW_S * NS, t_ns)
+    sums, _ = _f17_scan(groups, start_of(t_ns, F17_WINDOW_S * NS, open_ns), t_ns)
+    if sparse:                                            # {contract id: sum} of the contracts live in the window
+        c_id = tape.c_id
+        return {c_id[ci]: v for ci, v in sums.items()}
     get, cidx, c_group = sums.get, tape.cidx, tape.c_group
     return [0 if (ci := cidx.get(cid)) is None or c_group[ci] not in gset else get(ci, 0) for cid in ids]
 
 
-def f17_sweep_columns(tape, cutoffs, contract_ids=None, *, flt="all", lane="stock"):
+def f17_sweep_columns(tape, cutoffs, contract_ids=None, *, flt="all", lane="stock", open_ns=None, sparse=False):
     """Columnar F17 print pass: per cutoff (input order) the list of window premium sums (ticks) aligned with
     `contract_ids`, no result record per contract. Same incremental state as `f17_sweep`; the reads (results)
     are built separately by `f17_sweep` (M2-B15 gates the print pass apart from the reads). Raises
@@ -325,7 +360,11 @@ def f17_sweep_columns(tape, cutoffs, contract_ids=None, *, flt="all", lane="stoc
     cis = [tape.cidx.get(cid) for cid in ids]
     ok = [ci is not None and tape.c_group[ci] in gset for ci in cis]
     out = [None] * len(cutoffs)
-    for idx, _t, _start, sums, _cnts in _f17_slide(groups, cutoffs):
+    c_id = tape.c_id
+    for idx, _t, _start, sums, cnts in _f17_slide(groups, cutoffs, open_ns):
+        if sparse:
+            out[idx] = {c_id[ci]: v for ci, v in sums.items() if cnts[ci]}
+            continue
         get = sums.get
         out[idx] = [get(ci, 0) if k else 0 for ci, k in zip(cis, ok)]
     return out
@@ -334,8 +373,8 @@ def f17_sweep_columns(tape, cutoffs, contract_ids=None, *, flt="all", lane="stoc
 # ======================================================================================== F7 (M2-6)
 def _f7_prep(tape, window_s, share_threshold, flt, lane, session_in_calendar):
     th = frac(share_threshold)
-    params = {"share_threshold": th, "window_s": window_s}
-    code = structural_code(tape, calendar_ok=session_in_calendar, window_s=window_s)
+    params = {"share_threshold": share_threshold if th is None else th, "window_s": window_s}
+    code = structural_code(tape, calendar_ok=session_in_calendar, window_s=window_s, bad_param=th is None)
     groups = None if code else tape.select(lane, flt)
     return th, params, code, groups
 
@@ -360,14 +399,14 @@ def _f7_emit(tape, groups, by_s, by_e, th, params, t_ns, start, series_id, sessi
 
 
 def f7_concentration(tape, t_ns, *, window_s=300, share_threshold="3/5", flt="all", lane="stock", delayed=False,
-                     series_id=None, session_id=None, session_in_calendar=True):
+                     series_id=None, session_id=None, session_in_calendar=True, open_ns=None):
     """F7: largest share of the window's eligible premium in one strike (summed over expiries and rights) and in
     one expiry (summed over strikes and rights); fires when either share >= threshold (default 3/5). Ties: lowest
     strike, earliest expiry. Denominator is the total eligible premium (zero_denominator when 0)."""
     th, params, code, groups = _f7_prep(tape, window_s, share_threshold, flt, lane, session_in_calendar)
     if code:
         return invalid("M2-6", code, series_id, session_id, t_ns, params, lane)
-    start = t_ns - window_s * NS
+    start = start_of(t_ns, window_s * NS, open_ns)
     byc = {}
     for g in groups:
         t = g.t
@@ -386,7 +425,7 @@ def f7_concentration(tape, t_ns, *, window_s=300, share_threshold="3/5", flt="al
 
 
 def f7_sweep(tape, cutoffs, *, window_s=300, share_threshold="3/5", flt="all", lane="stock", delayed=False,
-             series_id=None, session_id=None, session_in_calendar=True):
+             series_id=None, session_id=None, session_in_calendar=True, open_ns=None):
     """F7 at many cutoffs; the strike and expiry sums slide with two pointers per group (each print is added
     once and removed once), so overlapping windows are never rescanned."""
     th, params, code, groups = _f7_prep(tape, window_s, share_threshold, flt, lane, session_in_calendar)
@@ -399,10 +438,17 @@ def f7_sweep(tape, cutoffs, *, window_s=300, share_threshold="3/5", flt="all", l
     width = window_s * NS
     for idx in sorted(range(len(cutoffs)), key=cutoffs.__getitem__):
         t_ns = cutoffs[idx]
-        start = t_ns - width
+        start = start_of(t_ns, width, open_ns)
         for g, st in zip(groups, state):
             t, ci, p = g.t, g.ci, g.p
             hi, lo, n = st[1], st[0], len(t)
+            while lo < hi and t[lo] < start:
+                c, v = ci[lo], p[lo]
+                by_s[c_strike[c]] -= v
+                by_e[c_expiry[c]] -= v
+                lo += 1
+            if lo == hi and hi < n and t[hi] < start:       # nothing live: jump to the window, skip older prints
+                lo = hi = bisect_left(t, start, hi)
             while hi < n and t[hi] <= t_ns:
                 c, v = ci[hi], p[hi]
                 k = c_strike[c]
@@ -410,11 +456,6 @@ def f7_sweep(tape, cutoffs, *, window_s=300, share_threshold="3/5", flt="all", l
                 k = c_expiry[c]
                 by_e[k] = by_e.get(k, 0) + v
                 hi += 1
-            while lo < hi and t[lo] < start:
-                c, v = ci[lo], p[lo]
-                by_s[c_strike[c]] -= v
-                by_e[c_expiry[c]] -= v
-                lo += 1
             st[0], st[1] = lo, hi
         out[idx] = _f7_emit(tape, groups, by_s, by_e, th, params, t_ns, start, series_id, session_id, lane)
     return out
@@ -424,15 +465,17 @@ def f7_sweep(tape, cutoffs, *, window_s=300, share_threshold="3/5", flt="all", l
 def _f18_prep(tape, window_s, at_least, at_most, lane, session_in_calendar):
     al = None if at_least is None else frac(at_least)
     am = None if at_most is None else frac(at_most)
-    params = {"at_least": al, "at_most": am, "window_s": window_s}
+    bad = (at_least is not None and al is None) or (at_most is not None and am is None)
+    params = {"at_least": at_least if (bad and al is None) else al, "at_most": at_most if (bad and am is None) else am,
+              "window_s": window_s}
     code = structural_code(tape, calendar_ok=session_in_calendar, window_s=window_s,
-                           threshold_missing=al is None and am is None)
+                           threshold_missing=at_least is None and at_most is None, bad_param=bad)
     groups = None if code else (tape.select(lane, "puts"), tape.select(lane, "calls"))
     return al, am, params, code, groups
 
 
-def _f18_at(tape, groups, al, am, params, t_ns, window_s, series_id, session_id, lane):
-    start = t_ns - window_s * NS
+def _f18_at(tape, groups, al, am, params, t_ns, window_s, series_id, session_id, lane, open_ns):
+    start = start_of(t_ns, window_s * NS, open_ns)
     _, put, pe, pn, px = tape.stats(groups[0], start, t_ns, True)
     _, call, ce, cn, cx = tape.stats(groups[1], start, t_ns, True)
     coverage = cov(pe + ce, pn + cn, px + cx)
@@ -452,7 +495,7 @@ def _f18_at(tape, groups, al, am, params, t_ns, window_s, series_id, session_id,
 
 
 def f18_put_share(tape, t_ns, *, window_s=300, at_least=None, at_most=None, lane="stock", delayed=False,
-                  series_id=None, session_id=None, session_in_calendar=True):
+                  series_id=None, session_id=None, session_in_calendar=True, open_ns=None):
     """F18: put share of eligible option volume (sum of sizes) in the window, with put volume, call volume and
     the put-to-call ratio (unavailable with zero call volume: `ratio_reason` zero_denominator, share still
     available). Fires at share >= at_least or share <= at_most; neither set is invalid_input threshold_required.
@@ -460,12 +503,12 @@ def f18_put_share(tape, t_ns, *, window_s=300, at_least=None, at_most=None, lane
     al, am, params, code, groups = _f18_prep(tape, window_s, at_least, at_most, lane, session_in_calendar)
     if code:
         return invalid("M2-9", code, series_id, session_id, t_ns, params, lane)
-    return _f18_at(tape, groups, al, am, params, t_ns, window_s, series_id, session_id, lane)
+    return _f18_at(tape, groups, al, am, params, t_ns, window_s, series_id, session_id, lane, open_ns)
 
 
 def f18_sweep(tape, cutoffs, *, window_s=300, at_least=None, at_most=None, lane="stock", delayed=False,
-              series_id=None, session_id=None, session_in_calendar=True):
+              series_id=None, session_id=None, session_in_calendar=True, open_ns=None):
     al, am, params, code, groups = _f18_prep(tape, window_s, at_least, at_most, lane, session_in_calendar)
     if code:
         return [invalid("M2-9", code, series_id, session_id, t, params, lane) for t in cutoffs]
-    return [_f18_at(tape, groups, al, am, params, t, window_s, series_id, session_id, lane) for t in cutoffs]
+    return [_f18_at(tape, groups, al, am, params, t, window_s, series_id, session_id, lane, open_ns) for t in cutoffs]

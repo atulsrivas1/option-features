@@ -67,7 +67,7 @@ MUTS = [
     ("delay_ignored", ["delay_ignored"], MP, [("    if delayed:\n        return \"delayed_feed_tag\"", "    if False:\n        return \"delayed_feed_tag\"", 1)], ""),
     ("skip_window_check", ["skip_window_check"], MP, [("        elif window_s not in ALLOWED_WINDOWS:", "        elif False:", 1)], ""),
     ("f17_window_any", ["skip_window_check"], MP, [("            if window_s != fixed_window_s:", "            if False:", 1)], ""),
-    ("threshold_not_required", [], MP, [("threshold_missing=al is None and am is None", "threshold_missing=False", 1)], ""),
+    ("threshold_not_required", [], MP, [("threshold_missing=at_least is None and at_most is None", "threshold_missing=False", 1)], ""),
     ("skip_unordered", ["skip_unordered"], PT, [("            if t < pt or (t == pt and seq < ps):", "            if False:", 1)], ""),
     ("unordered_seq_ties_ignored", [], PT, [("(t == pt and seq < ps)", "False", 1)], "same time, lower seq"),
     ("negative_price_allowed", [], PT, [("if size < 0 or price < 0:", "if size < 0:", 1)], ""),
@@ -92,7 +92,7 @@ MUTS = [
     ("f4_count_exclusive", [], MP, [("count * nf.denominator >= nf.numerator", "count * nf.denominator > nf.numerator", 1)], "N exactly"),
     ("f4_large_premium_all", [], MP, [("large += lpp[b] - lpp[a]", "large += lpp[-1]", 1)], ""),
     ("f17_exclusive", ["f17_exclusive"], MP, [('{"window_premium": s}, s >= thr,', '{"window_premium": s}, s > thr,', 1)], ""),
-    ("f17_tumbling", ["f17_tumbling"], MP, [("    start = t_ns - F17_WINDOW_S * NS\n    sums, cnts", "    start = t_ns - (t_ns % (F17_WINDOW_S * NS))\n    sums, cnts", 1)], ""),
+    ("f17_tumbling", ["f17_tumbling"], MP, [("    start = start_of(t_ns, F17_WINDOW_S * NS, open_ns)\n    sums, cnts", "    start = t_ns - (t_ns % (F17_WINDOW_S * NS))\n    sums, cnts", 1)], ""),
     ("f17_per_name", ["f17_per_name"], MP, [("s, ne = sums.get(ci, 0), cnts.get(ci, 0)", "s, ne = sum(sums.values()), sum(cnts.values())", 1)], ""),
     ("f17_sweep_no_removal", [], MP, [("                sums[c] -= p[lo]\n", "                sums[c] -= 0\n", 1)], "sweep path"),
     ("f17_sweep_start_exclusive", [], MP, [("while lo < hi and t[lo] < start:\n                c = ci[lo]\n                sums[c] -= p[lo]", "while lo < hi and t[lo] <= start:\n                c = ci[lo]\n                sums[c] -= p[lo]", 1)], "sweep path"),
@@ -115,13 +115,21 @@ MUTS = [
     ("f12_gap_minus1", ["f12_gap_minus1"], EP, [("if quiet >= quiet_gap:", "if quiet >= quiet_gap - 1:", 2)], ""),
     ("f12_gap_plus1", ["f12_gap_plus1"], EP, [("if quiet >= quiet_gap:", "if quiet >= quiet_gap + 1:", 2)], ""),
     ("f12_unavailable_not_quiet", ["f12_unavail_not_quiet"], EP, [("        if a is None or b is None or b <= 0:\n            if in_ep:", "        if a is None or b is None or b <= 0:\n            if False:", 1)], ""),
-    ("f12_peak_latest", ["f12_peak_latest"], EP, [("a * pk_b > pk_a * b", "a * pk_b >= pk_a * b", 1)], ""),
+    ("f12_peak_latest", ["f12_peak_latest"], EP, [("a * pk_b > pk_a * b", "a * pk_b >= pk_a * b", 2)], ""),
     ("f12_lookahead", ["f12_lookahead"], EP, [("m = min(len(p60), len(p900), upto + 1)", "m = min(len(p60), len(p900))", 1)], ""),
     ("f12_clip_not_unavailable", ["f2_clip"], EP, [("    if elapsed < FIRST_AVAILABLE_INDEX * GRID_NS:", "    if False:", 2)], ""),
     ("f12_first_15_available", [], EP, [("for k in range(FIRST_AVAILABLE_INDEX, m):", "for k in range(0, m):", 1)], "points before 900 s"),
     ("f12_unavailable_points_short", [], EP, [("pk_k, upto + 1 - avail", "pk_k, m - avail", 1)], "unavailable_points count"),
     ("f12_fire_exclusive", [], EP, [("if a * c1 >= thr_num * b:", "if a * c1 > thr_num * b:", 1)], "ratio exactly N"),
-    ("f12_peak_not_exact", [], EP, [("pk_a, pk_b, pk_k = a, b, k", "pk_a, pk_b, pk_k = a, b, k if pk_k is None else pk_k", 1)], "peak time sticks to the first point"),
+    ("preopen_clip_ignored", [], MP, [("return start if open_ns is None or start >= open_ns else open_ns", "return start", 1)], "review: pre-open prints"),
+    ("float_window_allowed", [], MP, [("        if type(window_s) is not int:\n            return \"window_not_allowed\"\n", "", 1)], "review: strict window type"),
+    ("float_param_converted", [], MP, [("            return None\n    return None\n\n\ndef is_int", "            return None\n    if k is float:\n        return Fraction(x)\n    return None\n\n\ndef is_int", 1)], "review: float params"),
+    ("f12_sweep_state_not_advanced", [], EP, [("        if upto + 1 > self.k:\n            self.k = upto + 1\n", "", 1)], "review: incremental F12"),
+    ("large_cache_unbounded", [], PT, [("while len(cache) >= LARGE_CACHE_THRESHOLDS:", "while False:", 1)], "review: bounded cache"),
+    ("ticks4_not_strict", [], PT, [("        if not _DECIMAL.fullmatch(value):", "        if False:", 1)], "review: strict price text"),
+    ("unknown_contract_silent", [], PT, [("                unknown = True\n                continue", "                continue", 1)], "PR 79 ruling 5"),
+    ("malformed_price_silent", [], PT, [("                malformed = True\n                price = 0", "                price = 0", 1)], "PR 79 ruling 5"),
+    ("f12_peak_not_exact", [], EP, [("pk_a, pk_b, pk_k = a, b, k", "pk_a, pk_b, pk_k = a, b, k if pk_k is None else pk_k", 2)], "peak time sticks to the first point"),
 ]
 
 
@@ -170,7 +178,7 @@ def main(argv):
                 bad, rc = run_tests(src, contracts, modules)
                 mapped = set().union(*(fx[f] for f in fmuts)) if fmuts else set()
                 if not rows_only and not (bad and (not mapped or any(tags_of.get(b, set()) & mapped for b in bad))):
-                    bad2, rc = run_tests(src, contracts, ["test_m2b_properties"])       # rows did not decide: properties
+                    bad2, rc = run_tests(src, contracts, ["test_m2b_properties", "test_m2b_review"])       # rows did not decide: properties
                     bad |= {"properties:" + b for b in bad2}
             except subprocess.TimeoutExpired:
                 bad, rc = {"<timeout>"}, 1

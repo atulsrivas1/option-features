@@ -67,13 +67,59 @@ def scan_episodes(p60, p900, upto, thr_num, thr_den, quiet_gap):
     return eps, first, last, pk_a, pk_b, pk_k, upto + 1 - avail
 
 
-def _check_params(quiet_gap, n_episodes, grid_s):
-    if grid_s != GRID_S:
-        raise ValueError("grid_s must be 60 (the ruled grid)")
-    if type(quiet_gap) is not int or quiet_gap < 1:
-        raise ValueError("quiet_gap must be an integer >= 1")
-    if type(n_episodes) is not int or n_episodes < 1:
-        raise ValueError("n_episodes must be an integer >= 1")
+def _bad_params(nf, n_episodes, quiet_gap, grid_s):
+    """True when a parameter is malformed (float or unparsable N, non-int or < 1 counts, grid other than 60 s)."""
+    return (nf is None or type(quiet_gap) is not int or quiet_gap < 1 or type(n_episodes) is not int
+            or n_episodes < 1 or grid_s != GRID_S)
+
+
+class _Scan:
+    """Incremental form of `scan_episodes`: `advance` consumes grid points up to a later index, append-only
+    (no rebuild from open); `snapshot` equals `scan_episodes` over the same prefix."""
+    __slots__ = ("k", "eps", "first", "last", "in_ep", "quiet", "pk_a", "pk_b", "pk_k", "avail", "c1", "tn", "gap")
+
+    def __init__(self, thr_num, thr_den, quiet_gap):
+        self.k = FIRST_AVAILABLE_INDEX
+        self.eps = self.quiet = self.avail = 0
+        self.first = self.last = self.pk_a = self.pk_b = self.pk_k = None
+        self.in_ep = False
+        self.c1, self.tn, self.gap = 15 * thr_den, thr_num, quiet_gap
+
+    def advance(self, p60, p900, upto):
+        eps, first, last, in_ep, quiet = self.eps, self.first, self.last, self.in_ep, self.quiet
+        pk_a, pk_b, pk_k, avail = self.pk_a, self.pk_b, self.pk_k, self.avail
+        c1, tn, gap = self.c1, self.tn, self.gap
+        for k in range(self.k, upto + 1):
+            a = p60[k]
+            b = p900[k]
+            if a is None or b is None or b <= 0:
+                if in_ep:
+                    quiet += 1
+                    if quiet >= gap:
+                        in_ep = False
+                continue
+            avail += 1
+            if pk_b is None or a * pk_b > pk_a * b:
+                pk_a, pk_b, pk_k = a, b, k
+            if a * c1 >= tn * b:
+                if not in_ep:
+                    eps += 1
+                    in_ep = True
+                    if first is None:
+                        first = k
+                    last = k
+                quiet = 0
+            elif in_ep:
+                quiet += 1
+                if quiet >= gap:
+                    in_ep = False
+        if upto + 1 > self.k:
+            self.k = upto + 1
+        self.eps, self.first, self.last, self.in_ep, self.quiet = eps, first, last, in_ep, quiet
+        self.pk_a, self.pk_b, self.pk_k, self.avail = pk_a, pk_b, pk_k, avail
+
+    def snapshot(self, upto):
+        return (self.eps, self.first, self.last, self.pk_a, self.pk_b, self.pk_k, upto + 1 - self.avail)
 
 
 def _emit(scan, open_ns, nf, n_episodes, quiet_gap, params, t_ns, series_id, session_id, lane, counts=(0, 0, 0)):
@@ -91,10 +137,10 @@ def _emit(scan, open_ns, nf, n_episodes, quiet_gap, params, t_ns, series_id, ses
 def f12_episodes(p60, p900, t_ns, open_ns, *, n=3, n_episodes=1, quiet_gap=1, grid_s=GRID_S, delayed=False,
                  series_id=None, session_id=None, lane="stock", session_in_calendar=True):
     """F12 from F1 grid columns: p60[k] and p900[k] are the premium sums at grid point k (None = missing)."""
-    _check_params(quiet_gap, n_episodes, grid_s)
     nf = frac(n)
-    params = {"N": nf, "grid_s": grid_s, "n_episodes": n_episodes, "quiet_gap": quiet_gap}
-    code = structural_code(None, calendar_ok=session_in_calendar, delayed=delayed)
+    params = {"N": n if nf is None else nf, "grid_s": grid_s, "n_episodes": n_episodes, "quiet_gap": quiet_gap}
+    code = structural_code(None, calendar_ok=session_in_calendar, delayed=delayed,
+                           bad_param=_bad_params(nf, n_episodes, quiet_gap, grid_s))
     if code:
         return invalid("M2-11", code, series_id, session_id, t_ns, params, lane)
     elapsed = t_ns - open_ns
@@ -120,10 +166,10 @@ def f12_from_tape(tape, t_ns, open_ns, *, n=3, n_episodes=1, quiet_gap=1, grid_s
                   delayed=False, series_id=None, session_id=None, session_in_calendar=True):
     """F12 straight from a print tape (session to date). The coverage counters are those of the lane's prints in
     [open, T] (the from-points form reports zeros; PO may rule one convention)."""
-    _check_params(quiet_gap, n_episodes, grid_s)
     nf = frac(n)
-    params = {"N": nf, "grid_s": grid_s, "n_episodes": n_episodes, "quiet_gap": quiet_gap}
-    code = structural_code(tape, calendar_ok=session_in_calendar, delayed=delayed)
+    params = {"N": n if nf is None else nf, "grid_s": grid_s, "n_episodes": n_episodes, "quiet_gap": quiet_gap}
+    code = structural_code(tape, calendar_ok=session_in_calendar, delayed=delayed,
+                           bad_param=_bad_params(nf, n_episodes, quiet_gap, grid_s))
     if code:
         return invalid("M2-11", code, series_id, session_id, t_ns, params, lane)
     elapsed = t_ns - open_ns
@@ -135,3 +181,36 @@ def f12_from_tape(tape, t_ns, open_ns, *, n=3, n_episodes=1, quiet_gap=1, grid_s
     scan = scan_episodes(p60, p900, upto, nf.numerator, nf.denominator, quiet_gap)
     _, _, ne, nn, nx = tape.stats(tape.select(lane, flt), open_ns, t_ns)
     return _emit(scan, open_ns, nf, n_episodes, quiet_gap, params, t_ns, series_id, session_id, lane, (ne, nn, nx))
+
+
+def f12_sweep(tape, cutoffs, open_ns, *, n=3, n_episodes=1, quiet_gap=1, grid_s=GRID_S, flt="all", lane="stock",
+              delayed=False, series_id=None, session_id=None, session_in_calendar=True):
+    """F12 at many cutoffs of one session, append-only: the F1 grid columns are built once up to the last
+    cutoff and one `_Scan` state advances across the cutoffs (ascending internally, results in input order), so
+    nothing is rebuilt from open per cutoff. Equal to `f12_from_tape` at every cutoff (tested)."""
+    nf = frac(n)
+    params = {"N": n if nf is None else nf, "grid_s": grid_s, "n_episodes": n_episodes, "quiet_gap": quiet_gap}
+    code = structural_code(tape, calendar_ok=session_in_calendar, delayed=delayed,
+                           bad_param=_bad_params(nf, n_episodes, quiet_gap, grid_s))
+    if code:
+        return [invalid("M2-11", code, series_id, session_id, t, params, lane) for t in cutoffs]
+    out = [None] * len(cutoffs)
+    order = sorted(range(len(cutoffs)), key=cutoffs.__getitem__)
+    ready = [i for i in order if cutoffs[i] - open_ns >= FIRST_AVAILABLE_INDEX * GRID_NS]
+    for i in order:
+        if cutoffs[i] - open_ns < FIRST_AVAILABLE_INDEX * GRID_NS:
+            out[i] = result("M2-11", series_id, session_id, cutoffs[i], "unavailable", "insufficient_window", None,
+                            None, None, params, None, None, lane)
+    if not ready:
+        return out
+    p60, p900 = f1_grid_columns(tape, open_ns, (cutoffs[ready[-1]] - open_ns) // GRID_NS, flt, lane)
+    state = _Scan(nf.numerator, nf.denominator, quiet_gap)
+    groups = tape.select(lane, flt)
+    for i in ready:
+        t_ns = cutoffs[i]
+        upto = (t_ns - open_ns) // GRID_NS
+        state.advance(p60, p900, upto)
+        _, _, ne, nn, nx = tape.stats(groups, open_ns, t_ns)
+        out[i] = _emit(state.snapshot(upto), open_ns, nf, n_episodes, quiet_gap, params, t_ns, series_id, session_id,
+                       lane, (ne, nn, nx))
+    return out

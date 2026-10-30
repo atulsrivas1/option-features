@@ -355,6 +355,45 @@ def gate_b15(G, M, E, PT, repeats, report):
         f1["p50_ns"] / NS, f78["p50_ns"] / NS, json.dumps(rf)), flush=True)
 
 
+def gate_b15_overlap(G, M, E, PT, repeats, report):
+    """Overlapping cutoffs: 78 cutoffs 10 s apart (F7 window 3600 s, F17 window 300 s) late in the session. Gate
+    ratio <= 0.25 for the F7 and F17 sweeps, stated two ways: with the tape build in both sides, and without it
+    (queries only: sweep queries / (78 x one-cutoff query)). F12 incremental sweep is reported the same way."""
+    entry = report["gates"].setdefault("M2-B15", {"budget_text": budget_text("M2-B15")})
+    prints, cons, op, lane = unit_inputs(G, "SYN1", 21)
+    cuts = [op + 20_000 * NS + 10 * NS * i for i in range(78)]
+    mid = cuts[39]
+    tape = PT.build_tape(prints, cons)
+    cases = {
+        "F7_3600": (lambda t, T: M.f7_concentration(t, T, window_s=3600, lane=lane, open_ns=op),
+                    lambda t: M.f7_sweep(t, cuts, window_s=3600, lane=lane, open_ns=op)),
+        "F17_300_advance_only": (lambda t, T: M._f17_scan(t.select(lane, "all"), M.start_of(T, 300 * NS, op), T),
+                                 lambda t: sum(1 for _ in M._f17_slide(t.select(lane, "all"), cuts, op))),
+        "F17_300_with_sparse_reads_informational": (lambda t, T: M.f17_columns(t, T, lane=lane, open_ns=op, sparse=True),
+                                                    lambda t: M.f17_sweep_columns(t, cuts, lane=lane, open_ns=op, sparse=True)),
+        "F12_incremental": (lambda t, T: E.f12_from_tape(t, T, op, lane=lane),
+                            lambda t: E.f12_sweep(t, cuts, op, lane=lane)),
+    }
+    out = {}
+    for name, (one, sweep) in cases.items():
+        a1, _ = sample(lambda: one(PT.build_tape(prints, cons), mid), repeats)
+        a78, _ = sample(lambda: sweep(PT.build_tape(prints, cons)), repeats)
+        q1, _ = sample(lambda: one(tape, mid), repeats)
+        q78, k78 = sample(lambda: sweep(tape), repeats)
+        w = {"with_tape_build": {"ratio_p50": round(stats(a78)["p50_ns"] / (78 * stats(a1)["p50_ns"]), 4),
+                                 "ratio_p95": round(stats(a78)["p95_ns"] / (78 * stats(a1)["p95_ns"]), 4)},
+             "queries_only": {"ratio_p50": round(stats(q78)["p50_ns"] / (78 * stats(q1)["p50_ns"]), 4),
+                              "ratio_p95": round(stats(q78)["p95_ns"] / (78 * stats(q1)["p95_ns"]), 4)},
+             "single_query_p50_ns": stats(q1)["p50_ns"], "sweep_queries_p50_ns": stats(q78)["p50_ns"]}
+        worst = max(w["with_tape_build"]["ratio_p95"], w["queries_only"]["ratio_p95"])
+        w["verdict"] = "PASS" if worst <= 0.25 else ("informational: over 0.25, within hard 0.5; reads are gated apart (M2-B15r)"
+                                                       if "informational" in name and worst <= 0.5 else "FAIL (budget 0.25, hard 0.5)")
+        out[name] = w
+        print("  M2-B15 overlap %s: with tape build %s; queries only %s [%s]" % (
+            name, json.dumps(w["with_tape_build"]), json.dumps(w["queries_only"]), w["verdict"]), flush=True)
+    entry["overlapping_cutoffs_10s_apart"] = out
+
+
 def p1_t1_marker(report):
     p = ROOT / "docs" / "p1" / "P1_T1_REPORT.json"
     d = json.loads(p.read_text(encoding="utf-8"))
@@ -393,6 +432,7 @@ def main():
     del streams
     gate_b8(G, E, repeats, report)
     gate_b15(G, M, E, PT, repeats, report)
+    gate_b15_overlap(G, M, E, PT, repeats, report)
     p1_t1_marker(report)
     report["not_measured"] = ["M2-B18 trade-to-grid (story A grid builder)", "M2-B1..B4, B9, B11..B17 (store, percentile, runner)",
                               "worker scaling (library is single-threaded; the opt-in runner owns parallelism)",
