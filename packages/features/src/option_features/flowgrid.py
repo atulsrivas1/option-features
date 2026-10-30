@@ -109,7 +109,9 @@ def check_prints(prints, contracts=None):
     condition_excluded flag other than a bool, 0 or 1). `unordered_prints` compares ADJACENT prints by (time_ns, seq);
     a pair in which either print has a non-int (or bool) time or seq is not compared, so [5, False, 2] is
     malformed_type, and a genuine out-of-order pair elsewhere in the list still counts. Every check scans the whole
-    list; a malformed field never hides another print's error."""
+    list; a malformed field never hides another print's error. TYPE FIRST (RULED, PR 93): any field that is not an int
+    (bool excluded) or, for the price, a text decimal, is malformed_type before any value-based code (negative_size_or_price,
+    bad_multiplier); no exception escapes (Decimal NaN, str or None fields included)."""
     unordered = neg = bad = unknown = malformed = False
     pt = ps = None
     prev_ok = False
@@ -128,12 +130,16 @@ def check_prints(prints, contracts=None):
             neg = True
         if type(excl) is not bool and not (type(excl) is int and excl in (0, 1)):
             malformed = True
-        if type(size) in (int, float) and size < 0:
+        if type(size) is int and size < 0:
             neg = True
-        if type(mult) in (int, float) and mult <= 0:
+        if type(mult) is int and mult <= 0:
             bad = True
-        if contracts is not None and cid not in contracts:
-            unknown = True
+        if contracts is not None:
+            try:
+                if cid not in contracts:
+                    unknown = True
+            except TypeError:                        # an unhashable contract id
+                malformed = True
     if unordered:
         return "unordered_prints"
     if neg:

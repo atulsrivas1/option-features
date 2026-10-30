@@ -159,7 +159,7 @@ MUTS = [
     ("sparse_idx_not_in_text", "sparse canonical line omits grid_idx", [(ST, ',"grid_idx":[%s],"total"', ',"total"'),
                                                                         (ST, "_grid_text(rec, cache), _idx_text(rec, cache), rec.total,", "_grid_text(rec, cache), rec.total,")]),
     ("price_beyond_4_ok", "non-zero digit beyond the 4th decimal accepted", [(GR, "if frac[TICK_DIGITS:].strip(\"0\"):", "if False:")]),
-    ("unknown_contract_ignored", "unknown contract accepted", [(GR, "if contracts is not None and cid not in contracts:", "if False:")]),
+    ("unknown_contract_ignored", "unknown contract accepted", [(GR, "if cid not in contracts:", "if False:")]),
     ("bool_size_ok", "bool or float size accepted", [(GR, "or type(size) is not int or type(mult) is not int:", "or type(mult) is not int:")]),
     ("excluded_flag_any_ok", "any condition_excluded value accepted", [(GR, "if type(excl) is not bool and not (type(excl) is int and excl in (0, 1)):", "if False:")]),
     ("params_not_validated", "float or bool X and N accepted", [(RK, "    return any(_rational(r) is None for r in rationals) or (K is not None and type(K) is not int)", "    return False")]),
@@ -168,6 +168,8 @@ MUTS = [
     ("short_file_unchecked", "file shorter than the header not refused", [(ST, "if os.path.getsize(os.fspath(path)) < _BIN_HEADER:", "if False:")]),
     ("order_compares_untyped_pairs", "unordered_prints compares pairs with a non-int time or seq", [(GR, "if ts_ok and prev_ok and (t < pt or (t == pt and seq < ps)):", "if pt is not None and (t < pt or (t == pt and seq < ps)):")]),
     ("order_pair_state_stale", "the pair state is not reset after a malformed print", [(GR, "pt, ps, prev_ok = t, seq, ts_ok", "pt, ps = t, seq\n        prev_ok = prev_ok or ts_ok")]),
+    ("type_first_float_size_negative", "a float size is value-checked before the type", [(GR, "if type(size) is int and size < 0:", "if type(size) in (int, float) and size < 0:")]),
+    ("type_first_float_mult_bad", "a float multiplier is value-checked before the type", [(GR, "if type(mult) is int and mult <= 0:", "if type(mult) in (int, float) and mult <= 0:")]),
     ("fused_uses_wrong_volume", "fused path reads the wrong input", [(RK, '("contracts", volume), ("prints", count)):', '("contracts", count), ("prints", count)):')]),
     ("fused_f10_wrong_x", "fused F10 uses the wrong input", [(RK, "contracts_view.median(), contracts_view.mean(), N,", "contracts_view.median(), contracts_view.mean(), N,"),
                                                              (RK, "e = _finish_stats(\"M2-7\", series_id, sid, evaluation_ns, volume,", "e = _finish_stats(\"M2-7\", series_id, sid, evaluation_ns, count,")]),
@@ -183,7 +185,7 @@ MUTS = [
 
 def run_tests(src, which):
     env = dict(os.environ, PYTHONPATH=os.pathsep.join([str(src), str(ROOT / "packages" / "option-contracts" / "src")]),
-               M2A_DIFF_N="3000")
+               M2A_DIFF_N="3000", M2A_TAPE_N="0")
     r = subprocess.run([PY, "-B", "-m", "unittest", "discover", "-s", str(ROOT / "tests" / "m2"), "-p", which],
                        capture_output=True, text=True, env=env, cwd=ROOT)
     failed = sorted(set(re.findall(r"^(?:FAIL|ERROR): (?:test_row_)?(\w+)", r.stderr, re.M)))
