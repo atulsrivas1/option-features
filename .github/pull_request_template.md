@@ -8,3 +8,4 @@
 - [ ] Decision record added as docs/decisions/YYYY-MM-DD-<slug>.md (no edits to DECISIONS.md or HANDOFF.md): yes / no
 - [ ] Review round count (max two; a third only for a correctness defect): 1 / 2
 - [ ] Authored from a fresh origin/main checkout: yes / no
+- [ ] CI (docs/CI.md) green on this head, or the red step is explained

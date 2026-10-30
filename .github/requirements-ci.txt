@@ -1,0 +1,7 @@
+# CI requirements, Windows x64 + CPython 3.12 only (the qualified platform).
+# Installed with: pip install --require-hashes --only-binary :all: --no-deps -r .github/requirements-ci.txt
+# Hashes are the ones recorded in docs/r26-variants/WINDOWS_PARTIAL_QUALIFICATION_RECORD.md section 2.
+# setuptools 80.9.0 (sha256 062d34222ad13e0cc312a4c02d73f059e86a4acbfbdea8f8f76b28c99f306922) is a build-time
+# tool only and is not needed to run the suites, so it is not installed here.
+python-flint==0.9.0 --hash=sha256:8f1059536b7393e48b1444894c3b54ce1b961e4aa4a356e19217b26690f20db0
+duckdb==1.5.6 --hash=sha256:09ff51b230219f0d8b47fc8a1e17fb595ba9fab0c3d96a6de4d00b8ff86b3cf1

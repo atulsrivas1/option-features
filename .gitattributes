@@ -1,3 +1,4 @@
 * text=auto
 *.md text eol=lf
 LICENSE text eol=lf
+qualification/fixtures/*.json text eol=lf

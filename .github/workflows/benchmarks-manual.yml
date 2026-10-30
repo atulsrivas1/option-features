@@ -1,0 +1,35 @@
+name: benchmarks-manual
+
+# Manual only. Benchmarks are heavy and timing on shared runners is not evidence; never runs on PR or push.
+on:
+  workflow_dispatch:
+    inputs:
+      note:
+        description: "Why this run (recorded in the log only)"
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  bench-smoke:
+    runs-on: windows-2022
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5.3.0
+        with:
+          python-version: "3.12"
+          architecture: x64
+      - run: |
+          python -m pip install --require-hashes --only-binary :all: --no-deps -r .github/requirements-ci.txt
+      - name: M1 chain benchmark (size M, one repeat; indicative only, shared runner)
+        env:
+          PYTHONPATH: packages/features/src;packages/option-contracts/src;.
+        run: python -B tools/m1_chain_benchmark.py --sizes M --b6-sizes M --all-european --repeats 1
