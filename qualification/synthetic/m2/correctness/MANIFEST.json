@@ -1,0 +1,136 @@
+{
+ "differential": {
+  "cases_per_kind": 20000,
+  "kinds": [
+   "rank",
+   "median_ratio",
+   "episodes"
+  ],
+  "manifest": "m2_diff_manifest.json"
+ },
+ "files": {
+  "m2_cases_F1.json": {
+   "bytes": 40096,
+   "rows": 44,
+   "sha256": "e3ac611e850516df19473cf0ba93586ba00d0be60119740695056ec1f12022ca"
+  },
+  "m2_cases_F10F20.json": {
+   "bytes": 121052,
+   "rows": 80,
+   "sha256": "e940e9b590f14b048a7cc16bf1b364fb9d837a06f6db9e9ff9ed1ca9becbdce7"
+  },
+  "m2_cases_F12.json": {
+   "bytes": 62466,
+   "rows": 54,
+   "sha256": "8e860861e1746d39d39791e2c73eb528b10293937ab3dd58fb53592a5eb17d52"
+  },
+  "m2_cases_F17.json": {
+   "bytes": 30665,
+   "rows": 32,
+   "sha256": "979a300493fa1d2df92d368ce473f2c21657266f5ff9993fb3924abad49c6319"
+  },
+  "m2_cases_F18F19.json": {
+   "bytes": 77845,
+   "rows": 66,
+   "sha256": "18a6e77fa65b00066a16d071f3a2ac7d1110d15ae5a6a38a3980389a1eadd39d"
+  },
+  "m2_cases_F2.json": {
+   "bytes": 176531,
+   "rows": 105,
+   "sha256": "78b4badbb366df61f498b09bcfff727c91c914e9b0732de6cfbd0f70ed581135"
+  },
+  "m2_cases_F4.json": {
+   "bytes": 32222,
+   "rows": 34,
+   "sha256": "51ce59dc637cee4b11c52feb8d1e6875097a6d985d83a22b6ae925ca2e957e40"
+  },
+  "m2_cases_F7.json": {
+   "bytes": 39689,
+   "rows": 38,
+   "sha256": "c3cfd042ff9e32e4177c22cc20f19c931af8eb9aa046900589e631d082ab71a4"
+  },
+  "m2_cases_delayed.json": {
+   "bytes": 11142,
+   "rows": 9,
+   "sha256": "b12568669d97cac1d33472d5d1c671873f99c3ab35d862457a0ee881ec56fb59"
+  },
+  "m2_cases_halfday.json": {
+   "bytes": 54118,
+   "rows": 10,
+   "sha256": "4dd18dd765510f1192d4888511448f7f4df5b2e7d577250fe9290746b3ca7848"
+  },
+  "m2_cases_lane.json": {
+   "bytes": 11839,
+   "rows": 8,
+   "sha256": "a1925591c072d3a821eda0a0ef8c62d383fb3f994cd968686fdd20a4963184b3"
+  },
+  "m2_cases_sessionopen.json": {
+   "bytes": 17540,
+   "rows": 12,
+   "sha256": "490d8aeab49dee394353ad0e49c0608a4a42a46016d2fb4319fcd2c2bd88ed3b"
+  },
+  "m2_cases_store.json": {
+   "bytes": 124434,
+   "rows": 47,
+   "sha256": "60b7b5f0895c5b3ac782fb752ca850abebcd123f6d79236b9232ac4b522fd4f7"
+  },
+  "m2_cases_structural.json": {
+   "bytes": 30438,
+   "rows": 31,
+   "sha256": "4fc8a909562b9cb59701f95c29673b43e35ee61dce1219e30bca4e8587800442"
+  }
+ },
+ "frozen_facts": {
+  "allowed_windows_s": [
+   60,
+   300,
+   900,
+   1800,
+   3600
+  ],
+  "f1_horizons_s": [
+   60,
+   900
+  ],
+  "full_session_minutes": 390,
+  "grid_point_time": "open + 60 s x i, i = 0..minutes-1",
+  "grid_step_s": 60,
+  "half_day_minutes": 210,
+  "history_sessions_k": 20,
+  "premium_unit": "integer ticks (price x 10^4 x size x multiplier)",
+  "short_grid_minutes": [
+   2,
+   3,
+   4,
+   20,
+   40,
+   60,
+   70
+  ],
+  "side_vocabulary": [
+   "ask",
+   "bid",
+   "unknown"
+  ],
+  "t_ns_anchor": 1790000000000000000,
+  "threshold_ticks_default": 1000000000
+ },
+ "label": "mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12",
+ "provenance": "SYNTHETIC",
+ "rows_per_output_id": {
+  "M2-1": 54,
+  "M2-10": 35,
+  "M2-11": 60,
+  "M2-12": 49,
+  "M2-2": 101,
+  "M2-3": 22,
+  "M2-4": 39,
+  "M2-5": 35,
+  "M2-6": 43,
+  "M2-7": 58,
+  "M2-8": 37,
+  "M2-9": 37
+ },
+ "seed": 20261029,
+ "total_rows": 570
+}
