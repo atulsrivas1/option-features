@@ -1,0 +1,67 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-py312:
+    name: Windows x64 / CPython 3.12 (qualified platform)
+    runs-on: windows-2022
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+      R25_INDEPENDENT_WIRE_FIXTURES_SHA256: 37f79537ebbf69cd0f39d4f52745954ab6e9e90a0f486dca7e7bacdc5945eb23
+    steps:
+      - name: Keep LF on checkout
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5.3.0
+        with:
+          python-version: "3.12"
+          architecture: x64
+      - name: Show interpreter
+        run: python -VV
+      - name: Install pinned wheels (hash-checked)
+        run: |
+          python -m pip install --require-hashes --only-binary :all: --no-deps -r .github/requirements-ci.txt
+      - name: Verify wire fixture sha256 (LF bytes)
+        run: |
+          $f = (Resolve-Path qualification/fixtures/r25-independent-wire-fixtures.json).Path
+          $h = (Get-FileHash -Algorithm SHA256 -LiteralPath $f).Hash.ToLowerInvariant()
+          if ($h -ne $env:R25_INDEPENDENT_WIRE_FIXTURES_SHA256) { throw "fixture sha256 $h != expected (line endings or content changed)" }
+          "R25_INDEPENDENT_WIRE_FIXTURES=$f" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+      - name: contracts
+        run: .github/run_suite.ps1 contracts
+      - name: features
+        run: .github/run_suite.ps1 features
+      - name: p1
+        run: .github/run_suite.ps1 p1
+      - name: qualification
+        run: .github/run_suite.ps1 qualification
+      - name: m1
+        run: .github/run_suite.ps1 m1
+      - name: "m2 incl. test_feature_status (M2B_MEMORY unset, 1e6-print memory test skipped)"
+        run: .github/run_suite.ps1 m2
+      - name: tracker test named, at least 12 tests
+        run: |
+          $env:PYTHONPATH = 'packages/features/src;packages/option-contracts/src;tests/m2;tests;.'
+          Remove-Item Env:M2B_MEMORY -ErrorAction SilentlyContinue
+          $out = python -B -m unittest tests.m2.test_feature_status -v 2>&1 | Out-String
+          Write-Host $out
+          if ($LASTEXITCODE -ne 0) { throw "tracker test failed" }
+          if ($out -notmatch 'Ran (\d+) tests') { throw "could not read test count" }
+          if ([int]$Matches[1] -lt 12) { throw "tracker test ran only $($Matches[1]) tests (need at least 12)" }
