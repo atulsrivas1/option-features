@@ -152,10 +152,23 @@ def main():
         print("%-9s %-34s %s %s   | budget: %s | hard: %s" % (gate, name, value if isinstance(value, str) else json.dumps(value), unit,
                                                              b.get("budget"), b.get("hard")), flush=True)
 
-    def ratio_report(gate, raw2, raw6):
-        paired = sorted(x6 / x2 for x2, x6 in zip(raw2, raw6))
-        record(gate, "time(6000)/time(2000), median of paired ratios (RULED statistic, hard 4.0)", nearest_rank(paired, 50), "ratio")
-        record(gate, "time(6000)/time(2000), ratio of p50 (also reported)", summary(raw6)["p50"] / summary(raw2)["p50"], "ratio")
+    def ratio_report(gate, fn2, fn6):
+        """PINNED protocol (PR 80 ruling): interleaved paired repeats; per repeat one timed call of N = 2,000 and one of
+        N = 6,000 back to back (order alternating), ratio = t6000 / t2000, the statistic is the median of the ratios
+        over the repeats; B2n and B3n are reported separately. A non-interleaved full-benchmark run is not the gate."""
+        fn2()
+        fn6()
+        r2, r6 = [], []
+        for i in range(R):
+            pair = ((fn2, r2), (fn6, r6)) if i % 2 == 0 else ((fn6, r6), (fn2, r2))
+            for fn, sink in pair:
+                t = time.perf_counter_ns()
+                fn()
+                sink.append((time.perf_counter_ns() - t) / 1e9)
+        ratios = sorted(x6 / x2 for x2, x6 in zip(r2, r6))
+        record(gate, "interleaved paired ratio t(6000)/t(2000): median of %d (RULED statistic, hard 4.0)" % R, nearest_rank(ratios, 50),
+               "ratio; p5 %.3f p95 %.3f max %.3f" % (nearest_rank(ratios, 5), nearest_rank(ratios, 95), ratios[-1]))
+        record(gate, "interleaved paired absolute time N=2000 / N=6000 (p50, p95)", {"n2000": summary(r2), "n6000": summary(r6)}, "s")
 
     print("building workload ...", flush=True)
     cons, cal, data = make_world(a.contracts, a.sessions, 20261029)
@@ -249,13 +262,11 @@ def main():
     for n in (500, 2000, 6000):
         sel = [(pick[i % len(pick)][0], pick[i % len(pick)][1]) for i in range(n)]
 
-        def batch():
+        def batch(sel=sel):
             for s, m in sel:
                 store.baseline(s, m, 300, first, 20)
-        raw = timed(batch, R)
-        sm = summary(raw)
-        times[n] = raw
-        record("M2-B2n", "N=%d warm views" % n, sm, "s")
+        times[n] = batch
+        record("M2-B2n", "N=%d warm views (sequential run)" % n, summary(timed(batch, R)), "s")
     ratio_report("M2-B2n", times[2000], times[6000])
     # ---------------------------------------------------------------- B3 / B4
     t_open = OPEN0 + a.sessions * 86400 * NS
@@ -287,9 +298,10 @@ def main():
     t3 = {}
     for n in (500, 2000, 6000):
         items = [(series[i % len(series)], "premium", xs[series[i % len(series)]][0], None) for i in range(n)]
-        raw = timed(lambda: flowrank.f2_rank_many(store, items, sess, cut, 300), R)
-        t3[n] = raw
-        record("M2-B3n", "N=%d F2a batch" % n, summary(raw), "s")
+        def run(items=items):
+            flowrank.f2_rank_many(store, items, sess, cut, 300)
+        t3[n] = run
+        record("M2-B3n", "N=%d F2a batch (sequential run)" % n, summary(timed(run, R)), "s")
     ratio_report("M2-B3n", t3[2000], t3[6000])
     items10 = [(s, xs[s][1], None) for s in series]
     record("M2-B4", "F10 batch N=%d" % len(items10), summary(timed(lambda: flowrank.f10_baseline_many(store, items10, sess, cut, 300), R)), "s")

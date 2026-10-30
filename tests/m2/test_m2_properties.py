@@ -497,6 +497,34 @@ class StoreViews(unittest.TestCase):
                 self.assertEqual(cm.exception.code, code)
             self.assertEqual(sorted(os.listdir(d)), ["s.bin"])                    # failed attaches leave no mapping or temp file
 
+    def test_binary_short_file_and_byteorder(self):
+        _, flowstore, _, flowresult = lib()
+        cal = self._cal(2, lambda i: 3)
+        store = flowstore.HistoryStore(cal, k=2)
+        store.append("S", "m", 60, cal.ids[0], [1, 2, 3])
+        blob = store.binary_snapshot()
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "s.bin")
+            for data in (b"", b"M2BIN", blob[:20], blob[:54]):
+                with open(path, "wb") as fh:
+                    fh.write(data)
+                with self.assertRaises(flowresult.M2StructuralError) as cm:
+                    flowstore.HistoryStore.attach_binary(path, cal)
+                self.assertEqual(cm.exception.code, "snapshot_length_mismatch")
+                with self.assertRaises(flowresult.M2StructuralError) as cm:
+                    flowstore.HistoryStore.from_binary_snapshot(data, cal)
+                self.assertEqual(cm.exception.code, "snapshot_length_mismatch")
+        real = sys.byteorder
+        try:
+            sys.byteorder = "big"
+            for call in (store.binary_snapshot, lambda: flowstore.HistoryStore.from_binary_snapshot(blob, cal)):
+                with self.assertRaises(flowresult.M2StructuralError) as cm:
+                    call()
+                self.assertEqual(cm.exception.code, "snapshot_byteorder")
+        finally:
+            sys.byteorder = real
+        self.assertEqual(flowstore.HistoryStore.from_binary_snapshot(blob, cal).dump(), store.dump())
+
     def test_hash_independent_of_series_arrival_order(self):
         _, flowstore, _, _ = lib()
         cal = self._cal(6, lambda i: 4)

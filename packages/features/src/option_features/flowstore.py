@@ -37,6 +37,7 @@ _SNAP_MAGIC = b"M2SNAP1"
 _BIN_NAME = b"M2BIN"
 _BIN_VERSION = (1).to_bytes(2, "little")
 _BIN_MAGIC = _BIN_NAME + _BIN_VERSION          # 7 bytes: name and little-endian version
+_BIN_HEADER = len(_BIN_MAGIC) + 8 + 32 + 8     # magic, total length, SHA-256, table length: the smallest valid file
 _TRAILER = re.compile(r"#END records=(\d+) content_sha256=([0-9a-f]{64})\Z")
 _VIEW_CACHE = 4
 _SIZE = {"B": 1, "H": 2, "I": 4, "L": 4, "Q": 8, "q": 8}
@@ -620,7 +621,10 @@ class HistoryStore:
     def binary_snapshot(self):
         """Optional zero-copy transfer form (not the ruled snapshot): magic, total length, SHA-256 of the rest, the record
         table, then the raw typed arrays (8-byte aligned). `from_binary_snapshot` over bytes, an `mmap` or shared memory
-        builds a store whose records are read-only views of that buffer (view transfer option of M2-B16)."""
+        builds a store whose records are read-only views of that buffer (view transfer option of M2-B16). Little-endian
+        hosts only (`snapshot_byteorder` otherwise)."""
+        if sys.byteorder != "little":
+            raise M2StructuralError("snapshot_byteorder")
         table, blobs, off = [], [], 0
         for key in sorted(self._rings):
             ring = self._rings[key]
@@ -672,6 +676,10 @@ class HistoryStore:
     @classmethod
     def _from_binary_view(cls, mv, buffer, calendar, k, strict_calendar, lane, verify):
         head = len(_BIN_MAGIC)
+        if sys.byteorder != "little":                # the arrays are stored little-endian and mapped in place
+            raise M2StructuralError("snapshot_byteorder")
+        if len(mv) < _BIN_HEADER:                    # shorter than the header (including an empty buffer)
+            raise M2StructuralError("snapshot_length_mismatch")
         if bytes(mv[:head]) != _BIN_MAGIC:           # wrong name or unsupported version
             raise M2StructuralError("snapshot_bad_magic")
         if len(mv) < head + 48 or int.from_bytes(mv[head:head + 8], "little") != len(mv):
@@ -712,8 +720,13 @@ class HistoryStore:
         """Worker start: map the binary snapshot file read-only (shared file-backed pages), verify magic, version, length and
         SHA-256, build the zero-copy store, and when `expected_content_hash` is given compare `content_hash()` after the
         attach (mismatch: `snapshot_hash_mismatch`); `deep=True` recomputes the hash from the records instead of reading
-        the value the verified snapshot carries (as slow as a dump). The store keeps the mapping alive; `close_mapping()` releases it."""
+        the value the verified snapshot carries (as slow as a dump). Without `deep`, the comparison covers the table hash
+        only: the SHA-256 over the file guards against accidental corruption, not against a forged file with a matching
+        table (accidental-corruption model). The store keeps the mapping alive; `close_mapping()` releases it. Runner rule:
+        write every generation of a snapshot to a NEW file name (Windows cannot replace a file that is mapped)."""
         import mmap
+        if os.path.getsize(os.fspath(path)) < _BIN_HEADER:        # an empty file cannot be mapped; report it structurally
+            raise M2StructuralError("snapshot_length_mismatch")
         fh = open(os.fspath(path), "rb")
         try:
             mapped = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
