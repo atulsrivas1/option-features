@@ -139,32 +139,28 @@ def grid_units(values):
         return _slow_grid(values)
 
 
-def _minute_pair(minute_floats):
-    """(atm_iv values, iv30 values) per minute in one pass; None where unavailable or unusable."""
+def minute_values_from_floats(f):
+    """The minute value rule (R-191): one per-minute stats["floats"] -> (atm_iv, iv30). atm_iv is the ATM IV of the
+    nearest eligible expiry (lowest days with a finite float atm_iv); iv30 is tenor "30". A missing or unusable
+    value is None. Never raises. S11 calls this once per minute in its G0 loop and passes the two columns."""
     try:
-        es = [f["expiries"] for f in minute_floats]
-        if not any(map((1).__ne__, map(len, es))):          # common case: one expiry per minute frame
-            return ([next(iter(e.values()))["atm_iv"] for e in es],
-                    [f["tenors"].get("30") for f in minute_floats])
-    except (TypeError, AttributeError, KeyError, ValueError, StopIteration):
-        pass
+        it = _nearest(f)
+        a = None if it is None else it["atm_iv"]
+    except (TypeError, AttributeError, KeyError, ValueError):
+        a = None
+    try:
+        t = f["tenors"].get("30")
+        t = t if _ok(t) else None
+    except (TypeError, AttributeError, KeyError):
+        t = None
+    return a, t
+
+
+def _minute_pair(minute_floats):
+    """(atm_iv values, iv30 values) per minute, through minute_values_from_floats."""
     atm, iv30 = [], []
     for f in minute_floats:
-        a = t = None
-        try:
-            exps = f["expiries"]
-            t = f["tenors"].get("30")
-            if len(exps) == 1:
-                for k, it in exps.items():
-                    a = it["atm_iv"]
-                    int(k)
-            else:
-                it = _nearest(f)
-                a = None if it is None else it["atm_iv"]
-        except (TypeError, AttributeError, KeyError, ValueError):
-            a = None
-            if t is None or t.__class__ is not float:
-                t = None
+        a, t = minute_values_from_floats(f)
         atm.append(a)
         iv30.append(t)
     return atm, iv30

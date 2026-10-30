@@ -143,6 +143,25 @@ class Grids(unittest.TestCase):
         self.assertEqual(S.grid_units(g), [exact_round(Fraction(x)) for x in g])
 
 
+class MinuteValue(unittest.TestCase):
+    def test_rule(self):
+        f = floats_from_frame_inputs({60: (0.5, 0.6, 0.4), 14: (0.21, 0.3, 0.2)}, {30: 0.25, 91: 0.2})
+        self.assertEqual(S.minute_values_from_floats(f), (0.21, 0.25))
+
+    def test_skips_unusable_expiry_and_tenor(self):
+        f = floats_from_frame_inputs({7: (None, None, None), 30: (0.3, 0.5, 0.25)}, {30: None})
+        self.assertEqual(S.minute_values_from_floats(f), (0.3, None))
+
+    def test_hostile(self):
+        for b in (None, {}, 5, "x", {"expiries": 3, "tenors": 4}, {"expiries": {"30": {"atm_iv": float("nan")}},
+                                                                     "tenors": {"30": float("inf")}}):
+            self.assertEqual(S.minute_values_from_floats(b), (None, None))
+
+    def test_frames_path_uses_the_rule(self):
+        frames = [floats_from_frame_inputs({30: (0.3, 0.5, 0.25), 7: (0.2, 0.5, 0.25)}, {30: 0.28}), None]
+        self.assertEqual(S._minute_pair(frames), ([0.2, None], [0.28, None]))
+
+
 class Records(unittest.TestCase):
     def setUp(self):
         self.close = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {30: 0.28, 91: 0.2})
