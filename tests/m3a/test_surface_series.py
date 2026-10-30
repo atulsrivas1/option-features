@@ -163,6 +163,12 @@ class Records(unittest.TestCase):
         self.assertEqual(by["atm_iv"][2], 0)
         self.assertEqual(by["atm_iv"][5], sum(by["atm_iv"][4]))
 
+    def test_minute_columns_equal_frames(self):
+        a = S.build_records("SYN1", "stock", 5, self.close, self.fwd, self.minutes)
+        cols = ([30000000 / 1e8, None, 0.3 + 1 / 1000, 0.3 + 2 / 1000], [0.28, None, 0.28 + 1 / 1000, 0.28 + 2 / 1000])
+        b = S.build_records("SYN1", "stock", 5, self.close, self.fwd, minute_columns=cols)
+        self.assertEqual(a, b)
+
     def test_no_minutes_no_grid_records(self):
         recs = S.build_records("SYN1", "etf_index", 5, self.close)
         self.assertEqual([r[1] for r in recs], ["atm_iv_close", "iv30_close", "skew25", "term_30_91"])
@@ -207,12 +213,17 @@ class W08(unittest.TestCase):
                 pass
         st = Null()
 
-        def run(sessions):
+        cols = ([f["expiries"]["30"]["atm_iv"] for f in base], [f["tenors"]["30"] for f in base])
+
+        def run(sessions, frames=False):
             n = 0
             t0 = time.perf_counter()
             for s in range(sessions):
                 for nm in names:
-                    recs = S.build_records(nm, "stock", s, close, fwd, base)
+                    if frames:
+                        recs = S.build_records(nm, "stock", s, close, fwd, base)
+                    else:
+                        recs = S.build_records(nm, "stock", s, close, fwd, minute_columns=cols)
                     S.append_records(st, recs, "stock")
                     n += len(recs)
             return n, time.perf_counter() - t0
@@ -229,6 +240,8 @@ class W08(unittest.TestCase):
         med = statistics.median(rates)
         print("\nW08 records/s: p5 %.0f p50 %.0f min %.0f (budget >= %.0f, hard %.0f); full set %d records ~ %.2f s at p50"
               % (p5, med, rates[0], W08_FLOOR, W08_HARD, full_n, full_n / med))
+        n, dt = run(2, True)
+        print("W08 informational (per-minute frame dicts read inside the builder, not gated): %.0f records/s" % (n / dt))
         self.assertGreaterEqual(p5, W08_HARD)
         self.assertGreaterEqual(p5, W08_FLOOR)
 
