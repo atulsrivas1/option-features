@@ -24,9 +24,9 @@ By status:
 
 Done and merged 40 (every done row is on main; PR 79 and PR 80 are merged). Partial rows are listed in the tables.
 
-Merged PRs: 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99
+Merged PRs: 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 102
 
-Open PRs: 100
+Open PRs: 100, 101
 
 Additions rows: 298; files: 10; manifest files: 31
 
@@ -43,8 +43,8 @@ By release (the release that delivers or is assigned the row; R25 and R26 are th
 | P1 | 11 | 2 | 0 | 0 | 13 |
 | M1 | 6 | 1 | 0 | 0 | 7 |
 | M2 | 18 | 1 | 2 | 0 | 21 |
-| M3a | 0 | 0 | 10 | 0 | 10 |
-| M3b | 0 | 0 | 7 | 0 | 7 |
+| M3a | 0 | 0 | 11 | 0 | 11 |
+| M3b | 0 | 0 | 6 | 0 | 6 |
 | M3c | 0 | 0 | 7 | 0 | 7 |
 | M4a | 0 | 0 | 8 | 0 | 8 |
 | M4b | 0 | 0 | 13 | 0 | 13 |
@@ -66,8 +66,8 @@ Every release carries the label sentence verbatim, stays PRERELEASE (D7), makes 
 | P1 | done, PO accepted 2026-10-29 (PR 63, 0.2.0a1) | OC4/G1, G2 spread, F3 window end, F5/F6 single reference, F13-F16 touch policy, G5, naming map | R27 closed |
 | M1 | done, closed 2026-10-29 (docs/M1_CLOSE.md) | OC5, OC6, chain ATM IV, 30-day IV, American labels, solver Stages 0-2, opt-in runner | P1 accepted, design requests 1, 2, 7 (interim rulings used) |
 | M2 | in progress: stories A and B merged (PR 79, PR 80); Result type alignment merged (PR 88); F-row re-audit merged (PR 85); docs PR 89, 92, 94, 95 merged (print type, ordering and field rules); remaining M2 items: runner integration, performance follow-up, benchmark regeneration (PR 87 open); check_prints type-first merged (PR 93) | F1, F2a-d, F4, F7, F10, F20, F12, F17, F18, F19, history store; then re-audit every F row | M1 accepted; matrix and budgets (PR 75, 76, 81, 83), fixtures (PR 78, 82, 84), M2-G0 (PR 77) all merged |
-| M3a | pending | Surface, term structure and skew builder (V1, V3-V10) | M2 accepted; own matrix; synthetic surface generator with known smile and term values |
-| M3b | pending | Realized-volatility join (daily bars) and history reuse from the M2 store (V11-V15) | M3a accepted; own matrix; daily-bar and 52-week history generators |
+| M3a | pending | Surface, term structure and skew builder (V1, V3-V10) with history reuse from the M2 store for the percentile-of-history and change-since-prior-session rows (V1, V3, V4, V7, V9, V10) | M2 accepted and the M2 store merged (PR 80); own matrix; synthetic surface generator with known smile and term values |
+| M3b | pending | Realized-volatility join, daily-bar based, without history reuse (V11-V15) | M3a accepted; own matrix; daily-bar generator |
 | M3c | pending | Frame builder without presets (V16-V22, proposed assignments; V20 aggregate, V21, V22) | M3b accepted; own matrix |
 | M4a | pending | Open-interest outputs (PO9, PO12-PO14, PO17-PO19; proposed assignments) | M3c accepted; own matrix; chain generator with synthetic open interest |
 | M4b | pending | Exposure outputs and dealer-sign convention, labelled modeled (PO1-PO8, PO10, PO11, PO15, PO16; proposed assignments) | M4a accepted; own matrix; hand-computable exposure totals |
@@ -133,16 +133,16 @@ Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry g
 
 | Id | Name | Status | Release | PRs | Evidence | Pending reasons |
 |---|---|---|---|---|---|---|
-| V1 | 30-day IV in the top X% of its own history | pending | M3a | - | - | Needs IV history (M2 store reuse) and a surface; M3a |
+| V1 | 30-day IV in the top X% of its own history | pending | M3a | - | - | Needs IV history (M2 store reuse) and a surface; M3a; history reuse from the M2 store (PR 80 merged) |
 | V2 | ATM IV at least or at most X points | partial | M1 | 68, 70 | lib; independent review: yes | Chain ATM IV built (annual decimal; library module, not on the wire); no points unit or threshold form; request 11 ratification |
 | V3 | ATM IV in top X% of the same minute in earlier sessions | pending | M3a | - | - | M3a (history reuse) |
-| V4 | IV change from the prior reading | pending | M3a | - | - | M3a |
+| V4 | IV change from the prior reading | pending | M3a | - | - | M3a; history reuse from the M2 store (PR 80 merged) |
 | V5 | Longer tenor above or below shorter (term structure) | pending | M3a | - | - | M3a (term structure) |
 | V6 | Second expiry above or below the nearest | pending | M3a | - | - | M3a |
-| V7 | Term gap or slope change since prior session | pending | M3a | - | - | M3a |
+| V7 | Term gap or slope change since prior session | pending | M3a | - | - | M3a; history reuse from the M2 store (PR 80 merged) |
 | V8 | 25-delta put-side over call-side volatility | pending | M3a | - | - | M3a (skew) |
-| V9 | 25-delta skew in top X% of own history | pending | M3a | - | - | M3a |
-| V10 | 25-delta skew change or sign change | pending | M3a | - | - | M3a |
+| V9 | 25-delta skew in top X% of own history | pending | M3a | - | - | M3a; history reuse from the M2 store (PR 80 merged) |
+| V10 | 25-delta skew change or sign change | pending | M3a | - | - | M3a; history reuse from the M2 store (PR 80 merged) |
 | V11 | Wings above or below the smile centre | pending | M3b | - | - | M3b |
 | V12 | 30-day IV above or below 20-day realized | pending | M3b | - | - | M3b (realized-volatility join, daily bars) |
 | V13 | Implied divided by realized volatility | pending | M3b | - | - | M3b |
@@ -203,7 +203,7 @@ Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry g
 | M3-1 | Surface, term structure and skew builder | pending | M3a | - | - | Own capability matrix and independently authored fixtures first (V3 rule) |
 | M3-2 | Realized-volatility join (daily bars) | pending | M3b | - | - | As M3-1 |
 | M3-3 | Frame builder without presets | pending | M3c | - | - | As M3-1 |
-| M3-4 | History reuse from the M2 store | pending | M3b | - | - | M2 store merged and accepted |
+| M3-4 | History reuse from the M2 store (percentile-of-history and change-since-prior-session rows V1, V3, V4, V7, V9, V10) | pending | M3a | - | - | M2 store merged (PR 80); history reuse belongs to the surface release, PO ruling 2026-10-30 |
 | M4-1 | Open-interest-based and exposure outputs | pending | M4a | - | - | Own matrix and fixtures first; chain generator with synthetic open interest |
 | M4-2 | Dealer-sign convention, labelled modeled | pending | M4b | - | - | As M4-1 |
 | M5-1 | Scanner presets, shadow and list-eligible only (D6) | pending | M5a | - | - | Own matrix and fixtures first; scanner authorization flag stays false |
