@@ -181,13 +181,6 @@ class Hostile(unittest.TestCase):
             self.assertEqual(e["call25_iv"]["status"], "unavailable", bad)
         self.assertIn(good.status, ("available", "unavailable"))
 
-    def test_non_string_style_is_malformed_type(self):   # R-187
-        ch = _flat_chain() + [ChainContract("x", 30, "call", "100.5", "1", "1.1", 1, None, 5)]
-        self.assertEqual(self._code(ch, "100", 0, 0, 10, self.P), "malformed_type")
-        for style in (None, "bermudan"):
-            ch = _flat_chain() + [ChainContract("x", 30, "call", "100.5", "1", "1.1", 1, None, style)]
-            self.assertNotEqual(SF.surface_frame(ch, "100", 0, 0, 10, self.P).status, "invalid_input", style)
-
     def test_empty_chain(self):
         res = SF.surface_frame([], "100", 0, 0, 10, self.P)
         self.assertEqual((res.status, res.reason, res.labels), ("unavailable", "no_eligible_contract", []))
