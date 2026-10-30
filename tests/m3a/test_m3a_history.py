@@ -532,6 +532,39 @@ class PerfStore(unittest.TestCase):
             self.assertGreaterEqual(n / w, 25000)
             self.assertGreaterEqual(n / r, 50000)
 
+    def test_B5_read_share_per_call(self):
+        """R-193 binding form: warm process, store built before the timer, derived per-series read state dropped
+        before EVERY call (outside the timer); 30 repeats of 103 calls after one warm-up; per-call p5/p50/p95/max.
+        S02 read share: same_minute_column <= 75 us p95 per call per form (atm_iv, iv30); scalar_baseline <= 25 us."""
+        st, as_of = self.store, self.cal.ids[SESSIONS]
+        clock = time.perf_counter
+        res = {}
+        forms = [("scalar_baseline iv30_close", lambda n: MH.scalar_baseline(
+                     st, "N%03d/stock/iv30_close" % n, "iv30_close", as_of), 25e-6)]
+        for m in MINUTE_METRICS:
+            forms.append(("same_minute_column " + m, (lambda m: lambda n: MH.same_minute_column(
+                st, "N%03d/stock/%s" % (n, m), m, as_of, 195))(m), 75e-6))
+        for label, fn, budget in forms:
+            for n in range(NAMES):                       # warm-up
+                fn(n)
+            calls = []
+            for _ in range(30):
+                for n in range(NAMES):
+                    st.drop_caches()
+                    t0 = clock()
+                    fn(n)
+                    calls.append(clock() - t0)
+            calls.sort()
+            q = lambda p: calls[min(len(calls) - 1, int(p * len(calls)))]
+            res[label] = (q(0.05), q(0.5), q(0.95), calls[-1], budget)
+        print("\nB5 read share per call (R-193: cache dropped every call, 30 x 103 calls after warm-up; "
+              "synthetic workload, relative engineering budget):")
+        for label, (p5, p50, p95, mx, b) in res.items():
+            print("  %-30s p5 %6.1f us p50 %6.1f us p95 %6.1f us max %7.1f us (budget <= %d us p95)"
+                  % (label, p5 * 1e6, p50 * 1e6, p95 * 1e6, mx * 1e6, b * 1e6))
+        for label, (p5, p50, p95, mx, b) in res.items():
+            self.assertLessEqual(p95, b, label)
+
     def test_B5_read_share(self):
         """Per series, 252 sessions, 103 names: `cold` = the first read of a session (selection built, cache dropped
         before each pass, outside the timer); `sweep` = a later cutoff of the same session (selection cached, the
