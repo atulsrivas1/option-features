@@ -253,5 +253,227 @@ class PerfW02(unittest.TestCase):
         self.assertTrue(math.isfinite(min(times)))
 
 
+# ---------------------------------------------------------------- R-189: unrounded floats in stats; params guard
+def _row(rid):
+    return next(r for r in ROWS if r["id"] == rid)
+
+
+def _run(row, params=None, **kw):
+    ch = row["inputs"]["chain"]
+    return SF.surface_frame(contracts_of(ch["contracts"]), ch["spot"], ch["rate"], ch["dividend_yield"],
+                            ch["cutoff_ns"], row["params"] if params is None else params, **kw)
+
+
+class Floats(unittest.TestCase):
+    def _check(self, res, floats):
+        self.assertEqual(set(floats["expiries"]), set(res.frame["expiries"]))
+        for d, item in res.frame["expiries"].items():
+            fl = floats["expiries"][d]
+            self.assertEqual(set(fl), {"atm_iv", "put25_iv", "call25_iv"})
+            pairs = [("atm_iv", item["atm_iv"]), ("put25_iv", item["put25_iv"]["value"]),
+                     ("call25_iv", item["call25_iv"]["value"])]
+            for key, text in pairs:
+                if text is None:
+                    self.assertIsNone(fl[key], (d, key))
+                else:
+                    self.assertIs(type(fl[key]), float, (d, key))
+                    self.assertEqual(C.round_text(fl[key]), text, (d, key))
+        self.assertEqual(set(floats["tenors"]), set(res.frame["tenors"]))
+        for t, item in res.frame["tenors"].items():
+            if item["iv"] is None:
+                self.assertIsNone(floats["tenors"][t], t)
+            else:
+                self.assertEqual(C.round_text(floats["tenors"][t]), item["iv"], t)
+
+    def test_floats_round_to_frame_text_on_all_rows(self):
+        n_null = n_val = 0
+        for row in ROWS:
+            if row["expected"]["status"] == "invalid_input":
+                continue
+            stats = {}
+            res = _run(row, stats=stats)
+            self._check(res, stats["floats"])
+            for fl in stats["floats"]["expiries"].values():
+                for v in fl.values():
+                    n_null += v is None
+                    n_val += v is not None
+        self.assertGreater(n_null, 0)
+        self.assertGreater(n_val, 0)
+
+    def test_stats_none_unchanged(self):
+        row = _row("TEN-01")
+        a, b = _run(row), _run(row, stats={})
+        self.assertEqual(C.canonical_line(a), C.canonical_line(b))
+
+    def test_cache_path_fills_floats(self):
+        from option_features.chainiv import IVChain
+        row = _row("D25-R01")
+        ch = row["inputs"]["chain"]
+        cs = contracts_of(ch["contracts"])
+        chain = IVChain(cs, ch["spot"], ch["rate"], ch["dividend_yield"], ch["cutoff_ns"])
+        stats = {}
+        res = SF.surface_frame(cs, ch["spot"], ch["rate"], ch["dividend_yield"], ch["cutoff_ns"], row["params"],
+                               chain=chain, contract_ivs=chain.contract_iv(), stats=stats)
+        self._check(res, stats["floats"])
+        self.assertIsNotNone(stats["floats"]["expiries"]["14"]["put25_iv"])
+
+
+class ParamsAndOrder(unittest.TestCase):
+    def test_params_not_a_dict_never_raises(self):
+        row = _row("SUR-01")
+        for bad in ([1, 2], "x", 5, ("a",)):
+            res = _run(row, params=bad)
+            self.assertEqual((res.status, res.code), ("invalid_input", "malformed_type"), bad)
+
+    def test_default_min_coverage_is_3_of_5(self):
+        row = _row("COV-01")                          # exactly 3 eligible of 5 listed strikes
+        p = {k: v for k, v in row["params"].items() if k != "min_coverage"}
+        self.assertEqual(_run(row, p).frame["expiries"]["30"]["status"], "available")
+        self.assertEqual(_run(row, p).params["min_coverage"], "3/5")
+        p["min_coverage"] = "4/5"
+        self.assertEqual(_run(row, p).frame["expiries"]["30"]["reason"], "low_surface_coverage")
+
+    def test_both_sides_fail_put_then_call(self):
+        row = _row("COV-01")                          # 3 strikes: neither side brackets 0.25
+        res = _run(row)
+        e = res.frame["expiries"]["30"]
+        self.assertEqual((e["put25_iv"]["reason"], e["call25_iv"]["reason"]), ("no_delta_bracket", "no_delta_bracket"))
+        self.assertEqual((res.status, res.reason), ("unavailable", "no_delta_bracket"))
+        self.assertEqual(list(e)[-2:], ["put25_iv", "call25_iv"])
+
+
+# ---------------------------------------------------------------- R-189 strength: floats are the unrounded kernel values
+_SOLVER_REASONS = {"price_out_of_bounds", "upper_asymptote", "sigma_cap", "precision_exhausted", "bound_precision",
+                   "iteration_budget"}
+
+
+def _independent(row):
+    """Expected floats by calling chainiv, delta25 and tenors directly (no surfaceframe code), for rows where the
+    chainiv ATM equals the eligible-leg ATM (no solver failure, every expiry covered as the row expects)."""
+    from option_features.chainiv import IVChain
+    from option_features.delta25 import delta25_point
+    from option_features.tenors import tenors as tenor_kernel
+    ch = row["inputs"]["chain"]
+    cs = contracts_of(ch["contracts"])
+    chain = IVChain(cs, ch["spot"], ch["rate"], ch["dividend_yield"], ch["cutoff_ns"], row["params"]["stale_limit_ns"])
+    ivs = chain.contract_iv()
+    S = Fraction(ch["spot"])
+    r, q = Fraction.from_float(float(ch["rate"])), Fraction.from_float(float(ch["dividend_yield"]))
+    conv = row["params"].get("delta_convention", "spot")
+    want_exp = row["expected"]["frame"]["expiries"]
+    exps, recs = {}, []
+    for d in sorted(int(x) for x in want_exp):
+        st = want_exp[str(d)]["status"]
+        a = chain.atm_iv(d)
+        fl = {"atm_iv": None, "put25_iv": None, "call25_iv": None}
+        if st == "available":
+            fl["atm_iv"] = a.iv
+            for right, key in (("put", "put25_iv"), ("call", "call25_iv")):
+                legs = sorted((Fraction(c.strike), ivs[c.contract_id].iv) for c in cs
+                              if c.expiry_days == d and c.right == right and ivs[c.contract_id].status == "available")
+                pt = delta25_point([k for k, _ in legs], [v for _, v in legs], a.strike, S, r, q, d, right, conv)
+                fl[key] = pt["value"]
+        exps[str(d)] = fl
+        recs.append((d, st, want_exp[str(d)]["reason"], fl["atm_iv"]))
+    ten = tenor_kernel(recs, sorted(set(row["params"]["tenors"])))
+    return {"expiries": exps, "tenors": {str(t): v.iv for t, v in ten.items()}}
+
+
+def _sample_rows():
+    out = []
+    for row in ROWS:
+        e = row["expected"]
+        if e["status"] == "invalid_input" or not (e["frame"] or {}).get("expiries"):
+            continue
+        if _SOLVER_REASONS & set((e["coverage"] or {}).get("contract_reasons") or {}):
+            continue
+        if "solver" in row["case"] or "ATM moves" in row["case"]:
+            continue
+        out.append(row)
+    step = max(1, len(out) // 30)
+    return out[::step][:30]
+
+
+class FloatsStrength(unittest.TestCase):
+    def test_some_float_differs_from_its_text(self):
+        differs = {"atm_iv": 0, "put25_iv": 0, "call25_iv": 0, "tenor": 0}
+        for row in ROWS:
+            if row["expected"]["status"] == "invalid_input":
+                continue
+            stats = {}
+            res = _run(row, stats=stats)
+            for d, fl in stats["floats"]["expiries"].items():
+                item = res.frame["expiries"][d]
+                texts = {"atm_iv": item["atm_iv"], "put25_iv": item["put25_iv"]["value"],
+                         "call25_iv": item["call25_iv"]["value"]}
+                for k, t in texts.items():
+                    differs[k] += fl[k] is not None and fl[k] != float(t)
+            for t, v in stats["floats"]["tenors"].items():
+                differs["tenor"] += v is not None and v != float(res.frame["tenors"][t]["iv"])
+        for k, n in differs.items():                 # each kind carries the unrounded value, not the text
+            self.assertGreater(n, 10, k)
+
+    def test_floats_equal_independent_kernel_values(self):
+        rows = _sample_rows()
+        self.assertEqual(len(rows), 30)
+        for row in rows:
+            stats = {}
+            _run(row, stats=stats)
+            want = _independent(row)
+            self.assertEqual(stats["floats"]["expiries"], want["expiries"], row["id"])
+            self.assertEqual(stats["floats"]["tenors"], want["tenors"], row["id"])
+
+    def test_round_once_case_like_U_010(self):
+        # a float whose 8-decimal text loses information: the stats value must keep it
+        row = _row("D25-R01")
+        stats = {}
+        res = _run(row, stats=stats)
+        put = stats["floats"]["expiries"]["14"]["put25_iv"]
+        self.assertNotEqual(put, float(res.frame["expiries"]["14"]["put25_iv"]["value"]))
+        self.assertEqual(put, _independent(row)["expiries"]["14"]["put25_iv"])
+
+
+class HostileStats(unittest.TestCase):
+    def test_nonfinite_ivs_never_reach_floats_or_frame(self):
+        from option_features.chainiv import ContractIV
+        ch = _flat_chain(("90", "95", "100", "105", "110"))
+        for bad in (float("nan"), float("inf"), float("-inf")):
+            ivs = {c.contract_id: ContractIV("available", None, bad, "exact-model") for c in ch}
+            stats = {}
+            res = SF.surface_frame(ch, "100", 0, 0, 10, {"tenors": [30], "evaluation_ns": 10}, contract_ivs=ivs,
+                                   stats=stats)
+            vals = [v for fl in stats["floats"]["expiries"].values() for v in fl.values()]
+            vals += list(stats["floats"]["tenors"].values())
+            self.assertTrue(all(v is None or math.isfinite(v) for v in vals), bad)
+            line = C.canonical_line(res)
+            self.assertNotIn("nan", line.lower())
+            self.assertNotIn("inf", line.lower())
+
+    def test_params_none_and_hostile_mapping(self):
+        row = _row("SUR-01")
+        self.assertIn(_run(row, params=None).status, ("available", "unavailable"))   # defaults: no raise
+
+        class Boom(dict):
+            def get(self, *a):
+                raise RuntimeError("get")
+
+            def update(self, *a, **k):
+                raise RuntimeError("update")
+
+            def keys(self):
+                raise RuntimeError("keys")
+
+            def __iter__(self):
+                raise RuntimeError("iter")
+
+            def items(self):
+                raise RuntimeError("items")
+
+        res = _run(row, params=Boom(row["params"]))
+        self.assertIn(res.status, ("invalid_input", "available", "unavailable"))
+        res = _run(row, params=Boom())
+        self.assertIn(res.status, ("invalid_input", "available", "unavailable"))
+
+
 if __name__ == "__main__":
     unittest.main()
