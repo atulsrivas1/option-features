@@ -41,7 +41,7 @@ def corrupt(rng, prints, cons):
     if not prints:
         return prints
     prints = [list(p) for p in prints]
-    kind = rng.randrange(14)
+    kind = rng.randrange(15)
     i = rng.randrange(len(prints))
     p = prints[i]
     if kind == 0:
@@ -61,18 +61,41 @@ def corrupt(rng, prints, cons):
     elif kind == 7:
         p[4] = rng.choice((100.0, "100", None))
     elif kind == 8:
-        p[5] = rng.choice((2, 3, "x", None))
+        p[5] = rng.choice((2, 3, "x", None, 1.0, 0.0))
     elif kind == 9:
         p[6] = rng.choice((True, 1.5, None, "7"))
     elif kind == 10:
         p[1] = rng.choice((1.5, None, "5"))
     elif kind == 11:
         p[2] = rng.choice(("1.", ".5", "1.50000", "0.0000", "-0", 0))
+    elif kind == 12:
+        from decimal import Decimal
+        from fractions import Fraction
+        p[2] = rng.choice((Decimal("1.0000"), Decimal("12.5"), Fraction(3, 2), Fraction(1, 1)))
     return [tuple(q) for q in prints]
 
 
 DIVERGENT = []
 case_id = [0]
+
+
+def classify(prints, old_error=None, new_error=None):
+    """Class of an intended old-versus-new difference ('' when the streams hold none of the changed inputs)."""
+    from decimal import Decimal
+    from fractions import Fraction
+    kinds = set()
+    for p in prints:
+        if isinstance(p[2], Decimal):
+            kinds.add("price is a Decimal (old accepted it, now malformed_type)")
+        elif isinstance(p[2], Fraction):
+            kinds.add("price is a Fraction (old accepted it, now malformed_type)")
+        if type(p[5]) is float:
+            kinds.add("condition_excluded is a float 0.0/1.0 (old accepted it, now malformed_type)")
+    if old_error == "unordered_prints" and new_error == "malformed_type":
+        kinds.add("order violation next to a wrong-typed time or seq (old unordered_prints, now malformed_type; rows M2A-TYP-031 to 034)")
+    if old_error is not None and old_error != new_error and not kinds:
+        return "UNCLASSIFIED %s -> %s" % (old_error, new_error)
+    return "; ".join(sorted(kinds))
 
 
 def run_case(rng):
@@ -97,15 +120,12 @@ def run_case(rng):
     fam = rng.randrange(9)
     # the tape of each side; an unknown filter raises ValueError on both sides
     to, tn = OP.build_tape(prints, cons), PT.build_tape(prints, cons)
-    if to.error != tn.error:
-        # The only intended difference: a stream that is malformed AND carries another defect (or a bool or float
-        # seq or time) now reports exactly the code of the shared flowgrid.check_prints (section 9 precedence); the
-        # old tape replaced a malformed field by a neutral value and could report another code. Anything else fails.
-        from option_features import flowgrid
-        contracts = {cid: flowgrid.Contract(c[0], c[1], c[2], c[3], "U") for cid, c in cons.items()}
-        assert "malformed_type" in (to.error, tn.error) and tn.error == flowgrid.check_prints(prints, contracts), (to.error, tn.error)
-        DIVERGENT.append(case_id[0])
-        return 0
+    if to.error != tn.error or classify(prints):
+        label = classify(prints, to.error, tn.error)
+        DIVERGENT.append((label, case_id[0], repr(prints[:4])[:160], to.error, tn.error))
+        if to.error != tn.error or label.startswith("price"):
+            assert not label.startswith("UNCLASSIFIED"), (to.error, tn.error, prints[:4])
+            return 0
     assert (to.n_prints, to.n_eligible) == (tn.n_prints, tn.n_eligible)
     pairs = []
     n_ = rng.choice(NS_PARAMS)
@@ -196,8 +216,13 @@ class Equivalence(unittest.TestCase):
             except AssertionError as exc:
                 self.fail("case %d: %s" % (case, str(exc)[:600]))
         self.assertGreater(compared, N_CASES // 2)
-        self.assertLess(len(DIVERGENT), N_CASES // 50, "precedence divergences (old malformed_type, new section 9): %d" % len(DIVERGENT))
-        print("equivalence: %d cases, %d outputs compared, %d precedence-fix divergences" % (N_CASES, compared, len(DIVERGENT)))
+        classes = {}
+        for label, cid, ex, oe, ne in DIVERGENT:
+            classes.setdefault(label, [0, cid, ex, oe, ne])[0] += 1
+        self.assertFalse([k for k in classes if k.startswith("UNCLASSIFIED")], classes)
+        print("equivalence: %d cases, %d outputs compared, %d changed-input cases" % (N_CASES, compared, len(DIVERGENT)))
+        for k, v in sorted(classes.items()):
+            print("  class %r: %d cases, e.g. case %d old=%s new=%s %s" % (k, v[0], v[1], v[3], v[4], v[2]))
 
     def test_price_parser_is_the_shared_one(self):
         from option_features import flowgrid
@@ -221,6 +246,8 @@ class Equivalence(unittest.TestCase):
             prints = make_prints(rng, cons, rng.choice((1, 4, 20)), 2400)
             if rng.random() < 0.7:
                 prints = corrupt(rng, prints, cons)
+            if any(type(p[k]) is not int for p in prints for k in (1, 3, 4, 6)):
+                continue        # a wrong-typed time, size, multiplier or seq: rows M2A-TYP-031..034 pin the tape, not check_prints
             contracts = {cid: flowgrid.Contract(c[0], c[1], c[2], c[3], "U") for cid, c in cons.items()}
             self.assertEqual(PT.build_tape(prints, cons).error, flowgrid.check_prints(prints, contracts), prints)
 

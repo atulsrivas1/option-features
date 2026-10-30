@@ -74,6 +74,37 @@ class Strict(unittest.TestCase):
         self.assertEqual(M.f1_premium_surge(tape, T, OPEN, delayed=True, session_in_calendar=False)["code"], "session_not_in_calendar")
 
 
+class AdjacentOrdering(unittest.TestCase):
+    """unordered_prints compares adjacent prints; a pair with a non-int time or seq is not compared."""
+
+    def err(self, rows):
+        return PT.build_tape([("A", t, "1.0000", 1, 100, 0, s) for t, s in rows], CONS).error
+
+    def test_pairs(self):
+        self.assertEqual(self.err([(10, 5), (10, 2)]), "unordered_prints")             # genuine adjacent pair
+        self.assertEqual(self.err([(10, 5), (10, False), (10, 2)]), "malformed_type")   # row TYP-033: pair undefined
+        self.assertEqual(self.err([(10, 5), (10, True)]), "malformed_type")
+        self.assertEqual(self.err([(10, True), (10, 0)]), "malformed_type")             # rows TYP-031, 032
+        self.assertEqual(self.err([(10, 1), (10, 0.5), (10, 2)]), "malformed_type")
+        self.assertEqual(self.err([(20, 1), (10.0, 2), (30, 3)]), "malformed_type")     # float time: no pair compared
+        self.assertEqual(self.err([(20, 1), (10, 2), (30, False)]), "unordered_prints")  # (20,1)>(10,2) is a good pair
+        self.assertEqual(self.err([(20, 1), (30, False), (10, 3)]), "malformed_type")
+        self.assertEqual(self.err([(20, 1), (30, 2), (30, False), (10, 3), (5, 4)]), "unordered_prints")   # (10,3)>(5,4)? no: 10>5 good pair
+        self.assertEqual(self.err([(10, 1), (20, 2)]), None)
+
+    def test_adapter_decodes_tagged_types(self):
+        import m2b_adapter as A
+        from decimal import Decimal
+        from fractions import Fraction
+        row = {"t_ns": 0, "prints": [["A", 5, {"py_type": "Decimal", "text": "1.5"}, 1, 100, 0, 0],
+                                     ["A", 6, {"py_type": "Fraction", "text": "3/2"}, 1, 100, 0, 1],
+                                     ["A", 7, {"py_type": "bytes", "hex": "312e30"}, 1, 100, 0, 2]]}
+        got = A._prints(row)
+        self.assertEqual([type(p[2]) for p in got], [Decimal, Fraction, bytes])
+        self.assertEqual(got[2][2], b"1.0")
+        self.assertEqual(PT.build_tape(got, CONS).error, "malformed_type")
+
+
 class Bounded(unittest.TestCase):
     def test_large_threshold_cache_is_bounded(self):
         rng = random.Random(9)

@@ -182,6 +182,7 @@ def build_tape(prints, contracts, validate="full"):
     rare = []
     rare_add = rare.append
     unordered = negative = bad_mult = unknown = malformed = False
+    viol, bad_key = [], set()      # positions of order violations; positions whose time or seq is wrong-typed
     pt, ps = -(1 << 127), 0
     full = validate != "off"
     get = cidx.get
@@ -191,14 +192,16 @@ def build_tape(prints, contracts, validate="full"):
         n += 1
         if (t.__class__ is not int or size.__class__ is not int or mult.__class__ is not int
                 or seq.__class__ is not int or (excl.__class__ is not bool and (excl.__class__ is not int or excl not in (0, 1)))):
-            malformed = True                      # other checks (and precedence) stay alive: numbers keep their value,
-            if not isinstance(t, (int, float)):   # anything else gets a neutral stand-in
+            malformed = True                      # a wrong-typed field takes part in no other check (rows M2A-TYP-031 to 034):
+            if t.__class__ is not int or seq.__class__ is not int:
+                bad_key.add(n)                    # an order violation next to it is undefined, not reported
+            if t.__class__ is not int:            # it gets a neutral stand-in so the remaining checks and precedence hold
                 t = pt if pt > -(1 << 100) else 0
-            if not isinstance(size, (int, float)):
+            if size.__class__ is not int:
                 size = 0
-            if not isinstance(mult, (int, float)):
+            if mult.__class__ is not int:
                 mult = 100
-            if not isinstance(seq, (int, float)):
+            if seq.__class__ is not int:
                 seq = ps
             if excl.__class__ is not bool and (excl.__class__ is not int or excl not in (0, 1)):
                 excl = 0
@@ -210,7 +213,7 @@ def build_tape(prints, contracts, validate="full"):
                 price = 0
         if full:
             if t < pt or (t == pt and seq < ps):
-                unordered = True
+                viol.append(n)
             pt, ps = t, seq
             if size < 0 or price < 0:
                 negative = True
@@ -235,6 +238,7 @@ def build_tape(prints, contracts, validate="full"):
     for t, ci, kind in rare:
         g = c_group[ci]
         (g.nt if kind == K_NONSTD else g.et).append(t)
+    unordered = any(v not in bad_key and v - 1 not in bad_key for v in viol)
     tape.error = ("unordered_prints" if unordered else "negative_size_or_price" if negative
                   else "bad_multiplier" if bad_mult
                   else "unknown_contract" if unknown else "malformed_type" if malformed else None)
