@@ -810,6 +810,57 @@ class Section9Rules(unittest.TestCase):
             flowgrid.window_totals([self._p(cid="ZZ")], contracts, 10, 60)
         self.assertEqual(cm.exception.code, "unknown_contract")
 
+    def test_unordered_compares_adjacent_pairs_of_int_time_and_seq_only(self):
+        flowgrid = lib()[0]
+        contracts = {"K0": flowgrid.Contract("C", 1, "2026-12-18", "stock", "N")}
+        chk = lambda ps: flowgrid.check_prints(ps, contracts)  # noqa: E731
+        seqs = lambda *vs: [self._p(seq=v) for v in vs]  # noqa: E731
+        times = lambda *vs: [self._p(t=v, seq=i) for i, v in enumerate(vs)]  # noqa: E731
+        self.assertEqual(chk(seqs(5, False, 2)), "malformed_type")           # the bool pair is not compared
+        self.assertEqual(chk(seqs(2, True)), "malformed_type")
+        self.assertEqual(chk(seqs(3, 1)), "unordered_prints")                # a genuine out-of-order pair
+        self.assertEqual(chk(seqs(3, 1, 1.5)), "unordered_prints")           # a float seq elsewhere does not hide it
+        self.assertEqual(chk(seqs(1.5, 3, 1)), "unordered_prints")
+        self.assertEqual(chk(seqs(1, 1.5, 0)), "malformed_type")             # (1, 1.5) and (1.5, 0) are not compared
+        self.assertEqual(chk(seqs(1, 2, "x", 0)), "malformed_type")
+        self.assertEqual(chk(times(5, 5.0, 3)), "malformed_type")
+        self.assertEqual(chk(times(9, 5, 7.5)), "unordered_prints")
+        self.assertEqual(chk(times(5, True, 2)), "malformed_type")
+        self.assertEqual(chk(times(9, 5, False)), "unordered_prints")
+        self.assertIsNone(chk(seqs(0, 1, 2)))
+        self.assertIsNone(chk(times(1, 1, 2)))
+        # a malformed size does not stop the order check of the same list
+        self.assertEqual(chk([self._p(seq=3, size="x"), self._p(seq=1)]), "unordered_prints")
+        # a list in which the only defect is a malformed field of one print, then an ordered pair
+        self.assertEqual(chk([self._p(seq=1, price=1.5), self._p(seq=2)]), "malformed_type")
+
+    def test_additions_rows_print_codes(self):
+        """Every additions row with prints: the print-level code (or None for an available row) of check_prints equals the
+        row's expected code; tagged Decimal, Fraction and bytes prices are decoded by the fixtures' loader first."""
+        flowgrid = lib()[0]
+        import glob
+        m2_adapter._loader()
+        sys.path.insert(0, str(m2_adapter.ADD_DIR))
+        import m2add_load
+        print_codes = {"unordered_prints", "negative_size_or_price", "bad_multiplier", "unknown_contract", "malformed_type"}
+        seen = 0
+        for path in sorted(glob.glob(str(m2_adapter.ADD_DIR / "m2_cases_add_*.json"))):
+            _, rows = m2add_load.load_dataset(path)
+            for r in rows:
+                inp = r["inputs"]
+                if not inp.get("prints") or "contracts" not in inp or "param_malformed" in r["tags"]:
+                    continue
+                contracts = m2_adapter._contracts(inp)
+                prints = [tuple(q[:1]) + (inp["t_ns"] + q[1],) + tuple(q[2:]) if type(q[1]) is int else tuple(q) for q in inp["prints"]]
+                got = flowgrid.check_prints(prints, contracts)
+                exp = r["expected"]
+                if exp["code"] in print_codes:
+                    self.assertEqual(got, exp["code"], r["id"])
+                    seen += 1
+                elif exp["status"] == "available":
+                    self.assertIsNone(got, r["id"])
+        self.assertGreater(seen, 30)
+
     def test_window_clipped_at_open_when_given(self):
         flowgrid = lib()[0]
         contracts = {"K0": flowgrid.Contract("C", 1, "2026-12-18", "stock", "N")}

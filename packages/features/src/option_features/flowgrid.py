@@ -103,16 +103,24 @@ def price_ticks(price):
 
 
 def check_prints(prints, contracts=None):
-    """First structural code of a print list or None, RULED precedence: unordered_prints (order key (time_ns, seq)),
-    negative_size_or_price, bad_multiplier (multiplier <= 0), unknown_contract (contract id not in `contracts`, when
-    given), malformed_type (price, size, multiplier, time or seq of the wrong type, a bad price text, a
-    condition_excluded flag other than bool, 0 or 1). The whole list is scanned."""
+    """First structural code of a print list or None, RULED precedence (IO contract section 9, items 5, 13, 14):
+    unordered_prints, negative_size_or_price, bad_multiplier (multiplier <= 0), unknown_contract (contract id not in
+    `contracts`, when given), malformed_type (price, size, multiplier, time or seq of the wrong type, a bad price text, a
+    condition_excluded flag other than a bool, 0 or 1). `unordered_prints` compares ADJACENT prints by (time_ns, seq);
+    a pair in which either print has a non-int (or bool) time or seq is not compared, so [5, False, 2] is
+    malformed_type, and a genuine out-of-order pair elsewhere in the list still counts. Every check scans the whole
+    list; a malformed field never hides another print's error."""
     unordered = neg = bad = unknown = malformed = False
     pt = ps = None
+    prev_ok = False
     for p in prints:
         cid, t, price, size, mult, excl, seq = p[0], p[1], p[2], p[3], p[4], p[5], p[6]
-        if type(t) is not int or type(seq) is not int or type(size) is not int or type(mult) is not int:
+        ts_ok = type(t) is int and type(seq) is int
+        if not ts_ok or type(size) is not int or type(mult) is not int:
             malformed = True
+        if ts_ok and prev_ok and (t < pt or (t == pt and seq < ps)):
+            unordered = True
+        pt, ps, prev_ok = t, seq, ts_ok
         ticks = _parse_price(price)
         if ticks is None:
             malformed = True
@@ -120,16 +128,10 @@ def check_prints(prints, contracts=None):
             neg = True
         if type(excl) is not bool and not (type(excl) is int and excl in (0, 1)):
             malformed = True
-        try:
-            if size < 0:
-                neg = True
-            if mult <= 0:
-                bad = True
-            if pt is not None and (t < pt or (t == pt and seq < ps)):
-                unordered = True
-        except TypeError:
-            malformed = True
-        pt, ps = t, seq
+        if type(size) in (int, float) and size < 0:
+            neg = True
+        if type(mult) in (int, float) and mult <= 0:
+            bad = True
         if contracts is not None and cid not in contracts:
             unknown = True
     if unordered:
