@@ -2,7 +2,7 @@
 
 > mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12
 
-Owner of this file: the Auditor on creation (PO-directed, M2 F-row re-audit); afterwards every release PR updates it (rule in docs/RELEASE_NOTE_TEMPLATE.md). As of 2026-10-30 against origin/main (merged through PR 97) (PR 79 story B and PR 80 story A both merged; this file itself came in with PR 85; PR 82, 84, 88, 89, 90, 91, 92, 93, 94, 95, 96 and 97 merged). Open: PR 86 (this update), PR 87 (story B benchmark regenerated at 30 repeats) and PR 98 (total print entry points, fuzz); the runner PR and any tape or mutation-tool follow-up are not opened yet
+Owner of this file: the Auditor on creation (PO-directed, M2 F-row re-audit); afterwards every release PR updates it (rule in docs/RELEASE_NOTE_TEMPLATE.md). As of 2026-10-30 against origin/main f5580cc (PR 99). Merged and open PRs are in the machine-readable lines below; F2d stays partial (DR-M2-1).
 
 How the statuses were checked: rows were derived from the design text (option-contracts, flow, volatility-radar, positioning), the baseline PARITY_CHECK (81 design rows) and PO_PARITY_RECONCILIATION, and then verified against the packages source, not the documents: exported functions were listed per module on main and on the PR 80 head (printtape, m2prints, episodes, imbalance, spreadwin, chainiv, windows, shares, quotes, quotehist; flowrank, flowstore, flowgrid, flowresult), fixture rows were recounted by loading the files (M2 correctness 570 rows in 14 files, additions 298 rows in 10 files (PR 82, 84, 90, 91 and 96; loaded and counted on main, MANIFEST_ADDITIONS.sha256 lists 31 files and was verified with sha256sum), P1 121, M1 OC 110, M1 IV 41 plus 28 extra), and the M2 test suites were run (tests/m2 on origin/main d3567af: 431 collected, 430 passed, 1 skipped (the PR 79 merge message says 431, the collected total); 817 passed, 1 skipped on the PR 80 head). Performance figures are copied from the records named in each row, not re-measured by the Auditor.
 
@@ -24,7 +24,9 @@ By status:
 
 Done and merged 40 (every done row is on main; PR 79 and PR 80 are merged). Partial rows are listed in the tables.
 
-Merged PRs: 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98
+Merged PRs: 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 101, 102
+
+Open PRs: 100
 
 Additions rows: 298; files: 10; manifest files: 31
 
@@ -41,18 +43,22 @@ By release (the release that delivers or is assigned the row; R25 and R26 are th
 | P1 | 11 | 2 | 0 | 0 | 13 |
 | M1 | 6 | 1 | 0 | 0 | 7 |
 | M2 | 18 | 1 | 2 | 0 | 21 |
-| M3 | 0 | 0 | 24 | 0 | 24 |
-| M4 | 0 | 0 | 21 | 0 | 21 |
-| M5 | 0 | 0 | 5 | 0 | 5 |
+| M3a | 0 | 0 | 13 | 0 | 13 |
+| M3b | 0 | 0 | 5 | 0 | 5 |
+| M3c | 0 | 0 | 6 | 0 | 6 |
+| M4a | 0 | 0 | 8 | 0 | 8 |
+| M4b | 0 | 0 | 13 | 0 | 13 |
+| M5a | 0 | 0 | 2 | 0 | 2 |
+| M5b | 0 | 0 | 3 | 0 | 3 |
 | RQ | 0 | 0 | 7 | 1 | 8 |
 | later | 0 | 0 | 4 | 0 | 4 |
 | all | 40 | 9 | 63 | 1 | 113 |
 
-Rows assigned to M3 and M4 and M5 that the V3 plan does not name explicitly (V16-V19, V20 aggregate, V21, F8, F11) are marked "proposed" in their pending reasons.
+Process ruling (owner approved, docs/decisions/2026-10-30-process-and-m3-m5-split.md): M3, M4 and M5 are split into M3a, M3b, M3c, M4a, M4b, M5a, M5b. The V3 plan names the original M3, M4 and M5 only; the split of V-rows and PO-rows across the sub-releases beyond what the ruling lists (V1, V3-V11 and the proposed V21 to M3a; V12-V15 to M3b; V16-V19, V20 aggregate and V22 to M3c) is marked proposed in the pending reasons.
 
 ## 2. Release order (PO release plan V3, 2026-10-29) and what each pending release contains
 
-Every release carries the label sentence verbatim, stays PRERELEASE (D7), makes no recorded-data claim, and contains no vendor code or network work before RQ. Each of M2-M5 gets its own capability matrix and independently authored fixtures before code (V3 section 3 and 4).
+Every release carries the label sentence verbatim, stays PRERELEASE (D7), makes no recorded-data claim, and contains no vendor code or network work before RQ. Each of M2, M3a-c, M4a-b and M5a-b gets its own capability matrix and independently authored fixtures before code (V3 section 3 and 4).
 
 | Release | State | Contents | Entry gate |
 |---|---|---|---|
@@ -60,12 +66,16 @@ Every release carries the label sentence verbatim, stays PRERELEASE (D7), makes 
 | P1 | done, PO accepted 2026-10-29 (PR 63, 0.2.0a1) | OC4/G1, G2 spread, F3 window end, F5/F6 single reference, F13-F16 touch policy, G5, naming map | R27 closed |
 | M1 | done, closed 2026-10-29 (docs/M1_CLOSE.md) | OC5, OC6, chain ATM IV, 30-day IV, American labels, solver Stages 0-2, opt-in runner | P1 accepted, design requests 1, 2, 7 (interim rulings used) |
 | M2 | in progress: stories A and B merged (PR 79, PR 80); Result type alignment merged (PR 88); F-row re-audit merged (PR 85); docs PR 89, 92, 94, 95 merged (print type, ordering and field rules); remaining M2 items: runner integration, performance follow-up, benchmark regeneration (PR 87 open); check_prints type-first merged (PR 93) | F1, F2a-d, F4, F7, F10, F20, F12, F17, F18, F19, history store; then re-audit every F row | M1 accepted; matrix and budgets (PR 75, 76, 81, 83), fixtures (PR 78, 82, 84), M2-G0 (PR 77) all merged |
-| M3 | pending | Surface, term structure, skew, realized-volatility join, history reuse from the M2 store, frame builder without presets (V1, V3-V15; V16-V22 proposed) | M2 accepted (PR 80 merged, Tester re-runs, re-audit accepted); own matrix; synthetic surface, daily-bar and 52-week generators authored by the Tester |
-| M4 | pending | Open-interest-based and exposure outputs, dealer-sign convention labelled modeled (PO1-PO19) | M3 accepted; own matrix; chain generator with synthetic open interest and hand-computable exposure totals |
-| M5 | pending | Shadow, list-eligible scanner presets (D6) and the equity-side join (also F8, F11) | M4 accepted; own matrix; universe generator with planted matches per preset; scanner authorization flag stays false |
-| RQ | pending, last | Vendor feed adapter, display-rights rules, recorded data (local), B1-B12 on real sizes, Linux x64 and Windows x64 evidence, D8 sources wired, divergence review; first release allowed to make recorded-data claims | M5 accepted, all earlier labels clean, owner items supplied (feed credential, first download permission and spend ceiling, display-rights table, Linux environment) |
+| M3a | pending | Surface, term structure and skew builder (V1, V3-V11 and the proposed V21) with history reuse from the M2 store for the percentile-of-history and change-since-prior-session rows (V1, V3, V4, V7, V9, V10) | M2 accepted and the M2 store merged (PR 80); docs/m3a (matrix, budgets, fixture requirements, I/O contract, 102-item ruling list) merged in PR 101, PO ruling pass and independent fixtures still pending; synthetic surface generator with known smile and term values |
+| M3b | pending | Realized-volatility join, daily-bar based, without history reuse (V12-V15) | M3a accepted; own matrix; daily-bar generator |
+| M3c | pending | Frame builder without presets (V16-V19, V20 aggregate, V22; proposed assignments) | M3b accepted; own matrix |
+| M4a | pending | Open-interest outputs (PO9, PO12-PO14, PO17-PO19; proposed assignments) | M3c accepted; own matrix; chain generator with synthetic open interest |
+| M4b | pending | Exposure outputs and dealer-sign convention, labelled modeled (PO1-PO8, PO10, PO11, PO15, PO16; proposed assignments) | M4a accepted; own matrix; hand-computable exposure totals |
+| M5a | pending | Shadow, list-eligible scanner presets (D6) | M4b accepted; own matrix; universe generator with planted matches per preset; scanner authorization flag stays false |
+| M5b | pending | Equity-side join, including F8 and F11 | M5a accepted; own matrix |
+| RQ | pending, last | Vendor feed adapter, display-rights rules, recorded data (local), B1-B12 on real sizes, Linux x64 and Windows x64 evidence, D8 sources wired, divergence review; first release allowed to make recorded-data claims | M5b accepted, all earlier labels clean, owner items supplied (feed credential, first download permission and spend ceiling, display-rights table, Linux environment) |
 
-Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry gates for M3, M4 and M5 beyond "previous release accepted" and "own matrix and fixtures first" are not ruled in V3; they are listed here as the standing rule, not as new rulings. After M3-M5 the RQ entry gate applies: all earlier labels clean and the owner items supplied.
+Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry gates for M3a to M5b beyond "previous release accepted" and "own matrix and fixtures first" are not ruled in V3; they are listed here as the standing rule, not as new rulings. After M5b the RQ entry gate applies: all earlier labels clean and the owner items supplied.
 
 ## 3. Feature tables
 
@@ -87,7 +97,7 @@ Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry g
 | G6 | Unavailable with reason | done | R25 | R25 release | wire; independent review: yes | - |
 | G7 | Activity baseline unavailable | partial | R26 | R26 release | wire; independent review: yes | variants1 minimum samples is a request field, no default 20; M2 modules use K = 20 with insufficient_history (PR 79, PR 80); request 5 ratification |
 | G8 | Non-standard contract | partial | R26 | R26 release, 63 | wire + lib; independent review: yes | Classification is supplied, no computed root test; windows excludes and counts multiplier != 100 prints |
-| Presets | option_v1 scanner presets (12 watchlists, 14 volatility presets) | pending | M5 | - | - | Shadow, list-eligible only (D6); no scanner code in any repo |
+| Presets | option_v1 scanner presets (12 watchlists, 14 volatility presets) | pending | M5a | - | - | Shadow, list-eligible only (D6); no scanner code in any repo |
 
 ### Flow (design rows F1-F20, tick fallback, crossing form)
 
@@ -103,10 +113,10 @@ Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry g
 | F5 | At least X% of premium expiring within 2 days | done | P1 | 63 | lib; independent review: yes | Request 6 ratification; wire exposure |
 | F6 | Out-of-the-money share of premium | done | P1 | 63 | lib; independent review: yes | Request 6 ratification; wire exposure |
 | F7 | 60% of premium in one strike or expiry | done | M2 | 79 (fixtures 78, 82, 84) | lib; independent review: yes (Tester approve at 9f6617b; PO accepted, PR 79 merge message) | Wire exposure; Q10 ratification; performance candidate (F7 at 3x window overlap) |
-| F8 | Share of universe premium | pending | M5 | - | - | Needs a universe: equity-side join (M5); the matrix proposes the deferral, V3 text does not name the release |
+| F8 | Share of universe premium | pending | M5b | - | - | Needs a universe: equity-side join (M5b); the matrix proposes the deferral, V3 text does not name the release |
 | F9 | Repeated or multi-venue prints within a second | partial | R26 | R26 release | wire; independent review: yes | Request 7 (grouping wording); side-split lanes, exclusive first-unassigned windows as shipped |
 | F10 | Contracts unusual against baseline | done | M2 | 80 (fixtures 78, 82, 84) | lib; independent review: yes (Tester approve at 0954d21; PO accepted, PR 80 merge message) | request 9 and Q4 ratification (median vs mean default); wire exposure |
-| F11 | Price response | pending | M5 | - | - | Needs an underlying price series (equity-side join); proposed M5, not in V3 text |
+| F11 | Price response | pending | M5b | - | - | Needs an underlying price series (equity-side join); proposed M5b, not in V3 text |
 | F12 | N unusual episodes today | done | M2 | 79 (fixtures 78, 82, 84) | lib; independent review: yes (Tester approve at 9f6617b; PO accepted, PR 79 merge message) | Wire exposure; Q11 ratification; no cross-session state |
 | F13 | Call-ask plus put-bid premium | done | P1 | 63 | lib; independent review: yes | Request 8 ratification; wire exposure; legacy midpoint-split mode stays on the wire (R26) |
 | F14 | Put-ask plus call-bid premium | done | P1 | 63 | lib; independent review: yes | As F13 |
@@ -123,54 +133,54 @@ Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry g
 
 | Id | Name | Status | Release | PRs | Evidence | Pending reasons |
 |---|---|---|---|---|---|---|
-| V1 | 30-day IV in the top X% of its own history | pending | M3 | - | - | Needs IV history (M2 store reuse) and a surface; M3 |
+| V1 | 30-day IV in the top X% of its own history | pending | M3a | - | - | Needs IV history (M2 store reuse) and a surface; M3a; history reuse from the M2 store (PR 80 merged) |
 | V2 | ATM IV at least or at most X points | partial | M1 | 68, 70 | lib; independent review: yes | Chain ATM IV built (annual decimal; library module, not on the wire); no points unit or threshold form; request 11 ratification |
-| V3 | ATM IV in top X% of the same minute in earlier sessions | pending | M3 | - | - | M3 (history reuse) |
-| V4 | IV change from the prior reading | pending | M3 | - | - | M3 |
-| V5 | Longer tenor above or below shorter (term structure) | pending | M3 | - | - | M3 (term structure) |
-| V6 | Second expiry above or below the nearest | pending | M3 | - | - | M3 |
-| V7 | Term gap or slope change since prior session | pending | M3 | - | - | M3 |
-| V8 | 25-delta put-side over call-side volatility | pending | M3 | - | - | M3 (skew) |
-| V9 | 25-delta skew in top X% of own history | pending | M3 | - | - | M3 |
-| V10 | 25-delta skew change or sign change | pending | M3 | - | - | M3 |
-| V11 | Wings above or below the smile centre | pending | M3 | - | - | M3 |
-| V12 | 30-day IV above or below 20-day realized | pending | M3 | - | - | M3 (realized-volatility join, daily bars) |
-| V13 | Implied divided by realized volatility | pending | M3 | - | - | M3 |
-| V14 | Implied-minus-realized gap in top X% of history | pending | M3 | - | - | M3 (252-session form needs the 52-week history generator) |
-| V15 | Average volatility percentile of V1, V9, V14 | pending | M3 | - | - | M3 |
-| V16 | Expected move over 5, 15 or 30 minutes | pending | M3 | - | - | Release not named in V3; proposed M3 |
-| V17 | Expected move change | pending | M3 | - | - | Release not named in V3; proposed M3 |
-| V18 | Price move reached X% of the expected move | pending | M3 | - | - | Release not named in V3; proposed M3 |
-| V19 | Move since anchor against scale from prior 20 sessions | pending | M3 | - | - | Release not named in V3; proposed M3 |
-| V20 | Gamma, vega, theta activity unusual against baseline | partial | R25 | R25 release | wire; independent review: yes | Per-contract greeks exist (R25); activity-weighted aggregate and baseline pending; release not named in V3 (proposed M3) |
-| V21 | Put-side over call-side distance from ATM, 25 delta | pending | M3 | - | - | Derived from V8; release not named in V3; proposed M3 |
-| V22 | 30-day IV 52-week range position | pending | M3 | - | - | M3 (52-week history generator) |
+| V3 | ATM IV in top X% of the same minute in earlier sessions | pending | M3a | - | - | M3a (history reuse); deliberate exception (R-81): the 30-day form only, so the target class after M3a is partial, not match |
+| V4 | IV change from the prior reading | pending | M3a | - | - | M3a; history reuse from the M2 store (PR 80 merged); deliberate exception (R-81): the 30-day form only, so the target class after M3a is partial, not match |
+| V5 | Longer tenor above or below shorter (term structure) | pending | M3a | - | - | M3a (term structure) |
+| V6 | Second expiry above or below the nearest | pending | M3a | - | - | M3a |
+| V7 | Term gap or slope change since prior session | pending | M3a | - | - | M3a; history reuse from the M2 store (PR 80 merged) |
+| V8 | 25-delta put-side over call-side volatility | pending | M3a | - | - | M3a (skew) |
+| V9 | 25-delta skew in top X% of own history | pending | M3a | - | - | M3a; history reuse from the M2 store (PR 80 merged) |
+| V10 | 25-delta skew change or sign change | pending | M3a | - | - | M3a; history reuse from the M2 store (PR 80 merged) |
+| V11 | Wings above or below the smile centre | pending | M3a | - | - | M3a (reuses the same two 25-delta points as V1 and V3; PO ruling 2026-10-30) |
+| V12 | 30-day IV above or below 20-day realized | pending | M3b | - | - | M3b (realized-volatility join, daily bars) |
+| V13 | Implied divided by realized volatility | pending | M3b | - | - | M3b |
+| V14 | Implied-minus-realized gap in top X% of history | pending | M3b | - | - | M3b (252-session form needs the 52-week history generator) |
+| V15 | Average volatility percentile of V1, V9, V14 | pending | M3b | - | - | M3b |
+| V16 | Expected move over 5, 15 or 30 minutes | pending | M3c | - | - | Release not named in V3; proposed M3c |
+| V17 | Expected move change | pending | M3c | - | - | Release not named in V3; proposed M3c |
+| V18 | Price move reached X% of the expected move | pending | M3c | - | - | Release not named in V3; proposed M3c |
+| V19 | Move since anchor against scale from prior 20 sessions | pending | M3c | - | - | Release not named in V3; proposed M3c |
+| V20 | Gamma, vega, theta activity unusual against baseline | partial | R25 | R25 release | wire; independent review: yes | Per-contract greeks exist (R25); activity-weighted aggregate and baseline pending; release not named in V3 (proposed M3c) |
+| V21 | Put-side over call-side distance from ATM, 25 delta | pending | M3a | - | - | Derived from V8; release not named in V3; proposed M3a |
+| V22 | 30-day IV 52-week range position | pending | M3c | - | - | M3c (52-week history generator) |
 
 ### Positioning (design rows PO1-PO19)
 
 | Id | Name | Status | Release | PRs | Evidence | Pending reasons |
 |---|---|---|---|---|---|---|
-| PO1 | Largest-exposure strike across expiries | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO2 | Price within X bps of an exposure level | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO3 | Price crosses a named level | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO4 | Exposure at a strike and expiry positive or negative | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO5 | Exposure sign change since last update | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO6 | Total modeled exposure sign, call and put parts | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO7 | Price near or crossing the gamma-flip level | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO8 | Price near the largest call-side or put-side exposure | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO9 | Price near the max-pain strike | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO10 | Share of exposure above and below price | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO11 | Exposure concentration index | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO12 | Open interest at a strike or in total | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO13 | Open interest change above own history | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO14 | Open interest concentration by strike or expiry | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO15 | Exposure change split into open-interest and repricing parts | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO16 | Expiry scope N days on level conditions | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO17 | Max-pain strike for a chosen expiry, with width | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO18 | Put/call open interest ratio and net change | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
-| PO19 | Open-interest share by expiry bucket | pending | M4 | - | - | M4: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO1 | Largest-exposure strike across expiries | pending | M4b | - | - | M4b: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO2 | Price within X bps of an exposure level | pending | M4b | - | - | M4b: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO3 | Price crosses a named level | pending | M4b | - | - | M4b: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO4 | Exposure at a strike and expiry positive or negative | pending | M4b | - | - | M4b: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO5 | Exposure sign change since last update | pending | M4b | - | - | M4b: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO6 | Total modeled exposure sign, call and put parts | pending | M4b | - | - | M4b: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO7 | Price near or crossing the gamma-flip level | pending | M4b | - | - | M4b: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO8 | Price near the largest call-side or put-side exposure | pending | M4b | - | - | M4b: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO9 | Price near the max-pain strike | pending | M4a | - | - | M4a: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO10 | Share of exposure above and below price | pending | M4b | - | - | M4b: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO11 | Exposure concentration index | pending | M4b | - | - | M4b: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO12 | Open interest at a strike or in total | pending | M4a | - | - | M4a: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO13 | Open interest change above own history | pending | M4a | - | - | M4a: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO14 | Open interest concentration by strike or expiry | pending | M4a | - | - | M4a: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO15 | Exposure change split into open-interest and repricing parts | pending | M4b | - | - | M4b: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO16 | Expiry scope N days on level conditions | pending | M4b | - | - | M4b: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO17 | Max-pain strike for a chosen expiry, with width | pending | M4a | - | - | M4a: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO18 | Put/call open interest ratio and net change | pending | M4a | - | - | M4a: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
+| PO19 | Open-interest share by expiry bucket | pending | M4a | - | - | M4a: needs an open-interest field and an exposure model (none exists); dealer-sign convention labelled modeled |
 
-### Release items beyond the design rows (P1, M1, M2, M3, M4, M5, RQ, later)
+### Release items beyond the design rows (P1, M1, M2, M3a-c, M4a-b, M5a-b, RQ, later)
 
 | Id | Name | Status | Release | PRs | Evidence | Pending reasons |
 |---|---|---|---|---|---|---|
@@ -190,15 +200,15 @@ Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry g
 | M2-8 | Performance follow-up story (F7 3x overlap, F17 sparse reads) | pending | M2 | - | - | Scheduled after the F-row re-audit (PO ruling 2026-10-30) |
 | X-1 | Wire exposure of the P1, M1 and M2 pure modules (candidate16) | pending | later | - | - | Candidate bump with fixtures outside this repository; not tied to a numbered release |
 | X-2 | Release tag and wheel rebuild | pending | later | - | - | HANDOFF open item |
-| M3-1 | Surface, term structure and skew builder | pending | M3 | - | - | Own capability matrix and independently authored fixtures first (V3 rule) |
-| M3-2 | Realized-volatility join (daily bars) | pending | M3 | - | - | As M3-1 |
-| M3-3 | Frame builder without presets | pending | M3 | - | - | As M3-1 |
-| M3-4 | History reuse from the M2 store | pending | M3 | - | - | M2 store merged and accepted |
-| M4-1 | Open-interest-based and exposure outputs | pending | M4 | - | - | Own matrix and fixtures first; chain generator with synthetic open interest |
-| M4-2 | Dealer-sign convention, labelled modeled | pending | M4 | - | - | As M4-1 |
-| M5-1 | Scanner presets, shadow and list-eligible only (D6) | pending | M5 | - | - | Own matrix and fixtures first; scanner authorization flag stays false |
-| M5-2 | Equity-side join (also enables F8, F11) | pending | M5 | - | - | As M5-1 |
-| RQ-1 | Vendor feed adapter to the frozen mapping | pending | RQ | - | - | RQ entry gate: M5 accepted, earlier labels clean, owner items supplied |
+| M3-1 | Surface, term structure and skew builder | pending | M3a | - | - | Own capability matrix and independently authored fixtures first (V3 rule) |
+| M3-2 | Realized-volatility join (daily bars) | pending | M3b | - | - | As M3-1 |
+| M3-3 | Frame builder without presets | pending | M3c | - | - | As M3-1 |
+| M3-4 | History reuse from the M2 store (percentile-of-history and change-since-prior-session rows V1, V3, V4, V7, V9, V10) | pending | M3a | - | - | M2 store merged (PR 80); history reuse belongs to the surface release, PO ruling 2026-10-30 |
+| M4-1 | Open-interest-based and exposure outputs | pending | M4a | - | - | Own matrix and fixtures first; chain generator with synthetic open interest |
+| M4-2 | Dealer-sign convention, labelled modeled | pending | M4b | - | - | As M4-1 |
+| M5-1 | Scanner presets, shadow and list-eligible only (D6) | pending | M5a | - | - | Own matrix and fixtures first; scanner authorization flag stays false |
+| M5-2 | Equity-side join (also enables F8, F11) | pending | M5b | - | - | As M5-1 |
+| RQ-1 | Vendor feed adapter to the frozen mapping | pending | RQ | - | - | RQ entry gate: M5b accepted, earlier labels clean, owner items supplied |
 | RQ-2 | Display-rights-driven storage and display rules | pending | RQ | - | - | Owner-supplied rights table |
 | RQ-3 | Recorded data (local, never committed) | pending | RQ | - | - | Owner permission, entitlement and spend ceiling |
 | RQ-4 | B1-B12 measured on real sizes | pending | RQ | - | - | RQ only |
