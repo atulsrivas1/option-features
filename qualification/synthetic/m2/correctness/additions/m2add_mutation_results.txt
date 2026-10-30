@@ -1,13 +1,13 @@
 mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12
-unknown_ignored            CAUGHT mapped  16 caught_mapped  14  e.g. M2A-STR-001,M2A-STR-002
-bool_price_ok              CAUGHT mapped   3 caught_mapped   3  e.g. M2A-STR-011,M2A-STR-014
-float_price_ok             CAUGHT mapped   3 caught_mapped   3  e.g. M2A-STR-012,M2A-STR-013
-over_precision_ok          CAUGHT mapped  40 caught_mapped   3  e.g. M2A-STR-016,M2A-STR-037
+unknown_ignored            CAUGHT mapped  18 caught_mapped  16  e.g. M2A-STR-001,M2A-STR-002
+bool_price_ok              CAUGHT mapped   7 caught_mapped   3  e.g. M2A-STR-011,M2A-STR-014
+float_price_ok             CAUGHT mapped   7 caught_mapped   3  e.g. M2A-STR-012,M2A-STR-013
+over_precision_ok          CAUGHT mapped  78 caught_mapped   3  e.g. M2A-STR-016,M2A-STR-037
 trailing_zero_rejected     CAUGHT mapped   2 caught_mapped   2  e.g. M2A-STR-033,M2A-STR-034
 float_window_ok            CAUGHT mapped   2 caught_mapped   2  e.g. M2A-STR-035,M2A-STR-036
-float_size_ok              CAUGHT mapped  40 caught_mapped   2  e.g. M2A-STR-018,M2A-STR-030
-float_time_ok              CAUGHT mapped  40 caught_mapped   2  e.g. M2A-STR-019,M2A-STR-038
-bool_multiplier_ok         CAUGHT mapped  40 caught_mapped   2  e.g. M2A-STR-020,M2A-STR-039
+float_size_ok              CAUGHT mapped  78 caught_mapped   2  e.g. M2A-STR-018,M2A-STR-030
+float_time_ok              CAUGHT mapped  78 caught_mapped   2  e.g. M2A-STR-019,M2A-STR-038
+bool_multiplier_ok         CAUGHT mapped  78 caught_mapped   2  e.g. M2A-STR-020,M2A-STR-039
 negative_before_unordered  CAUGHT mapped  10 caught_mapped   2  e.g. M2A-STR-021,M2A-STR-022
 multiplier_before_negative CAUGHT mapped  10 caught_mapped   2  e.g. M2A-STR-023,M2A-STR-024
 malformed_before_unknown   CAUGHT mapped  10 caught_mapped   2  e.g. M2A-STR-027,M2A-STR-028
@@ -52,5 +52,14 @@ grid_60_ignored            CAUGHT mapped   2 caught_mapped   2  e.g. M2A-PAR-013
 param_below_one_ok         CAUGHT mapped   2 caught_mapped   2  e.g. M2A-PAR-015,M2A-PAR-016
 negative_counts            CAUGHT mapped  18 caught_mapped   9  e.g. M2A-CUT-001,M2A-CUT-002
 cutoff_unavailable         CAUGHT mapped  18 caught_mapped  13  e.g. M2A-CUT-001,M2A-CUT-002
+seq_bool_as_int            CAUGHT mapped   4 caught_mapped   4  e.g. M2A-TYP-031,M2A-TYP-032
+flag_float_ok              CAUGHT mapped   6 caught_mapped   5  e.g. M2A-TYP-001,M2A-TYP-005
+decimal_price_ok           CAUGHT mapped   6 caught_mapped   5  e.g. M2A-TYP-002,M2A-TYP-006
+fraction_price_ok          CAUGHT mapped   5 caught_mapped   5  e.g. M2A-TYP-003,M2A-TYP-007
+bytes_price_ok             CAUGHT mapped   2 caught_mapped   2  e.g. M2A-TYP-038,M2A-TYP-040
+pair_float_compared        CAUGHT mapped   5 caught_mapped   5  e.g. M2A-ORD-005,M2A-ORD-010
+stop_at_skipped            CAUGHT mapped  15 caught_mapped  15  e.g. M2A-ORD-001,M2A-ORD-002
+none_price_ok              CAUGHT mapped   2 caught_mapped   2  e.g. M2A-TYP-037,M2A-TYP-039
+prec_malformed_first       CAUGHT mapped  27 caught_mapped  27  e.g. M2A-ORD-001,M2A-ORD-002
 g_sparse_zero_wrong        CAUGHT mapped   4 caught_mapped   4  e.g. M2A-GRID-014,M2A-GRID-015
-mutants 54 caught 54 missed 0
+mutants 63 caught 63 missed 0

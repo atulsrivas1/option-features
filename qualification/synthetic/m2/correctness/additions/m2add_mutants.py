@@ -6,7 +6,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
 sys.path.insert(0, HERE)
-import m2_load  # noqa: E402
+import m2add_load  # noqa: E402
 import m2add_ref  # noqa: E402
 from m2add_selfcheck import canon  # noqa: E402
 
@@ -64,6 +64,15 @@ MUTANTS = [
     ("param_below_one_ok", "quiet_gap and n_episodes below 1 accepted", ["param_below_one"]),
     ("negative_counts", "cutoff before open: window computed as in-window minus pre-open (negative counts)", ["cutoff_before_open"]),
     ("cutoff_unavailable", "cutoff before open reported unavailable instead of an empty window", ["cutoff_before_open"]),
+    ("seq_bool_as_int", "bool seq compared as an integer in the ordering check", ["seq_invented", "seq_hidden"]),
+    ("flag_float_ok", "float condition_excluded 1.0 accepted", ["flag_float"]),
+    ("decimal_price_ok", "Decimal price accepted", ["price_decimal"]),
+    ("fraction_price_ok", "Fraction price accepted", ["price_fraction"]),
+    ("bytes_price_ok", "bytes price accepted", ["price_bytes"]),
+    ("pair_float_compared", "pairs with a float time or seq are compared", ["order_skipped_pair"]),
+    ("stop_at_skipped", "ordering check stops at the first skipped pair", ["order_float_seq", "order_float_time", "order_mixed_fault"]),
+    ("none_price_ok", "None price accepted", ["price_none"]),
+    ("prec_malformed_first", "malformed_type checked before the ordering, negative, multiplier and contract checks", ["prec_multi"]),
     ("g_sparse_zero_wrong", "grid: sparse zero_count off by one", ["contract_series"]),
 ]
 
@@ -71,7 +80,7 @@ MUTANTS = [
 def run(d):
     rows = []
     for path in sorted(glob.glob(os.path.join(d, "m2_cases_add_*.json"))):
-        rows += m2_load.load_dataset(path)[1]
+        rows += m2add_load.load_dataset(path)[1]
     base = {r["id"]: canon(r["expected"]) for r in rows}
     lines, fail = [], []
     for name, desc, tags in MUTANTS:
