@@ -381,7 +381,8 @@ class TypeFirst(unittest.TestCase):
             r = _request("M3A-0")
             r["spot"] = s
             self.assertIsNone(_run(r), s)
-        for s, code in (("100.123456789", "malformed_type"), (100.1, "malformed_type"), (Fraction(1, 3), "malformed_type"),
+        for s, code in (("100.123456789", "malformed_type"), (100.1, "malformed_type"),
+                        (Fraction(1, 3), "malformed_type"),
                         ("1/2", "malformed_type"), (" 1", "malformed_type"), ("+1", "malformed_type"),
                         ("1_0", "malformed_type"), (True, "malformed_type"), (None, "malformed_type"),
                         (b"100", "malformed_type"), ("0", "bad_spot"), ("-1", "bad_spot"), (0, "bad_spot"),
@@ -458,9 +459,9 @@ class TypeFirst(unittest.TestCase):
             self.assertEqual(_run(r), code, v)
 
     def test_x_forms(self):
-        for v, code in ((5, None), (0, None), (100, None), (Fraction(5, 2), None), ("5/2", None), (5.0, "malformed_type"),
-                        (True, "malformed_type"), (-1, "threshold_out_of_range"), (Fraction(201, 2),
-                                                                                   "threshold_out_of_range")):
+        for v, code in ((5, None), (0, None), (100, None), (Fraction(5, 2), None), ("5/2", None),
+                        (5.0, "malformed_type"), (True, "malformed_type"), (-1, "threshold_out_of_range"),
+                        (Fraction(201, 2), "threshold_out_of_range")):
             r = _request("M3A-1")
             r["params"]["x"] = v
             self.assertEqual(_run(r), code, v)
