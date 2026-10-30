@@ -10,20 +10,20 @@
     "append 250125 records (k=25)": {
      "unit": "records/s",
      "value": {
-      "p50_rate": 358120.60027097614,
-      "p5_rate": 304241.6855810423,
+      "p50_rate": 313512.5311005684,
+      "p5_rate": 274926.2329363001,
       "time": {
-       "max": 0.9133887,
+       "max": 1.0099263,
        "n": 30,
-       "p50": 0.6826144,
-       "p95": 0.822126
+       "p50": 0.7264051,
+       "p95": 0.9097895
       }
      }
     },
     "append open then seal each": {
      "unit": "records/s (informational)",
      "value": {
-      "p50_rate": 290559.1874727955
+      "p50_rate": 240564.30109446298
      }
     }
    }
@@ -38,8 +38,8 @@
     "process working set and peak (bench, includes all stores)": {
      "unit": "bytes",
      "value": {
-      "peak": 2015600640,
-      "working_set": 1027231744
+      "peak": 2046894080,
+      "working_set": 1054871552
      }
     },
     "store (k=20) series, records, est bytes": {
@@ -63,10 +63,10 @@
     "A part: 78 cutoffs x 2000 series fused reads": {
      "unit": "s (reads = 78 x 4 x 2000 = 624000)",
      "value": {
-      "max": 12.5382443,
+      "max": 12.3345547,
       "n": 3,
-      "p50": 12.5076502,
-      "p95": 12.5382443
+      "p50": 11.9071971,
+      "p95": 12.3345547
      }
     }
    }
@@ -81,31 +81,31 @@
     "fresh worker, mmap snapshot": {
      "unit": "seconds, private rss delta bytes",
      "value": {
-      "rss_delta": 173166592,
-      "seconds": 1.2326750000938773
+      "rss_delta": 173359104,
+      "seconds": 1.2514734000433236
      }
     },
     "fresh worker, snapshot read into bytes": {
      "unit": "seconds, private rss delta bytes",
      "value": {
-      "rss_delta": 330690560,
-      "seconds": 1.4687246999237686
+      "rss_delta": 330698752,
+      "seconds": 1.396524399984628
      }
     },
     "fresh worker, store load (text)": {
      "unit": "seconds, private rss delta bytes",
      "value": {
-      "rss_delta": 298778624,
-      "seconds": 3.0585855001118034
+      "rss_delta": 297779200,
+      "seconds": 3.120638099964708
      }
     },
     "mmap snapshot (zero copy) seconds per worker start": {
      "unit": "s",
      "value": {
-      "max": 2.1633885,
+      "max": 2.3676405,
       "n": 5,
-      "p50": 2.0062595,
-      "p95": 2.1633885
+      "p50": 1.9513589,
+      "p95": 2.3676405
      }
     },
     "snapshot bytes": {
@@ -115,19 +115,19 @@
     "snapshot bytes copy seconds per worker start": {
      "unit": "s",
      "value": {
-      "max": 1.7986989,
+      "max": 1.9759718,
       "n": 5,
-      "p50": 1.7953995,
-      "p95": 1.7986989
+      "p50": 1.9022921,
+      "p95": 1.9759718
      }
     },
     "store load (text) seconds per worker start": {
      "unit": "s",
      "value": {
-      "max": 4.0994159,
+      "max": 4.0243329,
       "n": 5,
-      "p50": 4.0682153,
-      "p95": 4.0994159
+      "p50": 3.9884146,
+      "p95": 4.0243329
      }
     }
    }
@@ -146,13 +146,13 @@
     "read 250125 records (verified, lazy grid)": {
      "unit": "records/s",
      "value": {
-      "p50_rate": 66347.62510914035,
-      "p5_rate": 60523.19187009658,
+      "p50_rate": 61831.99047393055,
+      "p5_rate": 61648.894039174906,
       "time": {
-       "max": 4.1327133,
+       "max": 4.0572504,
        "n": 5,
-       "p50": 3.7699164,
-       "p95": 4.1327133
+       "p50": 4.0452361,
+       "p95": 4.0572504
       }
      }
     },
@@ -160,13 +160,13 @@
      "unit": "records/s",
      "value": {
       "bytes": 295621097,
-      "p50_rate": 39704.366170689485,
-      "p5_rate": 38231.20533311291,
+      "p50_rate": 40313.42107403367,
+      "p5_rate": 39898.69519901254,
       "time": {
-       "max": 6.5424304,
+       "max": 6.269002,
        "n": 5,
-       "p50": 6.299685,
-       "p95": 6.5424304
+       "p50": 6.2045094,
+       "p95": 6.269002
       }
      }
     }
@@ -182,8 +182,8 @@
     "per-session build, prints/s": {
      "unit": "prints/s (p5 judged)",
      "value": {
-      "p50_rate": 114025.5255528701,
-      "p5_rate": 94178.92695007086,
+      "p50_rate": 102909.72107544084,
+      "p5_rate": 84750.87252243143,
       "samples": 50
      }
     }
@@ -199,8 +199,8 @@
     "warm rank-ready view per series": {
      "unit": "s per series",
      "value": {
-      "p50_s": 1.3e-06,
-      "p95_s": 2.5e-06,
+      "p50_s": 1.4e-06,
+      "p95_s": 1.9e-06,
       "samples": 6000
      }
     }
@@ -216,8 +216,8 @@
     "cold view + sorted build per series": {
      "unit": "s per series",
      "value": {
-      "p50_s": 0.0002745,
-      "p95_s": 0.0006963,
+      "p50_s": 0.0002721,
+      "p95_s": 0.000687,
       "samples": 6000
      }
     }
@@ -233,33 +233,33 @@
     "N=2000 warm views": {
      "unit": "s",
      "value": {
-      "max": 0.0011168,
+      "max": 0.000994,
       "n": 30,
-      "p50": 0.0008067,
-      "p95": 0.0009632
+      "p50": 0.0008457,
+      "p95": 0.0009865
      }
     },
     "N=500 warm views": {
      "unit": "s",
      "value": {
-      "max": 0.0002002,
+      "max": 0.0002369,
       "n": 30,
-      "p50": 0.0001721,
-      "p95": 0.0001863
+      "p50": 0.000175,
+      "p95": 0.0002293
      }
     },
     "N=6000 warm views": {
      "unit": "s",
      "value": {
-      "max": 0.002855,
+      "max": 0.0029071,
       "n": 30,
-      "p50": 0.0024906,
-      "p95": 0.0026935
+      "p50": 0.0025541,
+      "p95": 0.0027714
      }
     },
     "time(6000)/time(2000)": {
      "unit": "ratio (budget <= 3.6)",
-     "value": 3.0873930829304572
+     "value": 3.020101690906941
     }
    }
   },
@@ -273,16 +273,16 @@
     "f2_eod per series (warm)": {
      "unit": "s per series",
      "value": {
-      "p50_s": 4.5e-06,
-      "p95_s": 5.9e-06,
+      "p50_s": 4.4e-06,
+      "p95_s": 5.7e-06,
       "samples": 6000
      }
     },
     "f2_intraday per series (warm)": {
      "unit": "s per series",
      "value": {
-      "p50_s": 6.1e-06,
-      "p95_s": 7.6e-06,
+      "p50_s": 5.9e-06,
+      "p95_s": 7.4e-06,
       "samples": 6000
      }
     }
@@ -298,33 +298,33 @@
     "N=2000 F2a batch": {
      "unit": "s",
      "value": {
-      "max": 0.252362,
+      "max": 0.0136884,
       "n": 30,
-      "p50": 0.0126798,
-      "p95": 0.0144602
+      "p50": 0.0119165,
+      "p95": 0.0128029
      }
     },
     "N=500 F2a batch": {
      "unit": "s",
      "value": {
-      "max": 0.0036449,
+      "max": 0.0035138,
       "n": 30,
-      "p50": 0.0028415,
-      "p95": 0.0033419
+      "p50": 0.0028667,
+      "p95": 0.0032928
      }
     },
     "N=6000 F2a batch": {
      "unit": "s",
      "value": {
-      "max": 0.2889136,
+      "max": 0.0585674,
       "n": 30,
-      "p50": 0.04035,
-      "p95": 0.2848212
+      "p50": 0.0423328,
+      "p95": 0.0570093
      }
     },
     "time(6000)/time(2000)": {
      "unit": "ratio (budget <= 3.6)",
-     "value": 3.182226849003927
+     "value": 3.552452481852893
     }
    }
   },
@@ -338,25 +338,25 @@
     "F10 batch N=2000": {
      "unit": "s",
      "value": {
-      "max": 0.2580924,
+      "max": 0.0296294,
       "n": 30,
-      "p50": 0.0162218,
-      "p95": 0.0184489
+      "p50": 0.0160082,
+      "p95": 0.028746
      }
     },
     "f10 per series (warm)": {
      "unit": "s per series",
      "value": {
-      "p50_s": 8e-06,
-      "p95_s": 9.9e-06,
+      "p50_s": 7.8e-06,
+      "p95_s": 9.8e-06,
       "samples": 6000
      }
     },
     "f20 per series (warm)": {
      "unit": "s per series",
      "value": {
-      "p50_s": 1e-05,
-      "p95_s": 1.23e-05,
+      "p50_s": 9.8e-06,
+      "p95_s": 1.24e-05,
       "samples": 6000
      }
     }
@@ -372,15 +372,16 @@
     "A part: fused F2a,b,c,d + F10, 2000 series": {
      "unit": "s (excludes the shared print pass and B stories)",
      "value": {
-      "max": 0.3498227,
+      "max": 0.1186455,
       "n": 30,
-      "p50": 0.098938,
-      "p95": 0.3484289
+      "p50": 0.1107675,
+      "p95": 0.1172116
      }
     }
    }
   }
  },
+ "gc_freeze": true,
  "label": "synthetic workload, relative engineering budget",
  "machine": {
   "cpu": "Intel64 Family 6 Model 85 Stepping 4, GenuineIntel",

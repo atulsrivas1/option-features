@@ -17,6 +17,10 @@ Updated 2026-10-29 (M1 CLOSED, see docs/M1_CLOSE.md; P1 DONE, 0.2.0a1 on main, m
 - Accepted after independent code review (approve-with-conditions, then delta re-check approve) and an independent Tester re-run with python-flint 0.9.0 (DECISIONS.md, last entries). Interim design rulings stay pending ratification; wire exposure of quotes/windows/shares is a candidate16 item.
 - M1 CLOSED 2026-10-29 (accepted as built, prerelease, synthetic data; docs/M1_CLOSE.md has built-vs-scope, B2-B7 numbers, risks, M2 proposal): Stage 0/1/2, OC5/OC6, chain IV, opt-in, default single-process runner all merged. Risks: thin B2/B3 margin on string path, input synthesis 23% CPU at 48 workers (idea candidate), full-output B6 run still to do. NEXT: M2 flow completion (capability matrix and gate budgets first, then independent fixtures, then code). Owner goal: performance. Open: tag and wheel rebuild, owner items (python-flint scratch venv, B7 machine).
 
+## M2 story A (branch m2/store-percentile, PR open, Developer evidence only): store, grid builder, F2a-d, F10, F20, F19
+- Modules flowresult, flowgrid, flowstore, flowrank (API: docs/m2/M2_STORE_API.md; story B imports flowresult/flowgrid). 302 of 302 owned rows pass, 50 mutants caught (tools/m2a_mutation_check.py), tests/m2 about 5 s, benchmark docs/m2/M2_A_BENCH.json (tools/m2a_benchmark.py); all older suites green.
+- Open: Tester re-run, PO rulings listed in DECISIONS.md (store byte cap, gc.freeze in runner, lane not in canonical text); story B merge: FLOW_NAMING_MAP F18 row, flowresult imports.
+
 ## R26: stays PRERELEASE (Windows x64 cp312); notes docs/r26-variants/RELEASE_NOTES.md, scoped label in RELEASE_NOTES section 15
 
 ## M1 Stage 2 (PR 71): merged; independent Tester re-run done (details in DECISIONS.md). B6 IV part about 1.4 s p50 compute-only.
