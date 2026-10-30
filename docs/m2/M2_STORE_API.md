@@ -47,5 +47,10 @@ Author: Developer (story A), 2026-10-29. Status: Developer evidence only; the in
 - `evaluate_many(...)`: batched over many series; equal to the one-at-a-time path, same order.
 - Today-window inputs come from `flowgrid.window_totals` (or story B's one-pass families); both stories use the same eligible-print definition.
 
+## Added during implementation
+- `HistoryStore.snapshot()`, `snapshot_to(path)`, `HistoryStore.from_snapshot(buffer, calendar, k=None)`: binary snapshot, zero-copy read-only records over bytes, `mmap` or shared memory (view transfer, M2-B16). `drop_caches()`. `load` accepts a path, bytes or text; lane is not in the canonical line, so a loaded series has lane "stock".
+- `flowrank.f2_rank_many`, `f10_baseline_many`, `flow_pack_many`. Runners should call `gc.freeze()` after loading a store (a full collection over about a million store objects costs 0.25 s).
+- `HistoryView.eod_sorted()` for the end-of-day forms; a view with `n == 0` (every grid point dropped) is reported as insufficient_history.
+
 ## Not in this story
 F1, F4, F7, F17, F18, F12 (story B). No adapter, vendor or network code. No wire exposure.
