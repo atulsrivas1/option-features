@@ -33,7 +33,9 @@ from .flowgrid import _pack_q, narrow
 from .flowresult import M2StructuralError
 
 MAX_K = 60
-_SNAP_MAGIC = b"M2HISTSNAP2\n"
+_SNAP_MAGIC = b"M2SNAP1"
+_BIN_MAGIC = b"M2HISTBIN1\n"
+_TRAILER = re.compile(r"#END records=(\d+) content_sha256=([0-9a-f]{64})\Z")
 _VIEW_CACHE = 4
 _SIZE = {"B": 1, "H": 2, "I": 4, "L": 4, "Q": 8, "q": 8}
 
@@ -41,36 +43,58 @@ _LINE = re.compile(r'\{"series_id":(".*?"),"metric":(".*?"),"session_id":(".*?")
 
 
 class _Rec:
-    __slots__ = ("session_id", "minutes", "idx", "vals", "total", "complete", "sha", "txt")
+    __slots__ = ("session_id", "minutes", "idx", "vals", "total", "complete", "sha", "txt", "sparse", "itxt")
 
-    def __init__(self, session_id, minutes, idx, vals, total, complete, txt=None):
+    def __init__(self, session_id, minutes, idx, vals, total, complete, txt=None, sparse=False, itxt=None):
         self.session_id, self.minutes, self.idx, self.vals = session_id, minutes, idx, vals
         self.total, self.complete, self.sha, self.txt = total, complete, None, txt
+        self.sparse, self.itxt = sparse, itxt
 
 
 def _sparse(rec):
-    """Materialise a lazily loaded record (parse its grid text once)."""
+    """Materialise a lazily loaded record (parse its grid text once). A record supplied dense keeps only its nonzero
+    points; a record supplied sparse keeps exactly the supplied indexes and values."""
     if rec.idx is None:
-        idx, vals = array("H"), []
-        txt = rec.txt
-        if txt:
-            i = 0
-            for tok in txt.split(","):
-                if tok != "0":
-                    idx.append(i)
-                    vals.append(int(tok))
-                i += 1
-        rec.idx, rec.vals, rec.txt = idx, narrow(vals), None
+        idx = array("H")
+        if rec.sparse:
+            if rec.itxt:
+                idx.extend([int(t) for t in rec.itxt.split(",")])
+            vals = [int(t) for t in rec.txt.split(",")] if rec.txt else []
+        else:
+            vals = []
+            if rec.txt:
+                i = 0
+                for tok in rec.txt.split(","):
+                    if tok != "0":
+                        idx.append(i)
+                        vals.append(int(tok))
+                    i += 1
+        rec.idx, rec.vals, rec.txt, rec.itxt = idx, narrow(vals), None, None
     return rec
 
 
 def _grid_text(rec):
+    """Grid as supplied: dense records list every point up to the supplied length (no padding); sparse records list
+    the supplied values only (the indexes go in `_idx_text`)."""
+    if rec.txt is not None:
+        return rec.txt
     _sparse(rec)
-    tokens = ["0"] * rec.minutes
     idx, vals = rec.idx, rec.vals
-    for i, v in zip(idx if type(idx) is tuple else idx.tolist(), vals if type(vals) is tuple else vals.tolist()):
+    vals = vals if type(vals) is tuple else vals.tolist()
+    if rec.sparse:
+        return ",".join(map(str, vals))
+    tokens = ["0"] * rec.minutes
+    for i, v in zip(idx if type(idx) is tuple else idx.tolist(), vals):
         tokens[i] = str(v)
     return ",".join(tokens)
+
+
+def _idx_text(rec):
+    if rec.itxt is not None:
+        return rec.itxt
+    _sparse(rec)
+    idx = rec.idx
+    return ",".join(map(str, idx if type(idx) is tuple else idx.tolist()))
 
 
 def _own(x, memo):
@@ -214,6 +238,10 @@ def _head(series_id, metric):
 
 
 def _body(head, window_s, rec):
+    if rec.sparse:
+        return '%s%s,"window_s":%d,"grid":[%s],"grid_idx":[%s],"total":%d,"complete":%s}' % (
+            head, json.dumps(rec.session_id), window_s, _grid_text(rec), _idx_text(rec), rec.total,
+            "true" if rec.complete else "false")
     return '%s%s,"window_s":%d,"grid":[%s],"total":%d,"complete":%s}' % (
         head, json.dumps(rec.session_id), window_s, _grid_text(rec), rec.total, "true" if rec.complete else "false")
 
@@ -228,11 +256,10 @@ def _rec_sha(series_id, metric, window_s, rec, body=None):
 
 
 class HistoryStore:
-    def __init__(self, calendar, k=20, strict_calendar=True, check_length=True):
+    def __init__(self, calendar, k=20, strict_calendar=True):
         if not 1 <= k <= MAX_K:
             raise ValueError("k must be in 1..%d" % MAX_K)
         self.calendar, self.k, self.strict_calendar = calendar, k, strict_calendar
-        self.check_length = check_length
         self._rings = {}
         self._hits = self._misses = 0
         self._buf = None
@@ -240,17 +267,22 @@ class HistoryStore:
     # ------------------------------------------------------------------ writes
     def append(self, series_id, metric, window_s, session_id, grid, total=None, complete=True, grid_idx=None,
                lane="stock", minutes=None):
-        """Append one session record. Dense `grid` list, or the nonzero values at `grid_idx` (strictly ascending,
-        inside the grid). Errors (M2StructuralError, checked in this order): session_not_in_calendar (strict),
-        duplicate_session, out_of_order_append, lane_mismatch, record_length_mismatch (grid length differs from the
-        calendar minutes of a calendar session), non_monotone_grid. The store keeps its own typed copy."""
+        """Append one session record: a dense `grid` list (zero-padded to the session minutes at read time), or, with
+        `grid_idx`, the values at those indexes (sparse; kept as supplied). Errors (M2StructuralError), RULED order:
+        lane_mismatch (the ring lane is the lane of the first append), session_not_in_calendar (strict calendar),
+        record_length_mismatch (dense grid longer than the session minutes, or a sparse index outside [0, minutes)),
+        non_monotone_grid (sparse indexes not strictly ascending), duplicate_session (equal to the last appended session of
+        the series), out_of_order_append (earlier). The store keeps its own typed copy."""
         if grid_idx is None:
+            idx = None
             minutes = len(grid)
-        elif minutes is None:
-            pos = self.calendar.position(session_id)
-            minutes = self.calendar.minutes[pos] if pos is not None else (grid_idx[-1] + 1 if grid_idx else 0)
-        self._check_slot(series_id, metric, window_s, session_id, lane, minutes)
-        if grid_idx is None:
+        else:
+            idx = array("H", grid_idx) if (grid_idx and min(grid_idx) >= 0 and max(grid_idx) < 65536) else tuple(grid_idx)
+            if len(grid_idx) != len(grid):
+                raise ValueError("grid and grid_idx differ in length")
+        sparse = grid_idx is not None
+        minutes = self._prepare(series_id, metric, window_s, session_id, lane, minutes, idx, sparse, None)
+        if not sparse:
             idx = array("H")
             vals = []
             i = 0
@@ -262,46 +294,64 @@ class HistoryStore:
             if total is None:
                 total = sum(grid)
         else:
-            prev = -1
-            for g in grid_idx:
-                if g <= prev or g >= minutes:
-                    raise M2StructuralError("non_monotone_grid")
-                prev = g
-            idx, vals = array("H", grid_idx), list(grid)
+            vals = list(grid)
             if total is None:
                 total = sum(vals)
-        self._store(series_id, metric, window_s, _Rec(session_id, minutes, idx, narrow(vals), total, bool(complete)), lane)
+        self._store(series_id, metric, window_s, _Rec(session_id, minutes, idx, narrow(vals), total, bool(complete),
+                                                      None, sparse), lane)
 
     def append_record(self, record, complete=True, lane="stock", _memo=None):
         """Append a prebuilt sparse `GridRecord` (see flowgrid.build_session_records), same checks. The store copies
         the arrays into private typed arrays (a caller cannot mutate stored data); an index or value array shared by
-        several records of one `append_many` is copied once and shared."""
-        self._check_slot(record.series_id, record.metric, record.window_s, record.session_id, lane, record.minutes)
+        several records of one `append_many` is copied and validated once and shared."""
+        idx = _own(record.idx, _memo)
+        minutes = self._prepare(record.series_id, record.metric, record.window_s, record.session_id, lane, record.minutes,
+                                idx, True, _memo)
         self._store(record.series_id, record.metric, record.window_s,
-                    _Rec(record.session_id, record.minutes, _own(record.idx, _memo), _own(record.vals, _memo),
-                         record.total, bool(complete)), lane)
+                    _Rec(record.session_id, minutes, idx, _own(record.vals, _memo), record.total, bool(complete),
+                         None, True), lane)
 
     def append_many(self, records, complete=True, lane="stock"):
         memo = {}
         for r in records:
             self.append_record(r, complete, lane, memo)
 
-    def _check_slot(self, series_id, metric, window_s, session_id, lane, minutes):
+    def _prepare(self, series_id, metric, window_s, session_id, lane, minutes, idx, sparse, memo):
+        """The append checks in the RULED order; returns the grid length (`minutes`) to store."""
+        ring = self._rings.get((series_id, metric, window_s))
+        if ring is not None and ring.lane != lane:
+            raise M2StructuralError("lane_mismatch")
         cal = self.calendar
         pos = cal.position(session_id)
         if pos is None and self.strict_calendar:
             raise M2StructuralError("session_not_in_calendar")
-        ring = self._rings.get((series_id, metric, window_s))
+        cal_minutes = None if pos is None else cal.minutes[pos]
+        asc = True
+        if sparse:
+            if idx is None or not len(idx):
+                lo = hi = None
+            else:
+                got = memo.get(("v", id(idx))) if memo is not None else None
+                if got is None:
+                    lst = idx.tolist() if isinstance(idx, array) else list(idx)
+                    got = (min(lst), max(lst), all(a < b for a, b in zip(lst, lst[1:])))
+                    if memo is not None:
+                        memo[("v", id(idx))] = got
+                lo, hi, asc = got
+            if lo is not None and (lo < 0 or (cal_minutes is not None and hi >= cal_minutes)):
+                raise M2StructuralError("record_length_mismatch")
+            if not asc:
+                raise M2StructuralError("non_monotone_grid")
+            minutes = cal_minutes if cal_minutes is not None else (0 if hi is None else hi + 1)
+        elif cal_minutes is not None and minutes > cal_minutes:
+            raise M2StructuralError("record_length_mismatch")
         if ring is not None and ring.recs:
             last = next(reversed(ring.recs))
             if session_id == last:
                 raise M2StructuralError("duplicate_session")
             if session_id < last:
                 raise M2StructuralError("out_of_order_append")
-        if ring is not None and ring.lane != lane:
-            raise M2StructuralError("lane_mismatch")
-        if pos is not None and self.check_length and cal.minutes[pos] != minutes:
-            raise M2StructuralError("record_length_mismatch")
+        return minutes
 
     def _store(self, series_id, metric, window_s, rec, lane):
         key = (series_id, metric, window_s)
@@ -389,36 +439,38 @@ class HistoryStore:
             body = _body(ring.head, w, r)
             yield body[:-1] + ',"content_sha256":"' + _rec_sha(s, m, w, r, body) + '"}'
 
-    def dump(self):
-        """Canonical bytes: one line per record, LF."""
-        return "".join([ln + "\n" for ln in self.lines()]).encode("ascii")
+    def content_hash(self):
+        """SHA-256 over the per-record content_sha256 values (lowercase hex) joined by LF in canonical order: the
+        fixtures' `content_sha256_digest`, the value in the dump trailer."""
+        return hashlib.sha256("\n".join(self.record_hashes()).encode("ascii")).hexdigest()
+
+    def dump(self, trailer=True):
+        """Canonical text as bytes: one line per record, LF, then (default) the trailer line
+        `#END records=N content_sha256=<content_hash()>`."""
+        data = "".join([ln + "\n" for ln in self.lines()]).encode("ascii")
+        if not trailer:
+            return data
+        return data + ("#END records=%d content_sha256=%s\n" % (data.count(b"\n"), self.content_hash())).encode("ascii")
+
+    def dump_sha256(self):
+        """SHA-256 of the dump text without its trailer line (every LF included)."""
+        return hashlib.sha256(self.dump(False)).hexdigest()
 
     def dump_to(self, path):
-        """Atomic file write (temporary file in the same directory, flush, os.replace): the canonical lines plus a trailer
-        line with the record count and the content hash, which `load` verifies. A crash leaves the old file or none."""
-        data = self.dump()
-        trailer = ('{"trailer":"M2HIST1","records":%d,"content_sha256":"%s"}\n'
-                   % (data.count(b"\n"), hashlib.sha256(data).hexdigest())).encode("ascii")
-        _atomic_write(os.fspath(path), data + trailer)
-
-    def content_hash(self):
-        h = hashlib.sha256()
-        for ln in self.lines():
-            h.update(ln.encode("ascii"))
-            h.update(b"\n")
-        return h.hexdigest()
+        """Atomic file write (temporary file in the same directory, flush, os.replace) of `dump()`."""
+        _atomic_write(os.fspath(path), self.dump())
 
     @classmethod
     def load(cls, source, calendar, k=20, strict_calendar=True, verify=True, lane="stock"):
-        """Store from canonical content or a file. `os.PathLike` is a path (the file must end with the trailer written by
-        `dump_to`; count and hash are verified); `str`, `bytes`, `bytearray`, `memoryview` are the content itself (a
-        trailer line, if present, is verified); empty content gives an empty store; anything else not canonical raises
-        ValueError. `lane` is a string or a mapping series_id -> lane (default "stock"; the lane is not in the text)."""
-        need_trailer = False
+        """Store from canonical text: `os.PathLike` is a path; `str`, `bytes`, `bytearray`, `memoryview` are the content
+        itself; empty content gives an empty store; other types raise TypeError. Non-empty content must end with the
+        trailer line: after the lines parse, `trailer_missing`, `trailer_count_mismatch` (N differs from the record
+        count) or `trailer_hash_mismatch` (hex differs from the content hash of the loaded records) are raised as
+        M2StructuralError; a malformed line or a wrong per-line content_sha256 raises ValueError. `lane` is a string or a
+        series_id -> lane mapping that sets the lane of every loaded ring (default "stock")."""
         if isinstance(source, os.PathLike):
             with open(source, "rb") as fh:
                 source = fh.read()
-            need_trailer = True
         if isinstance(source, (bytes, bytearray, memoryview)):
             raw = bytes(source)
         elif isinstance(source, str):
@@ -428,32 +480,42 @@ class HistoryStore:
         store = cls(calendar, k, strict_calendar)
         if not raw:
             return store
-        trailer = None
-        cut = raw.rfind(b'{"trailer":')
-        if cut == 0 or (cut > 0 and raw[cut - 1] == 10):
-            try:
-                trailer = json.loads(raw[cut:])
-            except ValueError:
-                raise ValueError("bad trailer")
-            raw, tail_bytes = raw[:cut], raw[cut:]
-        if need_trailer and trailer is None:
-            raise ValueError("missing trailer")
-        text = raw.decode("ascii")
-        rows = text.split("\n")
+        rows = raw.decode("ascii").split("\n")
         if rows[-1] == "":
             rows.pop()
-        if trailer is not None:
-            if trailer.get("records") != len(rows) or trailer.get("content_sha256") != hashlib.sha256(raw).hexdigest():
-                raise ValueError("trailer mismatch (truncated or altered file)")
+        trailer = None
+        if rows and rows[-1][:1] == "#":
+            last = rows.pop()                       # a trailing "#..." line that is not "#END ..." is no trailer
+            trailer = last if last[:5] == "#END " else None
+        shas = store._parse_rows(rows, lane, verify)
+        if trailer is None:
+            raise M2StructuralError("trailer_missing")
+        m = _TRAILER.match(trailer)
+        if m is None:
+            raise ValueError("bad trailer line")
+        if int(m.group(1)) != len(rows):
+            raise M2StructuralError("trailer_count_mismatch")
+        if m.group(2) != hashlib.sha256("\n".join(shas).encode("ascii")).hexdigest():
+            raise M2StructuralError("trailer_hash_mismatch")
+        return store
+
+    def _parse_rows(self, rows, lane, verify):
+        """Parse canonical record lines into this (empty) store; returns the claimed per-record sha list in order."""
         match = _LINE.match
+        calendar = self.calendar
+        strict = self.strict_calendar
         prev_key = None
+        shas = []
         lane_of = (lambda s: lane.get(s, "stock")) if isinstance(lane, dict) else (lambda s: lane)
         for ln in rows:
             m = match(ln)
             if m is None:
                 raise ValueError("not a canonical history line")
             g1 = ln.find('],"total":', m.end())
-            tail = ln[g1 + 10:].split(",") if g1 >= 0 else ()
+            if g1 < 0:
+                raise ValueError("not a canonical history line")
+            g0 = ln.find('],"grid_idx":[', m.end(), g1)
+            tail = ln[g1 + 10:].split(",")
             if len(tail) != 3 or tail[1][:11] != '"complete":' or tail[2][:17] != '"content_sha256":' or tail[2][-2:] != '"}':
                 raise ValueError("not a canonical history line")
             claimed = tail[2][18:-2]
@@ -467,33 +529,71 @@ class HistoryStore:
                 if hashlib.sha256(body.encode("ascii")).hexdigest() != claimed:
                     raise ValueError("content_sha256 mismatch")
             key = (series_id, metric, window_s)
-            if strict_calendar and sid not in calendar:
+            pos = calendar.position(sid)
+            if pos is None and strict:
                 raise M2StructuralError("session_not_in_calendar")
-            ring = store._rings.get(key)
+            ring = self._rings.get(key)
             if ring is None:
                 if prev_key is not None and key < prev_key:
                     raise ValueError("lines are not in canonical order")
-                ring = store._rings[key] = _Ring(lane_of(series_id), _head(series_id, metric))
+                ring = self._rings[key] = _Ring(lane_of(series_id), _head(series_id, metric))
             elif next(reversed(ring.recs)) >= sid:
                 raise M2StructuralError("duplicate_session" if next(reversed(ring.recs)) == sid else "out_of_order_append")
             prev_key = key
-            txt = ln[m.end():g1]
-            rec = _Rec(sid, (txt.count(",") + 1) if txt else 0, None, None, int(tail[0]), tail[1][11:] == "true", txt)
-            pos = calendar.position(sid)
-            if pos is not None and calendar.minutes[pos] != rec.minutes:
-                raise M2StructuralError("record_length_mismatch")
+            if g0 >= 0:
+                txt, itxt = ln[m.end():g0], ln[g0 + 14:g1]
+                minutes = calendar.minutes[pos] if pos is not None else 0
+                rec = _Rec(sid, minutes, None, None, int(tail[0]), tail[1][11:] == "true", txt, True, itxt)
+            else:
+                txt = ln[m.end():g1]
+                rec = _Rec(sid, (txt.count(",") + 1) if txt else 0, None, None, int(tail[0]), tail[1][11:] == "true", txt)
+                if pos is not None and rec.minutes > calendar.minutes[pos]:
+                    raise M2StructuralError("record_length_mismatch")
             rec.sha = claimed
             ring.recs[sid] = rec
-            if len(ring.recs) > store.k:
+            if len(ring.recs) > self.k:
                 del ring.recs[next(iter(ring.recs))]
+            shas.append(claimed)
+        return shas
+
+    # ------------------------------------------------------------------ snapshot (RULED format) and binary transfer
+    def snapshot(self):
+        """RULED snapshot: magic "M2SNAP1" (7 bytes) + total length (8-byte little-endian: bytes of the whole snapshot) +
+        SHA-256 of the body (32 bytes) + body, the body being the canonical record lines (the dump text without its
+        trailer). The runner must compare `content_hash()` after attaching a store."""
+        body = self.dump(False)
+        return b"".join([_SNAP_MAGIC, (len(_SNAP_MAGIC) + 8 + 32 + len(body)).to_bytes(8, "little"),
+                         hashlib.sha256(body).digest(), body])
+
+    def snapshot_to(self, path):
+        _atomic_write(os.fspath(path), self.snapshot())
+
+    @classmethod
+    def from_snapshot(cls, buffer, calendar, k=20, strict_calendar=True, lane="stock", verify=True):
+        """Store from a `snapshot()` buffer (bytes, mmap, shared memory, memoryview). Structural errors with closed codes,
+        in this order: `snapshot_bad_magic`, `snapshot_length_mismatch` (including truncation), `snapshot_hash_mismatch`.
+        The lines are then parsed as in `load` (per-line hashes verified; grids parsed on first use)."""
+        mv = memoryview(buffer)
+        head = len(_SNAP_MAGIC)
+        if bytes(mv[:head]) != _SNAP_MAGIC:
+            raise M2StructuralError("snapshot_bad_magic")
+        if len(mv) < head + 40 or int.from_bytes(mv[head:head + 8], "little") != len(mv):
+            raise M2StructuralError("snapshot_length_mismatch")
+        body = bytes(mv[head + 40:])
+        if hashlib.sha256(body).digest() != bytes(mv[head + 8:head + 40]):
+            raise M2StructuralError("snapshot_hash_mismatch")
+        store = cls(calendar, k, strict_calendar)
+        if body:
+            rows = body.decode("ascii").split("\n")
+            if rows[-1] == "":
+                rows.pop()
+            store._parse_rows(rows, lane, verify)
         return store
 
-    # ------------------------------------------------------------------ binary snapshot (shared memory / mmap transfer)
-    def snapshot(self):
-        """The whole store as one bytes object: magic, total length, SHA-256 of everything after the digest, the record
-        table, then the raw typed arrays (8-byte aligned). `from_snapshot` over bytes, an `mmap` or a
-        `multiprocessing.shared_memory` buffer builds a store whose records are zero-copy read-only views of that
-        buffer (the view transfer option of M2-B16). The runner must compare `content_hash()` after attaching."""
+    def binary_snapshot(self):
+        """Optional zero-copy transfer form (not the ruled snapshot): magic, total length, SHA-256 of the rest, the record
+        table, then the raw typed arrays (8-byte aligned). `from_binary_snapshot` over bytes, an `mmap` or shared memory
+        builds a store whose records are read-only views of that buffer (view transfer option of M2-B16)."""
         table, blobs, off = [], [], 0
         for key in sorted(self._rings):
             ring = self._rings[key]
@@ -501,7 +601,7 @@ class HistoryStore:
             for sid in sorted(ring.recs):
                 r = _sparse(ring.recs[sid])
                 n = len(r.idx)
-                head = [sid, r.minutes, r.total, 1 if r.complete else 0, n, off, "H"]
+                head = [sid, r.minutes, r.total, 1 if r.complete else 0, n, off, "H", 1 if r.sparse else 0]
                 ib = array("H", r.idx).tobytes()
                 if isinstance(r.vals, tuple):
                     head.append([int(v) for v in r.vals])
@@ -515,29 +615,24 @@ class HistoryStore:
                 recs.append(head)
             table.append([key[0], key[1], key[2], ring.lane, recs])
         meta = json.dumps({"k": self.k, "series": table}, separators=(",", ":")).encode("ascii")
-        start = len(_SNAP_MAGIC) + 8 + 32 + 8
+        start = len(_BIN_MAGIC) + 8 + 32 + 8
         pad = (-(start + len(meta))) % 8
         rest = b"".join([len(meta).to_bytes(8, "little"), meta, b" " * pad] + blobs)
-        total = len(_SNAP_MAGIC) + 8 + 32 + len(rest)
-        return b"".join([_SNAP_MAGIC, total.to_bytes(8, "little"), hashlib.sha256(rest).digest(), rest])
-
-    def snapshot_to(self, path):
-        """Atomic snapshot file write (temporary file, flush, os.replace)."""
-        _atomic_write(os.fspath(path), self.snapshot())
+        total = len(_BIN_MAGIC) + 8 + 32 + len(rest)
+        return b"".join([_BIN_MAGIC, total.to_bytes(8, "little"), hashlib.sha256(rest).digest(), rest])
 
     @classmethod
-    def from_snapshot(cls, buffer, calendar, k=None, strict_calendar=True, lane=None, verify=True):
-        """Store over a snapshot buffer (bytes, mmap or shared memory); nothing is copied, the store keeps a reference
-        to the buffer, records are read-only. The header length and SHA-256 are verified (`verify`); a bad buffer raises
-        ValueError. `lane`: None keeps the stored lanes, else a string or a series_id -> lane mapping."""
+    def from_binary_snapshot(cls, buffer, calendar, k=None, strict_calendar=True, lane=None, verify=True):
+        """Store over a `binary_snapshot()` buffer; nothing is copied, the store keeps a reference to the buffer.
+        Raises the same closed snapshot codes as `from_snapshot`. `lane`: None keeps the stored lanes."""
         mv = memoryview(buffer).toreadonly()
-        head = len(_SNAP_MAGIC)
-        if bytes(mv[:head]) != _SNAP_MAGIC:
-            raise ValueError("not a history snapshot")
+        head = len(_BIN_MAGIC)
+        if bytes(mv[:head]) != _BIN_MAGIC:
+            raise M2StructuralError("snapshot_bad_magic")
         if len(mv) < head + 48 or int.from_bytes(mv[head:head + 8], "little") != len(mv):
-            raise ValueError("snapshot length mismatch (truncated)")
+            raise M2StructuralError("snapshot_length_mismatch")
         if verify and hashlib.sha256(mv[head + 40:]).digest() != bytes(mv[head + 8:head + 40]):
-            raise ValueError("snapshot digest mismatch")
+            raise M2StructuralError("snapshot_hash_mismatch")
         start = head + 40
         n = int.from_bytes(mv[start:start + 8], "little")
         start += 8
@@ -553,15 +648,18 @@ class HistoryStore:
             ring = store._rings[(series_id, metric, window_s)] = _Ring(ln, _head(series_id, metric))
             out = ring.recs
             for row in recs:
-                sid, minutes, total, complete, cnt, off, tc = row[:7]
+                sid, minutes, total, complete, cnt, off, tc, sparse = row[:8]
                 if strict_calendar and sid not in calendar:
                     raise M2StructuralError("session_not_in_calendar")
                 a = base + off
                 ib = (cnt * 2 + 7) // 8 * 8
                 idx = mv[a:a + cnt * 2].cast("H")
-                vals = tuple(row[7]) if len(row) > 7 else mv[a + ib:a + ib + cnt * _SIZE[tc]].cast(tc)
-                out[sid] = _Rec(sid, minutes, idx, vals, total, bool(complete))
+                vals = tuple(row[8]) if len(row) > 8 else mv[a + ib:a + ib + cnt * _SIZE[tc]].cast(tc)
+                out[sid] = _Rec(sid, minutes, idx, vals, total, bool(complete), None, bool(sparse))
         return store
+
+    def binary_snapshot_to(self, path):
+        _atomic_write(os.fspath(path), self.binary_snapshot())
 
     def drop_caches(self):
         """Forget every cached view (memory control; never changes a result)."""
@@ -578,7 +676,7 @@ class HistoryStore:
             for r in ring.recs.values():
                 recs += 1
                 nbytes += sys.getsizeof(r)
-                for part in (r.idx, r.vals, r.txt):
+                for part in (r.idx, r.vals, r.txt, r.itxt):
                     if part is not None and id(part) not in seen:
                         seen.add(id(part))
                         nbytes += sys.getsizeof(part)

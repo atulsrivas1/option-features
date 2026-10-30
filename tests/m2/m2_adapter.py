@@ -23,7 +23,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 ROWS_DIR = ROOT / "qualification" / "synthetic" / "m2" / "correctness"
-OWNED = frozenset(("M2-2", "M2-3", "M2-7", "M2-8", "M2-10", "M2-12"))
+ADD_DIR = ROWS_DIR / "additions"
+OWNED = frozenset(("M2-2", "M2-3", "M2-7", "M2-8", "M2-10", "M2-12", "M2-GRID"))
 NS = 1000000000
 
 
@@ -38,7 +39,7 @@ def load_rows(owned_only=True):
     """All rows (expanded by the fixture loader) of the owned outputs, in file order."""
     m2_load = _loader()
     rows = []
-    for path in sorted(glob.glob(str(ROWS_DIR / "m2_cases_*.json"))):
+    for path in sorted(glob.glob(str(ROWS_DIR / "m2_cases_*.json"))) + sorted(glob.glob(str(ADD_DIR / "m2_cases_add_*.json"))):
         _, part = m2_load.load_dataset(path)
         rows.extend(r for r in part if (not owned_only) or r["output_id"] in OWNED)
     return rows
@@ -46,9 +47,10 @@ def load_rows(owned_only=True):
 
 def manifest_hashes():
     pinned = {}
-    for line in (ROWS_DIR / "MANIFEST.sha256").read_text(encoding="ascii").splitlines():
-        digest, name = line.split(" *")
-        pinned[name] = digest
+    for base, name in ((ROWS_DIR, "MANIFEST.sha256"), (ADD_DIR, "MANIFEST_ADDITIONS.sha256")):
+        for line in (base / name).read_text(encoding="ascii").splitlines():
+            parts = line.split()
+            pinned[str((base / parts[-1].lstrip("*")).relative_to(ROWS_DIR)).replace(chr(92), "/")] = parts[0]
     return pinned
 
 
@@ -156,7 +158,7 @@ def _coverage(w):
 
 def _structural_prints(inp):
     from option_features.flowgrid import check_prints
-    return check_prints(_abs_prints(inp))
+    return check_prints(_abs_prints(inp), _contracts(inp))
 
 
 def _invalid(output_id, code, inp):
@@ -256,33 +258,71 @@ def _run_f19(row):
                           X=prm.get("X", 5), K=prm.get("K", 20), lane=prm.get("lane", "stock"))
 
 
+def _store_value(store, inp):
+    q = inp["query"]
+    view = list(store.complete_sessions_before(q["series_id"], q["metric"], q["window_s"], q["as_of"], inp.get("k", 20)))
+    hashes = store.record_hashes()
+    return {"retained": store.retained(), "view": view, "dump_sha256": store.dump_sha256(), "n_lines": len(hashes),
+            "content_sha256_digest": store.content_hash()}
+
+
 def _run_store(row):
     from option_features.flowresult import M2StructuralError, Result
     from option_features.flowstore import HistoryStore
     inp = row["inputs"]
-    # check_length=False: rows STORE-033 and STORE-034 append grids of 1 value to 3-minute sessions and expect success;
-    # PO ruling 10 (record_length_mismatch) contradicts them (defect report to the PO, DECISIONS.md)
-    store = HistoryStore(_calendar(inp), k=inp.get("k", 20), check_length=False)
     try:
-        for op in inp["ops"]:
-            if op[0] == "append":
-                r = op[1]
-                store.append(r["series_id"], r["metric"], r["window_s"], r["session_id"], r["grid"], total=r["total"],
-                             complete=r["complete"], grid_idx=r.get("grid_idx"))
-            else:
-                store.seal(op[1], op[2], op[3], op[4])
+        if "snapshot_hex" in inp:
+            store = HistoryStore.from_snapshot(bytes.fromhex(inp["snapshot_hex"]), _calendar(inp), k=inp.get("k", 20))
+        elif "dump_text" in inp:
+            store = HistoryStore.load(inp["dump_text"], _calendar(inp), k=inp.get("k", 20))
+        else:
+            store = HistoryStore(_calendar(inp), k=inp.get("k", 20))
+            for op in inp.get("store_ops") or inp["ops"]:
+                if op[0] == "append":
+                    r = op[1]
+                    store.append(r["series_id"], r["metric"], r["window_s"], r["session_id"], r["grid"], total=r["total"],
+                                 complete=r["complete"], grid_idx=r.get("grid_idx"), lane=r.get("lane", "stock"))
+                else:
+                    store.seal(op[1], op[2], op[3], op[4])
     except M2StructuralError as exc:
         return Result.invalid("M2-12", exc.code, None, None, None)
-    q = inp["query"]
-    view = list(store.complete_sessions_before(q["series_id"], q["metric"], q["window_s"], q["as_of"], inp.get("k", 20)))
-    hashes = store.record_hashes()
-    value = {"retained": store.retained(), "view": view, "dump_sha256": store.content_hash(),
-             "n_lines": len(hashes), "content_sha256_digest": hashlib.sha256("\n".join(hashes).encode()).hexdigest()}
-    return Result.available("M2-12", None, None, None, value)
+    return Result.available("M2-12", None, None, None, _store_value(store, inp))
+
+
+def _run_grid(row):
+    from option_features.flowgrid import build_session_records
+    from option_features.flowresult import M2StructuralError, Result
+    inp, prm = row["inputs"], row["params"]
+    s = inp["session"]
+    w, metric, cid = prm["window_s"], prm["metric"], prm.get("contract_id")
+    prints = _abs_prints(inp)
+    if cid is not None:
+        prints = [p for p in prints if p[0] == cid]
+    try:
+        b = build_session_records(prints, _contracts(inp), s["session_id"], s["open_ns"], s["close_ns"], s["minutes"], (w,),
+                                  prm.get("lane", "stock"), None if cid is not None else inp["series_id"], cid is not None, "full")
+    except M2StructuralError as exc:
+        return Result.invalid("M2-GRID", exc.code, None, None, None)
+    rec = next((r for r in b.records if r.metric == metric and (cid is None or r.series_id == cid)), None)
+    minutes = s["minutes"]
+    idx = [] if rec is None else list(rec.idx)
+    vals = [] if rec is None else list(rec.vals)
+    total = 0 if rec is None else rec.total
+    if cid is not None:
+        value = {"form": "sparse", "sparse": [[i, v] for i, v in zip(idx, vals)], "zero_count": minutes - len(idx),
+                 "total": total, "valid_from": w // 60}
+    else:
+        grid = [0] * minutes
+        for i, v in zip(idx, vals):
+            grid[i] = v
+        value = {"form": "dense", "grid": grid, "total": total, "valid_from": w // 60}
+    cov = {"eligible_count": b.eligible_count, "nonstandard_count": b.nonstandard_count,
+           "excluded_condition_count": b.excluded_condition_count, "unavailable_points": 0}
+    return Result.available("M2-GRID", None, None, None, value, coverage=cov)
 
 
 RUNNERS = {"M2-2": _run_f2, "M2-3": _run_f2d, "M2-7": _run_f10, "M2-8": _run_f20, "M2-10": _run_f19,
-           "M2-12": _run_store}
+           "M2-12": _run_store, "M2-GRID": _run_grid}
 
 
 def run_row(row):

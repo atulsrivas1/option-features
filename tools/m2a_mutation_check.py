@@ -102,19 +102,11 @@ MUTS = [
     ("f2c_per_second", "f2c_per_second", [(RK, "Fraction(x, mins) if metric", "Fraction(x, window_s) if metric")]),
     ("f20_median_default", "f20_median_default", [(RK, '    params = {"N": N, "K": K, "metric": metric, "consumer_default": consumer_default}', '    consumer_default = "median"\n    params = {"N": N, "K": K, "metric": metric, "consumer_default": consumer_default}')]),
     ("f10_mean_default", "f10_mean_default", [(RK, '    params = {"N": N, "K": K, "window_s": window_s, "consumer_default": consumer_default}', '    consumer_default = "mean"\n    params = {"N": N, "K": K, "window_s": window_s, "consumer_default": consumer_default}')]),
-    ("skip_unordered", "skip_unordered", [(GR, "if pt is not None and (t < pt or (t == pt and p[6] < ps)):", "if False:")]),
-    ("skip_window_check", "skip_window_check", [(RK, "if windowed and window_s not in ALLOWED_WINDOWS:", "if False:")]),
+    ("skip_unordered", "skip_unordered", [(GR, "if pt is not None and (t < pt or (t == pt and seq < ps)):", "if False:")]),
     ("float_ratio", "float_ratio", [(RK, "r = Fraction(x) / st\n", "r = Fraction(float(x) / float(st))\n")]),
     ("f19_zero_counted", "f19_zero_counted", [(RK, "ratios = [(p, c) for p, c in zip(pv.totals, cv.totals) if c > 0]", "ratios = [(p, c) if c > 0 else (0, 1) for p, c in zip(pv.totals, cv.totals)]")]),
     ("store_k_plus_1", "store_k_plus_1", [(ST, "if len(recs) > self.k:\n            del recs[next(iter(recs))]\n\n    def seal", "if len(recs) > self.k + 1:\n            del recs[next(iter(recs))]\n\n    def seal")]),
     ("store_no_sort", "store_no_sort", [(ST, "        for key in sorted(self._rings):\n            ring = self._rings[key]\n            for sid in sorted(ring.recs):", "        for key in self._rings:\n            ring = self._rings[key]\n            for sid in ring.recs:")]),
-    ("store_arrival_hash", "store_arrival_hash", [(ST, '"total", "complete", "sha", "txt")', '"total", "complete", "sha", "txt", "arr")'),
-                                                   (ST, "self.total, self.complete, self.sha, self.txt = total, complete, None, txt", "self.total, self.complete, self.sha, self.txt = total, complete, None, txt\n        _ARR.append(0)\n        self.arr = len(_ARR)"),
-                                                   (ST, "_VIEW_CACHE = 4\n", "_VIEW_CACHE = 4\n_ARR = []\n"),
-                                                   (ST, """'%s%s,"window_s":%d,"grid":[%s],"total":%d,"complete":%s}' % (
-        head, json.dumps(rec.session_id), window_s, _grid_text(rec), rec.total, "true" if rec.complete else "false")""",
-                                                    """'%s%s,"window_s":%d,"grid":[%s],"total":%d,"complete":%s,"arr":%d}' % (
-        head, json.dumps(rec.session_id), window_s, _grid_text(rec), rec.total, "true" if rec.complete else "false", rec.arr)""")]),
     ("store_view_current", "store_view_current", [(ST, "if r.complete and s < as_of]", "if r.complete and s <= as_of]")]),
     ("coverage_nonstd_first", "both_nonstd_first", [(GR, *NONSTD_FIRST)]),
     ("cond_excl_counted", "cond_excl_counted", [(GR, "        if p[5]:\n            excl += 1\n            continue\n        mult = p[4]\n        if mult != STANDARD_MULTIPLIER:\n            nonstd += 1\n            continue\n        size = p[3]\n        prem += price_ticks(p[2]) * size * mult\n        vol += size",
@@ -130,19 +122,55 @@ MUTS = [
     ("cache_not_cleared_on_append", "stale cache after append or eviction", [(ST, "        if ring.views:\n            ring.views.clear()\n        if len(recs)", "        if len(recs)")]),
     ("batched_drops_last", "batched path drops the last series", [(RK, "    return [flow_pack(store, s, session, evaluation_ns, window_s, p, v, c, X, N, K, consumer_default, lane, cov)\n            for s, p, v, c, cov in items]",
                                                                   "    items = list(items)[:-1]\n    return [flow_pack(store, s, session, evaluation_ns, window_s, p, v, c, X, N, K, consumer_default, lane, cov)\n            for s, p, v, c, cov in items]")]),
+    ("skip_window_check", "skip_window_check", [(RK, "if windowed and (type(window_s) is not int or window_s not in ALLOWED_WINDOWS):", "if False:")]),
+    ("float_window_ok", "float window_s accepted", [(RK, "type(window_s) is not int or window_s not in ALLOWED_WINDOWS", "window_s not in ALLOWED_WINDOWS")]),
+    ("store_arrival_hash", "store_arrival_hash", [(ST, '"txt", "sparse", "itxt")', '"txt", "sparse", "itxt", "arr")'),
+                                                   (ST, "self.sparse, self.itxt = sparse, itxt", "self.sparse, self.itxt = sparse, itxt\n        _ARR.append(0)\n        self.arr = len(_ARR)"),
+                                                   (ST, "_VIEW_CACHE = 4\n", "_VIEW_CACHE = 4\n_ARR = []\n"),
+                                                   (ST, """    return '%s%s,"window_s":%d,"grid":[%s],"total":%d,"complete":%s}' % (
+        head, json.dumps(rec.session_id), window_s, _grid_text(rec), rec.total, "true" if rec.complete else "false")""",
+                                                    """    return '%s%s,"window_s":%d,"grid":[%s],"total":%d,"complete":%s,"arr":%d}' % (
+        head, json.dumps(rec.session_id), window_s, _grid_text(rec), rec.total, "true" if rec.complete else "false", rec.arr)""")]),
+    ("record_length_dense_dropped", "record length (dense) not checked", [(ST, "elif cal_minutes is not None and minutes > cal_minutes:", "elif False:")]),
+    ("record_length_sparse_dropped", "record length (sparse) not checked", [(ST, "if lo is not None and (lo < 0 or (cal_minutes is not None and hi >= cal_minutes)):", "if False:")]),
+    ("monotone_dropped", "non-monotone sparse index accepted", [(ST, "            if not asc:\n", "            if False:\n")]),
+    ("calendar_before_lane", "store-append precedence: calendar before lane", [(ST, """        ring = self._rings.get((series_id, metric, window_s))
+        if ring is not None and ring.lane != lane:
+            raise M2StructuralError("lane_mismatch")
+        cal = self.calendar
+        pos = cal.position(session_id)
+        if pos is None and self.strict_calendar:
+            raise M2StructuralError("session_not_in_calendar")
+""", """        ring = self._rings.get((series_id, metric, window_s))
+        cal = self.calendar
+        pos = cal.position(session_id)
+        if pos is None and self.strict_calendar:
+            raise M2StructuralError("session_not_in_calendar")
+        if ring is not None and ring.lane != lane:
+            raise M2StructuralError("lane_mismatch")
+""")]),
+    ("trailer_count_not_checked", "load ignores the trailer count", [(ST, "if int(m.group(1)) != len(rows):", "if False:")]),
+    ("trailer_hash_not_checked", "load ignores the trailer hash", [(ST, "if m.group(2) != ", "if False and ")]),
+    ("trailer_missing_not_checked", "load accepts a text without trailer", [(ST, "        if trailer is None:\n            raise", "        if False:\n            raise")]),
+    ("snapshot_digest_skipped", "snapshot hash not verified", [(ST, "if hashlib.sha256(body).digest() != bytes(mv[head + 8:head + 40]):", "if False:")]),
+    ("snapshot_magic_skipped", "snapshot magic not verified", [(ST, "if bytes(mv[:head]) != _SNAP_MAGIC:", "if False:")]),
+    ("binary_digest_skipped", "binary snapshot digest not verified", [(ST, "if verify and hashlib.sha256(mv[head + 40:]).digest()", "if False and hashlib.sha256(mv[head + 40:]).digest()")]),
+    ("lane_dropped_on_load", "load ignores the lane argument", [(ST, "ring = self._rings[key] = _Ring(lane_of(series_id), _head(series_id, metric))", 'ring = self._rings[key] = _Ring("stock", _head(series_id, metric))')]),
+    ("sparse_idx_not_in_text", "sparse canonical line omits grid_idx", [(ST, ',"grid_idx":[%s],"total"', ',"total"'),
+                                                                        (ST, "_grid_text(rec), _idx_text(rec), rec.total,", "_grid_text(rec), rec.total,")]),
+    ("price_beyond_4_ok", "non-zero digit beyond the 4th decimal accepted", [(GR, "if frac[TICK_DIGITS:].strip(\"0\"):", "if False:")]),
+    ("unknown_contract_ignored", "unknown contract accepted", [(GR, "if contracts is not None and cid not in contracts:", "if False:")]),
+    ("bool_size_ok", "bool or float size accepted", [(GR, "or type(size) is not int or type(mult) is not int:", "or type(mult) is not int:")]),
+    ("excluded_flag_any_ok", "any condition_excluded value accepted", [(GR, "if type(excl) is not bool and not (type(excl) is int and excl in (0, 1)):", "if False:")]),
+    ("params_not_validated", "float or bool X and N accepted", [(RK, "    return any(_rational(r) is None for r in rationals) or (K is not None and type(K) is not int)", "    return False")]),
     ("fused_uses_wrong_volume", "fused path reads the wrong input", [(RK, '("contracts", volume), ("prints", count)):', '("contracts", count), ("prints", count)):')]),
     ("fused_f10_wrong_x", "fused F10 uses the wrong input", [(RK, "contracts_view.median(), contracts_view.mean(), N,", "contracts_view.median(), contracts_view.mean(), N,"),
                                                              (RK, "e = _finish_stats(\"M2-7\", series_id, sid, evaluation_ns, volume,", "e = _finish_stats(\"M2-7\", series_id, sid, evaluation_ns, count,")]),
     ("fused_ignores_window_gate", "fused path skips the window gate", [(RK, "window_ok = evaluation_ns - session.open_ns >= window_s * NS", "window_ok = True")]),
     ("lane_mismatch_dropped", "append accepts another lane", [(ST, 'if ring is not None and ring.lane != lane:', 'if False:')]),
-    ("record_length_dropped", "record length not checked", [(ST, "if pos is not None and self.check_length and cal.minutes[pos] != minutes:", "if False:")]),
-    ("trailer_not_verified", "load ignores the trailer", [(ST, 'if trailer.get("records") != len(rows) or', "if False and")]),
-    ("trailer_not_required", "path load accepts a file without trailer", [(ST, "if need_trailer and trailer is None:", "if False:")]),
-    ("snapshot_digest_skipped", "snapshot digest not verified", [(ST, "if verify and hashlib.sha256(mv[head + 40:]).digest()", "if False and hashlib.sha256(mv[head + 40:]).digest()")]),
     ("snapshot_length_skipped", "snapshot length not verified", [(ST, 'or int.from_bytes(mv[head:head + 8], "little") != len(mv):', "or False:")]),
     ("store_keeps_caller_arrays", "append_record keeps the caller's arrays", [(ST, "    if isinstance(x, memoryview):\n        a = array(x.format)", "    if True:\n        return x\n    if isinstance(x, memoryview):\n        a = array(x.format)")]),
     ("strict_calendar_default_off", "load defaults to non-strict", [(ST, "def load(cls, source, calendar, k=20, strict_calendar=True,", "def load(cls, source, calendar, k=20, strict_calendar=False,")]),
-    ("lane_dropped_on_load", "load ignores the lane argument", [(ST, "ring = store._rings[key] = _Ring(lane_of(series_id), _head(series_id, metric))", "ring = store._rings[key] = _Ring(\"stock\", _head(series_id, metric))")]),
     ("stats_counts_rings_as_series", "stats series counts rings", [(ST, 'return {"series": len({k[0] for k in self._rings}),', 'return {"series": len(self._rings),')]),
     ("dump_not_atomic", "dump_to writes the target directly", [(ST, "os.replace(tmp, path)", "pass")]),
 ]
@@ -169,12 +197,19 @@ def main():
             shown += 1
             src = work / name / "src"
             shutil.copytree(ROOT / "packages" / "features" / "src", src, ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
+            missing = None
             for f, old, new in edits:
                 p = src / f
                 text = p.read_text(encoding="utf-8")
                 if old not in text:
-                    raise SystemExit("mutant %s: pattern not found in %s: %r" % (name, f, old[:70]))
+                    missing = "pattern not found in %s: %r" % (f, old[:70])
+                    break
                 p.write_text(text.replace(old, new, 1), encoding="utf-8", newline="\n")
+            if missing:
+                survivors += 1
+                print("BROKEN   %-28s %s" % (name, missing), flush=True)
+                shutil.rmtree(work / name, ignore_errors=True)
+                continue
             failed, err = run_tests(src, "test_m2_rows.py")
             tier = "rows"
             if not failed:

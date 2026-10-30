@@ -18,6 +18,7 @@ window be found by binary search (O(log n + window)).
 """
 from array import array
 from bisect import bisect_left, bisect_right
+import re
 from collections import namedtuple
 
 from .flowresult import M2StructuralError
@@ -65,44 +66,82 @@ class Calendar:
         return session_id in self._pos
 
 
-def price_ticks(price):
-    """Integer ticks (price x 10^4): an int is already ticks; a decimal string has at most 4 decimals."""
+_PRICE = re.compile(r"(-?)([0-9]*)(?:\.([0-9]*))?\Z")
+
+
+def _parse_price(price):
+    """Ticks of a price, or None when malformed. An int (not bool) is ticks (dollars x 10^4); a text price follows the
+    ASCII grammar -?(digits(.digits*)? | .digits) ('1.' and '.5' are valid, trailing zeros accepted) and a non-zero digit
+    beyond the 4th decimal is malformed; float, bool and every other type are malformed."""
     kind = type(price)
     if kind is int:
         return price
     if kind is str:
-        whole, _, frac = price.partition(".")
-        digits = len(frac)
-        if digits > TICK_DIGITS:
-            raise ValueError("more than %d decimal places: %r" % (TICK_DIGITS, price))
-        return int(whole + frac) * _POW[TICK_DIGITS - digits]
-    from fractions import Fraction
-    scaled = Fraction(price) * TICK
-    if scaled.denominator != 1:
-        raise ValueError("not representable in 10^-%d ticks: %r" % (TICK_DIGITS, price))
-    return scaled.numerator
+        m = _PRICE.match(price)
+        if m is None:
+            return None
+        sign, whole, frac = m.groups()
+        if not whole and not frac:
+            return None
+        frac = frac or ""
+        if len(frac) > TICK_DIGITS:
+            if frac[TICK_DIGITS:].strip("0"):
+                return None
+            frac = frac[:TICK_DIGITS]
+        ticks = int((whole or "0") + frac.ljust(TICK_DIGITS, "0"))
+        return -ticks if sign else ticks
+    return None
 
 
-def check_prints(prints):
-    """First structural code of a print list or None. Precedence: unordered_prints (order key (time_ns, seq)),
-    negative_size_or_price, bad_multiplier (multiplier <= 0); the whole list is scanned."""
-    neg = bad = False
+def price_ticks(price):
+    """Integer ticks (price x 10^4): an int is already ticks, a decimal string follows the grammar of `_parse_price`;
+    anything malformed raises ValueError (`check_prints` reports it as malformed_type first)."""
+    ticks = _parse_price(price)
+    if ticks is None:
+        raise ValueError("malformed price: %r" % (price,))
+    return ticks
+
+
+def check_prints(prints, contracts=None):
+    """First structural code of a print list or None, RULED precedence: unordered_prints (order key (time_ns, seq)),
+    negative_size_or_price, bad_multiplier (multiplier <= 0), unknown_contract (contract id not in `contracts`, when
+    given), malformed_type (price, size, multiplier, time or seq of the wrong type, a bad price text, a
+    condition_excluded flag other than bool, 0 or 1). The whole list is scanned."""
+    unordered = neg = bad = unknown = malformed = False
     pt = ps = None
     for p in prints:
-        t = p[1]
-        if pt is not None and (t < pt or (t == pt and p[6] < ps)):
-            return "unordered_prints"
-        pt, ps = t, p[6]
-        if not neg:
-            price = p[2]
-            if p[3] < 0 or (price < 0 if type(price) is int else (price[:1] == "-" and price_ticks(price) < 0)):
+        cid, t, price, size, mult, excl, seq = p[0], p[1], p[2], p[3], p[4], p[5], p[6]
+        if type(t) is not int or type(seq) is not int or type(size) is not int or type(mult) is not int:
+            malformed = True
+        ticks = _parse_price(price)
+        if ticks is None:
+            malformed = True
+        elif ticks < 0:
+            neg = True
+        if type(excl) is not bool and not (type(excl) is int and excl in (0, 1)):
+            malformed = True
+        try:
+            if size < 0:
                 neg = True
-        if p[4] <= 0:
-            bad = True
+            if mult <= 0:
+                bad = True
+            if pt is not None and (t < pt or (t == pt and seq < ps)):
+                unordered = True
+        except TypeError:
+            malformed = True
+        pt, ps = t, seq
+        if contracts is not None and cid not in contracts:
+            unknown = True
+    if unordered:
+        return "unordered_prints"
     if neg:
         return "negative_size_or_price"
     if bad:
         return "bad_multiplier"
+    if unknown:
+        return "unknown_contract"
+    if malformed:
+        return "malformed_type"
     return None
 
 
@@ -110,21 +149,25 @@ def _time_key(p):
     return p[1]
 
 
-def window_totals(prints, contracts, evaluation_ns, window_s, lane="stock", side_filter="all", validate="full"):
-    """Totals over the eligible prints in the closed window [T - W, T] (see module doc). `side_filter` is a plain
-    right filter: "all", "calls" or "puts". Raises M2StructuralError for a bad print."""
+def window_totals(prints, contracts, evaluation_ns, window_s, lane="stock", side_filter="all", validate="full",
+                  open_ns=None):
+    """Totals over the eligible prints in the closed window [T - W, T] (see module doc); with `open_ns` the window is
+    clipped at the session open (prints before it never count). `side_filter` is a plain right filter: "all", "calls"
+    or "puts". Raises M2StructuralError for a bad print."""
     if validate == "full":
-        code = check_prints(prints)
+        code = check_prints(prints, contracts)
         if code:
             raise M2StructuralError(code)
         lo_i, hi_i = 0, len(prints)
     else:
         lo_i = bisect_left(prints, evaluation_ns - window_s * NS, key=_time_key)
         hi_i = bisect_right(prints, evaluation_ns, key=_time_key)
-        code = check_prints(prints[lo_i:hi_i])
+        code = check_prints(prints[lo_i:hi_i], contracts)
         if code:
             raise M2StructuralError(code)
     lo, hi = evaluation_ns - window_s * NS, evaluation_ns
+    if open_ns is not None and open_ns > lo:
+        lo = open_ns
     want = None if side_filter == "all" else ("C" if side_filter == "calls" else "P")
     prem = vol = cnt = put = call = nonstd = excl = 0
     for i in range(lo_i, hi_i):
@@ -255,7 +298,7 @@ def build_session_records(prints, contracts, session_id, open_ns, close_ns, minu
     with eligible prints. The session total of every record is the sum over eligible prints with
     open_ns <= time_ns <= close_ns."""
     if validate == "full":
-        code = check_prints(prints)
+        code = check_prints(prints, contracts)
         if code:
             raise M2StructuralError(code)
     nonstd = excl = elig = 0

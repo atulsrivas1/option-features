@@ -23,6 +23,7 @@ Rules (docs/m2/M2_CAPABILITY_MATRIX.md, AMB and review rulings):
 from bisect import bisect_left, bisect_right
 from collections import namedtuple
 from fractions import Fraction
+import re
 
 from .flowresult import ALLOWED_WINDOWS, Result
 
@@ -42,10 +43,39 @@ def _fires(ge, n, X):
     return Fraction(ge, n) <= Fraction(X) / 100
 
 
-def _struct(store, session, window_s, windowed, gated_delay):
+_RATIONAL = re.compile(r"-?[0-9]+(?:/[0-9]+)?\Z")
+
+
+def _rational(x):
+    """Exact value of a rational-valued parameter: an int (not bool), a Fraction, or an "a/b" or integer text (int when
+    integral); None when malformed (float, bool, anything else)."""
+    kind = type(x)
+    if kind is int:
+        return x
+    if kind is Fraction:
+        return int(x) if x.denominator == 1 else x
+    if kind is str and _RATIONAL.match(x):
+        try:
+            f = Fraction(x)
+        except ZeroDivisionError:
+            return None
+        return int(f) if f.denominator == 1 else f
+    return None
+
+
+def _bad(*rationals, K=None):
+    """True when a rational-valued parameter or the integer K is malformed (malformed_type)."""
+    return any(_rational(r) is None for r in rationals) or (K is not None and type(K) is not int)
+
+
+def _struct(store, session, window_s, windowed, gated_delay, malformed=False):
+    """First structural code, RULED order: malformed_type, session_not_in_calendar, window_not_allowed (a non-int
+    window, e.g. a float, is not allowed), delayed_feed_tag."""
+    if malformed:
+        return "malformed_type"
     if session.session_id not in store.calendar:
         return "session_not_in_calendar"
-    if windowed and window_s not in ALLOWED_WINDOWS:
+    if windowed and (type(window_s) is not int or window_s not in ALLOWED_WINDOWS):
         return "window_not_allowed"
     if gated_delay and session.feed_delay_tag == "delayed":
         return "delayed_feed_tag"
@@ -57,9 +87,10 @@ def f2_rank(store, series_id, metric, x, session, evaluation_ns, window_s=300, f
             lane="stock", coverage=None):
     intraday = form == "intraday"
     params = {"X": X, "K": K, "form": form, "metric": metric, "window_s": window_s if intraday else None}
-    code = _struct(store, session, window_s, intraday, intraday)
+    code = _struct(store, session, window_s, intraday, intraday, _bad(X, K=K))
     if code:
         return Result.invalid("M2-2", code, series_id, session.session_id, evaluation_ns, params, lane)
+    X = _rational(X)
     sid = session.session_id
     view = store.baseline(series_id, metric, window_s, sid, K, lane)
     if view is None or (intraday and view.n == 0):
@@ -157,9 +188,10 @@ def _finish_stats(output_id, series_id, sid, ev, x, med, mean, N, default, param
 def f10_baseline(store, series_id, x, session, evaluation_ns, window_s=300, N=2, K=20, consumer_default="median",
                  lane="stock", coverage=None):
     params = {"N": N, "K": K, "window_s": window_s, "consumer_default": consumer_default}
-    code = _struct(store, session, window_s, True, True)
+    code = _struct(store, session, window_s, True, True, _bad(N, K=K))
     if code:
         return Result.invalid("M2-7", code, series_id, session.session_id, evaluation_ns, params, lane)
+    N = _rational(N)
     sid = session.session_id
     view = store.baseline(series_id, _F10_METRIC, window_s, sid, K, lane)
     if view is None or view.n == 0:
@@ -173,9 +205,10 @@ def f10_baseline(store, series_id, x, session, evaluation_ns, window_s=300, N=2,
 def f20_baseline(store, series_id, metric, session, evaluation_ns, window_s=300, N=2, K=20, consumer_default="mean",
                  lane="stock"):
     params = {"N": N, "K": K, "metric": metric, "consumer_default": consumer_default}
-    code = _struct(store, session, window_s, False, False)
+    code = _struct(store, session, window_s, False, False, _bad(N, K=K))
     if code:
         return Result.invalid("M2-8", code, series_id, session.session_id, evaluation_ns, params, lane)
+    N = _rational(N)
     sid = session.session_id
     view = store.baseline(series_id, metric, window_s, sid, K, lane)
     if view is None:
@@ -195,9 +228,10 @@ def f20_baseline(store, series_id, metric, session, evaluation_ns, window_s=300,
 # ------------------------------------------------------------------ F19
 def f19_percentile(store, series_id, put, call, session, evaluation_ns, window_s=300, X=5, K=20, lane="stock"):
     params = {"X": X, "K": K}
-    code = _struct(store, session, window_s, False, False)
+    code = _struct(store, session, window_s, False, False, _bad(X, K=K))
     if code:
         return Result.invalid("M2-10", code, series_id, session.session_id, evaluation_ns, params, lane)
+    X = _rational(X)
     sid = session.session_id
     pv = store.baseline(series_id, "put_volume", window_s, sid, K, lane)
     cv = store.baseline(series_id, "call_volume", window_s, sid, K, lane)
@@ -229,13 +263,14 @@ def flow_pack(store, series_id, session, evaluation_ns, window_s, premium, volum
     once, each of the three views is looked up once (the contracts view serves F2b and F10, its sorted array is built
     once), and F2d is derived from the three ranks without another read. Results equal the separate calls byte for
     byte (tested)."""
-    code = _struct(store, session, window_s, True, True)
+    code = _struct(store, session, window_s, True, True, _bad(X, N, K=K))
     if code:
         return (f2_rank(store, series_id, "premium", premium, session, evaluation_ns, window_s, "intraday", X, K, lane, coverage),
                 f2_rank(store, series_id, "contracts", volume, session, evaluation_ns, window_s, "intraday", X, K, lane, coverage),
                 f2_rank(store, series_id, "prints", count, session, evaluation_ns, window_s, "intraday", X, K, lane, coverage),
                 Result.invalid("M2-3", code, series_id, session.session_id, evaluation_ns, {"X": X, "window_s": window_s}, lane),
                 f10_baseline(store, series_id, volume, session, evaluation_ns, window_s, N, K, consumer_default, lane, coverage))
+    X, N = _rational(X), _rational(N)
     sid = session.session_id
     window_ok = evaluation_ns - session.open_ns >= window_s * NS
     mins = window_s // 60

@@ -13,9 +13,11 @@ from fractions import Fraction
 import json
 
 REASONS = ("insufficient_history", "session_not_complete", "insufficient_window", "zero_denominator")
-CODES = ("unordered_prints", "negative_size_or_price", "bad_multiplier", "duplicate_session", "non_monotone_grid",
-         "session_not_in_calendar", "window_not_allowed", "threshold_required", "out_of_order_append",
-         "delayed_feed_tag", "lane_mismatch", "record_length_mismatch")
+CODES = ("unordered_prints", "negative_size_or_price", "bad_multiplier", "unknown_contract", "malformed_type",
+         "grid_not_60s", "duplicate_session", "non_monotone_grid", "session_not_in_calendar", "window_not_allowed",
+         "lane_mismatch", "record_length_mismatch", "threshold_required", "out_of_order_append", "delayed_feed_tag",
+         "snapshot_bad_magic", "snapshot_length_mismatch", "snapshot_hash_mismatch", "trailer_missing",
+         "trailer_count_mismatch", "trailer_hash_mismatch")
 ALLOWED_WINDOWS = (60, 300, 900, 1800, 3600)
 STATUSES = ("available", "unavailable", "invalid_input")
 KEY_ORDER = ("output_id", "series_id", "session_id", "evaluation_ns", "status", "reason", "code", "value", "fired",

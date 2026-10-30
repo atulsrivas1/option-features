@@ -327,17 +327,17 @@ def main():
         h_a = flowstore.HistoryStore.load(path, cal, k=a.sessions).content_hash()
         record("M2-B17", "hash after round trip equals", h_a == st25.content_hash(), "bool")
         snap_path = tmp / "store.snap"
-        st25.snapshot_to(snap_path)
+        st25.binary_snapshot_to(snap_path)
         record("M2-B16", "snapshot bytes", snap_path.stat().st_size, "bytes (file, shared by all workers)")
         for label, fn in (("store load (text)", lambda: flowstore.HistoryStore.load(path, cal, k=a.sessions)),
-                          ("snapshot bytes copy", lambda: flowstore.HistoryStore.from_snapshot(snap_path.read_bytes(), cal))):
+                          ("snapshot bytes copy", lambda: flowstore.HistoryStore.from_binary_snapshot(snap_path.read_bytes(), cal))):
             sm = summary(timed(fn, max(3, R // 6)))
             record("M2-B16", label + " seconds per worker start", sm, "s")
 
         def mm_load():
             with open(snap_path, "rb") as fh:
                 m = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
-                st = flowstore.HistoryStore.from_snapshot(m, cal)
+                st = flowstore.HistoryStore.from_binary_snapshot(m, cal)
             return st
         keep = []
 
@@ -358,11 +358,13 @@ def main():
     try:
         path, snap_path = tmp / "store.lf", tmp / "store.snap"
         store.dump_to(path)
-        store.snapshot_to(snap_path)
+        store.binary_snapshot_to(snap_path)
+        store.snapshot_to(tmp / "ruled.snap")
         base = [str(ROOT / "packages" / "features" / "src"), str(ROOT / "packages" / "option-contracts" / "src")]
         variants = {"store load (text)": "st=flowstore.HistoryStore.load(__import__('pathlib').Path(%r),cal,k=20)" % str(path),
-                    "snapshot read into bytes": "st=flowstore.HistoryStore.from_snapshot(open(%r,'rb').read(),cal)" % str(snap_path),
-                    "mmap snapshot": "f=open(%r,'rb');m=mmap.mmap(f.fileno(),0,access=mmap.ACCESS_READ);st=flowstore.HistoryStore.from_snapshot(m,cal)" % str(snap_path)}
+                    "ruled text snapshot (M2SNAP1)": "st=flowstore.HistoryStore.from_snapshot(open(%r,'rb').read(),cal)" % str(tmp / "ruled.snap"),
+                    "binary snapshot read into bytes": "st=flowstore.HistoryStore.from_binary_snapshot(open(%r,'rb').read(),cal)" % str(snap_path),
+                    "binary mmap snapshot (zero copy)": "f=open(%r,'rb');m=mmap.mmap(f.fileno(),0,access=mmap.ACCESS_READ);st=flowstore.HistoryStore.from_binary_snapshot(m,cal)" % str(snap_path)}
         for label, stmt in variants.items():
             res = subprocess.run([sys.executable, "-c", code % (base, str(ROOT / "tools"), a.sessions, stmt)], capture_output=True, text=True)
             try:

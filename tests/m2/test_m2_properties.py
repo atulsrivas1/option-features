@@ -306,9 +306,10 @@ class StoreViews(unittest.TestCase):
         for s, m, i in order:
             g = [rng.choice([0, 0, 3, 10 ** 12]) for _ in range(6)]
             store.append(s, m, 300, cal.ids[i], g, total=sum(g) + 1, complete=rng.random() < 0.8)
-        data = store.dump()
+        data = store.dump(False)
         # independent re-serialisation of the same content with json
         lines = []
+        hashes = []
         for key in sorted(store._rings):
             for sid in sorted(store._rings[key].recs):
                 r = store._rings[key].recs[sid]
@@ -319,71 +320,42 @@ class StoreViews(unittest.TestCase):
                         "total": r.total, "complete": r.complete}
                 text = json.dumps(body, separators=(",", ":"))
                 h = hashlib.sha256((text + "\n").encode()).hexdigest()
+                hashes.append(h)
                 body["content_sha256"] = h
                 lines.append(json.dumps(body, separators=(",", ":")) + "\n")
         self.assertEqual(data, "".join(lines).encode())
-        self.assertEqual(store.content_hash(), hashlib.sha256(data).hexdigest())
-        loaded = flowstore.HistoryStore.load(data, cal, k=8)
-        self.assertEqual(loaded.dump(), data)
+        digest = hashlib.sha256("\n".join(hashes).encode()).hexdigest()
+        self.assertEqual(store.content_hash(), digest)
+        self.assertEqual(store.dump_sha256(), hashlib.sha256(data).hexdigest())
+        full = store.dump()
+        self.assertEqual(full, data + ("#END records=%d content_sha256=%s\n" % (len(hashes), digest)).encode())
+        loaded = flowstore.HistoryStore.load(full, cal, k=8)
+        self.assertEqual(loaded.dump(), full)
         self.assertEqual(loaded.content_hash(), store.content_hash())
         with tempfile.TemporaryDirectory() as d:
             p = os.path.join(d, "store.lf")
             store.dump_to(p)
             with open(p, "rb") as fh:
                 raw = fh.read()
-            self.assertTrue(raw.startswith(data))
-            trailer = json.loads(raw[len(data):])
-            self.assertEqual((trailer["records"], trailer["content_sha256"]), (data.count(b"\n"), hashlib.sha256(data).hexdigest()))
-            self.assertEqual(flowstore.HistoryStore.load(Path(p), cal, k=8).dump(), data)
-            cut = raw[:len(data) // 2]                                       # truncated file: no trailer
-            with open(p, "wb") as fh:
-                fh.write(cut[:cut.rindex(b"\n") + 1])
-            with self.assertRaises(ValueError):
-                flowstore.HistoryStore.load(Path(p), cal, k=8)
-            with open(p, "wb") as fh:                                         # altered file: trailer mismatch
+            self.assertEqual(raw, full)
+            self.assertEqual(flowstore.HistoryStore.load(Path(p), cal, k=8).dump(), full)
+            flowresult = lib()[3]
+            for mutate, code in ((lambda r: r[:r.rindex(b"#END")], "trailer_missing"),
+                                 (lambda r: r.split(b"\n", 1)[1], "trailer_count_mismatch"),
+                                 (lambda r: r[:-3] + (b"0" if r[-3:-2] != b"0" else b"1") + r[-2:], "trailer_hash_mismatch")):
+                with open(p, "wb") as fh:
+                    fh.write(mutate(raw))
+                with self.assertRaises(flowresult.M2StructuralError) as cm:
+                    flowstore.HistoryStore.load(Path(p), cal, k=8)
+                self.assertEqual(cm.exception.code, code)
+            with open(p, "wb") as fh:                                         # altered record: per-line hash, ValueError
                 fh.write(raw.replace(b'"total":1', b'"total":2', 1) if b'"total":1' in raw else raw[:5] + b"x" + raw[6:])
             with self.assertRaises(ValueError):
                 flowstore.HistoryStore.load(Path(p), cal, k=8)
-            lines = raw.split(b"\n")
-            with open(p, "wb") as fh:                                         # a whole record line removed, trailer kept
-                fh.write(b"\n".join(lines[1:]))
-            with self.assertRaises(ValueError):
-                flowstore.HistoryStore.load(Path(p), cal, k=8)
             self.assertEqual(os.listdir(d), ["store.lf"])                      # no temporary file left behind
-        bad = data.replace(b'"total":1,', b'"total":2,', 1) if b'"total":1,' in data else data[:-3] + b"0}\n"
+        bad = data[:-3] + b"0}\n"
         with self.assertRaises(ValueError):
             flowstore.HistoryStore.load(bad, cal, k=8)
-
-    def test_snapshot_round_trip_bytes_and_mmap(self):
-        import mmap
-        _, flowstore, flowrank, flowresult = lib()
-        rng = random.Random(10)
-        cal = self._cal(12, lambda i: 40)
-        store = flowstore.HistoryStore(cal, k=11)
-        for s in ("A", "B"):
-            for i in range(11):
-                g = [rng.choice([0, 0, 1, 5, 2 ** 70 if (s == "B" and i == 2) else 9]) for _ in range(40)]
-                store.append(s, "premium", 60, cal.ids[i], g, total=sum(g), complete=i != 4 or s == "B")
-        snap = store.snapshot()
-
-        def check(loaded):
-            self.assertEqual(loaded.dump(), store.dump())
-            self.assertEqual(loaded.retained(), store.retained())
-            for s in ("A", "B"):
-                a, b = store.baseline(s, "premium", 60, cal.ids[11], 7), loaded.baseline(s, "premium", 60, cal.ids[11], 7)
-                self.assertEqual(a is None, b is None)
-                if a is not None:
-                    self.assertEqual((a.rank(5), a.median(), a.mean()), (b.rank(5), b.median(), b.mean()))
-
-        check(flowstore.HistoryStore.from_snapshot(snap, cal))
-        with tempfile.TemporaryDirectory() as d:
-            path = os.path.join(d, "s.bin")
-            store.snapshot_to(path)
-            with open(path, "rb") as fh:
-                mm = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
-                check(flowstore.HistoryStore.from_snapshot(mm, cal))    # the store is gone when the map closes
-                mm.close()
-        self.assertEqual(store.baseline("A", "premium", 60, cal.ids[11], 7), None)   # session 4 incomplete for A
 
     def test_lane_load_dispatch_and_trailer(self):
         flowgrid, flowstore, flowrank, flowresult = lib()
@@ -395,9 +367,11 @@ class StoreViews(unittest.TestCase):
         got = flowstore.HistoryStore.load(data, cal, lane={"E": "etf_index"})
         self.assertEqual((got._rings[("E", "m", 60)].lane, got._rings[("S", "m", 60)].lane), ("etf_index", "stock"))
         self.assertEqual(flowstore.HistoryStore.load(data, cal, lane="etf_index")._rings[("S", "m", 60)].lane, "etf_index")
-        snap = flowstore.HistoryStore.from_snapshot(store.snapshot(), cal)
-        self.assertEqual(snap._rings[("E", "m", 60)].lane, "etf_index")           # snapshot keeps the stored lanes
-        self.assertEqual(flowstore.HistoryStore.from_snapshot(store.snapshot(), cal, lane="stock")._rings[("E", "m", 60)].lane, "stock")
+        snap = flowstore.HistoryStore.from_snapshot(store.snapshot(), cal, lane={"E": "etf_index"})
+        self.assertEqual(snap._rings[("E", "m", 60)].lane, "etf_index")           # the text snapshot has no lane: caller supplies it
+        self.assertEqual(flowstore.HistoryStore.from_snapshot(store.snapshot(), cal)._rings[("E", "m", 60)].lane, "stock")
+        binary = store.binary_snapshot()
+        self.assertEqual(flowstore.HistoryStore.from_binary_snapshot(binary, cal)._rings[("E", "m", 60)].lane, "etf_index")
         # dispatch: str, bytes, bytearray, memoryview are content; empty content is an empty store; garbage is ValueError
         text = data.decode()
         for src in (text, data, bytearray(data), memoryview(data)):
@@ -460,6 +434,24 @@ class StoreViews(unittest.TestCase):
         shared = {id(r.idx) for r in b.records if r.series_id == "K"}
         self.assertEqual(len(shared), 1)               # one shared read-only index for the three metrics of a contract
         flowstore.HistoryStore(cal, k=2).append_many(b.records)
+
+    def test_binary_snapshot_is_verified_and_zero_copy(self):
+        _, flowstore, _, flowresult = lib()
+        cal = self._cal(4, lambda i: 5)
+        store = flowstore.HistoryStore(cal, k=4)
+        store.append("S", "m", 60, cal.ids[0], [1, 0, 3, 0, 0], lane="etf_index")
+        store.append("S", "m", 60, cal.ids[1], [5, 6], grid_idx=[0, 4], lane="etf_index")
+        blob = store.binary_snapshot()
+        got = flowstore.HistoryStore.from_binary_snapshot(blob, cal)
+        self.assertEqual(got.dump(), store.dump())
+        self.assertEqual(got.content_hash(), store.content_hash())
+        bad = bytearray(blob)
+        bad[-1] ^= 1
+        for data, code in ((bytes(bad), "snapshot_hash_mismatch"), (blob[:-8], "snapshot_length_mismatch"),
+                           (b"X" + blob[1:], "snapshot_bad_magic")):
+            with self.assertRaises(flowresult.M2StructuralError) as cm:
+                flowstore.HistoryStore.from_binary_snapshot(data, cal)
+            self.assertEqual(cm.exception.code, code)
 
     def test_hash_independent_of_series_arrival_order(self):
         _, flowstore, _, _ = lib()
@@ -705,6 +697,85 @@ class Differential(unittest.TestCase):
                 self.assertEqual(got, exp, i)
             done[kind] += 1
         self.assertEqual(done, {"rank": n, "median_ratio": n})
+
+
+class Section9Rules(unittest.TestCase):
+    """RULED structural rules of docs/m2/M2_IO_CONTRACT.md section 9 for the shared helpers and the kernels."""
+
+    def _p(self, **kw):
+        base = dict(cid="K0", t=5, price="1.0000", size=1, mult=100, excl=0, seq=0)
+        base.update(kw)
+        return (base["cid"], base["t"], base["price"], base["size"], base["mult"], base["excl"], base["seq"])
+
+    def test_print_validation_codes_and_precedence(self):
+        flowgrid = lib()[0]
+        contracts = {"K0": flowgrid.Contract("C", 1, "2026-12-18", "stock", "N")}
+        chk = lambda *ps: flowgrid.check_prints(list(ps), contracts)  # noqa: E731
+        self.assertIsNone(chk(self._p()))
+        for price in (".8", "1.", "1.00000", "-0.0000", 12345, "0", "00.5"):
+            self.assertIsNone(chk(self._p(price=price)), price)
+        for price in (True, 1.5, "1.00001", "+1.0000", "1e3", " 1.0000", "1.0000 ", "\u0661.0", "", ".", "-", None, "1,5"):
+            self.assertEqual(chk(self._p(price=price)), "malformed_type", repr(price))
+        for kw in (dict(size=1.0), dict(size=True), dict(t=1.0), dict(t=True), dict(mult=True), dict(mult=100.0), dict(seq=True),
+                   dict(seq=1.5), dict(excl=2), dict(excl=3), dict(excl="1"), dict(excl=1.0)):
+            self.assertEqual(chk(self._p(**kw)), "malformed_type", kw)
+        for kw in (dict(excl=1), dict(excl=True), dict(excl=False)):
+            self.assertIsNone(chk(self._p(**kw)), kw)
+        self.assertEqual(chk(self._p(cid="ZZ")), "unknown_contract")
+        self.assertIsNone(flowgrid.check_prints([self._p(cid="ZZ")]))          # without a contracts map nothing is unknown
+        # precedence: unordered, negative, bad multiplier, unknown contract, malformed type
+        self.assertEqual(chk(self._p(t=9), self._p(t=5, price="-1.0000", mult=0, cid="ZZ")), "unordered_prints")
+        self.assertEqual(chk(self._p(price="-1.0000", mult=0, cid="ZZ")), "negative_size_or_price")
+        self.assertEqual(chk(self._p(mult=0, cid="ZZ", size=1.5)), "bad_multiplier")
+        self.assertEqual(chk(self._p(cid="ZZ", size=1.5)), "unknown_contract")
+        self.assertEqual(chk(self._p(size=1.5, price=1.5)), "malformed_type")
+        self.assertEqual(flowgrid.price_ticks(".5"), 5000)
+        self.assertEqual(flowgrid.price_ticks("1."), 10000)
+        self.assertEqual(flowgrid.price_ticks("-2.5000"), -25000)
+        self.assertEqual(flowgrid.price_ticks("1.23450"), 12345)
+        self.assertEqual(flowgrid.price_ticks(7), 7)
+        with self.assertRaises(lib()[3].M2StructuralError) as cm:
+            flowgrid.window_totals([self._p(cid="ZZ")], contracts, 10, 60)
+        self.assertEqual(cm.exception.code, "unknown_contract")
+
+    def test_window_clipped_at_open_when_given(self):
+        flowgrid = lib()[0]
+        contracts = {"K0": flowgrid.Contract("C", 1, "2026-12-18", "stock", "N")}
+        ps = [self._p(t=10, size=4), self._p(t=30, size=2, seq=1), self._p(t=40, size=1, seq=2)]
+        self.assertEqual(flowgrid.window_totals(ps, contracts, 40 * NS, 60, "stock", "all", "full").volume, 7)
+        tot = flowgrid.window_totals([self._p(t=10 * NS, size=4), self._p(t=30 * NS, size=2, seq=1)], contracts, 40 * NS, 60, "stock",
+                                     "all", "full", open_ns=20 * NS)
+        self.assertEqual(tot.volume, 2)
+
+    def test_kernel_parameter_rules(self):
+        flowgrid, flowstore, flowrank, flowresult = lib()
+        cal = flowgrid.Calendar([("2026-01-%02d" % (i + 1), 3) for i in range(22)])
+        store = flowstore.HistoryStore(cal, k=20)
+        for i in range(20):
+            for m in ("premium", "contracts", "prints", "put_volume", "call_volume"):
+                store.append("S", m, 60, cal.ids[i], [1 + i, 2, 3], total=10 + i)
+        sess = flowrank.SessionInfo(cal.ids[20], OPEN0, OPEN0 + 180 * NS, 3, True, "live", 10, None)
+        T = OPEN0 + 120 * NS
+        ok = flowrank.f2_rank(store, "S", "premium", 1000, sess, T, 60, X="1/2")
+        self.assertEqual((ok.status, ok.fired), ("available", True))                       # 1/2 percent: exact rational text
+        self.assertEqual(flowrank.f2_rank(store, "S", "premium", 1000, sess, T, 60, X=Fraction(1, 2)).value, ok.value)
+        for bad in (0.5, True, "x", None, [1]):
+            r = flowrank.f2_rank(store, "S", "premium", 3, sess, T, 60, X=bad)
+            self.assertEqual((r.status, r.code), ("invalid_input", "malformed_type"), repr(bad))
+            self.assertEqual(flowrank.f10_baseline(store, "S", 3, sess, T, 60, N=bad).code, "malformed_type")
+            self.assertEqual(flowrank.f20_baseline(store, "S", "premium", sess, T, 60, N=bad).code, "malformed_type")
+            self.assertEqual(flowrank.f19_percentile(store, "S", 1, 1, sess, T, 60, X=bad).code, "malformed_type")
+        self.assertEqual(flowrank.f2_rank(store, "S", "premium", 3, sess, T, 60, K=20.0).code, "malformed_type")
+        self.assertEqual(flowrank.f2_rank(store, "S", "premium", 3, sess, T, 300.0).code, "window_not_allowed")
+        self.assertEqual(flowrank.f10_baseline(store, "S", 3, sess, T, 60.0).code, "window_not_allowed")
+        # malformed_type precedes session_not_in_calendar and window_not_allowed
+        other = flowrank.SessionInfo("2031-01-01", OPEN0, OPEN0 + 180 * NS, 3, True, "live", 10, None)
+        self.assertEqual(flowrank.f2_rank(store, "S", "premium", 3, other, T, 120, X=True).code, "malformed_type")
+        self.assertEqual(flowrank.f2_rank(store, "S", "premium", 3, other, T, 120).code, "session_not_in_calendar")
+        self.assertEqual(flowrank.f2_rank(store, "S", "premium", 3, sess, T, 120).code, "window_not_allowed")
+        self.assertEqual({r.code for r in flowrank.flow_pack(store, "S", sess, T, 60, 1, 1, 1, X=0.5)[:4]}, {"malformed_type"})
+        r10 = flowrank.f10_baseline(store, "S", 12, sess, T, 60, N="3/2")
+        self.assertEqual(r10.status, "available")
 
 
 class NoFloat(unittest.TestCase):

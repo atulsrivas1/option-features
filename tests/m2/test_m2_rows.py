@@ -24,8 +24,8 @@ class RowIntegrity(unittest.TestCase):
         by = {}
         for r in ROWS:
             by[r["output_id"]] = by.get(r["output_id"], 0) + 1
-        self.assertEqual(len(ROWS), 302)
-        self.assertEqual(by, {"M2-2": 101, "M2-3": 22, "M2-7": 58, "M2-8": 37, "M2-10": 35, "M2-12": 49})
+        self.assertEqual(len(ROWS), 363)
+        self.assertEqual(by, {"M2-2": 101, "M2-3": 22, "M2-7": 58, "M2-8": 37, "M2-10": 35, "M2-12": 87, "M2-GRID": 23})
         self.assertEqual(len({r["id"] for r in ROWS}), len(ROWS))
 
 
