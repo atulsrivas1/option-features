@@ -2,9 +2,9 @@
 
 > mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12
 
-Owner of this file: the Auditor on creation (PO-directed, M2 F-row re-audit); afterwards every release PR updates it (rule in docs/RELEASE_NOTE_TEMPLATE.md). As of 2026-10-30 against origin/main (merged through PR 90) (PR 79 story B and PR 80 story A both merged; this file itself came in with PR 85; PR 82, 84, 89 and 90 merged). Open: PR 86 (this update), PR 87 (story B benchmark regenerated at 30 repeats), PR 88 (align story B to the story A Result type), and the runner integration PR. F2d stays partial (DR-M2-1).
+Owner of this file: the Auditor on creation (PO-directed, M2 F-row re-audit); afterwards every release PR updates it (rule in docs/RELEASE_NOTE_TEMPLATE.md). As of 2026-10-30 against origin/main (merged through PR 95) (PR 79 story B and PR 80 story A both merged; this file itself came in with PR 85; PR 82, 84, 88, 89, 90, 91, 92, 94 and 95 merged). Open: PR 86 (this update), PR 87 (story B benchmark regenerated at 30 repeats), PR 93 (check_prints type-first, story A shared validator); no runner or fixtures PR 96 or later exists yet
 
-How the statuses were checked: rows were derived from the design text (option-contracts, flow, volatility-radar, positioning), the baseline PARITY_CHECK (81 design rows) and PO_PARITY_RECONCILIATION, and then verified against the packages source, not the documents: exported functions were listed per module on main and on the PR 80 head (printtape, m2prints, episodes, imbalance, spreadwin, chainiv, windows, shares, quotes, quotehist; flowrank, flowstore, flowgrid, flowresult), fixture rows were recounted by loading the files (M2 correctness 570 rows in 14 files, additions 225 rows in 8 files (PR 82, 84 and 90, loaded and counted on main; the manifest was not separately compared), P1 121, M1 OC 110, M1 IV 41 plus 28 extra), and the M2 test suites were run (tests/m2 on origin/main d3567af: 431 collected, 430 passed, 1 skipped (the PR 79 merge message says 431, the collected total); 817 passed, 1 skipped on the PR 80 head). Performance figures are copied from the records named in each row, not re-measured by the Auditor.
+How the statuses were checked: rows were derived from the design text (option-contracts, flow, volatility-radar, positioning), the baseline PARITY_CHECK (81 design rows) and PO_PARITY_RECONCILIATION, and then verified against the packages source, not the documents: exported functions were listed per module on main and on the PR 80 head (printtape, m2prints, episodes, imbalance, spreadwin, chainiv, windows, shares, quotes, quotehist; flowrank, flowstore, flowgrid, flowresult), fixture rows were recounted by loading the files (M2 correctness 570 rows in 14 files, additions 250 rows in 9 files (PR 82, 84, 90 and 91; loaded and counted on main, the manifest MANIFEST_ADDITIONS.sha256 verified with sha256sum), P1 121, M1 OC 110, M1 IV 41 plus 28 extra), and the M2 test suites were run (tests/m2 on origin/main d3567af: 431 collected, 430 passed, 1 skipped (the PR 79 merge message says 431, the collected total); 817 passed, 1 skipped on the PR 80 head). Performance figures are copied from the records named in each row, not re-measured by the Auditor.
 
 Legend. Status: done (built and passing its independently authored rows), partial (part of the row is built or a gate is open), pending (nothing built), dropped. Evidence applies to every row: synthetic fixtures only; Windows x64, CPython 3.12 only; not validated on recorded data. The Evidence column adds the surface (lib: library module only, not on the wire; wire: operation of the frozen evaluator or variants1 schema; doc) and whether an independent review took place. Interim design rulings (requests 1-3, 6, 8 and the M2 rulings Q1-Q18, AMB-1..19, GRID) are pending design ratification; a changed answer regenerates the dependent fixtures, so every row that depends on one lists it under pending reasons. "Done" never means wired: no P1, M1 or M2 output is on the wire (wire exposure is a candidate16 item).
 
@@ -16,15 +16,17 @@ By status:
 
 | Status | Design rows (81) | All rows (113) |
 |---|---|---|
-| done | 28 | 39 |
+| done | 28 | 40 |
 | partial | 9 | 9 |
-| pending | 44 | 64 |
+| pending | 44 | 63 |
 | dropped | 0 | 1 |
 | total | 81 | 113 |
 
-Done and merged 39 (every done row is on main; PR 79 and PR 80 are merged). Partial rows are listed in the tables.
+Done and merged 40 (every done row is on main; PR 79 and PR 80 are merged). Partial rows are listed in the tables.
 
-Done rows on the wire: 7; library-only: 30 (computed from the Evidence column; the remaining surface value is doc).
+Merged PRs: 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 88, 89, 90, 91, 92, 94, 95
+
+Done rows on the wire: 7; library-only: 31 (computed from the Evidence column; the remaining surface value is doc).
 
 Design rows counted by the baseline audit: 81 (OC 6, G 8, presets 1, F 25 including tick fallback and crossing form, V 22, PO 19). Baseline classes were 5 match, 12 differs, 13 partial, 51 missing, which is not directly comparable: this tracker folds the baseline DIFFERS class into done or partial after the P1 changes.
 
@@ -36,13 +38,13 @@ By release (the release that delivers or is assigned the row; R25 and R26 are th
 | R26 | 0 | 3 | 0 | 0 | 3 |
 | P1 | 11 | 2 | 0 | 0 | 13 |
 | M1 | 6 | 1 | 0 | 0 | 7 |
-| M2 | 17 | 1 | 3 | 0 | 21 |
+| M2 | 18 | 1 | 2 | 0 | 21 |
 | M3 | 0 | 0 | 24 | 0 | 24 |
 | M4 | 0 | 0 | 21 | 0 | 21 |
 | M5 | 0 | 0 | 5 | 0 | 5 |
 | RQ | 0 | 0 | 7 | 1 | 8 |
 | later | 0 | 0 | 4 | 0 | 4 |
-| all | 39 | 9 | 64 | 1 | 113 |
+| all | 40 | 9 | 63 | 1 | 113 |
 
 Rows assigned to M3 and M4 and M5 that the V3 plan does not name explicitly (V16-V19, V20 aggregate, V21, F8, F11) are marked "proposed" in their pending reasons.
 
@@ -55,7 +57,7 @@ Every release carries the label sentence verbatim, stays PRERELEASE (D7), makes 
 | R27 | done (candidate15, PR 59) | Frozen R26 variants1 candidate and release notes | - |
 | P1 | done, PO accepted 2026-10-29 (PR 63, 0.2.0a1) | OC4/G1, G2 spread, F3 window end, F5/F6 single reference, F13-F16 touch policy, G5, naming map | R27 closed |
 | M1 | done, closed 2026-10-29 (docs/M1_CLOSE.md) | OC5, OC6, chain ATM IV, 30-day IV, American labels, solver Stages 0-2, opt-in runner | P1 accepted, design requests 1, 2, 7 (interim rulings used) |
-| M2 | in progress: stories A and B merged (PR 79, PR 80); F-row re-audit merged (PR 85); docs PR 89 merged (print type rules); remaining M2 items: Result type alignment (PR 88 open), runner integration, performance follow-up, benchmark regeneration (PR 87 open) | F1, F2a-d, F4, F7, F10, F20, F12, F17, F18, F19, history store; then re-audit every F row | M1 accepted; matrix and budgets (PR 75, 76, 81, 83), fixtures (PR 78, 82, 84), M2-G0 (PR 77) all merged |
+| M2 | in progress: stories A and B merged (PR 79, PR 80); Result type alignment merged (PR 88); F-row re-audit merged (PR 85); docs PR 89, 92, 94, 95 merged (print type, ordering and field rules); remaining M2 items: runner integration, performance follow-up, benchmark regeneration (PR 87 open), check_prints type-first (PR 93 open) | F1, F2a-d, F4, F7, F10, F20, F12, F17, F18, F19, history store; then re-audit every F row | M1 accepted; matrix and budgets (PR 75, 76, 81, 83), fixtures (PR 78, 82, 84), M2-G0 (PR 77) all merged |
 | M3 | pending | Surface, term structure, skew, realized-volatility join, history reuse from the M2 store, frame builder without presets (V1, V3-V15; V16-V22 proposed) | M2 accepted (PR 80 merged, Tester re-runs, re-audit accepted); own matrix; synthetic surface, daily-bar and 52-week generators authored by the Tester |
 | M4 | pending | Open-interest-based and exposure outputs, dealer-sign convention labelled modeled (PO1-PO19) | M3 accepted; own matrix; chain generator with synthetic open interest and hand-computable exposure totals |
 | M5 | pending | Shadow, list-eligible scanner presets (D6) and the equity-side join (also F8, F11) | M4 accepted; own matrix; universe generator with planted matches per preset; scanner authorization flag stays false |
@@ -176,11 +178,11 @@ Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry g
 | M1-2 | Per-contract IV with American-style labels | done | M1 | 68, 70 | lib; independent review: yes | Request 12 ratification; wire exposure |
 | M1-3 | Chain ATM IV | done | M1 | 68, 70 | lib; independent review: yes | Request 11 ratification; wire exposure |
 | M1-4 | 30-day constant-maturity IV | done | M1 | 68, 70 | lib; independent review: yes | Request 11 ratification; wire exposure |
-| M2-1 | Shared columnar print tape (printtape) | done | M2 | 79 (fixtures 78, 82, 84) | lib; independent review: yes (Tester approve at 9f6617b; PO accepted, PR 79 merge message) | Align Result type to story A (M2-5) |
+| M2-1 | Shared columnar print tape (printtape) | done | M2 | 79 (fixtures 78, 82, 84) | lib; independent review: yes (Tester approve at 9f6617b; PO accepted, PR 79 merge message) | - |
 | M2-2 | History store: retention ring, sorted views, canonical text, snapshots (flowstore) | done | M2 | 80 (fixtures 78, 82, 84) | lib; independent review: yes (Tester approve at 0954d21; PO accepted, PR 80 merge message) | store byte cap above 512 MB reported, not enforced |
 | M2-3 | Trade-to-grid builder, Result type, canonical lines (flowgrid, flowresult) | done | M2 | 80 (fixtures 78, 82, 84) | lib; independent review: yes (Tester approve at 0954d21; PO accepted, PR 80 merge message) | Tester re-run |
 | M2-4 | M2-G0 full-output B6 measurement and runner full unit | done | M2 | 77 | lib; independent review: partial (Tester conditions applied; Tester re-run pending) | Tester re-run |
-| M2-5 | Align story B (printtape, m2prints, episodes) to story A Result type | pending | M2 | 88 (open) | - | Follow-up named in the PR 79 ruling |
+| M2-5 | Align story B (printtape, m2prints, episodes) to story A Result type | done | M2 | 88 | lib; independent review: yes (merged after PO review; Developer states outputs identical on 392 rows; Tester review per PR 88 body) | Check_prints type-first follow-up is PR 93 (open) |
 | M2-6 | Runner integration of M2 families (worker scaling, gc.freeze after store load, mmap attach) | pending | M2 | - | - | Not done: story B notes runner integration not done; the runner rules are ruled, not exercised |
 | M2-7 | F-row re-audit and single live tracker (this document) | done | M2 | 85 | doc; independent review: yes (independent docs review, approve-with-conditions applied) | - |
 | M2-8 | Performance follow-up story (F7 3x overlap, F17 sparse reads) | pending | M2 | - | - | Scheduled after the F-row re-audit (PO ruling 2026-10-30) |
@@ -223,7 +225,7 @@ Owner main goal: performance. All figures are synthetic workload, relative engin
 | F17 sparse read per cutoff | candidate, not scheduled | - | strict prebuilt F17 ratio 0.72 (columns), 1.42 (full) (informational) | Same follow-up story (M2-8) |
 | Input-synthesis sharing across units | candidate, not scheduled | - | about 23 percent of CPU at 48 workers (M1 close finding) | Idea candidate for the PO queue; B7 is far inside budget |
 | Contract-v2 and contract-v3 perf_sut adapter | deferred | - | - | Deferred by PO ruling at the runner PR |
-| Story A and story B alignment story | pending | - | - | Align story B to story A Result type (task M2-5; PR 80 is merged, PR 88 open); runner integration of M2 families (M2-6) |
+| Story A and story B alignment story | done (alignment), pending (runner integration) | 88 | - | Story B aligned to the story A Result type (PR 88 merged); runner integration of M2 families stays pending (M2-6) |
 | Regenerate docs/m2/M2B_PRINT_BENCH.json | pending | - | - | Its strict prebuilt ratios predate the agreed 78-single-calls-versus-one-sweep method (DECISIONS 2026-10-30); regenerate with tools/m2_print_benchmark.py (PR 87 open: regenerated at 30 repeats with the agreed tool) |
 | Tester re-run of B7 | pending | - | - | Only the developer ran B7 (once); disclosed in M1 close |
 

@@ -24,7 +24,7 @@ Wire note: the P1 modules are pure functions beside the R25 evaluator. They are 
 
 Gate precedence (PO-P1-02): no_quote, invalid_quote, crossed_market, locked_market, stale_quote. For signing, locked does not block and the order is no_quote, invalid_quote, crossed_market, stale_quote, then the touch rule.
 
-M2 wording: "match (library modules only; not on the wire)" means the design rule is implemented in a pure module and passes the independently authored M2 synthetic rows (570 correctness rows plus 225 additions rows) on Windows x64, CPython 3.12; it is not validated on recorded data, no M2 output is an operation of the frozen variants1 wire schema (candidate16 item), and the interim design rulings behind it (matrix Q1-Q18, AMB, GRID) are pending design ratification. Rows built in M2 story A (PR 80) read "built, PR 80 pending merge" until that PR is on main. Thresholds and defaults named "placeholder" are design placeholders (flow.md section 12), carried in every result.
+M2 wording: "match (library modules only; not on the wire)" means the design rule is implemented in a pure module and passes the independently authored M2 synthetic rows (570 correctness rows plus 250 additions rows) on Windows x64, CPython 3.12; it is not validated on recorded data, no M2 output is an operation of the frozen variants1 wire schema (candidate16 item), and the interim design rulings behind it (matrix Q1-Q18, AMB, GRID) are pending design ratification. Rows built in M2 story A (PR 80) read "built, PR 80 pending merge" until that PR is on main. Thresholds and defaults named "placeholder" are design placeholders (flow.md section 12), carried in every result.
 
 ## Option contracts and gates
 

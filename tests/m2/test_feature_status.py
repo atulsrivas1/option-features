@@ -26,7 +26,7 @@ def parse(text):
     rows, design = [], True
     for l in lines[s3:s4]:
         if l.startswith("### "):
-            design = "design rows" in l
+            design = "(design rows" in l
         elif l.startswith("| ") and not l.startswith("| Id ") and not l.startswith("|---"):
             c = _cells(l)
             assert len(c) == 7, l
@@ -112,5 +112,5 @@ def test_check_fails_on_a_stale_table():
 
 def test_check_fails_on_a_stale_pr_cell():
     text, handoff = _real()
-    stale = text.replace("| P1-1 | Version bump 0.2.0a1 and sibling pins | done | P1 | 63, 66 |", "| P1-1 | Version bump 0.2.0a1 and sibling pins | done | P1 | 63, 66, 99999 |", 1)
-    assert stale != text and any("99999" in e for e in check(stale, handoff))
+    stale = text.replace("| P1-1 | Version bump 0.2.0a1 and sibling pins | done | P1 | 63, 66 |", "| P1-1 | Version bump 0.2.0a1 and sibling pins | done | P1 | 63, 66, 998 |", 1)
+    assert stale != text and any("998" in e for e in check(stale, handoff))
