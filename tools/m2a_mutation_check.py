@@ -118,7 +118,7 @@ MUTS = [
     # infrastructure mutants (the Tester lists them for the performance, cache and batching rows)
     ("cache_key_missing_k", "cache key missing one parameter", [(ST, "        key = (as_of, k)\n        view = ring.views.get(key)", "        key = (as_of,)\n        view = ring.views.get(key)"),
                                                                  (ST, "        ring.views[key] = view", "        ring.views[key] = view")]),
-    ("cache_not_cleared_on_seal", "stale cache after seal", [(ST, "            rec.sha = None\n            ring.views.clear()", "            rec.sha = None")]),
+    ("cache_not_cleared_on_seal", "stale cache after seal", [(ST, "            self._chash = None\n            ring.views.clear()", "            self._chash = None")]),
     ("cache_not_cleared_on_append", "stale cache after append or eviction", [(ST, "        if ring.views:\n            ring.views.clear()\n        if len(recs)", "        if len(recs)")]),
     ("batched_drops_last", "batched path drops the last series", [(RK, "    return [flow_pack(store, s, session, evaluation_ns, window_s, p, v, c, X, N, K, consumer_default, lane, cov)\n            for s, p, v, c, cov in items]",
                                                                   "    items = list(items)[:-1]\n    return [flow_pack(store, s, session, evaluation_ns, window_s, p, v, c, X, N, K, consumer_default, lane, cov)\n            for s, p, v, c, cov in items]")]),
@@ -157,7 +157,7 @@ MUTS = [
     ("binary_digest_skipped", "binary snapshot digest not verified", [(ST, "if verify and hashlib.sha256(mv[head + 40:]).digest()", "if False and hashlib.sha256(mv[head + 40:]).digest()")]),
     ("lane_dropped_on_load", "load ignores the lane argument", [(ST, "ring = self._rings[key] = _Ring(lane_of(series_id), _head(series_id, metric))", 'ring = self._rings[key] = _Ring("stock", _head(series_id, metric))')]),
     ("sparse_idx_not_in_text", "sparse canonical line omits grid_idx", [(ST, ',"grid_idx":[%s],"total"', ',"total"'),
-                                                                        (ST, "_grid_text(rec), _idx_text(rec), rec.total,", "_grid_text(rec), rec.total,")]),
+                                                                        (ST, "_grid_text(rec, cache), _idx_text(rec, cache), rec.total,", "_grid_text(rec, cache), rec.total,")]),
     ("price_beyond_4_ok", "non-zero digit beyond the 4th decimal accepted", [(GR, "if frac[TICK_DIGITS:].strip(\"0\"):", "if False:")]),
     ("unknown_contract_ignored", "unknown contract accepted", [(GR, "if contracts is not None and cid not in contracts:", "if False:")]),
     ("bool_size_ok", "bool or float size accepted", [(GR, "or type(size) is not int or type(mult) is not int:", "or type(mult) is not int:")]),
