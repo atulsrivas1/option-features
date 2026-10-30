@@ -342,5 +342,136 @@ class ParamsAndOrder(unittest.TestCase):
         self.assertEqual(list(e)[-2:], ["put25_iv", "call25_iv"])
 
 
+# ---------------------------------------------------------------- R-189 strength: floats are the unrounded kernel values
+_SOLVER_REASONS = {"price_out_of_bounds", "upper_asymptote", "sigma_cap", "precision_exhausted", "bound_precision",
+                   "iteration_budget"}
+
+
+def _independent(row):
+    """Expected floats by calling chainiv, delta25 and tenors directly (no surfaceframe code), for rows where the
+    chainiv ATM equals the eligible-leg ATM (no solver failure, every expiry covered as the row expects)."""
+    from option_features.chainiv import IVChain
+    from option_features.delta25 import delta25_point
+    from option_features.tenors import tenors as tenor_kernel
+    ch = row["inputs"]["chain"]
+    cs = contracts_of(ch["contracts"])
+    chain = IVChain(cs, ch["spot"], ch["rate"], ch["dividend_yield"], ch["cutoff_ns"], row["params"]["stale_limit_ns"])
+    ivs = chain.contract_iv()
+    S = Fraction(ch["spot"])
+    r, q = Fraction.from_float(float(ch["rate"])), Fraction.from_float(float(ch["dividend_yield"]))
+    conv = row["params"].get("delta_convention", "spot")
+    want_exp = row["expected"]["frame"]["expiries"]
+    exps, recs = {}, []
+    for d in sorted(int(x) for x in want_exp):
+        st = want_exp[str(d)]["status"]
+        a = chain.atm_iv(d)
+        fl = {"atm_iv": None, "put25_iv": None, "call25_iv": None}
+        if st == "available":
+            fl["atm_iv"] = a.iv
+            for right, key in (("put", "put25_iv"), ("call", "call25_iv")):
+                legs = sorted((Fraction(c.strike), ivs[c.contract_id].iv) for c in cs
+                              if c.expiry_days == d and c.right == right and ivs[c.contract_id].status == "available")
+                pt = delta25_point([k for k, _ in legs], [v for _, v in legs], a.strike, S, r, q, d, right, conv)
+                fl[key] = pt["value"]
+        exps[str(d)] = fl
+        recs.append((d, st, want_exp[str(d)]["reason"], fl["atm_iv"]))
+    ten = tenor_kernel(recs, sorted(set(row["params"]["tenors"])))
+    return {"expiries": exps, "tenors": {str(t): v.iv for t, v in ten.items()}}
+
+
+def _sample_rows():
+    out = []
+    for row in ROWS:
+        e = row["expected"]
+        if e["status"] == "invalid_input" or not (e["frame"] or {}).get("expiries"):
+            continue
+        if _SOLVER_REASONS & set((e["coverage"] or {}).get("contract_reasons") or {}):
+            continue
+        if "solver" in row["case"] or "ATM moves" in row["case"]:
+            continue
+        out.append(row)
+    step = max(1, len(out) // 30)
+    return out[::step][:30]
+
+
+class FloatsStrength(unittest.TestCase):
+    def test_some_float_differs_from_its_text(self):
+        differs = 0
+        for row in ROWS:
+            if row["expected"]["status"] == "invalid_input":
+                continue
+            stats = {}
+            res = _run(row, stats=stats)
+            for d, fl in stats["floats"]["expiries"].items():
+                item = res.frame["expiries"][d]
+                texts = (item["atm_iv"], item["put25_iv"]["value"], item["call25_iv"]["value"])
+                for v, t in zip((fl["atm_iv"], fl["put25_iv"], fl["call25_iv"]), texts):
+                    differs += v is not None and v != float(t)
+            for t, v in stats["floats"]["tenors"].items():
+                differs += v is not None and v != float(res.frame["tenors"][t]["iv"])
+        self.assertGreater(differs, 100)
+
+    def test_floats_equal_independent_kernel_values(self):
+        rows = _sample_rows()
+        self.assertEqual(len(rows), 30)
+        for row in rows:
+            stats = {}
+            _run(row, stats=stats)
+            want = _independent(row)
+            self.assertEqual(stats["floats"]["expiries"], want["expiries"], row["id"])
+            self.assertEqual(stats["floats"]["tenors"], want["tenors"], row["id"])
+
+    def test_round_once_case_like_U_010(self):
+        # a float whose 8-decimal text loses information: the stats value must keep it
+        row = _row("D25-R01")
+        stats = {}
+        res = _run(row, stats=stats)
+        put = stats["floats"]["expiries"]["14"]["put25_iv"]
+        self.assertNotEqual(put, float(res.frame["expiries"]["14"]["put25_iv"]["value"]))
+        self.assertEqual(put, _independent(row)["expiries"]["14"]["put25_iv"])
+
+
+class HostileStats(unittest.TestCase):
+    def test_nonfinite_ivs_never_reach_floats_or_frame(self):
+        from option_features.chainiv import ContractIV
+        ch = _flat_chain(("90", "95", "100", "105", "110"))
+        for bad in (float("nan"), float("inf"), float("-inf")):
+            ivs = {c.contract_id: ContractIV("available", None, bad, "exact-model") for c in ch}
+            stats = {}
+            res = SF.surface_frame(ch, "100", 0, 0, 10, {"tenors": [30], "evaluation_ns": 10}, contract_ivs=ivs,
+                                   stats=stats)
+            vals = [v for fl in stats["floats"]["expiries"].values() for v in fl.values()]
+            vals += list(stats["floats"]["tenors"].values())
+            self.assertTrue(all(v is None or math.isfinite(v) for v in vals), bad)
+            line = C.canonical_line(res)
+            self.assertNotIn("nan", line.lower())
+            self.assertNotIn("inf", line.lower())
+
+    def test_params_none_and_hostile_mapping(self):
+        row = _row("SUR-01")
+        self.assertIn(_run(row, params=None).status, ("available", "unavailable"))   # defaults: no raise
+
+        class Boom(dict):
+            def get(self, *a):
+                raise RuntimeError("get")
+
+            def update(self, *a, **k):
+                raise RuntimeError("update")
+
+            def keys(self):
+                raise RuntimeError("keys")
+
+            def __iter__(self):
+                raise RuntimeError("iter")
+
+            def items(self):
+                raise RuntimeError("items")
+
+        res = _run(row, params=Boom(row["params"]))
+        self.assertIn(res.status, ("invalid_input", "available", "unavailable"))
+        res = _run(row, params=Boom())
+        self.assertIn(res.status, ("invalid_input", "available", "unavailable"))
+
+
 if __name__ == "__main__":
     unittest.main()
