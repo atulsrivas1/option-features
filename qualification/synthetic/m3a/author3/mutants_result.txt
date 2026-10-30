@@ -1,0 +1,56 @@
+id   assert  strict  gating  description : first catching rows
+M01  209     209     183     wrong forward: no carry (F = S for ATM choice, no drift in delta) : V4-A01,V4-A04,V4-A06,V4-A-01
+M02  72      72      64      ATM strike nearest the spot instead of the forward : V4-A01,V4-A04,V4-A06,V4-A-01
+M03  148     150     132     delta computed at the ATM IV instead of the contract IV : V8-A1,V8-A2,V8-A3,V8-A4
+M04  108     111     94      forward delta (no exp(-qT) factor) : V8-A1,V8-A2,V8-A3,V8-A5
+M05  5       5       5       strike scan reversed (outermost strike inward) : V8-H1,V8-H2,V8-H3,V10-J5
+M06  3       3       3       ATM tie goes to the higher strike : V4-C01,V4-C02,V7-K1
+M07  5       5       5       last crossing instead of the first : V8-H1,V8-H2,V8-H3,V10-J5
+M08  11      11      11      extrapolation allowed (flat IV of the nearest-delta strike) : V8-E1,V8-E2,V8-E3,V8-E4
+M09  148     150     132     IV linear in log-moneyness instead of delta : V8-A1,V8-A2,V8-A3,V8-A4
+M10  97      104     89      linear total variance in delta instead of linear IV : V8-A1,V8-A2,V8-A3,V8-A5
+M11  146     146     130     IVs rounded to 3 decimals before interpolation : V8-A1,V8-A2,V8-A3,V8-A4
+M12  28      28      28      tenor interpolation linear in IV instead of total variance : V4-J01,V4-J02,V4-X01,V4-X02
+M13  93      93      85      skew sign swapped (call minus put) : V8-A1,V8-A2,V8-A3,V8-A5
+M14  59      59      51      term sign swapped (shorter minus longer; V7 gap iv30-iv91) : V5-A-9_30-1,V5-A-9_30-2,V5-A-9_30-3,V5-A-9_30-4
+M15  7       7       7       V6 uses nearest and second LISTED expiries (coverage ignored) : V6-E1,V6-E2,V6-E3,V6-F2
+M16  29      29      25      curvature without the half : V11-A1,V11-A2,V11-A3,V11-A4
+M17  26      26      22      V21 inverted (call distance over put distance) : V21-A1,V21-A2,V21-A3,V21-B1
+M18  3       3       3       V21 zero call distance treated as available : V21-E1,V21-E2,V21-E3
+M19  3       3       3       V4 prior 0 divided instead of zero_denominator : V4-F01,V4-F02,V4-A-12
+M20  2       4       2       sign change through 0 counted (0 treated as a side) : V10-D5,V10-D6,V10-D7,V10-D8
+M21  47      47      41      prior source swapped (frame instead of session store and back) : V10-A1,V10-A2,V10-A3,V10-A4
+M22  8       8       8       first prior used instead of the n-th prior session : V7-D1,V7-D2,V7-D3,V7-D4
+M23  28      28      28      direction ignored (always either; V21 always up) : V4-A06,V4-A07,V4-B05,V4-A-03
+M24  0       34      0       thresholds exclusive instead of inclusive : V4-D01,V4-D02,V4-D03,V4-D04
+M25  56      56      50      hidden in-memory state used as the prior (previous result) : V4-A02,V4-A03,V4-A04,V4-A05,V4-G01!,V4-G02!,V4-A-13!
+M26  15      15      15      prior reading time at or after the cutoff accepted : V4-H01,V4-H02,V4-H03,V4-P01
+M27  27      33      27      V4 fires on change_points instead of relative percent : V4-A01,V4-A02,V4-A03,V4-B01
+M28  29      29      29      default direction wrong (V4 either, V7 up, others swapped) : V4-A06,V4-A07,V4-A-03,V5-A-9_30-4
+M29  2       3       2       V5 pair 30-91 uses 91 minus 9 : V5-A-30_91-3,V5-B-30_91-2,V5-D-2
+M30  20      20      20      skew from the listed expiry nearest 30 days instead of per-side constant maturity : V8-G1,V8-G2,V8-G3,V8-K1
+M31  12      12      12      constant maturity of the skew value instead of per-side : V8-G1,V8-G2,V8-G3,V8-K1
+M32  19      19      19      coverage accepts 3 strikes (min_strikes 3 instead of 4) : V4-M02,V4-N01,V4-A-18,V4-A-19
+M33  13      13      13      condition other than regular treated as eligible : V4-A-17,V4-NE2,V5-H-1,V5-H-2
+M34  3       3       3       crossed quotes treated as eligible : V8-I2,V10-J7,V11-J1
+M35  11      11      11      stale quotes treated as eligible : V4-NE3,V5-NE3,V6-NE3,V7-NE3
+M36  156     156     138     put delta taken as the call delta (wrong right) : V8-A1,V8-A2,V8-A3,V8-A4
+M37  21      21      21      American label dropped (always exact-model) : V4-L01,V4-L02,V4-X01,V4-X02
+M38  11      11      11      no_delta_bracket reported as no_bracketing_expiry : V8-E1,V8-E2,V8-E3,V8-E4
+M39  11      11      11      tenor extrapolation allowed (flat beyond the last expiry) : V4-K01,V4-K02,V4-M01,V5-G-1
+M40  3       3       3       intraday delayed tag accepted for V4 : V4-I01,V4-I03,V4-A-20
+M41  9       9       9       delayed label dropped : V4-I02,V4-A-21,V5-I-2,V6-I2
+M42  2       2       2       V4 ATM form uses the nearest LISTED expiry (coverage ignored) : V4-A-18,V4-A-19
+M43  9       9       9       V4 iv_form default 30d instead of atm : V4-A-01,V4-A-02,V4-A-03,V4-A-15
+M44  23      23      21      V4 iv_form selector ignored (always 30d) : V4-A-01,V4-A-02,V4-A-03,V4-A-04
+M45  124     127     110     delta convention swapped (spot request computed as forward and back) : V8-A1,V8-A2,V8-A3,V8-A5
+M46  16      16      16      delta convention ignored (always spot) : V8-Cv1,V8-Cv2,V8-Cv3,V8-Cv5
+M47  3       3       3       convention_mismatch not checked for priors : V10-Cv4,V10-Cv5,V10-Cv6
+M48  48      48      48      coverage.contract_reasons dropped : V4-L01,V4-L02,V4-X01,V4-X02
+M49  24      24      24      empty or all-excluded chain reported as low_surface_coverage instead of no_eligible_contract (R-106) : V4-NE1,V4-NE2,V4-NE3,V5-NE1
+M50  2       2       2       delta_convention validated on V4-V7 (bad value gives convention_not_allowed or malformed_type; R-149, R-155, R-174) : V6-Cx1,V7-Cx1
+M51  4       4       4       delta_convention echoed in V4-V7 value (R-174) : V4-Cx1,V5-Cx1,V6-Cx1,V7-Cx1
+M52  2       2       2       ATM-form labels taken from every expiry in the frame, not only the one the output uses (R-180) : V4-A-15,V4-A-16
+M53  2       2       2       iv_form matched case-insensitively and trimmed (ATM, 30D accepted) : V4-S-04,V4-S-08
+M54  3       3       3       non-string iv_form reported as iv_form_not_allowed instead of malformed_type : V4-S-06,V4-S-07,V4-S-09
+mutants 54, all caught by >= 2 rows (strict compare on 8-decimal rows; columns: assert = as an implementation harness asserts, strict = also fired and signs on 8-decimal rows, gating = strict count over non-PENDING rows): True

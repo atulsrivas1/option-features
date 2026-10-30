@@ -24,9 +24,9 @@ By status:
 
 Done and merged 40 (every done row is on main; PR 79 and PR 80 are merged). Partial rows are listed in the tables.
 
-Merged PRs: 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 107, 108
+Merged PRs: 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108
 
-Open PRs: 106
+Open PRs: 109
 
 Additions rows: 298; files: 10; manifest files: 31
 
@@ -200,7 +200,7 @@ Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry g
 | M2-8 | Performance follow-up story (F7 3x overlap, F17 sparse reads) | pending | M2 | - | - | Scheduled after the F-row re-audit (PO ruling 2026-10-30) |
 | X-1 | Wire exposure of the P1, M1 and M2 pure modules (candidate16) | pending | later | - | - | Candidate bump with fixtures outside this repository; not tied to a numbered release |
 | X-2 | Release tag and wheel rebuild | pending | later | - | - | HANDOFF open item |
-| M3-1 | Surface, term structure and skew builder | pending | M3a | - | - | Own capability matrix and independently authored fixtures first (V3 rule) |
+| M3-1 | Surface, term structure and skew builder | pending | M3a | - | - | Own capability matrix and independently authored fixtures first (V3 rule); fixtures: 4 independent sets, independent-reviewed, not yet run against any implementation (PR 109, open) |
 | M3-2 | Realized-volatility join (daily bars) | pending | M3b | - | - | As M3-1 |
 | M3-3 | Frame builder without presets | pending | M3c | - | - | As M3-1 |
 | M3-4 | History reuse from the M2 store (percentile-of-history and change-since-prior-session rows V1, V3, V4, V7, V9, V10) | pending | M3a | - | - | M2 store merged (PR 80); history reuse belongs to the surface release, PO ruling 2026-10-30 |

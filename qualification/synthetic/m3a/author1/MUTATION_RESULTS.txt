@@ -1,0 +1,63 @@
+M3a author-1 mutation results (SYNTHETIC; Windows x64, CPython 3.12 label applies to the fixtures)
+rows=323  unmutated engine failures on gating rows=0
+mutants=58
+M01 [surface] forward without carry (F = S)                                  caught_by_ruled=222 pending= 0  RULED  e.g. AME-01, AME-02, AME-03, AME-04
+M02 [surface] forward ignores dividend yield                                 caught_by_ruled=195 pending= 0  RULED  e.g. AME-01, AME-02, AME-03, AME-04
+M03 [surface] forward carry on a 360 day basis                               caught_by_ruled=222 pending= 0  RULED  e.g. AME-01, AME-02, AME-03, AME-04
+M04 [surface] ATM strike nearest spot (K/S instead of K/F)                   caught_by_ruled= 16 pending= 0  RULED  e.g. D25-DV-1-S, D25-DV-1-F, D25-DV-3-S, D25-DV-3-F
+M05 [surface] ATM tie goes to the higher strike                              caught_by_ruled=  4 pending= 0  RULED  e.g. SUR-31, SUR-32, SUR-33, SUR-34
+M06 [surface] ATM IV from the call only                                      caught_by_ruled=110 pending= 0  RULED  e.g. D25-R03, D25-R04, D25-R05, D25-R06
+M07 [surface] ATM IV from the put only                                       caught_by_ruled=110 pending= 0  RULED  e.g. D25-R03, D25-R04, D25-R05, D25-R06
+M08 [surface] ATM strike needs only one right eligible                       caught_by_ruled= 18 pending= 0  RULED  e.g. AME-15, COV-17, SUR-35, SUR-41
+M09 [delta] delta from the ATM IV instead of the contract IV               caught_by_ruled=104 pending= 0  RULED  e.g. AME-01, AME-02, AME-03, AME-04
+M10 [delta] forward delta (no e^{-qT})                                     caught_by_ruled= 27 pending= 0  RULED  e.g. AME-05, AME-07, D25-R02, D25-R05
+M11 [delta] put delta taken as 1 - call delta                              caught_by_ruled= 47 pending= 0  RULED  e.g. AME-01, AME-04, AME-05, AME-07
+M12 [delta] each side from the mean of both rights (R-06 violated)         caught_by_ruled= 25 pending= 0  RULED  e.g. D25-R03, D25-R04, D25-R05, D25-R06
+M13 [delta] scan order reversed (from the outer wing inward)               caught_by_ruled= 11 pending= 0  RULED  e.g. D25-N01, D25-N02, D25-N03, D25-N04
+M14 [delta] first crossing replaced by the last                            caught_by_ruled= 11 pending= 0  RULED  e.g. D25-N01, D25-N02, D25-N03, D25-N04
+M15 [delta] extrapolation allowed (nearest listed delta used when no bracket) caught_by_ruled= 62 pending= 0  RULED  e.g. AME-08, AME-09, AME-10, AME-11
+M16 [interp] 25-delta step interpolated in total variance                   caught_by_ruled= 38 pending= 0  RULED  e.g. AME-07, D25-R02, D25-R04, D25-R08
+M17 [interp] delta rounded to 2 decimals before interpolation               caught_by_ruled=102 pending= 0  RULED  e.g. AME-01, AME-02, AME-03, AME-04
+M18 [interp] interpolation weight fixed at one half                         caught_by_ruled=107 pending= 0  RULED  e.g. AME-01, AME-02, AME-03, AME-04
+M19 [interp] no interpolation: IV of the listed strike with the closer delta caught_by_ruled=107 pending= 0  RULED  e.g. AME-01, AME-02, AME-03, AME-04
+M20 [interp] IV interpolated linear in ln K at the strike found linear in K caught_by_ruled= 31 pending= 0  RULED  e.g. AME-07, D25-R08, D25-R10, D25-R14
+M21 [tenor] tenor interpolated linear in IV instead of total variance      caught_by_ruled= 16 pending= 0  RULED  e.g. TEN-07, TEN-08, TEN-09, TEN-10
+M22 [tenor] tenor extrapolation (flat from the nearest expiry)             caught_by_ruled= 13 pending= 0  RULED  e.g. TEN-01, TEN-02, TEN-06, TEN-19
+M23 [tenor] exact expiry ignored, neighbours interpolated                  caught_by_ruled=252 pending= 0  RULED  e.g. AME-01, AME-02, AME-03, AME-04
+M24 [tenor] expiry without usable ATM skipped when bracketing              caught_by_ruled=  4 pending= 0  RULED  e.g. TEN-30, TEN-33, TEN-34, TEN-35
+M25 [gate] stale quotes counted as eligible                               caught_by_ruled= 20 pending= 0  RULED  e.g. COV-01, COV-02, COV-03, COV-04
+M26 [gate] nonstandard condition counted as eligible                      caught_by_ruled=  5 pending= 0  RULED  e.g. SUR-36, SUR-41, SUR-42, SUR-44
+M27 [gate] crossed quotes counted as eligible                             caught_by_ruled=  5 pending= 0  RULED  e.g. D25-X09, D25-X09F, SUR-37, SUR-44
+M28 [gate] locked quotes counted as eligible                              caught_by_ruled=  5 pending= 0  RULED  e.g. D25-X09, D25-X09F, SUR-37, SUR-44
+M29 [gate] american_itm contracts included                                caught_by_ruled= 14 pending= 0  RULED  e.g. AME-04, AME-05, AME-06, AME-07
+M30 [gate] style None treated as European                                 caught_by_ruled=  6 pending= 0  RULED  e.g. AME-13, AME-14, AME-15, AME-16
+M31 [gate] quotes after the cutoff counted (known_at ignored)             caught_by_ruled=  3 pending= 0  RULED  e.g. SUR-40, SUR-43, SUR-44
+M32 [gate] contract reason order swapped (stale before excluded_condition) caught_by_ruled=  5 pending= 0  RULED  e.g. COV-03, COV-07, COV-17, SUR-41
+M33 [gate] ask used as price instead of the midpoint                      caught_by_ruled=255 pending= 0  RULED  e.g. AME-01, AME-02, AME-03, AME-04
+M34 [coverage] 3/5 replaced by 1/2                                            caught_by_ruled=  5 pending= 0  RULED  e.g. COV-04, COV-05, COV-06, COV-07
+M35 [coverage] coverage boundary exclusive (> instead of >=)                  caught_by_ruled=  3 pending= 0  RULED  e.g. COV-01, COV-02, COV-03
+M36 [coverage] min_strikes off by one (needs one more)                        caught_by_ruled= 12 pending= 0  RULED  e.g. COV-01, COV-08, COV-10, COV-12
+M37 [coverage] min_strikes not applied                                        caught_by_ruled=  8 pending= 0  RULED  e.g. COV-11, COV-14, COV-15, COV-16
+M38 [coverage] near-the-money rule dropped                                    caught_by_ruled=  2 pending= 0  RULED  e.g. COV-28, COV-30
+M39 [coverage] eligible strikes counted as both-rights strikes                caught_by_ruled= 50 pending= 0  RULED  e.g. AME-04, AME-05, AME-06, AME-07
+M40 [coverage] listed strikes counted as eligible only (ratio always 1)       caught_by_ruled= 19 pending= 0  RULED  e.g. COV-01, COV-02, COV-03, COV-04
+M41 [coverage] coverage gate before the ATM gate                              caught_by_ruled=  6 pending= 0  RULED  e.g. AME-13, SUR-61, SUR-62, SUR-63
+M42 [expiry] expiry_days >= 2 required (off by one)                         caught_by_ruled=  2 pending= 0  RULED  e.g. COV-19, SUR-09
+M43 [expiry] expiry_days 0 accepted                                         caught_by_ruled=  5 pending= 0  RULED  e.g. COV-21, COV-22, COV-23, COV-35
+M47 [solver] solver-failure contract kept eligible (bounds ignored)         caught_by_ruled= 13 pending= 0  RULED  e.g. SUR-83, SUR-84, SUR-85, SUR-86
+M48 [solver] price_out_of_bounds and upper_asymptote swapped                caught_by_ruled= 12 pending= 0  RULED  e.g. SUR-83, SUR-84, SUR-85, SUR-86
+M49 [solver] price exactly at the lower bound treated as a failure          caught_by_ruled=  4 pending= 0  RULED  e.g. SUR-95, SUR-96, SUR-97, SUR-98
+M50 [solver] price strictly above the upper bound named upper_asymptote     caught_by_ruled=  5 pending= 0  RULED  e.g. SUR-86, SUR-87, SUR-88, SUR-89
+M51 [gate] eligible = quote gates only (american_itm, style_unknown, solver failures counted eligible) caught_by_ruled= 32 pending= 0  RULED  e.g. AME-04, AME-05, AME-06, AME-07
+M52 [delta] scan from the lowest strike instead of outward from the ATM strike caught_by_ruled=  6 pending= 0  RULED  e.g. D25-N01, D25-N02, D25-N03, D25-N04
+M53 [struct] structural request code evaluated last (upstream reason reported instead) caught_by_ruled=  8 pending= 0  RULED  e.g. COV-21, COV-22, COV-23, COV-24
+M54 [convention] delta_convention ignored: always spot                          caught_by_ruled= 42 pending= 0  RULED  e.g. D25-R01F, D25-R02F, D25-R03F, D25-R04F
+M55 [convention] delta_convention ignored: always forward                       caught_by_ruled=264 pending= 0  RULED  e.g. AME-01, AME-02, AME-03, AME-04
+M56 [convention] spot and forward swapped                                       caught_by_ruled=306 pending= 0  RULED  e.g. AME-01, AME-02, AME-03, AME-04
+M57 [convention] invalid or non-string delta_convention accepted as spot        caught_by_ruled=  7 pending= 0  RULED  e.g. D25-V1, D25-V2, D25-V3, D25-V4
+M58 [convention] omitted delta_convention treated as forward                    caught_by_ruled=  2 pending= 0  RULED  e.g. D25-R01D, D25-R02D
+M44 [label] label always exact-model                                       caught_by_ruled=  9 pending= 0  RULED  e.g. AME-04, AME-05, AME-06, AME-07
+M45 [label] label always approximate                                       caught_by_ruled= 95 pending= 0  RULED  e.g. AME-01, AME-02, AME-03, AME-14
+M46 [label] delayed label missing                                          caught_by_ruled=  5 pending= 0  RULED  e.g. AME-17, AME-18, SUR-50, SUR-52
+mutants caught by fewer than 2 RULED rows (caught by PENDING-RULING rows, tied to open questions): none
+RESULT PASS: every mutant caught by >= 2 gating rows: yes

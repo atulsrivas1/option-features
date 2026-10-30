@@ -1,0 +1,39 @@
+# M3a fixtures, author 4 of 4: authoring notes (independent Tester), rev 8 (rev 7 + fix round 2: PO rulings R-162..R-177)
+
+mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12
+
+Status: authored, run only against the author's own reference code; not run against any implementation. Provenance SYNTHETIC, seed 20261030, Python 3.12 stdlib only, no download, no network, no deletion, no git write. All files LF, ASCII.
+
+## 1. Scope
+- Structural 157 rows (144 + 13 of fix round 2: boundary 10 accept-side rows, loadscan 1, typed3 2) (m3a_cases_structural.json), tags: code 34, type 6, cutoff 2, spot 3, pair 30, typefirst 12 (the original 87), typed 10 and nonfinite 4 (batch 2), quote_none 2 and typed2 10 (round 1), convention 20 (owner decision 3: value code 2, type code 2, neighbour pairs with delta 2 and iv_form 2, convention_mismatch at request 2, pairs with prior_not_before_cutoff 2 and delayed_feed_tag 2, view read 2 plus pair with threshold_out_of_range 2), ivform 11 (owner decision 2: value code 2, type code 2, neighbour pairs with delta and threshold_required 4, mixed-parameter 3). Ids are assigned in file order; use the tags.
+- Aux 45 (m3a_cases_structural_aux.json, not counted above; 42 pair/type-first plus 3 fix-round-2 second instantiations): second instantiation of every pair and type-first row. Lane 6. Perf: gen_m3a_workloads.py, manifest, 3 samples, gen_m3a_resource_rows.py -> 71 rows + 10 infrastructure mutants, M3A_PERF_ACCEPTANCE.md (14 gates equal to the budgets doc), M3A_PERF_RUNNER_CONTRACT.md (D1-D8).
+- Structural rows assert `code` (first_failing_code equal, reason null); non-structural rows assert `reason`; a None bid or ask row asserts status "valid" and no code (missing quote, M1 invalid_quote, R-124).
+- m3a_ref.py second implementation; m3a_selfcheck.py (all 192 rows agree); m3a_mutants.py: 56 mutants, 48 effective each caught by >= 2 rows (8 new in fix round 2: x=100, minute 389, 8-decimal price, |rate|=1, prior one ns before, trailing-zero trim, direction type, position-major load), 8 equivalent swaps.
+
+## 2. Files read and independence
+Allowed list only (docs/m3a, docs/m2, docs/M1_RUNNER.md, qualification perf and m2 examples) plus the git log of branch docs/m3a-rulings-2 (stat only; its contract has no iv_form position yet). No packages, tests or tools file, no Developer branch, no library or solver import. BSM truth is own stdlib code.
+
+## 3. Rulings applied
+PO batch 2: delta set {0.25}; threshold names at_least, at_most, x; positions 16-18 only when the output uses the parameter; view-read x outside 0..100; wrong-typed cutoff_ns, expiry_days, mode, lane, right = malformed_type; non-finite float tag; iv30 minute series; unit ordinals 01-05; vega per 1.00 volatility; series_id UNDERLYING/lane/metric with {values, sessions, n} reads. Round 1: history load scan is RECORD-MAJOR; positions 14 and 15 apply when the request carries the parameter and the output uses it (rows moved to M3A-3 for thresholds and M3A-1 for x); None bid/ask rows; type rows for known_at_ns, condition, style, strike grammar and more than 8 decimals; infrastructure mutants mapped to >= 2 behavioural rows (D12 removed from its own list); R03 30 percent marked a PROPOSAL, R07 cites M2-B16; 71 distinct spots across 78 cutoffs documented in the manifest (`sweep_B11`) and the acceptance doc.
+
+## 4. Equivalent swaps (the pair cannot hold both errors, so the swap mutant is not catchable)
+(1) history session_not_in_calendar / record_length_mismatch, (2) text trailer_missing / trailer_count_mismatch, (3) view session_not_in_calendar / minute_out_of_range (PO accepted, Q04/Q05); (4) minute_out_of_range / prior_not_before_cutoff (Q03, confirmed); (5) history duplicate_session / out_of_order_append (record-major scan, PO round 1); (6) threshold_required / threshold_out_of_range (no output uses both at_least/at_most and x: thresholds M3A-3..7, 9..11; x M3A-1, 2, 8), PO confirmed. (6) is confirmed with (7) iv_form / convention_not_allowed (same slot, ordered; no output uses both) and (8) convention_mismatch / delayed_feed_tag (no output uses both): all PO confirmed. Equivalents report 0 catching rows in m3a_mutation_results.txt.
+
+## 5. Pending (PENDING-RULING rows: 0)
+Positions from PR 104 (head 1ec672f): slot 13 orders delta_not_allowed, iv_form_not_allowed, convention_not_allowed (non-string = malformed_type); convention_mismatch is slot 17 after prior_not_before_cutoff and the last view-read position; delta outputs are M3A-0 and M3A-7..M3A-11. RULED: convention_mismatch is checked at the request and at view read ONLY; the history append list stays the 6 M2 positions (the store stores what it is given); the 4 history-append convention rows were dropped, view-read rows (4) cover it.
+
+## 6. Perf flags (owner decision 2 effect)
+Series per name become 7 (iv30_close, skew25, skew25_fwd, term_30_91, atm_iv_close, iv30_min, atm_iv_min): 103 x 252 x 7 = 181,692 records, 721 series (five scalar series add nothing to the grid bytes); two minute grids of 80,982,720 B = 161,965,440 B raw; 485,896,320 B in the M2 layout = 60.34 percent of the RULED store budget 768 MiB = 805,306,368 B (485,896,320 B = 463.4 MiB; 45.25 percent of the 1 GiB hard limit 1,073,741,824 B per worker). Units (coordinator decision, pending owner review): 768 MB and 1 GB in docs/m3a are BINARY, 768 MB = 768 MiB, 1 GB = 1 GiB = 2^30 B; the PR 104 budgets doc matches (7 series, about 181,700 records); the acceptance gate table was re-synced to it (B1, B2, B5, B5n, B6, B8, B12) and diffs OK. B6, B7, R03, R07 rows and the store digest use the 7-series set.
+
+## 6b. Fix round 2 (PO rulings R-162..R-177)
+W08 values 181,692 (7 x 103 x 252, was 103,824); R07 text 721 series (was 618). Trailer_missing pair rows (STRUCT-141, AUX-026): the decoy is now a parseable `#TRAILER` comment line, not a non-JSON data line. Accept-side boundary rows (tag boundary): x=100 (request and view), minute 389 of 390 (request and view), strike and spot text with exactly 8 decimals, rate 1 and -1, prior one ns before the cutoff (M3A-3, M3A-6), all status valid and no code. loadscan row (R-148, expected out_of_order_append at record 2; a position-major scan gives lane_mismatch at record 3) plus aux. R-164: strike '1.000000000' is malformed_type, parser is length-based (trailing zeros count). R-165: non-string direction is malformed_type at the threshold slot; the out-of-range direction string row is DEFERRED (no contract code exists). R-163, R-166..R-171 need no row change here.
+
+## 7. Remaining defect list (RULED in R-163..R-171; kept for history)
+- X3 non_monotone_grid needs sparse grid_idx on a minute series; assumed allowed.
+- X5 Strike grammar and more than 8 decimals assumed malformed_type at position 9; "1.000000000" (trailing zeros) undecided, no row.
+- X8 `direction` outside {up, down, either}, `known_at_ns` before event_ns, rate text place limit: no code, no rows.
+- X12 rank_le and upper_share count the history without today's value (R-45).
+- X13 No output uses both threshold parameters and x, so the pair (14,15) is nominal (equivalent swap 6).
+- X14 Applicability of delta, tenors and iv_form positions to outputs is assumed (delta and tenors apply to every chain output; iv_form only V3 and V4).
+- Perf P3, P5, P7 in M3A_PERF_ACCEPTANCE.md section 6; runner deviations in the contract note section C.
+- L1 Regression markers copied from the M2 acceptance and budgets doc (docs/p1 not allowed, not re-verified). L2 Scratch dirs out1, pq1, pf1, pf2 and patch scripts one level up stay outside the manifest.

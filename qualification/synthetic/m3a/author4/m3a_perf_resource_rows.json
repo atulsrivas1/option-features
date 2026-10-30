@@ -1,0 +1,978 @@
+{
+ "contract_version": 4,
+ "infrastructure_mutants": [
+  {
+   "id": "M-I01",
+   "must_fail_rows": [
+    "C03",
+    "C01",
+    "E12"
+   ],
+   "mutant": "cache key missing a field (contract style)"
+  },
+  {
+   "id": "M-I02",
+   "must_fail_rows": [
+    "C09",
+    "E09"
+   ],
+   "mutant": "cache key missing the cutoff (hit across cutoffs)"
+  },
+  {
+   "id": "M-I03",
+   "must_fail_rows": [
+    "C05",
+    "C08"
+   ],
+   "mutant": "cache key missing spot (hit across chains)"
+  },
+  {
+   "id": "M-I04",
+   "must_fail_rows": [
+    "E04",
+    "E05",
+    "E06",
+    "E07",
+    "D03",
+    "D08"
+   ],
+   "mutant": "batched path drops the last name of the last batch"
+  },
+  {
+   "id": "M-I05",
+   "must_fail_rows": [
+    "D01",
+    "D02",
+    "D11"
+   ],
+   "mutant": "worker count in a result"
+  },
+  {
+   "id": "M-I06",
+   "must_fail_rows": [
+    "D02",
+    "D04",
+    "D08"
+   ],
+   "mutant": "completion order in a result"
+  },
+  {
+   "id": "M-I07",
+   "must_fail_rows": [
+    "E02",
+    "E10",
+    "E11"
+   ],
+   "mutant": "float used in an output (not a decimal string or exact value)"
+  },
+  {
+   "id": "M-I08",
+   "must_fail_rows": [
+    "E12",
+    "E08"
+   ],
+   "mutant": "scanned validation skips a full-only code"
+  },
+  {
+   "id": "M-I09",
+   "must_fail_rows": [
+    "C07",
+    "C08"
+   ],
+   "mutant": "cache shared between lanes"
+  },
+  {
+   "id": "M-I10",
+   "must_fail_rows": [
+    "D10",
+    "R04"
+   ],
+   "mutant": "history append reorders sessions silently"
+  }
+ ],
+ "label": "synthetic workload, relative engineering budget",
+ "provenance": "SYNTHETIC",
+ "qualification_label": "mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12",
+ "row_count": 71,
+ "rows": [
+  {
+   "expect": "gated at ONE worker only, compute-only; 5 s p95 / 15 s hard (nearest rank); at least 30 timed repeats after one warm-up, unit set rotated; 2, 4, N workers informational with efficiency; with-synthesis printed beside it; sum check printed (2.66 + 1.2 + 0.1 = 3.96 s) and never gated; machine frozen and written before the first repeat",
+   "gate": "M3A-G0",
+   "group": "g0",
+   "id": "G001",
+   "values": [
+    1,
+    "N"
+   ],
+   "vary": "workers",
+   "workload": "one underlying, size M, SYN1/03/045, all-valid-quote chain: M2-G0 set + M2 flow outputs (M2-B9) + M3a surface set (25-delta put and call IV per expiry, tenors 9, 30, 91, M3A-3..7, M3A-10, M3A-11) as ONE timed unit"
+  },
+  {
+   "expect": "frozen facts rechecked within +/- 10 percent before the run; output set exactly as G001",
+   "gate": "M3A-G0",
+   "group": "workloads",
+   "id": "W01",
+   "values": [
+    "M"
+   ],
+   "vary": "size",
+   "workload": "all-valid-quote smile chain, 2,000 contracts, 8 expiries bracketing 9, 30, 91"
+  },
+  {
+   "expect": "<= 0.1 s p95, hard 0.5 s; delta evaluations <= 200 (hard 400) counted by the SUT; batch of 103 chains informational",
+   "gate": "M3A-B1",
+   "group": "workloads",
+   "id": "W02",
+   "values": [
+    "M"
+   ],
+   "vary": "size",
+   "workload": "surface increment, contract IVs cached, one cutoff, tenors 9, 30, 91, measured per delta convention (spot and forward, R-157)"
+  },
+  {
+   "expect": "<= 2 ms p95, hard 10 ms; value within 1e-4 of chain_truth in the manifest on vega >= 4 expiries",
+   "gate": "M3A-B2",
+   "group": "workloads",
+   "id": "W03",
+   "values": [
+    "one expiry, one side"
+   ],
+   "vary": "unit",
+   "workload": "one 25-delta point on the size-M chain, IVs cached"
+  },
+  {
+   "expect": "<= 0.1 s p95, hard 0.5 s; tenor IV within 1e-4 of the manifest tenor truth",
+   "gate": "M3A-B3",
+   "group": "workloads",
+   "id": "W04",
+   "values": [
+    "M"
+   ],
+   "vary": "size",
+   "workload": "tenors 9, 30, 91 from cached ATM IVs"
+  },
+  {
+   "expect": "<= 1 ms per name and <= 110 ms per batch p95; hard 5 ms and 550 ms; every value equals point_truth (exact rationals)",
+   "gate": "M3A-B4",
+   "group": "workloads",
+   "id": "W05",
+   "values": [
+    1,
+    103
+   ],
+   "vary": "names",
+   "workload": "point outputs M3A-3..7, 10, 11 from point_inputs (103 names)"
+  },
+  {
+   "expect": "V1, V9 <= 50 us (hard 200 us); V3 <= 150 us (hard 600 us) for each form; equals rank_truth",
+   "gate": "M3A-B5",
+   "group": "workloads",
+   "id": "W06",
+   "values": [
+    "V1",
+    "V9",
+    "V3"
+   ],
+   "vary": "series",
+   "workload": "rank over 252 sessions per series; V3 reads 252 grid entries at minute 195, measured for BOTH forms (atm_iv and iv30 series)"
+  },
+  {
+   "expect": "<= 20 ms (V1, V9), <= 50 ms (V3), each form; hard 80 ms, 200 ms; absolute times, linear in names",
+   "gate": "M3A-B5n",
+   "group": "workloads",
+   "id": "W07",
+   "values": [
+    103
+   ],
+   "vary": "names",
+   "workload": "103 names x 3 series at one cutoff, for each iv_form"
+  },
+  {
+   "expect": "records/s >= 25,000 (p5 of the sample), hard 5,000; retention 252 per series",
+   "gate": "M3A-B6",
+   "group": "workloads",
+   "id": "W08",
+   "values": [
+    181692
+   ],
+   "vary": "records",
+   "workload": "append 252 sessions x 103 names x 7 series (181,692 records)"
+  },
+  {
+   "expect": "write >= 25,000 and read >= 50,000 records/s (hard 5,000 and 10,000); store content hash identical after the round trip",
+   "gate": "M3A-B7",
+   "group": "workloads",
+   "id": "W09",
+   "values": [
+    "canonical LF text",
+    "mmap snapshot"
+   ],
+   "vary": "form",
+   "workload": "round trip of the B6 set"
+  },
+  {
+   "expect": "peak RSS <= 2 GB (hard 4 GB); store <= 768 MiB (hard 1 GiB per worker, private bytes); bytes per series reported",
+   "gate": "M3A-B8",
+   "group": "workloads",
+   "id": "W10",
+   "values": [
+    "peak RSS",
+    "store bytes"
+   ],
+   "vary": "limit",
+   "workload": "B10 workload per process; store at retention 252"
+  },
+  {
+   "expect": "result hashes identical, hard",
+   "gate": "M3A-B9",
+   "group": "workloads",
+   "id": "W11",
+   "values": [
+    1,
+    2,
+    4,
+    "N"
+   ],
+   "vary": "workers",
+   "workload": "see D and E rows"
+  },
+  {
+   "expect": "<= 170 min, hard 240 min; 60 min at N workers is an informational owner target",
+   "gate": "M3A-B10",
+   "group": "workloads",
+   "id": "W12",
+   "values": [
+    "5 x 5 x 78"
+   ],
+   "vary": "grid",
+   "workload": "1,950 units, size M, all outputs, run once"
+  },
+  {
+   "expect": "sweep wall / (78 x single-cutoff wall) <= 1.1, hard 1.5; no reuse across cutoffs claimed",
+   "gate": "M3A-B11",
+   "group": "workloads",
+   "id": "W13",
+   "values": [
+    78
+   ],
+   "vary": "cutoffs",
+   "workload": "78 cutoffs of SYN1/03, size M; every cutoff has its own spot (manifest sweep_B11)"
+  },
+  {
+   "expect": "size M <= 200 (hard 400); a count near the contract count (2,000) means the bracketed search degenerated",
+   "gate": "M3A-B12",
+   "group": "workloads",
+   "id": "W14",
+   "values": [
+    "S",
+    "M",
+    "L"
+   ],
+   "vary": "size",
+   "workload": "delta evaluations per chain counted by the SUT"
+  },
+  {
+   "expect": ">= 2.0x p50 wall ratio at 4 workers; N/A under 4 physical cores",
+   "gate": "M3A-B13",
+   "group": "workloads",
+   "id": "W15",
+   "values": [
+    1,
+    4
+   ],
+   "vary": "workers",
+   "workload": "5-underlying compute phase"
+  },
+  {
+   "expect": "per-cutoff and whole-run sha256 identical, 3 repeats",
+   "gate": "M3A-B9",
+   "group": "determinism",
+   "id": "D01",
+   "values": [
+    1,
+    2,
+    4,
+    "N"
+   ],
+   "vary": "workers",
+   "workload": "unit SYN1/03/*, 78 cutoffs, all M3a outputs"
+  },
+  {
+   "expect": "identical sha256 (run hash over unit key LF unit sha LF in key order)",
+   "gate": "M3A-B9",
+   "group": "determinism",
+   "id": "D02",
+   "values": [
+    1,
+    2,
+    4,
+    "N"
+   ],
+   "vary": "workers",
+   "workload": "5 underlyings x 5 sessions x 78 cutoffs"
+  },
+  {
+   "expect": "identical sha256",
+   "gate": "M3A-B9",
+   "group": "determinism",
+   "id": "D03",
+   "values": [
+    1,
+    7,
+    64,
+    "all"
+   ],
+   "vary": "batch_size",
+   "workload": "SYN1/03"
+  },
+  {
+   "expect": "identical sha256 after canonical keyed ordering",
+   "gate": "M3A-B9",
+   "group": "determinism",
+   "id": "D04",
+   "values": [
+    "natural",
+    "reversed",
+    "shuffle:1",
+    "shuffle:2"
+   ],
+   "vary": "order",
+   "workload": "cutoff order"
+  },
+  {
+   "expect": "identical sha256",
+   "gate": "M3A-B9",
+   "group": "determinism",
+   "id": "D05",
+   "values": [
+    "natural",
+    "reversed",
+    "shuffle:1",
+    "shuffle:2"
+   ],
+   "vary": "order",
+   "workload": "underlying order"
+  },
+  {
+   "expect": "identical sha256",
+   "gate": "M3A-B9",
+   "group": "determinism",
+   "id": "D06",
+   "values": [
+    "natural",
+    "reversed",
+    "shuffle:1",
+    "shuffle:2"
+   ],
+   "vary": "contract_order",
+   "workload": "contract order within a chain"
+  },
+  {
+   "expect": "identical sha256",
+   "gate": "M3A-B9",
+   "group": "determinism",
+   "id": "D07",
+   "values": [
+    "natural",
+    "reversed",
+    "shuffle:1",
+    "shuffle:2"
+   ],
+   "vary": "expiry_order",
+   "workload": "expiry order within a chain"
+  },
+  {
+   "expect": "identical sha256; results keyed by name, never completion order",
+   "gate": "M3A-B9",
+   "group": "determinism",
+   "id": "D08",
+   "values": [
+    "natural",
+    "reversed",
+    "shuffle:1",
+    "shuffle:2"
+   ],
+   "vary": "name_order",
+   "workload": "name order in the 103-name batches"
+  },
+  {
+   "expect": "identical sha256 (documented tie rules decide)",
+   "gate": "M3A-B9",
+   "group": "determinism",
+   "id": "D09",
+   "values": [
+    "seq",
+    "shuffled arrival of equal-ns quotes"
+   ],
+   "vary": "tie_order",
+   "workload": "quotes sharing a timestamp (about 1 percent)"
+  },
+  {
+   "expect": "canonical-only append accepted; out-of-order append is the closed code out_of_order_append (no silent reorder); same hash",
+   "gate": "M3A-B9",
+   "group": "determinism",
+   "id": "D10",
+   "values": [
+    "canonical",
+    "shuffled sessions"
+   ],
+   "vary": "append_order",
+   "workload": "history append of the 103-name store"
+  },
+  {
+   "expect": "store content hash identical at every worker count and after the round trip",
+   "gate": "M3A-B9",
+   "group": "determinism",
+   "id": "D11",
+   "values": [
+    1,
+    2,
+    4,
+    "N"
+   ],
+   "vary": "workers",
+   "workload": "history store build (7 series per name), persistence round trip and mmap attach"
+  },
+  {
+   "expect": "these rows fail on the mutants (a row that passes a mutant is a defect of the row)",
+   "gate": "M3A-B9",
+   "group": "determinism",
+   "id": "D12",
+   "values": [
+    "worker count in a result",
+    "completion order in a result",
+    "float in an output"
+   ],
+   "vary": "mutant",
+   "workload": "infrastructure mutants M-I05, M-I06, M-I07 (table below)"
+  },
+  {
+   "expect": "bytes equal, status and reason equal, zero tolerance",
+   "gate": "M3A-B9",
+   "group": "equivalence",
+   "id": "E01",
+   "values": [
+    "batched",
+    "single"
+   ],
+   "vary": "path",
+   "workload": "M3A-0 surface frame, 103 chains"
+  },
+  {
+   "expect": "bytes equal; equals the Tester reference on rank positions and interpolation",
+   "gate": "M3A-B9",
+   "group": "equivalence",
+   "id": "E02",
+   "values": [
+    "batched",
+    "single"
+   ],
+   "vary": "path",
+   "workload": "25-delta put and call IV for every expiry, sizes S, M, L"
+  },
+  {
+   "expect": "bytes equal; no extrapolation outside the expiry range",
+   "gate": "M3A-B9",
+   "group": "equivalence",
+   "id": "E03",
+   "values": [
+    "batched",
+    "single"
+   ],
+   "vary": "path",
+   "workload": "tenors 9, 30, 91"
+  },
+  {
+   "expect": "bytes equal; equals rank_truth; last name of the last batch not dropped",
+   "gate": "M3A-B9",
+   "group": "equivalence",
+   "id": "E04",
+   "values": [
+    "batched",
+    "single"
+   ],
+   "vary": "path",
+   "workload": "M3A-1 and M3A-8 (V1, V9) over 103 names x 252 sessions"
+  },
+  {
+   "expect": "bytes equal; equals rank_truth minute 195",
+   "gate": "M3A-B9",
+   "group": "equivalence",
+   "id": "E05",
+   "values": [
+    "batched",
+    "single"
+   ],
+   "vary": "path",
+   "workload": "M3A-2 (V3) same-minute over 103 names"
+  },
+  {
+   "expect": "bytes equal; equals point_truth",
+   "gate": "M3A-B9",
+   "group": "equivalence",
+   "id": "E06",
+   "values": [
+    "batched",
+    "single"
+   ],
+   "vary": "path",
+   "workload": "M3A-3 to M3A-6 over 103 names"
+  },
+  {
+   "expect": "bytes equal; sign_changed equals point_truth; zero never a flip",
+   "gate": "M3A-B9",
+   "group": "equivalence",
+   "id": "E07",
+   "values": [
+    "batched",
+    "single"
+   ],
+   "vary": "path",
+   "workload": "M3A-7, M3A-9, M3A-10, M3A-11 over 103 names"
+  },
+  {
+   "expect": "status and reason equal on every name; no status or reason flip",
+   "gate": "M3A-B9",
+   "group": "equivalence",
+   "id": "E08",
+   "values": [
+    "batched",
+    "single"
+   ],
+   "vary": "path",
+   "workload": "unavailable cases (zero_range_history name 101, insufficient_history, no_delta_bracket) at validate full and scanned"
+  },
+  {
+   "expect": "bytes equal per cutoff",
+   "gate": "M3A-B9",
+   "group": "equivalence",
+   "id": "E09",
+   "values": [
+    "incremental",
+    "full_recompute"
+   ],
+   "vary": "path",
+   "workload": "cutoff sweep, 78 cutoffs"
+  },
+  {
+   "expect": "zero differences",
+   "gate": "M3A-B9",
+   "group": "equivalence",
+   "id": "E10",
+   "values": [
+    "library",
+    "tester_reference"
+   ],
+   "vary": "path",
+   "workload": "25-delta and tenor interpolation, at least 20,000 randomized cases each"
+  },
+  {
+   "expect": "zero differences",
+   "gate": "M3A-B9",
+   "group": "equivalence",
+   "id": "E11",
+   "values": [
+    "library",
+    "tester_reference"
+   ],
+   "vary": "path",
+   "workload": "rank forms and the sign-change rule, at least 20,000 randomized cases each"
+  },
+  {
+   "expect": "same codes at validate=full and scanned on trusted inputs; a code only full detects is reported, never skipped",
+   "gate": "M3A-B9",
+   "group": "equivalence",
+   "id": "E12",
+   "values": [
+    "full",
+    "scanned"
+   ],
+   "vary": "validate",
+   "workload": "the structural rows and 103-name batches"
+  },
+  {
+   "expect": "bytes equal; warm shows hits in the log",
+   "gate": "M3A-B9",
+   "group": "cache",
+   "id": "C01",
+   "values": [
+    "cold",
+    "warm"
+   ],
+   "vary": "cache",
+   "workload": "any M3a output, same request twice"
+  },
+  {
+   "expect": "key changes, recompute, bytes equal cold run of the changed input",
+   "gate": "M3A-B9",
+   "group": "cache",
+   "id": "C02",
+   "values": [
+    "tenor",
+    "delta_target",
+    "threshold",
+    "X",
+    "direction",
+    "min_sessions",
+    "max_sessions",
+    "minute",
+    "prior_sessions"
+   ],
+   "vary": "param",
+   "workload": "one parameter changed per run"
+  },
+  {
+   "expect": "key changes, recompute",
+   "gate": "M3A-B9",
+   "group": "cache",
+   "id": "C03",
+   "values": [
+    "expiry_days",
+    "right",
+    "strike",
+    "style",
+    "condition",
+    "event_ns",
+    "known_at_ns",
+    "contract_id"
+   ],
+   "vary": "contract_field",
+   "workload": "one contract field changed per run"
+  },
+  {
+   "expect": "key changes; IV and delta caches recompute",
+   "gate": "M3A-B9",
+   "group": "cache",
+   "id": "C04",
+   "values": [
+    "bid",
+    "ask"
+   ],
+   "vary": "quote_field",
+   "workload": "one quote changed by one tick"
+  },
+  {
+   "expect": "key changes, recompute",
+   "gate": "M3A-B9",
+   "group": "cache",
+   "id": "C05",
+   "values": [
+    "spot",
+    "rate",
+    "dividend_yield",
+    "cutoff_ns"
+   ],
+   "vary": "chain_field",
+   "workload": "one request-level field changed"
+  },
+  {
+   "expect": "key changes; only the series touched are invalidated",
+   "gate": "M3A-B9",
+   "group": "cache",
+   "id": "C06",
+   "values": [
+    "content_sha256",
+    "calendar",
+    "k"
+   ],
+   "vary": "history",
+   "workload": "one history record, calendar entry or retention changed"
+  },
+  {
+   "expect": "no hit crosses lanes",
+   "gate": "M3A-B9",
+   "group": "cache",
+   "id": "C07",
+   "values": [
+    "stock",
+    "etf_index"
+   ],
+   "vary": "lane",
+   "workload": "same fields in different lanes"
+  },
+  {
+   "expect": "no hit across chains",
+   "gate": "M3A-B9",
+   "group": "cache",
+   "id": "C08",
+   "values": [
+    "chain"
+   ],
+   "vary": "scope",
+   "workload": "two chains with equal contracts and different spot or lane"
+  },
+  {
+   "expect": "no hit across cutoffs (IV and delta caches are per chain and cutoff)",
+   "gate": "M3A-B9",
+   "group": "cache",
+   "id": "C09",
+   "values": [
+    "cutoff"
+   ],
+   "vary": "scope",
+   "workload": "same chain at cutoff i and i + 1"
+  },
+  {
+   "expect": "no hit across underlyings",
+   "gate": "M3A-B9",
+   "group": "cache",
+   "id": "C10",
+   "values": [
+    "underlying"
+   ],
+   "vary": "scope",
+   "workload": "SYN1 and SYN2 with equal fields"
+  },
+  {
+   "expect": "bytes equal to unbounded; evictions recorded; eviction never changes bytes",
+   "gate": "M3A-B9",
+   "group": "cache",
+   "id": "C11",
+   "values": [
+    "limited:1048576",
+    "limited:16777216",
+    "off"
+   ],
+   "vary": "cache",
+   "workload": "M3A-G0 and 103-name workloads"
+  },
+  {
+   "expect": "bounded size and eviction recorded in the log",
+   "gate": "M3A-B9",
+   "group": "cache",
+   "id": "C12",
+   "values": [
+    "size",
+    "eviction policy"
+   ],
+   "vary": "bound",
+   "workload": "cache of the SUT"
+  },
+  {
+   "expect": "no shared mutable state between workers",
+   "gate": "M3A-B9",
+   "group": "cache",
+   "id": "C13",
+   "values": [
+    "worker"
+   ],
+   "vary": "scope",
+   "workload": "per-process caches"
+  },
+  {
+   "expect": "never in results or result_sha256",
+   "gate": "M3A-B9",
+   "group": "cache",
+   "id": "C14",
+   "values": [
+    "log only"
+   ],
+   "vary": "stats",
+   "workload": "cache hits, misses, evictions, bytes"
+  },
+  {
+   "expect": "peak RSS <= 2 GB budget, 4 GB hard",
+   "gate": "M3A-B8",
+   "group": "memory",
+   "id": "R01",
+   "values": [
+    "b9_peak_bytes"
+   ],
+   "vary": "limit",
+   "workload": "B10-with-M3a and M3A-G0 workloads, per process"
+  },
+  {
+   "expect": "post-GC RSS slope <= 1 MB per repeat; last-10 mean within 5 percent of first-10 mean",
+   "gate": "M3A-B8",
+   "group": "memory",
+   "id": "R02",
+   "values": [
+    30
+   ],
+   "vary": "repeats",
+   "workload": "every timed gate"
+  },
+  {
+   "expect": "<= 768 MiB budget (RULED; 805,306,368 B), 1 GiB hard per worker (1,073,741,824 B) (budgets doc B8); bytes per series reported; the 30 percent tolerance against the formula (162 MB raw, 486 MB M2 layout with two minute grids; 485,896,320 B = 463.4 MiB = 60.34 percent of the 768 MiB budget (805,306,368 B), 45.25 percent of the 1 GiB hard limit 1,073,741,824 B) is a PROPOSAL carried from M2 R03, not a budgets-doc number",
+   "gate": "M3A-B8",
+   "group": "memory",
+   "id": "R03",
+   "values": [
+    252
+   ],
+   "vary": "retention",
+   "workload": "store at retention 252, 103 names x 7 series"
+  },
+  {
+   "expect": "retention never exceeds K; the oldest session is evicted; M2 default k = 60 unchanged",
+   "gate": "M3A-B8",
+   "group": "memory",
+   "id": "R04",
+   "values": [
+    60,
+    252,
+    253
+   ],
+   "vary": "retention",
+   "workload": "append past K (scalar series k = 252, M2 series keep k <= 60)"
+  },
+  {
+   "expect": "reported; cap rule min(cores, floor(aggregate / 2 GB)); MemoryLimitError fails the run",
+   "gate": "M3A-B8",
+   "group": "memory",
+   "id": "R05",
+   "values": [
+    1,
+    2,
+    4,
+    "N"
+   ],
+   "vary": "workers",
+   "workload": "aggregate worker RSS"
+  },
+  {
+   "expect": "within the 4 GB hard limit",
+   "gate": "M3A-B8",
+   "group": "memory",
+   "id": "R06",
+   "values": [
+    "L"
+   ],
+   "vary": "size",
+   "workload": "size L chain, 1 worker"
+  },
+  {
+   "expect": "M2-B16 limits (M2 contract section 9.12): <= 5 s and <= 512 MB per worker start budget, 15 s and 1 GiB hard; 721 series is below 2,000 so the budgets are the gate; content_hash() compared after attach",
+   "gate": "M3A-B8",
+   "group": "memory",
+   "id": "R07",
+   "values": [
+    "mmap snapshot",
+    "store_load",
+    "shared_memory"
+   ],
+   "vary": "view",
+   "workload": "B16-style worker start: 721 series, 181,692 records at retention 252"
+  },
+  {
+   "expect": "the view counts in that worker RSS; private and shared mapped bytes reported separately",
+   "gate": "M3A-B8",
+   "group": "memory",
+   "id": "R08",
+   "values": [
+    "view_in_worker_rss"
+   ],
+   "vary": "accounting",
+   "workload": "worker RSS with the view"
+  },
+  {
+   "expect": ">= 2.0x at 4 workers p50 wall; efficiency at N reported; N/A under 4 physical cores",
+   "gate": "M3A-B13",
+   "group": "scaling",
+   "id": "S01",
+   "values": [
+    1,
+    2,
+    4,
+    "N"
+   ],
+   "vary": "workers",
+   "workload": "5-underlying compute phase, size M, all outputs"
+  },
+  {
+   "expect": "informational efficiency; correctness rows pass at every count",
+   "gate": "M3A-B13",
+   "group": "scaling",
+   "id": "S02",
+   "values": [
+    1,
+    2,
+    4,
+    "N"
+   ],
+   "vary": "workers",
+   "workload": "103-name batch gates sharded by name, merged in canonical order"
+  },
+  {
+   "expect": "at most 5-way; serial share of wall reported",
+   "gate": "M3A-B6",
+   "group": "scaling",
+   "id": "S03",
+   "values": [
+    1,
+    2,
+    4,
+    "N"
+   ],
+   "vary": "workers",
+   "workload": "history build parallel across 5 underlyings"
+  },
+  {
+   "expect": "exit 2, WorkerCrashedError, no output file, no digest, no temp file",
+   "gate": "M3A-B9",
+   "group": "runner",
+   "id": "K01",
+   "values": [
+    "kill_worker:1:100"
+   ],
+   "vary": "fault",
+   "workload": "any M3a unit set, 4 workers, M3a outputs in the unit"
+  },
+  {
+   "expect": "exit 2, MissingUnitError, no partial output",
+   "gate": "M3A-B9",
+   "group": "runner",
+   "id": "K02",
+   "values": [
+    "drop_unit:SYN1/03/003"
+   ],
+   "vary": "fault",
+   "workload": "any M3a unit set"
+  },
+  {
+   "expect": "exit 2, duplicate or unexpected unit error",
+   "gate": "M3A-B9",
+   "group": "runner",
+   "id": "K03",
+   "values": [
+    "duplicate_unit:SYN1/03/003"
+   ],
+   "vary": "fault",
+   "workload": "any M3a unit set"
+  },
+  {
+   "expect": "InterpreterMismatchError at start",
+   "gate": "M3A-B9",
+   "group": "runner",
+   "id": "K04",
+   "values": [
+    "mismatch"
+   ],
+   "vary": "interpreter",
+   "workload": "worker interpreter differs"
+  },
+  {
+   "expect": "exit 2, results and hashes null, partial_output false, no file",
+   "gate": "M3A-B9",
+   "group": "runner",
+   "id": "K05",
+   "values": [
+    "no partial output"
+   ],
+   "vary": "output",
+   "workload": "failure with M3a outputs half merged"
+  },
+  {
+   "expect": "digests.json, results.jsonl and .*.tmp of a previous run removed at start; only own process ids terminated",
+   "gate": "M3A-B9",
+   "group": "runner",
+   "id": "K06",
+   "values": [
+    "previous_outputs",
+    "own_pids_only"
+   ],
+   "vary": "hygiene",
+   "workload": "rerun in the same --out"
+  }
+ ]
+}

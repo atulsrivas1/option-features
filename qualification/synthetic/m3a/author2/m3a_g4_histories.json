@@ -1,0 +1,10 @@
+{"family":"G4","label":"mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12","note":"fingerprints of the named planted histories","provenance":"SYNTHETIC","row_count":9,"seed":20261030}
+{"id":"calendar_minute_sha256","pending":"RULED","value":"d6deacf4adef6ed733e89becf7f05b91c586bcb027a14b8a0963065c4c15330d"}
+{"id":"calendar_scalar_sha256","pending":"RULED","value":"b979373e48768dd6b9ade490effba8bcb9d7f387bba768b093bcb392a416d806"}
+{"id":"const30","pending":"RULED","value":{"n":30,"sha256":"a270729f7005b9d1112d364985b84a9a085e7314cd73c4b69eb664cf02c502f5"}}
+{"id":"n100_mid","pending":"RULED","value":{"n":100,"sha256":"29dd625b054f7f9a54199a5d3ee03318149c35af352c326fb9d2af2d90a38d02","x":39729819}}
+{"id":"n20_top1","pending":"RULED","value":{"n":20,"sha256":"c0b981e2541a38bb4c62177638322607b1f2204621e0ed5fb174ea94e603d50d","x":42582814}}
+{"id":"n21_top1","pending":"RULED","value":{"n":21,"sha256":"d56f542797ee8f25b06d597aad6a5e7c2b1274397fb268c028407e56f82985e1","x":36557193}}
+{"id":"n252_bottom12","pending":"RULED","value":{"n":252,"sha256":"920636995f74c48a74786d23d24cbab8531e162818b1212358c6799373fd9d18","x":53852289}}
+{"id":"n252_ties3","pending":"RULED","value":{"n":252,"sha256":"cdf0186bac24815099fba58b4dee56854dca32ec2f5473148a7d44ec757e9fbe","x":57382297}}
+{"id":"n252_top12","pending":"RULED","value":{"n":252,"sha256":"9cadb544ad72a90d5bd74dbc9721451a5df3f6539cbaa4acff24edefc330c444","x":37842355}}

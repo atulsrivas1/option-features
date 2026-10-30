@@ -1,0 +1,17 @@
+{"cutoff_ns":307200000000000,"dividend_yield":"0.0100","label":"mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12","provenance":"SYNTHETIC","rate":"0.0500","sample":"first 16 contracts of the size-M chain SYN1/03/045","spot":"101.38"}
+{"ask":"26.4798","bid":"25.9554","condition":"regular","contract_id":"SYN1-E0-C000","event_ns":307199000000000,"expiry_days":5,"known_at_ns":null,"right":"call","strike":"75.20","style":"european"}
+{"ask":"0.0400","bid":"0.0200","condition":"regular","contract_id":"SYN1-E0-P000","event_ns":307195000000000,"expiry_days":5,"known_at_ns":null,"right":"put","strike":"75.20","style":"european"}
+{"ask":"26.0761","bid":"25.5597","condition":"regular","contract_id":"SYN1-E0-C001","event_ns":307195000000000,"expiry_days":5,"known_at_ns":null,"right":"call","strike":"75.60","style":"european"}
+{"ask":"0.0400","bid":"0.0200","condition":"regular","contract_id":"SYN1-E0-P001","event_ns":307193000000000,"expiry_days":5,"known_at_ns":null,"right":"put","strike":"75.60","style":"european"}
+{"ask":"25.6724","bid":"25.1640","condition":"regular","contract_id":"SYN1-E0-C002","event_ns":307193000000000,"expiry_days":5,"known_at_ns":null,"right":"call","strike":"76.00","style":"european"}
+{"ask":"0.0400","bid":"0.0200","condition":"regular","contract_id":"SYN1-E0-P002","event_ns":307199000000000,"expiry_days":5,"known_at_ns":null,"right":"put","strike":"76.00","style":"european"}
+{"ask":"25.2686","bid":"24.7682","condition":"regular","contract_id":"SYN1-E0-C003","event_ns":307199000000000,"expiry_days":5,"known_at_ns":null,"right":"call","strike":"76.40","style":"european"}
+{"ask":"0.0400","bid":"0.0200","condition":"regular","contract_id":"SYN1-E0-P003","event_ns":307199000000000,"expiry_days":5,"known_at_ns":null,"right":"put","strike":"76.40","style":"european"}
+{"ask":"24.8649","bid":"24.3725","condition":"regular","contract_id":"SYN1-E0-C004","event_ns":307199000000000,"expiry_days":5,"known_at_ns":null,"right":"call","strike":"76.80","style":"european"}
+{"ask":"0.0400","bid":"0.0200","condition":"regular","contract_id":"SYN1-E0-P004","event_ns":307198000000000,"expiry_days":5,"known_at_ns":null,"right":"put","strike":"76.80","style":"european"}
+{"ask":"24.4612","bid":"23.9768","condition":"regular","contract_id":"SYN1-E0-C005","event_ns":307198000000000,"expiry_days":5,"known_at_ns":null,"right":"call","strike":"77.20","style":"european"}
+{"ask":"0.0400","bid":"0.0200","condition":"regular","contract_id":"SYN1-E0-P005","event_ns":307191000000000,"expiry_days":5,"known_at_ns":null,"right":"put","strike":"77.20","style":"european"}
+{"ask":"24.0574","bid":"23.5810","condition":"regular","contract_id":"SYN1-E0-C006","event_ns":307191000000000,"expiry_days":5,"known_at_ns":null,"right":"call","strike":"77.60","style":"european"}
+{"ask":"0.0400","bid":"0.0200","condition":"regular","contract_id":"SYN1-E0-P006","event_ns":307199000000000,"expiry_days":5,"known_at_ns":null,"right":"put","strike":"77.60","style":"european"}
+{"ask":"23.6537","bid":"23.1853","condition":"regular","contract_id":"SYN1-E0-C007","event_ns":307199000000000,"expiry_days":5,"known_at_ns":null,"right":"call","strike":"78.00","style":"european"}
+{"ask":"0.0400","bid":"0.0200","condition":"regular","contract_id":"SYN1-E0-P007","event_ns":307193000000000,"expiry_days":5,"known_at_ns":null,"right":"put","strike":"78.00","style":"european"}
