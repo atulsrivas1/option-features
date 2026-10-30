@@ -13,7 +13,7 @@ Decided: PO (second ruling batch, relayed by the independent reviewer). Status: 
 - Structural (R-119 to R-122): delta_target {0.25} only; threshold names at_least, at_most, x; positions 16 to 18 apply only to outputs using that parameter; three pair rows that cannot hold both errors are equivalent swaps; threshold_out_of_range also at view read for x.
 - Performance (R-126, R-127): iv30 minute series (not an atm_iv grid); unit-key session ordinals 01 to 05 (documented deviation from M2); "vega >= 4" is the M1 vega per 1.00 of volatility.
 
-The ruling list now has 140 rows (R-01 to R-140); all rulings are interim pending design ratification where the design is silent.
+The ruling list now has 150 rows (R-01 to R-150); all rulings are interim pending design ratification where the design is silent.
 
 ## Appended rulings (R-128 to R-130)
 - R-128 (Q-13, from inverse.py lines 130-150): price_out_of_bounds = target strictly below the lower bound or strictly above the upper bound (invalid_input); a target exactly at the lower bound is available with IV 0.0; exactly at the upper bound is upper_asymptote (nonidentifiable_inverse). sigma_cap, precision_exhausted, bound_precision and iteration_budget are not fixture-covered (solver internals needed); unit-tested with a stubbed solver in the Developer tests; the gap is recorded.
@@ -25,3 +25,9 @@ The ruling list now has 140 rows (R-01 to R-140); all rulings are interim pendin
 - R-132 labels are lexicographic ASCII sorted including "delayed". R-133 down fires at x <= -X for change forms, V21 down at ratio <= X. R-134 prior_not_before_cutoff checks all supplied priors. R-135 V10 condition in {change, sign_change}, default change.
 - R-136 empty prior store: no_prior_reading; fewer than n priors (non-empty): insufficient_history (V7 and V10). R-137 V11 and V21 failure precedence: ATM tenor, put side, call side. R-139 coverage-excluded bracketing expiry: no_bracketing_expiry; lacking a 25-delta bracket: no_delta_bracket.
 - R-138 tolerances 3e-5 annual (IV-derived) and 0.005 points (25-delta-derived); R-62 is the upper bound; rows that cannot meet them are non-gating with the reason. R-140 request vocabulary: at_least, at_most, x only; V5 pair "9-30" and "30-91"; gating = false on near-threshold rows.
+
+## Appended rulings (R-141 to R-150, from the PR 104 oracle review and the author-4 review)
+- R-141 frame status: the M3A-0 frame is available only when every listed expiry, every requested tenor and every 25-delta side is available; otherwise unavailable with the per-item values shown; reason = first failing item (expiries ascending, tenors ascending, 25-delta sides put then call). R-142: top-level value null, details in the `frame` object.
+- R-143 parameter names x and tail in {top, bottom}; V5 pair "9-30" and "30-91". R-144: null for labels or coverage in a row means not asserted (harness-only partial assertion).
+- R-145 corrects R-128: price_out_of_bounds is target < ll or > uh (ends of the arb enclosures); the exact-bound results (IV 0.0 at an exact lower bound, upper_asymptote at an exact upper bound) hold only when the bound is exact (lower_exact: r = q = 0, or S = K and r = q, or an OTM forward with lower bound 0; upper_exact: call with q = 0, put with r = 0); with non-zero rates a target inside the enclosure ends is bound_precision.
+- R-146 series: iv30 minute series, iv30_close, skew25, term_30_91; atm_iv dropped. R-147 unit key "%s/%02d/%03d" (corrects R-126). R-148 history load is record-major; (duplicate_session, out_of_order_append) is a fifth equivalent swap. R-149 positions 14 and 15 apply when the request carries the parameter and the output uses it. R-150 thresholds R03 and R07 cite M2-B16 or are proposals; 71 distinct spots across 78 cutoffs.
