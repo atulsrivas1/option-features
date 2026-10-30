@@ -24,8 +24,8 @@ Calls
         session_id, grid, total=total, lane=lane); a store error stops the batch and its code (the exception's
         `code` or text) is returned instead of raised.
 
-Performance: one pass per series; grids are rounded in C-level passes (map) with an exactness check, falling
-back to exact integer rounding only for tie-risk or hostile entries.
+Performance: one pass per series; grids are rounded in C-level passes (scale, int, fraction check); only entries
+near a rounding boundary, and hostile or large values, take the exact integer path.
 """
 from operator import sub
 
@@ -34,7 +34,9 @@ from .m3a_common import round_units
 _SCALE = 10 ** 8
 _FSCALE = 1e8
 _FLOAT_ONLY = {float}
-_BIG = 2.0 ** 20            # |v| below this keeps v * 1e8 under 2^47: the product error is far below the tie window
+_BIG = 2.0 ** 16            # below this v * 1e8 < 2^43: each float operation errs by less than 1e-3 of a unit
+_WIN = 0.01                 # entries this close to a rounding boundary take the exact path
+_WIN_HI = 1.0 - _WIN
 _FIELDS = ("atm_iv", "iv30", "atm_iv_close", "iv30_close", "skew25", "skew25_fwd", "term_30_91")
 
 
@@ -120,23 +122,30 @@ def _slow_grid(values):
 
 
 def grid_units(values):
+    """Exact half-even rounding to 10^-8 units of every entry (see the module docstring).
+
+    Fast path (floats in [0, 2^16)): u = v * 1e8 + 0.5 and int(u) (floor) are exact except where the true value is
+    within ~1.3e-3 of a rounding boundary (the two float operations err by at most that below 2^16); an entry whose
+    fraction of u is within _WIN of 0 or 1 is rounded exactly instead (this also covers every exact tie). Anything
+    else (negative, large, non-float, non-finite) takes the exact integer path."""
     if type(values) is not list:
         try:
             values = list(values)
         except TypeError:
             return []
+    if not values:
+        return []
     if not set(map(type, values)) <= _FLOAT_ONLY:
         return _slow_grid(values)
     try:
-        if values and (max(values) >= _BIG or min(values) <= -_BIG):
-            return _slow_grid(values)       # v * 1e8 would pass 2^53 and lose low bits: exact path only
-        fs = [v * _FSCALE for v in values]
-        rs = list(map(round, fs))
-        # the product is exact to ~1e-8 of a unit; far from a .5 tie round() equals half-even on the exact value
-        if fs:
-            d = list(map(sub, fs, rs))
-            if max(d) > 0.49 or min(d) < -0.49:
-                return _slow_grid(values)
+        if max(values) >= _BIG or min(values) < 0.0:
+            return _slow_grid(values)
+        u = [v * _FSCALE + 0.5 for v in values]
+        rs = list(map(int, u))
+        d = list(map(sub, u, rs))
+        if min(d) < _WIN or max(d) > _WIN_HI:
+            for i in [i for i, x in enumerate(d) if x < _WIN or x > _WIN_HI]:
+                rs[i] = round_units(values[i])
         return rs
     except (TypeError, ValueError, OverflowError):
         return _slow_grid(values)

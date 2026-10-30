@@ -286,12 +286,12 @@ class GridExactness(unittest.TestCase):
 
     def test_around_the_threshold(self):
         rnd = random.Random(11)
-        for base in (2.0 ** 20, 1e8, 2.0 ** 26, 2.0 ** 30):
+        for base in (2.0 ** 16, 2.0 ** 20, 1e8, 2.0 ** 26, 2.0 ** 30):
             xs = []
             for e in (-1, -1e-3, 0, 1e-3, 1):
                 xs += [base * (1 + e * 1e-6) + rnd.random() * 1e-3 for _ in range(300)]
                 xs += [-(base * (1 + e * 1e-6)) - rnd.random() * 1e-3 for _ in range(50)]
-            xs += [base - 1e-3, base, base + 1e-3, 2.0 ** 20 - 1e-9, 2.0 ** 20 + 1e-9]
+            xs += [base - 1e-3, base, base + 1e-3, 2.0 ** 16 - 1e-9, 2.0 ** 16 + 1e-9, 2.0 ** 20 - 1e-9, 2.0 ** 20 + 1e-9]
             self.assertEqual(S.grid_units(xs), [exact_round(Fraction(x)) for x in xs], base)
 
     def test_mixed_huge_and_normal_grid(self):
@@ -306,6 +306,58 @@ class GridExactness(unittest.TestCase):
         self.assertEqual(S.grid_units(xs), want)
         self.assertEqual(S.grid_units([7.5e-08]), [7])
         self.assertEqual(S.grid_units([1.65e-07]), [17])
+
+
+def diff_values(rnd, n):
+    """n values: IV-like, near-ties ((k + 0.5) / 1e8 and its neighbours), dyadic ties, negatives, +-0.0, zeros, values
+    around 2^16, 2^20 and 1e8, plus real floats from the fixture rows."""
+    xs = []
+    for _ in range(n // 8):
+        xs.append(rnd.uniform(0.0, 3.0))
+        k = rnd.randrange(0, 3 * 10 ** 8)
+        c = (k + 0.5) / 1e8
+        xs.append(c)
+        xs.append(math.nextafter(c, 1e9))
+        xs.append(math.nextafter(c, -1e9))
+        xs.append((2 * rnd.randrange(0, 10 ** 5) + 1) / 512)
+        xs.append(-rnd.uniform(0.0, 3.0))
+        base = rnd.choice((2.0 ** 16, 2.0 ** 20, 1e8))
+        xs.append(base * (1 + rnd.uniform(-1e-6, 1e-6)))
+        xs.append(rnd.choice((0.0, -0.0, 1.0, 5e-324, 1e-9, 4.9999999999999996e-09, 5e-09, 1.5e-8)))
+    return xs
+
+
+class Differential(unittest.TestCase):
+    """grid_units against `_slow_grid` (integer half-even, the S01 helper) and the Fraction reference."""
+
+    def _check(self, xs, grid=390):
+        for i in range(0, len(xs), grid):
+            g = xs[i:i + grid]
+            got = S.grid_units(g)
+            self.assertEqual(got, S._slow_grid(g))
+            self.assertEqual(got, [exact_round(Fraction(x)) for x in g])
+
+    def test_random_and_adversarial(self):
+        self._check(diff_values(random.Random(2026), 24000))
+
+    def test_fixture_floats(self):
+        xs = []
+        for fn in ("m3a_cases_units.json",):
+            for r in H.rows("author2", fn):
+                for v in r["inputs"].values():
+                    if type(v) is float:
+                        xs.append(v)
+                    elif type(v) is dict:
+                        xs += [x for x in v.values() if type(x) is float]
+        for row in _sample_rows():
+            fl = _frame(row["inputs"]["chain"], row["params"])[1].get("floats")
+            if fl:
+                for it in fl["expiries"].values():
+                    xs += [x for x in it.values() if type(x) is float]
+                xs += [x for x in fl["tenors"].values() if type(x) is float]
+        self.assertGreater(len(xs), 100)
+        self._check(xs, 17)
+        self._check(xs, 390)
 
 
 class Records(unittest.TestCase):
