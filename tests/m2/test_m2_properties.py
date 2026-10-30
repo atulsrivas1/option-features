@@ -453,6 +453,50 @@ class StoreViews(unittest.TestCase):
                 flowstore.HistoryStore.from_binary_snapshot(data, cal)
             self.assertEqual(cm.exception.code, code)
 
+    def test_binary_attach_version_hash_and_read_only(self):
+        _, flowstore, flowrank, flowresult = lib()
+        cal = self._cal(4, lambda i: 5)
+        store = flowstore.HistoryStore(cal, k=4)
+        for i in range(3):
+            store.append("S", "m", 60, cal.ids[i], [i + 1, 0, 3, 0, 2 ** 40], lane="etf_index")
+        want = store.content_hash()
+        blob = store.binary_snapshot()
+        self.assertEqual(blob[:5], b"M2BIN")
+        self.assertEqual(blob[5:7], (1).to_bytes(2, "little"))
+        self.assertEqual(int.from_bytes(blob[7:15], "little"), len(blob))
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "s.bin")
+            store.binary_snapshot_to(path)
+            got = flowstore.HistoryStore.attach_binary(path, cal, expected_content_hash=want)
+            self.assertEqual(got.content_hash(), want)
+            self.assertEqual(got.recompute_content_hash(), want)                   # carried value equals the recomputation
+            deep = flowstore.HistoryStore.attach_binary(path, cal, expected_content_hash=want, deep=True)
+            deep.close_mapping()
+            got.append("S", "m", 60, cal.ids[3], [1, 1, 1, 1, 1], lane="etf_index")   # a change drops the carried value
+            self.assertEqual(got.content_hash(), got.recompute_content_hash())
+            self.assertNotEqual(got.content_hash(), want)
+            got._rings[("S", "m", 60)].recs.pop(cal.ids[3])
+            rec = next(iter(got._rings[("S", "m", 60)].recs.values()))
+            self.assertTrue(rec.vals.readonly and rec.idx.readonly)                # read-only mapping of the file
+            with self.assertRaises(TypeError):
+                rec.vals[0] = 1
+            del rec
+            got.close_mapping()
+            with self.assertRaises(flowresult.M2StructuralError) as cm:
+                flowstore.HistoryStore.attach_binary(path, cal, expected_content_hash="0" * 64)
+            self.assertEqual(cm.exception.code, "snapshot_hash_mismatch")
+            bad_version = blob[:5] + (2).to_bytes(2, "little") + blob[7:]
+            bad_body = bytearray(blob)
+            bad_body[len(blob) // 2] ^= 1
+            for data, code in ((bad_version, "snapshot_bad_magic"), (blob[:-1], "snapshot_length_mismatch"),
+                               (blob[:10], "snapshot_length_mismatch"), (bytes(bad_body), "snapshot_hash_mismatch")):
+                with open(path, "wb") as fh:
+                    fh.write(data)
+                with self.assertRaises(flowresult.M2StructuralError) as cm:
+                    flowstore.HistoryStore.attach_binary(path, cal)
+                self.assertEqual(cm.exception.code, code)
+            self.assertEqual(sorted(os.listdir(d)), ["s.bin"])                    # failed attaches leave no mapping or temp file
+
     def test_hash_independent_of_series_arrival_order(self):
         _, flowstore, _, _ = lib()
         cal = self._cal(6, lambda i: 4)

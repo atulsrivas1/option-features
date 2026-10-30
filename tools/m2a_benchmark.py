@@ -71,7 +71,7 @@ def rss_bytes():
     ctypes.windll.kernel32.GetCurrentProcess.restype = ctypes.c_void_p
     ctypes.windll.psapi.GetProcessMemoryInfo.argtypes = [ctypes.c_void_p, ctypes.POINTER(PMC), wintypes.DWORD]
     ctypes.windll.psapi.GetProcessMemoryInfo(ctypes.windll.kernel32.GetCurrentProcess(), ctypes.byref(c), c.cb)
-    return int(c.WorkingSetSize), int(c.PeakWorkingSetSize)
+    return int(c.WorkingSetSize), int(c.PeakWorkingSetSize), int(c.PagefileUsage)
 
 
 def machine():
@@ -352,8 +352,8 @@ def main():
     code = ("import sys,time;sys.path[:0]=%r;"
             "from option_features import flowstore,flowgrid;import json,mmap;sys.path.insert(0,%r);import m2a_benchmark as B;"
             "cal=flowgrid.Calendar([('2026-%%02d-%%02d'%%(1+i//28,1+i%%28),390) for i in range(%d)]);"
-            "r0=B.rss_bytes()[0];t=time.perf_counter();%s;dt=time.perf_counter()-t;st.baseline('C0000','premium',300,cal.ids[-1],20);"
-            "print(json.dumps({'seconds':dt,'rss_delta':B.rss_bytes()[0]-r0}))")
+            "r0=B.rss_bytes();t=time.perf_counter();%s;dt=time.perf_counter()-t;st.baseline('C0000','premium',300,cal.ids[-1],20);"
+            "r1=B.rss_bytes();print(json.dumps({'seconds':dt,'working_set_delta':r1[0]-r0[0],'private_delta':r1[2]-r0[2],'shared_mapped_delta':r1[0]-r0[0]-(r1[2]-r0[2])}))")
     tmp = Path(tempfile.mkdtemp(prefix="m2a_bench_"))
     try:
         path, snap_path = tmp / "store.lf", tmp / "store.snap"
@@ -364,16 +364,16 @@ def main():
         variants = {"store load (text)": "st=flowstore.HistoryStore.load(__import__('pathlib').Path(%r),cal,k=20)" % str(path),
                     "ruled text snapshot (M2SNAP1)": "st=flowstore.HistoryStore.from_snapshot(open(%r,'rb').read(),cal)" % str(tmp / "ruled.snap"),
                     "binary snapshot read into bytes": "st=flowstore.HistoryStore.from_binary_snapshot(open(%r,'rb').read(),cal)" % str(snap_path),
-                    "binary mmap snapshot (zero copy)": "f=open(%r,'rb');m=mmap.mmap(f.fileno(),0,access=mmap.ACCESS_READ);st=flowstore.HistoryStore.from_binary_snapshot(m,cal)" % str(snap_path)}
+                    "binary mmap snapshot (zero copy)": "st=flowstore.HistoryStore.attach_binary(%r,cal,expected_content_hash=%r)" % (str(snap_path), store.content_hash())}
         for label, stmt in variants.items():
             res = subprocess.run([sys.executable, "-c", code % (base, str(ROOT / "tools"), a.sessions, stmt)], capture_output=True, text=True)
             try:
-                record("M2-B16", "fresh worker, " + label, json.loads(res.stdout.strip().splitlines()[-1]), "seconds, private rss delta bytes")
+                record("M2-B16", "fresh worker, " + label, json.loads(res.stdout.strip().splitlines()[-1]), "seconds; working-set delta, private (commit) delta, shared mapped = working set minus private; shared file-backed pages count once across workers")
             except Exception:
                 print("worker variant failed:", label, res.stderr[-300:])
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
-    wset, peak = rss_bytes()
+    wset, peak, _private = rss_bytes()
     stats = store.stats()
     record("M2-B13", "store (k=20) series, records, est bytes", {"series": stats["series"], "records": stats["records"], "est_bytes": stats["est_bytes"],
                                                               "rings": stats["rings"], "est_bytes_per_series": stats["est_bytes"] // max(1, stats["series"])}, "(getsizeof estimate; series counts distinct series ids)")

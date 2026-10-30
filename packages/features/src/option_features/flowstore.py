@@ -34,7 +34,9 @@ from .flowresult import M2StructuralError
 
 MAX_K = 60
 _SNAP_MAGIC = b"M2SNAP1"
-_BIN_MAGIC = b"M2HISTBIN1\n"
+_BIN_NAME = b"M2BIN"
+_BIN_VERSION = (1).to_bytes(2, "little")
+_BIN_MAGIC = _BIN_NAME + _BIN_VERSION          # 7 bytes: name and little-endian version
 _TRAILER = re.compile(r"#END records=(\d+) content_sha256=([0-9a-f]{64})\Z")
 _VIEW_CACHE = 4
 _SIZE = {"B": 1, "H": 2, "I": 4, "L": 4, "Q": 8, "q": 8}
@@ -278,6 +280,7 @@ class HistoryStore:
         self._rings = {}
         self._hits = self._misses = 0
         self._buf = None
+        self._chash = None          # content hash carried by a binary snapshot, valid until the store changes
 
     # ------------------------------------------------------------------ writes
     def append(self, series_id, metric, window_s, session_id, grid, total=None, complete=True, grid_idx=None,
@@ -369,6 +372,7 @@ class HistoryStore:
         return minutes
 
     def _store(self, series_id, metric, window_s, rec, lane):
+        self._chash = None
         key = (series_id, metric, window_s)
         ring = self._rings.get(key)
         if ring is None:
@@ -389,6 +393,7 @@ class HistoryStore:
         if not rec.complete:
             rec.complete = True
             rec.sha = None
+            self._chash = None
             ring.views.clear()
         return True
 
@@ -457,7 +462,13 @@ class HistoryStore:
 
     def content_hash(self):
         """SHA-256 over the per-record content_sha256 values (lowercase hex) joined by LF in canonical order: the
-        fixtures' `content_sha256_digest`, the value in the dump trailer."""
+        fixtures' `content_sha256_digest`, the value in the dump trailer. A store attached from a binary snapshot returns
+        the (SHA-256 verified) value the snapshot carries until it changes; `recompute_content_hash()` ignores it."""
+        if self._chash is not None:
+            return self._chash
+        return self.recompute_content_hash()
+
+    def recompute_content_hash(self):
         return hashlib.sha256("\n".join(self.record_hashes()).encode("ascii")).hexdigest()
 
     def dump(self, trailer=True):
@@ -630,7 +641,8 @@ class HistoryStore:
                 off += len(blob)
                 recs.append(head)
             table.append([key[0], key[1], key[2], ring.lane, recs])
-        meta = json.dumps({"k": self.k, "series": table}, separators=(",", ":")).encode("ascii")
+        meta = json.dumps({"k": self.k, "content_hash": self.content_hash(), "series": table},
+                          separators=(",", ":")).encode("ascii")
         start = len(_BIN_MAGIC) + 8 + 32 + 8
         pad = (-(start + len(meta))) % 8
         rest = b"".join([len(meta).to_bytes(8, "little"), meta, b" " * pad] + blobs)
@@ -640,10 +652,27 @@ class HistoryStore:
     @classmethod
     def from_binary_snapshot(cls, buffer, calendar, k=None, strict_calendar=True, lane=None, verify=True):
         """Store over a `binary_snapshot()` buffer; nothing is copied, the store keeps a reference to the buffer.
-        Raises the same closed snapshot codes as `from_snapshot`. `lane`: None keeps the stored lanes."""
+        Layout (little-endian): bytes 0-4 name "M2BIN", 5-6 format version (1), 7-14 total length of the buffer, 15-46
+        SHA-256 of every byte after offset 47, 47-54 length N of the record table, then the table (compact JSON: k and,
+        per series, [series_id, metric, window_s, lane, [[session_id, minutes, total, complete, count, offset, typecode,
+        sparse(, big values)]]]), padding to 8 bytes, then the blobs: per record the `count` indexes (uint16) padded to 8
+        bytes, then the values (`typecode`, padded to 8). Offsets are relative to the first blob byte. Raises the closed
+        snapshot codes: snapshot_bad_magic (name or version), snapshot_length_mismatch, snapshot_hash_mismatch.
+        `lane`: None keeps the stored lanes. A failed attach releases its view of the buffer."""
         mv = memoryview(buffer).toreadonly()
+        try:
+            return cls._from_binary_view(mv, buffer, calendar, k, strict_calendar, lane, verify)
+        except BaseException:
+            try:
+                mv.release()
+            except BufferError:
+                pass
+            raise
+
+    @classmethod
+    def _from_binary_view(cls, mv, buffer, calendar, k, strict_calendar, lane, verify):
         head = len(_BIN_MAGIC)
-        if bytes(mv[:head]) != _BIN_MAGIC:
+        if bytes(mv[:head]) != _BIN_MAGIC:           # wrong name or unsupported version
             raise M2StructuralError("snapshot_bad_magic")
         if len(mv) < head + 48 or int.from_bytes(mv[head:head + 8], "little") != len(mv):
             raise M2StructuralError("snapshot_length_mismatch")
@@ -656,6 +685,7 @@ class HistoryStore:
         base = start + n + ((-(start + n)) % 8)
         store = cls(calendar, k or meta["k"], strict_calendar)
         store._buf = buffer
+        store._chash = meta.get("content_hash")
         for series_id, metric, window_s, stored_lane, recs in meta["series"]:
             if lane is None:
                 ln = stored_lane
@@ -676,6 +706,37 @@ class HistoryStore:
 
     def binary_snapshot_to(self, path):
         _atomic_write(os.fspath(path), self.binary_snapshot())
+
+    @classmethod
+    def attach_binary(cls, path, calendar, expected_content_hash=None, k=None, strict_calendar=True, lane=None, deep=False):
+        """Worker start: map the binary snapshot file read-only (shared file-backed pages), verify magic, version, length and
+        SHA-256, build the zero-copy store, and when `expected_content_hash` is given compare `content_hash()` after the
+        attach (mismatch: `snapshot_hash_mismatch`); `deep=True` recomputes the hash from the records instead of reading
+        the value the verified snapshot carries (as slow as a dump). The store keeps the mapping alive; `close_mapping()` releases it."""
+        import mmap
+        fh = open(os.fspath(path), "rb")
+        try:
+            mapped = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
+        finally:
+            fh.close()
+        try:
+            store = cls.from_binary_snapshot(mapped, calendar, k, strict_calendar, lane)
+            if expected_content_hash is not None and (store.recompute_content_hash() if deep else store.content_hash()) != expected_content_hash:
+                raise M2StructuralError("snapshot_hash_mismatch")
+        except BaseException:
+            store = None
+            try:
+                mapped.close()
+            except BufferError:
+                pass
+            raise
+        return store
+
+    def close_mapping(self):
+        """Drop every record (they are views of the mapping), then close the mapping of an attached store."""
+        buf, self._buf, self._rings = self._buf, None, {}
+        if buf is not None and hasattr(buf, "close"):
+            buf.close()
 
     def drop_caches(self):
         """Forget every cached view (memory control; never changes a result)."""
