@@ -17,7 +17,10 @@ import time
 import unittest
 from fractions import Fraction
 
+import m3a_harness as H
 from option_features import surface_series as S
+from option_features import surfaceframe as SF
+from option_features.chainiv import ChainContract
 
 W08_FLOOR, W08_HARD = 25000.0, 5000.0
 REPEATS = 30
@@ -141,6 +144,107 @@ class Grids(unittest.TestCase):
         rnd = random.Random(3)
         g = [rnd.uniform(0.0, 3.0) for _ in range(5000)] + [k / 2 ** 20 for k in range(0, 4000, 7)]
         self.assertEqual(S.grid_units(g), [exact_round(Fraction(x)) for x in g])
+
+
+FRAME_KEYS = ("tenors", "delta_convention", "delta_target", "min_strikes", "min_coverage", "mode", "lane",
+              "feed_delay_tag", "stale_limit_ns", "evaluation_ns")
+
+
+def _frame(row_chain, params):
+    ch = row_chain
+    cs = [ChainContract(c["contract_id"], c["expiry_days"], c["right"], c["strike"], c["bid"], c["ask"],
+                        c["event_ns"], c["known_at_ns"], c["style"], c["condition"]) for c in ch["contracts"]]
+    stats = {}
+    p = {k: params[k] for k in FRAME_KEYS if k in params}
+    res = SF.surface_frame(cs, ch["spot"], ch["rate"], ch["dividend_yield"], ch["cutoff_ns"], p, stats=stats)
+    return res, stats
+
+
+def _units(text):
+    return int(Fraction(text) * 10 ** 8)
+
+
+def _sample_rows():
+    """20 chain rows: 14 of author1 (surface, coverage, american, delta25, tenors; evenly spaced) and 6 of author3
+    (v5, v6, v8, v11, v21, v10: first row each)."""
+    out = []
+    a1 = []
+    for fn in ("m3a_cases_surface.json", "m3a_cases_coverage.json", "m3a_cases_american.json",
+               "m3a_cases_delta25.json", "m3a_cases_tenors.json"):
+        a1.extend(r for r in H.rows("author1", fn) if "chain" in r["inputs"])
+    step = max(1, len(a1) // 14)
+    out.extend(a1[::step][:14])
+    for fn in ("m3a_cases_v5.json", "m3a_cases_v6.json", "m3a_cases_v8.json", "m3a_cases_v11.json",
+               "m3a_cases_v21.json", "m3a_cases_v10.json"):
+        out.append(next(r for r in H.rows("author3", fn) if "chain" in r["inputs"]))
+    return out
+
+
+class EndToEnd(unittest.TestCase):
+    """Real S05 `surface_frame` -> `stats['floats']` -> series scalars. Expectations: the frame's own 8-decimal text
+    (one rounding of the same float: exact for single values) and an exact Fraction difference of the floats."""
+
+    def test_sample_of_20_rows(self):
+        rows_ = _sample_rows()
+        self.assertEqual(len(rows_), 20)
+        seen_scalars = 0
+        for row in rows_:
+            res, stats = _frame(row["inputs"]["chain"], row["params"])
+            if "floats" not in stats:
+                continue
+            fl = stats["floats"]
+            sc = S.scalar_units(fl)
+            avail = [(int(d), it) for d, it in res.frame["expiries"].items() if it["atm_iv"] is not None]
+            if not avail:
+                self.assertNotIn("atm_iv_close", sc, row["id"])
+                continue
+            d0, it = min(avail)
+            self.assertEqual(sc["atm_iv_close"], _units(it["atm_iv"]), row["id"])
+            f0 = fl["expiries"][str(d0)]
+            if f0["put25_iv"] is not None and f0["call25_iv"] is not None:
+                want = exact_round(Fraction(f0["put25_iv"]) - Fraction(f0["call25_iv"]))
+                self.assertEqual(sc["skew25"], want, row["id"])
+                self.assertLessEqual(abs(sc["skew25"] - (_units(it["put25_iv"]["value"]) -
+                                                         _units(it["call25_iv"]["value"]))), 1, row["id"])
+                seen_scalars += 1
+            t30, t91 = res.frame["tenors"].get("30"), res.frame["tenors"].get("91")
+            if t30 and t30["iv"] is not None:
+                self.assertEqual(sc["iv30_close"], _units(t30["iv"]), row["id"])
+                if t91 and t91["iv"] is not None:
+                    want = exact_round(Fraction(fl["tenors"]["30"]) - Fraction(fl["tenors"]["91"]))
+                    self.assertEqual(sc["term_30_91"], want, row["id"])
+            recs = S.build_records("E2E", "stock", 1, fl)
+            self.assertTrue(all(r[0].startswith("E2E/stock/") for r in recs), row["id"])
+        self.assertGreater(seen_scalars, 3)
+
+    def test_minute_columns_from_real_frames(self):
+        row = next(r for r in H.rows("author3", "m3a_cases_v8.json") if "chain" in r["inputs"])
+        frames = [_frame(row["inputs"]["chain"], row["params"])[1]["floats"] for _ in range(3)]
+        atm, iv30 = zip(*(S.minute_values_from_floats(f) for f in frames))
+        self.assertTrue(all(type(v) is float for v in atm))
+        a = S.build_records("E2E", "stock", 1, frames[0], minute_floats=frames)
+        b = S.build_records("E2E", "stock", 1, frames[0], minute_columns=(list(atm), list(iv30)))
+        self.assertEqual(a, b)
+
+    def _stubbed(self, put, call):
+        row = next(r for r in H.rows("author3", "m3a_cases_v8.json") if "chain" in r["inputs"])
+        from unittest import mock
+
+        def fake(strikes, ivs, atm, S_, r, q, days, right, conv, owner):
+            return {"status": "available", "reason": None, "value": put if right == "put" else call,
+                    "strikes_used": [], "evaluations": 0}
+        with mock.patch.object(SF, "delta25_point", fake):
+            res, stats = _frame(row["inputs"]["chain"], row["params"])
+        return S.scalar_units(stats["floats"])
+
+    def test_u010_through_real_frame(self):
+        self.assertEqual(self._stubbed(0.3000000049, 0.1000000051)["skew25"], 20000000)
+
+    def test_tie_minus_3_512_through_real_frame(self):
+        self.assertEqual(self._stubbed(0.248046875, 0.25390625)["skew25"], -585938)
+
+    def test_v9_036_through_real_frame(self):
+        self.assertEqual(self._stubbed(0.2000000049, 0.1000000051)["skew25"], 10000000)
 
 
 class MinuteValue(unittest.TestCase):
