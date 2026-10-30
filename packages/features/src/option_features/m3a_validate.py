@@ -34,6 +34,7 @@ path), one compiled grammar match per text quote, early exit on the lowest possi
 unless a value sits exactly on a range boundary.
 """
 import re
+from decimal import Decimal
 from fractions import Fraction
 from math import isfinite
 
@@ -76,6 +77,8 @@ _PAIRS = frozenset(("9-30", "30-91"))
 _PRIOR_KINDS = frozenset(("frame", "session"))
 _CONDITIONS = frozenset(("change", "sign_change"))
 _QUARTER = Fraction(1, 4)
+_SCALARS = frozenset((bool, int, float, complex, str, bytes, bytearray, Fraction, Decimal, list, tuple, set,
+                      frozenset, type(None)))
 
 _CHAIN_OUT = frozenset(("M3A-0", "M3A-3", "M3A-4", "M3A-5", "M3A-6", "M3A-7", "M3A-8", "M3A-9", "M3A-10", "M3A-11"))
 _IVFORM_OUT = frozenset(("M3A-2", "M3A-3"))
@@ -86,6 +89,22 @@ _PRIOR_OUT = frozenset(("M3A-3", "M3A-6", "M3A-9"))
 _HISTORY_OUT = frozenset(("M3A-1", "M3A-2", "M3A-8"))
 _DELAY_INTRADAY = frozenset(("M3A-1", "M3A-3", "M3A-8"))
 _NO_DEFAULT_THRESHOLD = "M3A-11"          # V21 (R-116)
+
+
+def _exact_text(s):
+    """Exact Fraction of a grammar-valid decimal text or "a/b" text, without the int string-length limit (Decimal
+    parses any length); None for a zero denominator."""
+    if len(s) < 4000:
+        try:
+            return Fraction(s)
+        except ZeroDivisionError:
+            return None
+    num, slash, den = s.partition("/")
+    n = Fraction(Decimal(num))
+    if not slash:
+        return n
+    d = Fraction(Decimal(den))
+    return None if d == 0 else n / d
 
 
 def _positive_text(s):
@@ -100,6 +119,8 @@ def _ticks(v):
     if v[0] == "-":
         return -_ticks(v[1:])
     whole, _, frac = v.partition(".")
+    if len(whole) > 4000:
+        return int(Decimal(whole + "." + frac).scaleb(8))
     return int(whole or "0") * _TICK_DEN + (int(frac.ljust(8, "0")) if frac else 0)
 
 
@@ -148,7 +169,7 @@ def _in_range(v, lo, hi):
         if lo < f < hi:
             return True
         if f == lo or f == hi:
-            e = Fraction(v)
+            e = _exact_text(v)
             return lo <= e <= hi
         return False
     if t is float and not isfinite(v):
@@ -184,7 +205,7 @@ def _delta_target_code(v):
             return None
         if _DECIMAL(v) is None:
             return _MT
-        return None if Fraction(v) == _QUARTER else "delta_not_allowed"
+        return None if _exact_text(v) == _QUARTER else "delta_not_allowed"
     if t is float or t is int or t is Fraction:
         return None if v == 0.25 else "delta_not_allowed"
     return _MT
@@ -198,10 +219,7 @@ def _x_value(x):
     if t is Fraction:
         return x
     if t is str and _RATIONAL(x) is not None:
-        try:
-            return Fraction(x)
-        except ZeroDivisionError:
-            return None
+        return _exact_text(x)
     return None
 
 
@@ -220,7 +238,7 @@ def _rational_param_ok(v):
         return False
     if _DECIMAL(v) is not None:
         return True
-    return _RATIONAL(v) is not None and "/" in v and int(v.partition("/")[2]) > 0
+    return _RATIONAL(v) is not None and "/" in v and v.partition("/")[2].strip("0") != ""
 
 
 def _slot10_params(oid, p):
@@ -274,13 +292,21 @@ def _slot10_params(oid, p):
 
 
 def _priors(p):
-    """The supplied prior readings: `prior` (one, or None) then `priors` (a list, or None)."""
+    """The supplied prior readings: `prior` (one, or None) then `priors` (a list or tuple, or None); None when either
+    has a wrong type (malformed_type). A reading is a dict or a record with attributes (not a builtin scalar)."""
     one, many = p.get("prior"), p.get("priors")
-    if one is None:
-        return many or ()
-    if many:
-        return [one] + list(many)
-    return (one,)
+    out = []
+    if one is not None:
+        out.append(one)
+    if many is not None:
+        tm = type(many)
+        if tm is not list and tm is not tuple:
+            return None
+        out.extend(many)
+    for pr in out:
+        if type(pr) is not dict and (type(pr) in _SCALARS or not hasattr(pr, "time_ns")):
+            return None
+    return out
 
 
 def _prior_get(pr, name, default=None):
@@ -487,6 +513,8 @@ def validate_request(output_id, contracts, spot, rate, dividend_yield, cutoff_ns
     # 17 priors: every prior's time (R-134), then the convention (R-160, convention outputs only)
     if oid in _PRIOR_OUT:
         priors = _priors(p)
+        if priors is None:
+            return _MT
         if priors:
             for pr in priors:
                 t = _prior_get(pr, "time_ns")
@@ -525,6 +553,8 @@ def validate_view_read(calendar, as_of, form, min_sessions, max_sessions, x=None
                        delta_convention="spot"):
     """First failing code of the view-read list (`scalar_baseline`, `same_minute_column`), or None. `calendar` is an
     M2 `Calendar` (position(), minutes)."""
+    if type(as_of) is not str:
+        return _MT
     pos = calendar.position(as_of)
     if pos is None:
         return "session_not_in_calendar"
@@ -576,7 +606,10 @@ _M1_MESSAGES = (
 def m1_error_code(exc):
     """Structural code of an M1 ValueError raised by `chainiv.IVChain` (R-69); any other M1 input error (more than 8
     places, not representable, wrong type) is malformed_type."""
-    text = str(exc)
+    try:
+        text = str(exc) if isinstance(exc, BaseException) else ""
+    except Exception:          # a hostile argument (deep nesting, a failing __str__) is no M1 message
+        return _MT
     for prefix, code in _M1_MESSAGES:
         if text.startswith(prefix):
             return code
