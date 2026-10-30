@@ -45,7 +45,7 @@ Fire rules: comparisons inclusive ("at least X", "at most X") on the rounded dec
 
 ## 4. Structural codes and precedence lists (one list PER ENTRY POINT, as M2)
 Structural errors are status invalid_input with a closed `code`; the first failing code of the entry point list is reported. Type-first per field (M2 ruling): a wrong-typed field reports `malformed_type` at the position where that field value check would run; a field with no value code reports it at the `malformed_type` slot; within one position fields are checked in the order written. M1 raises ValueError for these conditions; the M3a wrapper maps them to codes.
-**Request (chain and parameters), 18 positions (position 10 holds two codes, position 13 three and position 17 two, in the order written, so 22 codes and 21 adjacent code pairs):**
+**Request (chain and parameters), 18 positions (position 10 holds two codes, position 13 three, position 15 two and position 17 two, in the order written, so 23 codes and 22 adjacent code pairs):**
 | # | Code | Check |
 |---|---|---|
 | 1 | `bad_cutoff` | cutoff_ns not a non-negative int |
@@ -62,13 +62,14 @@ Structural errors are status invalid_input with a closed `code`; the first faili
 | 12 | `tenor_not_allowed` | a tenor outside {9, 30, 91} |
 | 13 | `delta_not_allowed`, then `iv_form_not_allowed`, then `convention_not_allowed` | delta target outside {0.25}; `iv_form` a string other than "atm" and "30d"; `delta_convention` a string other than "spot" and "forward" (VALUE codes; a non-string is `malformed_type` at this position) (R-152, R-155) |
 | 14 | `threshold_required` | a fire rule asked without a threshold |
-| 15 | `threshold_out_of_range` | X outside 0 to 100 (a value code) |
+| 15 | `threshold_out_of_range`, then `invalid_direction` | X outside 0 to 100 (a value code); `direction` a string other than "up", "down" and "either" (VALUE code; a non-string `direction` is `malformed_type` at this position, type-first) (R-185, contract-codes decision 2026-10-30) |
 | 16 | `minute_out_of_range` | V3 minute outside the session grid |
 | 17 | `prior_not_before_cutoff`, then `convention_mismatch` | prior reading time at or after the cutoff; a prior or history record with a `delta_convention` different from the request, or a skew-type series of the other convention (a record without the field is "spot") (R-160) |
 | 18 | `delayed_feed_tag` | V3, intraday V1 and V4 under a delayed tag |
 **History append and load (M2 order, unchanged):** lane_mismatch, session_not_in_calendar, record_length_mismatch, non_monotone_grid, duplicate_session, out_of_order_append (6 positions; this is where position 12 of the earlier skeleton lives).
 **Snapshot:** snapshot_bad_magic, snapshot_length_mismatch, snapshot_hash_mismatch; **text load:** trailer_missing, trailer_count_mismatch, trailer_hash_mismatch (M2, unchanged).
-**View read (`scalar_baseline`, `same_minute_column`):** session_not_in_calendar (current session), minute_out_of_range, malformed_type (min_sessions, max_sessions), threshold_out_of_range, convention_mismatch (a skew-type series of the other convention, R-160) (5 positions).
+**View read (`scalar_baseline`, `same_minute_column`):** session_not_in_calendar (current session), minute_out_of_range, malformed_type (min_sessions, max_sessions), then `invalid_session_window` (VALUE code: max_sessions < min_sessions, D13; checked after the type checks of the same slot), threshold_out_of_range, convention_mismatch (a skew-type series of the other convention, R-160) (5 positions, position 3 holds two codes).
+**Closed-set note (contract-codes decision 2026-10-30):** `invalid_param` is NOT a code; the R-165 and R-175 wording is superseded: a bad `direction` string is `invalid_direction` (request position 15), max_sessions < min_sessions is `invalid_session_window` (view read position 3). R-178 is CONFIRMED against R-139: an expiry at exactly the target tenor that fails coverage gives `low_surface_coverage` (R-139 governs a coverage-excluded expiry that brackets from one side only).
 An empty chain, a chain whose contracts are all excluded, or a missing history is not structural: unavailable with the reasons of the matrix.
 
 ## 5. Trusted versus untrusted inputs
