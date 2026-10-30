@@ -30,7 +30,7 @@ Feed = vendor-style trade feed (mock until RQ). All per-contract or per-name out
 | M2-8 | F20 session contracts (or premium) against baseline: median_ratio and mean_ratio of the session total to the last 20 session totals; the consumer default for F20 is the mean (design 2.3, plain 20-day mean) until the design session ratifies the median; end of day only | session total; 20 prior session totals | Server | FULL after close | UNAVAILABLE | calendar | session total may come from supplied end-of-day statistics: DEGRADED, labelled | session_not_complete, insufficient_history, zero_denominator |
 | M2-9 | F18 put share of option volume in the window, with put volume, call volume and put-to-call ratio; fires at share >= X or <= Y | eligible prints with right and size | Server | FULL | UNAVAILABLE | UNAVAILABLE | zero call volume: share available (1), ratio unavailable | zero_denominator (no volume; ratio with zero call volume) |
 | M2-10 | F19 put-to-call volume ratio of the session as a percentile of the last 20 sessions (percentile form, not z-score); end of day only | session put and call volume; 20 prior ratios | Server | FULL after close | UNAVAILABLE | calendar | prior sessions with zero call volume have no ratio and are not counted; fewer than 20 usable gives insufficient_history | session_not_complete, insufficient_history, zero_denominator |
-| M2-11 | F12 unusual episodes today (quiet_gap parameter, default 1): count, first time, last time, peak ratio, peak time | M2-1 value on the 60 s grid from session open to T | Server | FULL | UNAVAILABLE | calendar for session open | an unavailable grid point counts as quiet (cannot merge episodes across an outage); number of unavailable points reported | none (a session with no available point: count 0, available, coverage shown) |
+| M2-11 | F12 unusual episodes today (quiet_gap parameter, default 1): count, first time, last time, peak ratio, peak time | M2-1 value on the 60 s grid from session open to T | Server | FULL | UNAVAILABLE | calendar for session open | an unavailable grid point counts as quiet (cannot merge episodes across an outage); number of unavailable points reported | insufficient_window (before 900 s since open, AMB-7); otherwise none (a session with no available point: count 0, available, coverage shown) |
 | M2-12 | History store (infrastructure, not a design row) | per series and session: value arrays on the 60 s grid (390 values; half-day sessions have fewer, see Q1), session total, complete flag | Server | built from the same trade inputs | n/a | calendar | append-only, bounded to K sessions (default 20, hard cap 60); lazy series only for contracts with prints | structural errors (section 4) |
 
 Summary: with trades present every row is FULL; without the trade stream every row is UNAVAILABLE at the input gate and never uses another source. FMP bars and public series never substitute for option prints.
@@ -57,7 +57,7 @@ Statuses: available, unavailable (with reason), invalid_input (structural; carri
 | session_not_complete | end-of-day form requested before the session is sealed complete |
 | zero_denominator | ratio or share denominator is 0 |
 | insufficient_window | F1, F2, F10 and F12: the window or grid point lies before session open + W (observed time since open is under W; 900 s for F1); windows are not clipped for these outputs, the result is unavailable (cannot over-fire); the history n of a rank or median excludes, per session, the grid points before open + W |
-Quote reasons (`no_quote` and the rest) do not appear: M2 needs no quotes. No new synonyms (Q6 RULED): mapping to the existing vocabulary: median or mean equal to 0 -> zero_denominator (the ratio denominator is the statistic); nothing stored or fewer sessions -> insufficient_history (repository empty_baseline and insufficient_history); zero_mad is not used (no MAD in M2). Structural error codes (invalid_input): unordered input, negative size or price, bad multiplier, duplicate session, non-monotone grid, session not in calendar, window not in the allowed set, delayed_feed_tag (F1, F12, intraday F2 and intraday F10 under a delayed feed). Gate order: invalid_input, insufficient_history, session_not_complete, insufficient_window, zero_denominator. Fixtures assert the reason, not only the status.
+Quote reasons (`no_quote` and the rest) do not appear: M2 needs no quotes. No new synonyms (Q6 RULED): mapping to the existing vocabulary: median or mean equal to 0 -> zero_denominator (the ratio denominator is the statistic); nothing stored or fewer sessions -> insufficient_history (repository empty_baseline and insufficient_history); zero_mad is not used (no MAD in M2). Structural error codes (invalid_input): unordered input, negative size or price, bad multiplier, duplicate session, non-monotone grid, session not in calendar, window not in the allowed set, threshold_required, out_of_order_append, delayed_feed_tag (F1, F12, intraday F2 and intraday F10 under a delayed feed). Gate order: invalid_input, insufficient_history, session_not_complete, insufficient_window, zero_denominator. Fixtures assert the reason, not only the status.
 
 ## 5. History store needs (PROPOSED design, no code)
 - Keyed by (series id, metric, session). Series are names (F2, F12, F19, F20 and name-level F10) and, only if the PO rules contract-level F10 (Q5), contracts.
@@ -119,3 +119,28 @@ All interim rulings stay pending design ratification; a changed answer regenerat
 
 ## 9. Limits
 Synthetic only; vendor-style columns are shape, not a claim. Design thresholds are placeholders (flow.md 12). Windows x64, CPython 3.12. No wire exposure. No real-size performance claim before RQ.
+
+## 10. PO-M2-AMB rulings (interim pending design ratification where the design is silent)
+Origin: the correctness-fixtures author's 19 ambiguities. Each is RULED. Shapes are in M2_IO_CONTRACT.md section 6; fixtures in M2_FIXTURE_REQUIREMENTS.md section 9.
+| AMB | Ruling |
+|---|---|
+| 1 | F10 and F20 give two ratios under one status: top-level status, reason and fired follow the consumer default (F10 median, F20 mean); `per_statistic` carries both with their own status; value is null when the default is unavailable |
+| 2 | Print gets an optional 8th element `side`; kernels ignore it (F4 and F18 are side-agnostic) |
+| 3 | Premium outputs are integer ticks (price x 10^4 x size x multiplier); `params.threshold_ticks` (100,000 USD = 1000000000) |
+| 4 | Grid point i is at open + 60 s x i; W/60 points are dropped per session before open + W |
+| 5 | F12 first_ns and last_ns are the onsets of the first and last episode; peak over session to date (ties earliest); unavailable_points counts every unavailable grid point |
+| 6 | Neither at_least nor at_most set (F18) is structural invalid_input code `threshold_required` |
+| 7 | F12 before 900 s since open is unavailable with insufficient_window |
+| 8 | The store records, per grid point, the window-W value of the request window; the window dimension W is part of the record key; a history built for another W gives insufficient_history |
+| 9 | Labels: F1 filter name; F10 and F20 consumer default statistic; F18 put; F20 supplied totals add degraded true; F2 end-of-day under a delayed tag gives delayed |
+| 10 | F2c end-of-day: x = count / (W/60); history counts are divided by the same |
+| 11 | F2d fired is null, parts are shown, reason is that of the first unavailable part |
+| 12 | F19 fires when upper_share <= X/100, X default 5, n = usable prior ratios (20) |
+| 13 | An out-of-order store append is structural `out_of_order_append`; canonical line key order, content_sha256 and seal semantics in the IO contract; the ring counts incomplete sessions |
+| 14 | Nonstandard and excluded-condition counts are both printed once, under excluded_condition |
+| 15 | Structural error precedence is the list order of section 4 |
+| 16 | bad_multiplier means multiplier <= 0; non_monotone_grid and duplicate_session apply within a series record set |
+| 17 | A missing, incomplete or absent session gives insufficient_history; no substitution |
+| 18 | window_not_allowed applies to F2 intraday, F2d, F4, F7, F10, F18; F17 is fixed 300 s; F1 and F12 take no window |
+| 19 | Default parameters: F1 N = 3; F12 ratio N = 3 and n_episodes = 1; F4 N = 1; F10 and F20 N = 2; F2 and F19 X = 5; F7 share 3/5 |
+New closed-set members: structural codes `threshold_required`, `out_of_order_append` (the reason set is unchanged).
