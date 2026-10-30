@@ -3,6 +3,7 @@ itself independent of oracle A) and re-implements, with different techniques, th
 validator list, pre-open clipping, F12 from prints (prefix sums with bisect), and the grid builder (sorted times + prefix sums).
 evaluate(row, mut) accepts a mutant name; each mutant changes one rule."""
 import bisect
+import decimal
 import os
 import sys
 
@@ -44,6 +45,11 @@ def int_text(t):
 
 
 def text_price(v):
+    if (MU("decimal_price_ok") and isinstance(v, decimal.Decimal)) or (MU("fraction_price_ok") and isinstance(v, Fraction)) \
+            or (MU("bytes_price_ok") and isinstance(v, bytes)):
+        return True
+    if v is None and MU("none_price_ok"):
+        return True
     if MU("float_price_ok") and type(v) is float:
         return True
     if MU("bool_price_ok") and type(v) is bool:
@@ -71,7 +77,8 @@ def v_unordered(inp, prm, out):
     ps = inp.get("prints") or []
     for i in range(len(ps) - 1):
         a, b = ps[i], ps[i + 1]
-        if all(good_int(z) for z in (a[1], a[6], b[1], b[6])) and (a[1] > b[1] or (a[1] == b[1] and a[6] > b[6])):
+        gi = (lambda z: isinstance(z, int)) if MU("seq_bool_as_int") else good_int
+        if all(gi(z) for z in (a[1], a[6], b[1], b[6])) and (a[1] > b[1] or (a[1] == b[1] and a[6] > b[6])):
             return "unordered_prints"
 
 
@@ -102,7 +109,7 @@ def v_malformed(inp, prm, out):
         tm = good_int(p[1]) or (MU("float_time_ok") and type(p[1]) is float)
         mu = good_int(p[4]) or (MU("bool_multiplier_ok") and type(p[4]) is bool)
         sq = good_int(p[6]) or (MU("seq_bool_ok") and type(p[6]) is bool)
-        fl = (p[5] in (0, 1) and type(p[5]) in (int, bool)) or MU("flag_any_ok")
+        fl = (p[5] in (0, 1) and type(p[5]) in (int, bool)) or MU("flag_any_ok") or (MU("flag_float_ok") and type(p[5]) is float)
         if not (text_price(p[2]) and sz and mu and tm and sq and fl):
             return "malformed_type"
 
@@ -125,6 +132,8 @@ def v_window_early(inp, prm, out):
 
 def validators():
     order = [v_unordered, v_negative, v_multiplier, v_unknown, v_window_early, v_malformed]
+    if MU("prec_malformed_first"):
+        order = [v_malformed, v_unordered, v_negative, v_multiplier, v_unknown, v_window_early]
     if MU("negative_before_unordered"):
         order = [v_negative, v_unordered, v_multiplier, v_unknown, v_window_early, v_malformed]
     if MU("multiplier_before_negative"):
