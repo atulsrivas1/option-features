@@ -56,6 +56,8 @@ jobs:
         run: .github/run_suite.ps1 m1
       - name: "m2 incl. test_feature_status (M2B_MEMORY unset, 1e6-print memory test skipped)"
         run: .github/run_suite.ps1 m2
+      - name: m3a (story S01 onward; skips name their owner story)
+        run: .github/run_suite.ps1 m3a
       - name: tracker test named, at least 12 tests
         run: |
           $env:PYTHONPATH = 'packages/features/src;packages/option-contracts/src;tests/m2;tests;.'
