@@ -553,6 +553,128 @@ class TypeFirst(unittest.TestCase):
             self.assertEqual(V.m1_error_code(cm.exception), code, kw)
 
 
+class NeverRaises(unittest.TestCase):
+    """The validator is a trust boundary: hostile inputs give a structural code, never an exception (code review of
+    PR 117)."""
+
+    def test_priors_of_any_type(self):
+        from decimal import Decimal
+        for oid in ("M3A-3", "M3A-6", "M3A-9"):
+            for v in (True, 5, 1.5, float("nan"), Decimal("1"), Fraction(1, 2), object(), "abc", b"x"):
+                for key in ("priors", "prior"):
+                    r = _request(oid)
+                    r["params"][key] = v
+                    self.assertEqual(_run(r), "malformed_type", (oid, key, v))
+            r = _request(oid)
+            r["params"]["priors"] = [5]
+            self.assertEqual(_run(r), "malformed_type")
+
+    def test_huge_digit_strings(self):
+        big = "9" * 5000
+        r = _request("M3A-3")
+        r["params"]["delta_target"] = big
+        self.assertEqual(_run(r), "delta_not_allowed")
+        r = _request("M3A-9")
+        r["params"]["delta_target"] = "0." + "0" * 5000 + "1"
+        self.assertEqual(_run(r), "delta_not_allowed")
+        r = _request("M3A-1")
+        r["params"]["x"] = big
+        self.assertEqual(_run(r), "threshold_out_of_range")
+        r = _request("M3A-1")
+        r["params"]["x"] = big + "/" + big
+        self.assertIsNone(_run(r))
+        r = _request("M3A-0")
+        r["params"]["min_coverage"] = "3/" + big
+        self.assertIsNone(_run(r))
+        r = _request("M3A-0")
+        r["params"]["min_coverage"] = big + "." + big
+        self.assertIsNone(_run(r))
+        r = _request("M3A-0")
+        r["rate"] = "1." + "0" * 5000
+        self.assertIsNone(_run(r))
+        r = _request("M3A-0")
+        r["rate"] = "1." + "0" * 5000 + "1"
+        self.assertEqual(_run(r), "bad_rate")
+        r = _request("M3A-0")
+        _set_contract(r, 0, strike=big)
+        self.assertIsNone(_run(r))
+        r["contracts"].append(r["contracts"][0]._replace(contract_id="K9", strike=big + ".0"))
+        self.assertEqual(_run(r), "duplicate_contract")
+
+    def test_view_read_unhashable_as_of(self):
+        cal = Calendar([("2026-01-05", 390)])
+        for v in ([1], {"a": 1}, bytearray(b"x"), 5, None):
+            self.assertEqual(V.validate_view_read(cal, v, "scalar_baseline", 20, 252), "malformed_type", v)
+
+    def test_m1_error_code_never_raises(self):
+        deep = []
+        for _ in range(100000):
+            deep = [deep]
+        self.assertEqual(V.m1_error_code(ValueError(deep)), "malformed_type")
+        self.assertEqual(V.m1_error_code(deep), "malformed_type")
+
+
+class MutantKillers(unittest.TestCase):
+    def test_bool_is_not_int(self):
+        r = _request("M3A-0")
+        r["cutoff_ns"] = True
+        self.assertEqual(_run(r), "malformed_type")
+        r = _request("M3A-0")
+        _set_contract(r, 0, expiry_days=True)
+        self.assertEqual(_run(r), "malformed_type")
+        r = _request("M3A-0")
+        r["params"]["tenors"] = [True]
+        self.assertEqual(_run(r), "malformed_type")
+        r = _request("M3A-0")
+        _set_contract(r, 0, strike=True)
+        self.assertEqual(_run(r), "malformed_type")
+        r = _request("M3A-0")
+        r["params"]["evaluation_ns"] = True
+        r["cutoff_ns"] = 1
+        self.assertEqual(_run(r), "malformed_type")
+
+    def test_float_spot_denominator(self):
+        for v in (1 / 512, 100 + 1 / 1024, 2 ** -20):
+            r = _request("M3A-0")
+            r["spot"] = v
+            self.assertEqual(_run(r), "malformed_type", v)
+        r = _request("M3A-0")
+        r["spot"] = 1 / 256
+        self.assertIsNone(_run(r))
+
+    def test_first_contract_wins_within_a_position(self):
+        r = _request("M3A-0")
+        _set_contract(r, 0, expiry_days=0)
+        _set_contract(r, 1, expiry_days="30")
+        self.assertEqual(_run(r), "bad_expiry")
+        r = _request("M3A-0")
+        _set_contract(r, 0, expiry_days="30")
+        _set_contract(r, 1, expiry_days=0)
+        self.assertEqual(_run(r), "malformed_type")
+        r = _request("M3A-0")
+        _set_contract(r, 0, bid=1.5)
+        r["contracts"].append(r["contracts"][1]._replace(contract_id="K9"))
+        self.assertEqual(_run(r), "malformed_type")
+        r = _request("M3A-0")
+        _set_contract(r, 1, strike="-1")
+        _set_contract(r, 0, bid=1.5)
+        self.assertEqual(_run(r), "bad_strike")
+
+    def test_delayed_close_is_not_gated_on_intraday_outputs(self):
+        for oid in ("M3A-1", "M3A-3", "M3A-8"):
+            r = _request(oid, _d_delayed)
+            r["params"]["mode"] = "close"
+            self.assertIsNone(_run(r), oid)
+        r = _request("M3A-2", _d_delayed)
+        self.assertEqual(_run(r), "delayed_feed_tag")
+
+    def test_min_coverage_zero_denominator(self):
+        for v, code in (("3/0", "malformed_type"), ("0/00", "malformed_type"), ("3/5", None), ("0.6", None)):
+            r = _request("M3A-0")
+            r["params"]["min_coverage"] = v
+            self.assertEqual(_run(r), code, v)
+
+
 class ValidationCost(unittest.TestCase):
     """Developer measurement of the validation cost (printed; the hard bound is loose: validation is O(contracts) and
     must stay a small share of M3A-G0). mock-data qualification only: passed on independently authored synthetic
