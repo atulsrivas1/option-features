@@ -35,11 +35,34 @@ def load_rows():
     return rows
 
 
+def _typed(v):
+    """JSON cannot carry Decimal, Fraction or bytes: the rows tag them as {"py_type": ..., "text": ...}."""
+    if isinstance(v, dict) and "py_type" in v:
+        kind, text = v["py_type"], v.get("text")
+        if kind == "Decimal":
+            from decimal import Decimal
+            out = Decimal(text)
+            assert type(out) is Decimal
+            return out
+        if kind == "Fraction":
+            from fractions import Fraction
+            out = Fraction(text)
+            assert type(out) is Fraction
+            return out
+        if kind == "bytes":
+            out = bytes.fromhex(v["hex"]) if "hex" in v else text.encode("ascii")
+            assert type(out) is bytes
+            return out
+        raise ValueError("unknown py_type %r" % (kind,))
+    return v
+
+
 def _prints(inp):
     t = inp["t_ns"]
     out = []
     for p in inp.get("prints") or []:
-        out.append((p[0], t + p[1]) + tuple(p[2:]))
+        t_rel = p[1]
+        out.append((p[0], t + t_rel if type(t_rel) is int else _typed(t_rel)) + tuple(_typed(x) for x in p[2:]))
     return out
 
 
@@ -103,8 +126,14 @@ def _run_row(row):
 
 
 def shape(res):
-    from option_features.m2prints import to_wire
-    w = to_wire(res)
+    if isinstance(res, dict):                  # pre-alignment record (kept so the same adapter runs on both sides)
+        from option_features.m2prints import to_wire
+        w = to_wire(res)
+    else:
+        from option_features import flowresult
+        w = flowresult.to_wire(res)
+        if getattr(res, "ratio_reason", None):
+            w["ratio_reason"] = res.ratio_reason
     e = {k: w[k] for k in ("status", "reason", "code", "value", "fired", "label", "coverage")}
     if w.get("ratio_reason"):
         e["ratio_reason"] = w["ratio_reason"]

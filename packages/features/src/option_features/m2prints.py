@@ -22,16 +22,14 @@ by construction: a contract of another lane or right is not in the selected grou
 lanes. Delayed-feed scope is F1 and F12 only (the `delayed` argument of F4, F7, F17 and F18 is accepted for a
 uniform call shape and ignored).
 """
-import json
 import re
 from bisect import bisect_left, bisect_right
 from collections import Counter
 from fractions import Fraction
 
-from .printtape import NS
+from .flowgrid import NS
+from .flowresult import ALLOWED_WINDOWS, Result, canonical_line, show, to_wire   # shared (story A); re-exported
 
-RESULT_VERSION = "0.2.0a1"
-ALLOWED_WINDOWS = (60, 300, 900, 1800, 3600)
 F17_WINDOW_S = 300
 DEFAULT_THRESHOLD_TICKS = 1_000_000_000      # 100,000 USD
 INSUFFICIENT_WINDOW_NS = 900 * NS
@@ -77,11 +75,8 @@ def cov(ne, nn, nx, unavailable=0):
 
 def result(output_id, series_id, session_id, t_ns, status, reason, code, value, fired, params, coverage, label, lane,
            **extra):
-    r = {"output_id": output_id, "series_id": series_id, "session_id": session_id, "evaluation_ns": t_ns,
-         "status": status, "reason": reason, "code": code, "value": value, "fired": fired, "params": params,
-         "coverage": coverage, "label": label, "lane": lane, "version": RESULT_VERSION}
-    r.update(extra)
-    return r
+    return Result(output_id, series_id, session_id, t_ns, status, reason, code, value, fired, params, coverage, label,
+                  lane, ratio_reason=extra.get("ratio_reason"))
 
 
 def invalid(output_id, code, series_id, session_id, t_ns, params, lane):
@@ -116,21 +111,6 @@ def structural_code(tape, *, calendar_ok=True, window_s=None, fixed_window_s=Non
     if delayed:
         return "delayed_feed_tag"
     return None
-
-
-def to_wire(o):
-    if type(o) is Fraction:
-        return o.numerator if o.denominator == 1 else "%d/%d" % (o.numerator, o.denominator)
-    if isinstance(o, dict):
-        return {k: to_wire(v) for k, v in o.items()}
-    if isinstance(o, (list, tuple)):
-        return [to_wire(v) for v in o]
-    return o
-
-
-def canonical_line(res):
-    """One canonical JSON line (no spaces, canonical key order, LF)."""
-    return json.dumps(to_wire(res), separators=(",", ":"), ensure_ascii=True) + "\n"
 
 
 # ======================================================================================== F1 (M2-1)

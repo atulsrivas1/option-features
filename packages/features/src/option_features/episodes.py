@@ -22,7 +22,7 @@ prefix sums), so a session never rescans its prints per grid point.
 from fractions import Fraction
 
 from .m2prints import cov, frac, invalid, result, structural_code
-from .printtape import NS
+from .flowgrid import NS
 
 GRID_NS = 60 * NS
 FIRST_AVAILABLE_INDEX = 15            # 900 s / 60 s

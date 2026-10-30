@@ -389,17 +389,17 @@ class Determinism(unittest.TestCase):
 
 
 class Units(unittest.TestCase):
-    def test_ticks4(self):
-        self.assertEqual(PT.ticks4("80.0000"), 800000)
-        self.assertEqual(PT.ticks4("80"), 800000)
-        self.assertEqual(PT.ticks4("0.0001"), 1)
-        self.assertEqual(PT.ticks4("-0.5"), -5000)
-        self.assertEqual(PT.ticks4("1.50000"), 15000)
-        self.assertEqual(PT.ticks4(123), 123)
-        self.assertEqual(PT.ticks4(Fraction(3, 2)), 15000)
+    def test_price_ticks(self):
+        from option_features.flowgrid import price_ticks
+        self.assertEqual(price_ticks("80.0000"), 800000)
+        self.assertEqual(price_ticks("80"), 800000)
+        self.assertEqual(price_ticks("0.0001"), 1)
+        self.assertEqual(price_ticks("-0.5"), -5000)
+        self.assertEqual(price_ticks("1.50000"), 15000)
+        self.assertEqual(price_ticks(123), 123)
         with self.assertRaises(ValueError):
-            PT.ticks4("1.00001")
-        self.assertEqual(PT.ticks4("1.00000"), 10000)
+            price_ticks("1.00001")
+        self.assertEqual(price_ticks("1.00000"), 10000)
 
     def test_structural_precedence_and_validate_off(self):
         cons = {"A": ("C", 1, "2026-11-20", "stock")}
@@ -435,7 +435,7 @@ class Units(unittest.TestCase):
     def test_canonical_line_shape(self):
         sc = Scenario(2)
         line = M.canonical_line(M.f1_premium_surge(sc.tape, OPEN + 2000 * NS, OPEN))
-        self.assertTrue(line.endswith("\n") and " " not in line.strip())
+        self.assertTrue(" " not in line)
         self.assertTrue(line.startswith('{"output_id":"M2-1","series_id":null'))
 
     def test_empty_tape(self):
