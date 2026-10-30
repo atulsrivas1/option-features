@@ -1,121 +1,143 @@
-# M3a ruling list (one batch for the PO)
+# M3a ruling list (one batch for the PO, revision 2)
 
 mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12
 
-Author: Architect, 2026-10-30. Status: for ONE PO pass BEFORE any fixture author starts. 80 ambiguities and design-silent edge cases (R-01 to R-80), each with options and the Architect RECOMMENDED ruling. Nothing is ruled; "RECOMMENDED" is a proposal. Lesson of M2 applied: the single precedence list, type-first per field, trusted versus untrusted inputs and the canonical forms are decided here, once (R-66 to R-71), instead of after the fixtures. Where the design is silent, an accepted ruling is interim pending design ratification. Companions: M3A_CAPABILITY_MATRIX.md, M3A_GATE_BUDGETS.md, M3A_FIXTURE_REQUIREMENTS.md, M3A_IO_CONTRACT.md. Sources: volatility-radar.md (VR), option-contracts.md (OC), workers audit (AUD), M1 and M2 rulings.
+Author: Architect, 2026-10-30. Status: for ONE PO pass BEFORE any fixture author starts. 98 ambiguities and design-silent edge cases (R-01 to R-98), each with options and the Architect RECOMMENDED ruling. Rows marked SETTLED were ruled by the independent review of PR 101 (PO rulings) or follow directly from the M1 input record; they stay in the list so the ids are stable. Everything else is a proposal. Lesson of M2 applied: the precedence lists, type-first per field, trusted versus untrusted inputs and the canonical forms are decided here, once (R-66 to R-71). Where the design is silent an accepted ruling is interim pending design ratification. Companions: M3A_CAPABILITY_MATRIX.md, M3A_GATE_BUDGETS.md, M3A_FIXTURE_REQUIREMENTS.md, M3A_IO_CONTRACT.md. Sources: volatility-radar.md (VR), option-contracts.md (OC), workers audit (AUD), M1 code and M2 rulings.
 
 ## A. Scope
 | ID | Topic | Options | RECOMMENDED |
 |---|---|---|---|
-| R-01 | M3a row list | V1, V3-V10 only; add V11 and V21 (same surface); add V2 re-audit | V1, V3-V10 plus V11 and V21 (they cost two derived outputs on the same points); V2 re-audit only |
-| R-02 | V2 (ATM IV, M1) points unit and threshold form | leave M1 annual decimal; add points and at-least/at-most output | add the points form and threshold rule as a thin wrapper in M3a; M1 bytes unchanged |
-| R-03 | Rows left for later | V12-V15, V22 (M3b with the realized-volatility join and 52-week generator), V16-V19, V20, frame builder, presets | defer all; named as not built in the release note |
-| R-04 | Delta definition used to place 25 delta | spot delta N(d1)e^{-qT}; forward delta N(d1); delta with ATM IV | spot delta of the BSM model at the contract OWN IV with e^{-qT}, absolute value for puts (R25 Greeks convention); target 0.25 inclusive |
-| R-05 | Delta source and decision rule near the target | R25 certified delta; float delta with certified fallback; closed form on floats | use the existing certified delta; a float filter with a certified fallback is allowed only with identical bytes (Developer choice, gate unchanged) |
-| R-06 | Which right defines each side | put IVs for the put side and call IVs for the call side; OTM-only (puts below forward, calls above); mean of both rights | each side from its own right (V8 reads put side against call side); both rights must be eligible |
+| R-01 | M3a row list | V1, V3-V10 only; add V11; add V21 | SETTLED: V11 is a design row and JOINS M3a (same two 25-delta points; tracker moved by the Auditor); V21 stays PROPOSED (derived from V8): accept it as M3A-11 or move it to M3b |
+| R-02 | V2 (ATM IV, M1) points unit and threshold form | leave M1 annual decimal; add points and threshold output | add the points form and threshold rule as a thin wrapper in M3a; M1 bytes unchanged |
+| R-03 | Rows left for later | V12-V15, V22 (M3b), V16-V19, V20, frame builder, presets | defer all; named as not built in the release note (history reuse is NOT deferred, see R-89) |
+| R-04 | Delta definition used to place 25 delta | spot delta N(d1)e^{-qT}; forward delta; delta with ATM IV | spot delta of the BSM model at the contract OWN IV with e^{-qT}, absolute value for puts (R25 Greeks convention); target 0.25 inclusive |
+| R-05 | Delta source and decision rule near the target | R25 certified delta; float delta with certified fallback | the existing certified delta; a float filter with a certified fallback only with identical bytes (Developer choice, gate unchanged) |
+| R-06 | Which right defines each side | each right for its own side; OTM-only; mean of both | each side from its own right (V8 reads put side against call side); both rights must be eligible |
 
 ## B. Surface construction
 | ID | Topic | Options | RECOMMENDED |
 |---|---|---|---|
-| R-07 | Moneyness definition (for labels and wings) | K/S; K/F; ln(K/F); delta | k = ln(K/F), F = S exp((r-q)T) per expiry (as M1 ATM), as exact bracketing; delta for the 25-delta points |
-| R-08 | Strike grid | listed strikes only; fixed moneyness grid; fixed delta grid | listed strikes only; no synthetic grid in M3a |
+| R-07 | Moneyness definition (labels, wings) | K/S; K/F; ln(K/F); delta | k = ln(K/F), F = S exp((r-q)T) per expiry (as M1 ATM); delta for the 25-delta points |
+| R-08 | Strike grid | listed strikes only; fixed grids | listed strikes only; no synthetic grid in M3a |
 | R-09 | Interpolation across strikes | linear IV in delta; linear IV in k; linear total variance in k; cubic; SVI | linear IV in delta between the two bracketing eligible strikes of the right (SVI skipped by the design) |
-| R-10 | Bracket when delta is not monotone in strike | first crossing from ATM outward; any crossing; lowest strike | first crossing scanning outward from the ATM strike; ties to the lower strike |
-| R-11 | American-style labels in the surface | use only exact-model; also approximate; also american_itm | use exact-model and approximate (M1 labels); exclude american_itm and style_unknown; count labels in coverage and label the result "modeled, approximate: American-style" when any used |
-| R-12 | Nonstandard contracts and excluded conditions | include; exclude and count | exclude (multiplier != 100, excluded condition) and count in coverage, as M1 and M2 |
-| R-13 | Expiry set: minimum days | all listed; days >= 1; days >= 2 | days >= 1 (an expiry within one 24 h step of the cutoff is not a surface point); parameter `expiry_min_days` default 1 |
-| R-14 | Tenors | 9, 30, 91 (catalogue); 8 tenors 10d to 360d (domain note); expiry-based only | 9, 30, 91 days only; set closed, `tenor_not_allowed` otherwise |
-| R-15 | Constant-maturity method for 9d and 91d | linear total variance (M1 30d rule); flat forward variance; interpolate IV | linear in total variance between bracketing expiries, as M1 |
+| R-10 | Bracket when delta is not monotone in strike | first crossing from ATM outward; any; lowest strike | first crossing scanning outward from the ATM strike; ties to the lower strike |
+| R-11 | American-style labels | exact-model only; also approximate; also american_itm | exact-model and approximate (M1); american_itm and style_unknown excluded; labels are the M1 strings verbatim ("exact-model", "approximate: European model on an American-style contract") |
+| R-12 | Contracts excluded | M1 gates only; more | M1 gates only (condition other than "regular" is excluded_condition, quote gates, stale); counted in coverage; the chain record has no multiplier |
+| R-13 | Expiry set: minimum days | all; days >= 1; days >= 2 | SETTLED by the M1 input: `expiry_days` is an integer >= 1, otherwise structural `bad_expiry` (as M1 raises); no civil-date conversion in M3a (adapter duty, RQ item) |
+| R-14 | Tenors | 9, 30, 91 (catalogue); 8 tenors 10d to 360d; expiry-based only | 9, 30, 91 days only; closed set, `tenor_not_allowed` otherwise; method `iv_30d(target_days)` of M1 |
+| R-15 | Constant-maturity method for 9d and 91d | linear total variance; flat forward variance; interpolate IV | linear in total variance between bracketing expiries, as M1 |
 | R-16 | Extrapolation | none; flat beyond the last expiry or strike | none anywhere; `no_bracketing_expiry`, `no_delta_bracket` |
-| R-17 | Days-to-expiry counting | civil days; M1 convention (expiry N x 24 h after the cutoff) | the M1 convention (T = days/365, ACT/365) |
-| R-18 | Expiry on the cutoff day or after expiry time | include with T = 0; exclude | exclude (R-13) |
-| R-19 | Longest expiry cap | none; cap at 400 days | none; tenors above the longest expiry are unavailable |
-| R-20 | Minimum coverage per expiry | 3/5 of listed strikes eligible (worker 60 percent); fixed count; none | 3/5 of listed strikes and at least `min_strikes` 4 (two per right near the money); below: expiry unavailable, `low_surface_coverage`; parameters echoed |
-| R-21 | Minimum strikes to interpolate | 2 bracketing; 3; 4 | 2 bracketing eligible strikes of the right, else `no_delta_bracket` |
-| R-22 | Deep wings | exclude beyond a bound; keep | keep; eligibility is by M1 gates only |
-| R-23 | Duplicate strikes (adjusted or split contracts) | reject chain; keep the standard; keep both | exclude the nonstandard one (R-12); two standard contracts with equal strike and right are `duplicate_contract` only if the id repeats, else the lower contract id wins and the other is counted excluded |
+| R-17 | Days-to-expiry counting | civil; M1 convention | SETTLED: the M1 convention (T = expiry_days/365, ACT/365) |
+| R-18 | Expiry on the cutoff day or after expiry time | include with T = 0; exclude | SETTLED: `expiry_days` <= 0 is structural `bad_expiry` (as M1); the civil-day exclusion is dropped |
+| R-19 | Longest expiry cap | none; cap | none; tenors above the longest expiry are unavailable |
+| R-20 | Minimum coverage per expiry | 3/5 of listed strikes (worker 60 percent); fixed count; none | 3/5 of listed strikes and at least `min_strikes` 4; below: expiry unavailable, `low_surface_coverage`; parameters echoed; terms defined in R-83 |
+| R-21 | Minimum strikes to interpolate | 2; 3; 4 | 2 bracketing eligible strikes of the right, else `no_delta_bracket` |
+| R-22 | Deep wings | exclude beyond a bound; keep | keep; eligibility by M1 gates only |
+| R-23 | Duplicate contracts | structural; keep one | SETTLED: same expiry, strike and right twice is structural `duplicate_contract` (as M1 raises) |
 | R-24 | Rate and yield | one constant per chain (M1); term curve | one rate and one yield per chain (M1); a curve is a later ruling |
-| R-25 | Spot at the cutoff | supplied spot with staleness gate; last trade | supplied spot as M1; staleness belongs to the caller in M3a (eligibility field as M1) |
+| R-25 | Spot | supplied; last trade | supplied spot as M1; spot staleness is the caller duty; `stale_limit_ns` (default 10 s, M1 Q4) applies to quotes |
 | R-26 | Quote price | midpoint (M1); microprice | midpoint (M1 ruling retained) |
 
 ## C. Skew, term, derived outputs
 | ID | Topic | Options | RECOMMENDED |
 |---|---|---|---|
-| R-27 | Which expiry carries the skew | each listed expiry; nearest; 30-day tenor | the 30-day constant-maturity tenor for V8-V10; per-expiry points also returned in the surface frame |
+| R-27 | Which expiry carries the skew | each listed expiry; nearest; 30-day tenor | the 30-day constant-maturity tenor for V8 to V10 and V11; per-expiry points also in the surface frame |
 | R-28 | Skew at a tenor | skew of the nearest expiry; 25d IVs per expiry then CM per side; CM of skew values | per-expiry 25d put and call IVs, then CM by linear total variance PER SIDE, then skew = put minus call |
-| R-29 | V8 definition against the worker band | 25-delta risk reversal (design OC); pooled delta band 0.15 to 0.35 (AUD) | 25-delta (design contract); the worker band recorded as a known difference |
-| R-30 | Term slope definition (V7) | 30d to 91d gap; near to next expiry; slope per year | the 30d-91d gap in points (longer minus shorter); slope = gap / (91-30) days is not offered |
-| R-31 | V5 sign and pairs | shorter minus longer (worker); longer minus shorter | longer minus shorter, pairs 9-30 and 30-91; sign convention stated in the label |
-| R-32 | V6 nearest and second expiry | nearest listed; nearest eligible; second = next eligible | nearest and second ELIGIBLE expiries after R-13 and R-20; spread = second minus nearest |
-| R-33 | V7 form | gap change since prior session; slope change; both | both outputs (gap change, slope change in points); fire on either at least X |
-| R-34 | V10 sign change | strict sign flip; zero counts as a side; threshold dead band | sign of skew in {-1, 0, +1}; changed when the signs differ and neither is 0; 0 never counts as a flip |
+| R-29 | V8 definition against the worker band | 25-delta risk reversal (design); pooled band 0.15 to 0.35 (AUD) | 25-delta (design contract); the worker band recorded as a known difference |
+| R-30 | Term slope (V7) | 30d-91d gap; near-to-next slope; slope per year | SETTLED: the 30d-91d gap in points (longer minus shorter); slope is NOT offered; no `slope_change_points` |
+| R-31 | V5 sign and pairs | shorter minus longer (worker); longer minus shorter | longer minus shorter, pairs 9-30 and 30-91; sign stated in the label |
+| R-32 | V6 nearest and second expiry | nearest listed; nearest eligible; second = next eligible | nearest and second ELIGIBLE expiries after R-20; spread = second minus nearest; fewer than two gives `fewer_than_two_expiries` (R-91) |
+| R-33 | V7 form | gap change; slope change; both | gap change only (R-30), against the n-th prior session close (R-82) |
+| R-34 | V10 sign change | strict flip; zero as a side; dead band | sign in {-1, 0, +1} of the rounded-once difference (R-95); changed when the signs differ and neither is 0; 0 never counts as a flip |
 | R-35 | Threshold inclusivity | at least X inclusive; strict | inclusive ("at least X", "at most X"), as M2 |
-| R-36 | Defaults and units | worker placeholders in decimals (0.05) or points | points: skew 5, skew change 2, term 3, term change 2, curvature 3, IV change 10 percent; all echoed; X default 5 |
-| R-37 | V11 definition | (put25 + call25)/2 - ATM; put25 + call25 - 2 ATM; butterfly vs strike | (put25 + call25)/2 minus ATM in points; fires when above (or below) by at least X |
-| R-38 | V21 definition and zero denominator | (put25 - ATM)/(call25 - ATM); inverse; absolute values | (put25 - ATM)/(call25 - ATM); call distance 0 gives `zero_denominator`; negative distances allowed and shown |
+| R-36 | Defaults and units | worker placeholders in decimals; points | points: skew 5, skew change 2, term 3, term change 2, curvature 3, IV change 10 percent; all echoed; X default 5 |
+| R-37 | V11 definition | (put25 + call25)/2 - ATM; sum minus 2 ATM; butterfly | (put25 + call25)/2 minus ATM in points; fires per `direction` (default up) by at least X |
+| R-38 | V21 definition and zero denominator | (put25 - ATM)/(call25 - ATM); inverse; absolute | (put25 - ATM)/(call25 - ATM); call distance 0 gives `zero_denominator`; negative distances allowed and shown |
 | R-39 | Wording of sides | direction words; neutral | "put-side" and "call-side" only; blocked words never appear in labels (design WL78, WL91) |
 
 ## D. History and percentiles
 | ID | Topic | Options | RECOMMENDED |
 |---|---|---|---|
-| R-40 | Clock of "prior reading" | previous frame (in memory); previous stored frame; prior session close | `prior` is an INPUT (kind frame or session, with its time); the caller or the store supplies it; no hidden in-memory state; evidence line states both times |
-| R-41 | V4 form | relative percent; absolute points; ATM or 30d basis; zero prior | both change_points and change_ratio output; fire on relative percent (10 default); basis chosen by parameter; prior 0 gives `zero_denominator` |
-| R-42 | V1 history cadence | session-close value; same minute; all frames | session-close value of each prior session, in both modes |
-| R-43 | V3 minute alignment | same minute index of the 60 s grid; nearest frame within a tolerance | the same grid minute index; a prior session without that minute is skipped (not substituted) |
-| R-44 | Look-back and minimum | 252 and 20 (design worker); 20 only | K = 252 sessions, minimum 20 complete sessions |
-| R-45 | Percentile form and bottom X | M2 upper_share; add lower_share; interpolated percentile | M2 forms: top X percent fires when upper_share <= X/100; bottom X percent fires when lower_share = count(history <= x)/n <= X/100; both always returned |
-| R-46 | Zero-range history | percentile of a constant history; unavailable | unavailable `zero_range_history` (design VR P3) |
-| R-47 | Completeness and "new" | partial sessions counted; only complete | only sealed complete sessions; below minimum: `insufficient_history` ("new") |
-| R-48 | Stored value representation | float; exact rational; integer micro-vol | integer micro-vol (annual vol x 10^6) rounded half to even from the solver value; all ranks on integers |
-| R-49 | Rounding rules | round at storage only; round at output | round once at storage into the history series; outputs of the current frame are exact rationals of the solver value and are not rounded; the rank compares the rounded current value with rounded history |
-| R-50 | Ties at the percentile | count ties as at-or-above; split | M2 rule (ties count in upper_share and in rank_le) |
-| R-51 | Days whose CM IV is absent in history | skip (n shrinks); count as missing and fail | skip the day; n counts only present values; below minimum: insufficient_history |
-| R-52 | Retention and memory | raise the M2 cap of 60 to 252 for all; per-series cap | raise the cap to 252 for the M3a series; the minute grid only for atm_iv, session-close values for iv30, skew25, term_30_91 (budget: 81 MB for 103 names) |
-| R-53 | Which series stores skew | 30d tenor skew; nearest expiry; every expiry | 30d tenor skew (R-27, R-28) as `skew25` |
-| R-54 | Minutes at the session edges for V3 | all 390; skip the first and last minute | every grid minute; the minute before the first usable frame gives `insufficient_window` |
-| R-55 | Half-day sessions for V3 | align by minute index; by fraction of session | by minute index from open; a half-day session has fewer minutes and is skipped for later minutes |
+| R-40 | Clock of "prior reading" | previous frame (memory); stored frame; prior session close | `prior` is an INPUT (kind frame or session, with its time); caller or store supplies it; no hidden state; the reading time must be before the cutoff (R-92) |
+| R-41 | V4 form | relative percent; absolute points; ATM or 30d; zero prior | constant 30-day IV only (R-81); change_points and change_ratio both output; fires on relative percent (10 default) per `direction`; prior 0 gives `zero_denominator` |
+| R-42 | V1 history cadence | session-close value; same minute; all frames | session-close scalar of each prior session, in both modes |
+| R-43 | V3 minute alignment | same minute index; nearest frame within a tolerance | the same grid minute index; a prior session without that minute is skipped (not substituted) |
+| R-44 | Look-back and minimum | 252 and 20 (worker); 20 only | design-silent beyond "at least 20 prior sessions": `min_sessions` 20, `max_sessions` 252 (the worker V3 figure; extended to V1 and V9 as an interim ruling) |
+| R-45 | Percentile form and bottom X | M2 upper_share; add lower_share | M2 forms: top X percent fires when upper_share <= X/100; bottom X percent when lower_share = count(history <= x)/n <= X/100; both always returned |
+| R-46 | Zero-range history | percentile of a constant history; unavailable | unavailable `zero_range_history` (design VR P3); DELIBERATE exception to M2 Q2 (there a constant history is available and cannot fire) |
+| R-47 | Completeness and "new" | partial sessions counted; only complete | only sealed complete sessions; below `min_sessions`: `insufficient_history` ("new") |
+| R-48 | Stored value representation | float; rational; integer | integers in 10^-8 units (the rounded-once 8-decimal value); ranks on integers |
+| R-49 | Rounding | at storage; at output; both | round once, half to even, from the binary64 value to 8 decimals; that decimal is the reported value, the stored integer and the basis of every comparison |
+| R-50 | Ties at the percentile | at-or-above; split | M2 rule (ties count in upper_share and in rank_le) |
+| R-51 | Days whose value is absent in history | skip; fail | `scalar_baseline` skips missing and incomplete days; n counts available sessions; below min_sessions: insufficient_history; DELIBERATE exception to M2 Q3 and AMB-17 (design: "at least 20 prior sessions") |
+| R-52 | Retention and memory | raise the cap for all; per-series k | per-series `k` = 252 for the M3a series (M2 default 60 unchanged); minute grid only for iv30 (R-81); scalar series elsewhere; budget 81 MB raw, 243 MB with the M2 layout |
+| R-53 | Which series stores skew | 30d tenor skew; nearest; every expiry | 30d tenor skew (R-27, R-28) as `skew25` |
+| R-54 | Minute index range for V3 | all 390; skip edges | any grid minute 0 to minutes-1; outside is structural `minute_out_of_range` |
+| R-55 | Half-day sessions for V3 | by minute index; by fraction | by minute index from open; a half-day has fewer minutes and is skipped for later minutes |
 
 ## E. Frames, modes, feed
 | ID | Topic | Options | RECOMMENDED |
 |---|---|---|---|
-| R-56 | Intraday versus end-of-day mode | one mode flag; two functions | `mode` parameter; end_of_day reads the last-close frame and needs a sealed session (`session_not_complete`) |
-| R-57 | Exact frame rule (VR3) | nearest frame; exact only | the library takes one chain at one cutoff, so the frame is exact by construction; "no exact frame" is an engine reason, not a library reason |
-| R-58 | Delayed feed | compute and label; unavailable | V3 and intraday V1, V4 give invalid_input `delayed_feed_tag` (as F1 in M2); end-of-day forms computed and labelled delayed |
-| R-59 | Prior session and holidays | previous calendar day; previous session by calendar | previous session in the supplied calendar |
+| R-56 | Mode | flag; two functions | `mode` in {intraday, close}; close reads the close-chain frame and needs a sealed session (`session_not_complete`); invalid mode is `invalid_mode` |
+| R-57 | Exact frame (VR3) | nearest; exact only | the library takes one chain at one cutoff: exact by construction; "no exact frame" is an engine reason |
+| R-58 | Delayed feed | compute and label; unavailable | V3 and intraday V1, V4: invalid_input `delayed_feed_tag` (as F1 in M2); DELIBERATE exception to the design word "unavailable" (same interim choice as M2); close forms computed and labelled delayed |
+| R-59 | Prior session and holidays | previous calendar day; calendar | previous session in the supplied calendar |
 
 ## F. Units, rounding, representation
 | ID | Topic | Options | RECOMMENDED |
 |---|---|---|---|
-| R-60 | IV unit | annual decimal; points | annual decimal in `iv` keys; `_points` keys are x100 differences; thresholds are in points |
-| R-61 | Output number type | float; rational | reduced "n/d" rationals or ints; no float in any output |
-| R-62 | Solver tolerance versus exact output | assert closed forms exactly; with 1e-4 | outputs are exact functions of returned IV; closed-form expectations carry the M1 tolerance 1e-4; rows within the tolerance of a threshold are not asserted (near-threshold attack rows state the ruling instead) |
-| R-63 | Labels | free text; closed list | closed labels: modeled, modeled approximate (American-style), delayed |
-| R-64 | Version and envelope | new envelope; M2 Result | the M2 Result envelope and the library version string (no bump); unavailable carries value and fired null |
+| R-60 | IV unit | annual decimal; points | annual decimal in `iv` keys; `_points` keys are x100 differences; thresholds in points |
+| R-61 | Output number type | float; rational; decimal | quote-derived exact values: ints or "n/d"; solver-derived values (IV, forward, derived series): binary64 reported as decimal strings rounded half-even to 8 decimals |
+| R-62 | Tolerances | exact; 1e-4 | solver tolerances are 1e-10 (`DEFAULT_SOLVER`); 1e-4 is the M1 FIXTURE comparison tolerance (4-decimal quote quantisation, vega >= 4); forward 1e-6; rows within a tolerance interval of a threshold are not asserted; canonical hashes of solver-derived values are Windows-only |
+| R-63 | Labels | free text; closed | SETTLED: the M1 vocabulary verbatim; a `labels` list (model label, plus "delayed" when applicable); the three-label scheme is dropped |
+| R-64 | Version and envelope | new; M2 Result | the M2 Result envelope and the library version string (no bump); unavailable carries value and fired null |
 | R-65 | Tagged encodings of non-JSON types | none; M2 tagged objects | the M2 tagged objects (Decimal, Fraction, bytes); harnesses decode before calling |
 
 ## G. Malformed inputs and precedence (decided once)
 | ID | Topic | Options | RECOMMENDED |
 |---|---|---|---|
-| R-66 | Precedence list | per area; ONE list | the single list of M3A_IO_CONTRACT.md section 4 (16 positions); the first failing code is reported; one worked example per adjacent pair is a fixture requirement |
-| R-67 | Type-first | value codes first; type first globally; per field | per field at the position of that field value check (M2 ruling), including price grammar and integer-tick rules as M2 section 9 |
-| R-68 | Trusted versus untrusted inputs | validate always; scanned for trusted | untrusted inputs validated in full; views of a verified store and a validated chain are scanned on hot paths; `validate="full"` always available, same codes |
-| R-69 | Chain structural codes | reuse M1 reasons; new codes | the codes of section 4 (bad_cutoff, bad_spot, bad_rate, duplicate_contract, unknown_right, bad_strike, bad_multiplier, bad_expiry, unordered_quotes) |
-| R-70 | History input validation | reuse store codes; new | reuse the M2 store codes and order unchanged |
+| R-66 | Precedence lists | one list; per entry point | one list PER ENTRY POINT as M2: request (18 positions), history append and load (6, M2 order), snapshot (3), text load (3), view read (4); the first failing code is reported (IO contract section 4) |
+| R-67 | Type-first | value codes first; global; per field | per field at the position of that field value check (M2 ruling) |
+| R-68 | Trusted versus untrusted inputs | validate always; scanned for trusted | untrusted validated in full; verified-store views and validated chains scanned on hot paths; `validate="full"` always available, same codes |
+| R-69 | Chain structural codes | reuse M1 reasons; new | bad_cutoff, bad_spot, bad_rate, bad_expiry, unknown_right, duplicate_contract, bad_strike, malformed_type (M1 raises ValueError for these; M3a maps them to codes); no multiplier, civil-date or ordering codes |
+| R-70 | History input validation | reuse; new | reuse the M2 store codes and order unchanged |
 | R-71 | Empty chain or all excluded | structural; unavailable | unavailable with the M1 reasons counted in coverage; never structural |
-| R-72 | Parameter validation | clamp; reject | reject: tenor_not_allowed, delta_not_allowed, X outside 0 to 100 as malformed_type, K and min_sessions below 1 as malformed_type |
-| R-73 | Lane handling | one lane per call; mix | one lane per call; history lane mismatch is `lane_mismatch`; ETF and index lane never mixed (design OD9) |
+| R-72 | Parameter validation | clamp; reject | reject: tenor_not_allowed, delta_not_allowed; X outside 0 to 100 is the value code `threshold_out_of_range` (not malformed_type); min_sessions and max_sessions wrong type or below 1 is malformed_type |
+| R-73 | Lane handling | one lane; mix | one lane per call; lane in {stock, etf_index} else `invalid_lane`; history lane mismatch is `lane_mismatch`; lanes never mixed (design OD9) |
 
 ## H. Performance and architecture
 | ID | Topic | Options | RECOMMENDED |
 |---|---|---|---|
-| R-74 | 25-delta search strategy | delta for every contract; bracketed bisection over strikes; fused scan | bracketed search by strike order with at most one delta per contract; count gated by M3A-B13 |
-| R-75 | IV and delta reuse | recompute; per-chain cache; cross-cutoff cache | per chain and cutoff cache only (spot changes each cutoff; no cross-cutoff reuse claimed) |
+| R-74 | 25-delta search | delta for every contract; bracketed search; fused scan | bracketed search by strike order, at most 200 delta evaluations per size-M chain (M3A-B12) |
+| R-75 | IV and delta reuse | recompute; per-chain cache; cross-cutoff | per chain and cutoff only (spot changes each cutoff) |
 | R-76 | Parallel unit and history dependency | per underlying; unit with immutable view | the M1 runner unit with an immutable M2 view; build phase ordered per underlying |
 | R-77 | Module boundary | extend chainiv; new module | a new surface module beside chainiv (chainiv bytes and gates unchanged) |
-| R-78 | First task gate | G0 as M2-G0; per-output gates only | M3A-G0 one-worker full-output B6 with M2 and M3a outputs (budgets doc section 4) |
-| R-79 | Store budget at retention 252 | per worker 512 MB / 1 GB as M2; lower | 512 MB budget and 1 GB hard per worker (M2 ruling); report bytes per series |
-| R-80 | Runner and perf adapter | extend m1_runner; new runner | extend tools/m1_runner (opt-in, default single-process); perf_sut contract-v2 adapter stays deferred |
+| R-78 | First task gate | G0 as M2-G0 plus separate whole-B6 | single M3A-G0: one-worker B6 with the M2-G0 set, the M2 flow outputs (M2-B9) and the M3a outputs; no separate B10 |
+| R-79 | Store budget at retention 252 | 512 MB / 1 GB (M2); lower | 512 MB budget, 1 GB hard per worker; bytes per series reported |
+| R-80 | Runner and perf adapter | extend m1_runner; new | extend tools/m1_runner (opt-in, default single-process); perf_sut adapter deferred |
+
+## I. Added after the review of PR 101
+| ID | Topic | Options | RECOMMENDED |
+|---|---|---|---|
+| R-81 | Series for V3 and V4 | ATM IV; M1 30-day IV | SETTLED: V3 and the V4 comparison use the M1 30-day IV (`iv_30d`, design key constant_30d_iv_change); ATM-form variants out of scope |
+| R-82 | Prior sessions for V7 and V10 | one; n | `prior_sessions` n (default 1): the n-th prior session close; the result carries the `priors` list |
+| R-83 | Coverage terms | strikes with both rights; either right | listed strike = a strike with an eligible quote for either right; "two per right near the money" = at least 2 eligible strikes per right within +-10 percent of the forward |
+| R-84 | Direction | fixed wording; parameter | a `direction` parameter (up, down, either) for V4 to V8, V10, V11, V21 with design-wording defaults (V4 up, V5 up, V6 up, V7 either, V8 up, V10 either, V11 up, V21 up); inclusive (R-35) |
+| R-85 | Quote quantisation | gate all; tag | generator contracts with vega >= 4 gate; below that the rows are tagged non-gating |
+| R-86 | Solver failures | map to one reason; reuse | reuse the M1 solver reasons verbatim as closed reasons: price_out_of_bounds, sigma_cap, precision_exhausted, iteration_limit, upper_asymptote |
+| R-87 | Session-close frame | grid minute; scalar | the frame evaluated at `close_ns` on the close chain, stored as a scalar |
+| R-88 | Request parameter sets | free; closed | mode in {intraday, close}; lane in {stock, etf_index}; `stale_limit_ns` default 10 s; min_sessions 20; max_sessions 252; codes invalid_mode, invalid_lane, minute_out_of_range |
+| R-89 | History reuse and store changes | later release; M3a | INTO M3a (entry gate includes the M2 store, PR 80); scalar series with per-series k = 252, `total` scalar, `window_s` 0; read forms `scalar_baseline` and `same_minute_column`; lane in the series id; no zero-padding of scalar reads (matrix section 6) |
+| R-90 | Per-contract counts | in coverage totals; own field | own field `coverage.contract_reasons` {M1 gate reason: count} |
+| R-91 | V6 with fewer than two expiries | no_bracketing_expiry; new reason | new reason `fewer_than_two_expiries` |
+| R-92 | Prior validity | accept any; reject | a prior reading time at or after the cutoff is structural `prior_not_before_cutoff` |
+| R-93 | New structural codes | none; list | invalid_mode, invalid_lane, minute_out_of_range, prior_not_before_cutoff, threshold_out_of_range, tenor_not_allowed, delta_not_allowed, threshold_required (IO contract section 4) |
+| R-94 | Assertions on solver-derived values | exact; intervals | intervals for solver-derived values (IV 1e-4, forward 1e-6); exact only for quote-derived values; no cross-platform byte claim |
+| R-95 | Derived series | round parts then subtract; subtract then round | difference of the UNROUNDED floats, rounded once to 8 decimals (skew25, term_30_91); sign on that value |
+| R-96 | Deliberate exceptions register | silent; stated | R-46, R-51, R-58 are stated as DELIBERATE exceptions in the matrix section 5 with their sources |
+| R-97 | Entry and crossing forms | in scope; deferred | deferred by name (design 2.8), like M2; the comparison forms V4, V7, V10 stay in scope |
+| R-98 | Chain input record | extend; exact M1 | EXACTLY the M1 `ChainContract` plus request-level cutoff_ns, spot, rate, dividend_yield; lane only on history records; one convention per record type: chain strikes and quotes follow M1 (text decimal up to 8 places, or non-bool int = whole units x 10^8), the M2 ticks rule applies to print families only |
 
 ## Notes for the PO
-- Ruling the whole list in one pass: accept all RECOMMENDED, or list exceptions by id. The three decisions with the largest fixture impact are R-04 and R-05 (delta), R-09 (interpolation) and R-40 (prior reading); R-01 changes the row count.
-- Every accepted ruling is interim pending design ratification where the design is silent (R-04, R-09, R-14, R-28 to R-30, R-40 and R-42 are design-silent or design-open in volatility-radar.md section 2.9 and 12); a changed answer regenerates the dependent fixtures.
+- Ruling the whole list in one pass: accept all RECOMMENDED, or list exceptions by id. SETTLED rows need no decision. Largest fixture impact: R-04 and R-05 (delta), R-09 (interpolation), R-40 (prior reading), R-89 (store changes); R-01 changes only whether V21 is built.
+- Every accepted ruling is interim pending design ratification where the design is silent (R-04, R-09, R-14, R-27 to R-30, R-40, R-42, R-44 are design-silent or open in volatility-radar.md section 2.9 and 12); a changed answer regenerates the dependent fixtures.

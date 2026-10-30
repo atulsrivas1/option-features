@@ -1,71 +1,82 @@
-# M3a input and output contract (skeleton)
+# M3a input and output contract (skeleton, revision 2)
 
 mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12
 
-Author: Architect, 2026-10-30. Status: SKELETON for the PO ruling pass; shapes only, every value choice is a RECOMMENDED ruling in M3A_RULING_LIST.md. Written once so that the structural codes and ONE precedence list exist from the start (lesson of M2: the precedence list, type-first per field and the trusted-versus-untrusted input rule were reworked four times after the fixtures). Baseline: docs/m2/M2_IO_CONTRACT.md. Pure functions, no I/O, no clocks, single-threaded kernels. Exact arithmetic on the values returned by the M1 solver and the delta source; no float in any M3a output.
+Author: Architect, 2026-10-30. Status: SKELETON for the PO ruling pass; shapes only, value choices are RECOMMENDED rulings in M3A_RULING_LIST.md. Written once so that the structural codes and the precedence lists exist from the start (lesson of M2: precedence, type-first per field and trusted-versus-untrusted inputs were reworked four times after the fixtures). Baseline: docs/m2/M2_IO_CONTRACT.md and the M1 code interface (`chainiv.py`, `quotes.py`). Pure functions, no I/O, no clocks, single-threaded kernels.
 
-## 1. Conventions
-- Times: integer nanoseconds since the Unix epoch (UTC); civil dates for expiries and sessions; windows closed [T-W, T] where a window exists.
-- Strikes and prices: integer ticks (x 10^8 for strikes as in M1 `IVChain`, x 10^4 for prices as in M2), or text decimals converted once at ingest (grammar and type rules: R-65 to R-67, as M2 section 9 items 4 and 13 to 15).
-- IV: annual decimal as returned by M1 (R-60); thresholds and differences in points (1 point = 0.01 annual vol); stored history values are integer micro-vol (R-48).
-- Text: UTF-8, LF, canonical key order, no absolute paths. Every dataset has `"provenance": "SYNTHETIC"`. Non-JSON types in fixtures use the tagged objects of M2 section 9 item 14 (R-65).
+## 1. Conventions (one convention per record type)
+- Chain record type: follows M1 exactly. Strikes, bid, ask and spot: a text decimal with at most 8 decimal places, or a non-bool int meaning whole units (x 10^8 ticks internally); the M1 `to_ticks` rule. The M2 ticks rule (price x 10^4) applies ONLY to print families and is not used here. The price grammar `-?(\\d+(\\.\\d*)?|\\.\\d+)` (ASCII; "1." and ".5" valid) applies to chain text decimals with the M1 limit of 8 decimals; more than 8 decimals is `malformed_type`.
+- Request scalars: `spot`, `rate`, `dividend_yield`: a non-bool int, an exact-rational string, or a finite binary64 float (as M1). `rate` and `dividend_yield` out of the ruled range or non-finite is `bad_rate`; `spot` not positive is `bad_spot`.
+- History records and parameters: the M2 conventions (type-first per field; integers for sessions, minutes, K).
+- Times: integer nanoseconds (UTC); `expiry_days` is an integer >= 1 supplied by the caller (M1: expiry N x 24 h after the cutoff, T = N/365). No civil-date conversion in M3a (an adapter duty, RQ item).
+- IV: annual decimal as returned by M1 (binary64); thresholds and differences in points (1 point = 0.01 annual vol).
+- Text: UTF-8, LF, canonical key order, no absolute paths; every dataset has `"provenance": "SYNTHETIC"`; non-JSON types in fixtures use the M2 tagged objects (R-65).
 
 ## 2. Inputs
 | Record | Fields | Notes |
 |---|---|---|
-| Chain | `contracts` list, `spot`, `rate`, `dividend_yield`, `cutoff_ns`, `lane`, `feed_delay_tag` ("live" or "delayed") | one chain at one cutoff; `contracts` exactly as the M1 `IVChain` input (right, strike, expiry, style, multiplier, quote with bid, ask, event_ns, known_at_ns, conditions); no change to that record |
-| Contract id | string key, unique per chain | duplicates are structural |
-| IV history | M2 `HistoryRecord` (series_id, metric, session_id, window_s, grid, total, complete, content_sha256) | metrics: `iv30`, `atm_iv`, `skew25`, `term_30_91` (session-close values or the minute grid, R-52); read only, as an M2 `HistoryView` |
-| Prior reading | `prior` object: `value`, `kind` ("frame" or "session"), `time_ns` or `session_id` | supplied by the caller or read from the store (R-40) |
-| Calendar | ordered sessions with `minutes` (M2) | the K-session window and the prior session come from it |
-| Request | `evaluation_ns`, `tenors` (days), `delta_target`, `mode` ("intraday" or "end_of_day"), thresholds, X, K, `min_sessions`, `lane`, `expiry_min_days`, `min_strikes`, `min_coverage` | every parameter used is echoed in the result |
+| Chain contract | EXACTLY the M1 `ChainContract`: `contract_id`, `expiry_days`, `right` ("call" or "put"), `strike`, `bid`, `ask`, `event_ns`, `known_at_ns` (None = event_ns), `style` ("european", "american"), `condition` ("regular" default) | no multiplier, no civil-date expiry, no lane on the chain record |
+| Chain | `contracts`, `spot`, `rate`, `dividend_yield`, `cutoff_ns` | one chain at one cutoff |
+| Request | `mode` in {"intraday", "close"}, `lane` in {"stock", "etf_index"}, `stale_limit_ns` (default 10 s), `feed_delay_tag` ("live" or "delayed"), `evaluation_ns`, `tenors`, `delta_target`, `direction`, thresholds, X, `min_sessions` (20), `max_sessions` (252), `minute`, `prior_sessions` (1), `min_strikes`, `min_coverage` | every parameter used is echoed in the result |
+| Prior reading | `value`, `kind` ("frame" or "session"), `time_ns` or `session_id` | the reading time must be before the cutoff (`prior_not_before_cutoff`) |
+| History record | M2 `HistoryRecord`, lane only here; scalar series: `window_s` 0, empty grid, `total` = integer in 10^-8 units; minute series: dense grid | read as an M2 view, `scalar_baseline` and `same_minute_column` (matrix section 6) |
+| Calendar | ordered sessions with `minutes` (M2) | the prior sessions come from it |
+Session-close frame = the frame evaluated at `close_ns` on the close chain, stored as a scalar (not as a grid minute).
 
 ## 3. Outputs
-One result per (output id, name, evaluation), the M2 `Result` envelope: `output_id` (M3A-0 to M3A-11), `series_id`, `session_id`, `evaluation_ns`, `status` ("available", "unavailable", "invalid_input"), `reason` (closed set of the matrix section 5, or null), `code` (structural, or null), `value`, `fired` (bool or null), `params`, `coverage`, `label`, `lane`, `version`. An unavailable or invalid_input result carries `value` null and `fired` null; `coverage` and `label` only for zero_denominator and the coverage reasons (M2 conventions, R-64).
+The M2 `Result` envelope: `output_id` (M3A-0 to M3A-11), `series_id`, `session_id`, `evaluation_ns`, `status`, `reason` (closed set, matrix section 5, or null), `code` (structural, or null), `value`, `fired`, `params`, `coverage`, `labels` (list), `lane`, `version`. An unavailable or invalid_input result carries `value` null and `fired` null.
+Number forms (RULED): quote-derived exact values (counts, coverage ratios) are ints or reduced "n/d" strings; solver-derived values (IV, forward, derived series) are binary64 and are reported as decimal strings rounded half to even to 8 decimals; derived series (skew25, term_30_91) are the difference of the UNROUNDED floats rounded once to 8 decimals; all threshold and sign decisions use the rounded decimals; stored history values are integers in 10^-8 units. Canonical hashes of solver-derived values are Windows-only (no cross-platform byte claim).
+`coverage`: `listed_strikes`, `eligible_strikes`, per-expiry counts, and `contract_reasons` = {M1 gate reason: count} (per-contract counts have their own field); `labels`: the M1 label of the model used ("exact-model" or "approximate: European model on an American-style contract"), plus "delayed".
 | Output | `value` keys |
 |---|---|
-| M3A-0 surface frame | `expiries` list of {`expiry`, `days`, `forward`, `atm_iv`, `put25_iv`, `call25_iv`, `strikes_eligible`, `strikes_listed`, `labels`}, `tenors` map {`9`, `30`, `91`: {`iv`, `method`}} |
+| M3A-0 | `expiries` list of {`expiry_days`, `forward`, `atm_iv`, `put25_iv`, `call25_iv`}, `tenors` {`9`, `30`, `91`: {`iv`, `method`, `expiries_used`}} |
 | M3A-1 V1 | `x`, `n`, `rank_le`, `upper_share`, `lower_share`, `form` |
 | M3A-2 V3 | `x`, `n`, `minute`, `rank_le`, `upper_share` |
-| M3A-3 V4 | `now`, `prior`, `change_points`, `change_ratio`, `basis` ("atm" or "iv30"), `prior_kind` |
-| M3A-4 V5 | `pairs`: {`9_30`, `30_91`: {`longer`, `shorter`, `spread_points`}} (longer minus shorter) |
-| M3A-5 V6 | `nearest`, `second`, `spread_points` (second minus nearest), `expiries` |
-| M3A-6 V7 | `now`, `prior`, `gap_change_points`, `slope_change_points` |
+| M3A-3 V4 | `now`, `prior`, `change_points`, `change_ratio`, `prior_kind` |
+| M3A-4 V5 | `pairs` {`9_30`, `30_91`: {`longer`, `shorter`, `spread_points`}} (longer minus shorter) |
+| M3A-5 V6 | `nearest_days`, `second_days`, `spread_points` (second minus nearest) |
+| M3A-6 V7 | `now`, `priors` (list of {`session_id`, `gap`}), `gap_change_points` for the n-th prior; no slope key |
 | M3A-7 V8 | `put25_iv`, `call25_iv`, `skew_points` (put minus call), `tenor` |
 | M3A-8 V9 | as V1 for the skew series |
-| M3A-9 V10 | `now`, `prior`, `change_points`, `sign_now`, `sign_prior`, `sign_changed` |
+| M3A-9 V10 | `now`, `priors`, `change_points`, `sign_now`, `sign_prior`, `sign_changed` (sign of the rounded-once difference) |
 | M3A-10 V11 | `wings_mid`, `atm_iv`, `curvature_points` |
-| M3A-11 V21 | `put_distance`, `call_distance`, `ratio` |
-Values are ints, reduced "n/d" strings of rationals, or null; never floats. Fired rules: threshold comparisons are inclusive ("at least X", "at most X"); percentile rule as M2 (upper_share <= X/100 for top X percent, lower_share for bottom X percent).
+| M3A-11 V21 (PROPOSED) | `put_distance`, `call_distance`, `ratio` |
+Fire rules: comparisons inclusive ("at least X", "at most X") on the rounded decimals and the `direction` parameter (up, down, either); percentile rule as M2 for top X percent (upper_share <= X/100) and bottom X percent (lower_share <= X/100).
 
-## 4. Structural codes and the ONE precedence list
-Structural errors are status invalid_input with a closed `code`; the first failing code of the list is reported. Type-first per field (M2 ruling): a wrong-typed field (not an int or text as its grammar requires: float, Decimal, Fraction, bool, None, bytes) reports `malformed_type` at the list position where that field value check would run; a field with no value code reports it at the `malformed_type` slot. Within one position fields are checked in the order written.
+## 4. Structural codes and precedence lists (one list PER ENTRY POINT, as M2)
+Structural errors are status invalid_input with a closed `code`; the first failing code of the entry point list is reported. Type-first per field (M2 ruling): a wrong-typed field reports `malformed_type` at the position where that field value check would run; a field with no value code reports it at the `malformed_type` slot; within one position fields are checked in the order written. M1 raises ValueError for these conditions; the M3a wrapper maps them to codes.
+**Request (chain and parameters), 18 positions:**
 | # | Code | Check |
 |---|---|---|
 | 1 | `bad_cutoff` | cutoff_ns not a non-negative int |
-| 2 | `bad_spot` | spot not positive |
-| 3 | `bad_rate` | rate or dividend_yield not finite or out of the ruled range |
-| 4 | `duplicate_contract` | a contract id appears twice |
-| 5 | `unknown_right` | right is neither call nor put |
-| 6 | `bad_strike` | strike not positive |
-| 7 | `bad_multiplier` | multiplier <= 0 |
-| 8 | `bad_expiry` | expiry not a civil date, or not after the cutoff date |
-| 9 | `unordered_quotes` | quote event times not monotone per contract |
-| 10 | `malformed_type` | the type slot (price, size, flags and every field without a value code); includes `grid_not_60s` for a history grid |
-| 11 | `lane_mismatch` | history lane differs from the request lane |
-| 12 | `duplicate_session`, `non_monotone_grid`, `session_not_in_calendar`, `record_length_mismatch`, `out_of_order_append` | history record checks, M2 order (M2 section 9 item 5) |
-| 13 | `tenor_not_allowed` | a tenor outside the allowed set |
-| 14 | `delta_not_allowed` | delta target outside the ruled set |
-| 15 | `threshold_required` | a fire rule asked with no threshold |
-| 16 | `delayed_feed_tag` | V3 and intraday V1, V4 under a delayed tag |
-Snapshot and trailer codes of the M2 store are inherited unchanged. An empty chain or a chain whose contracts are all excluded is not structural: unavailable with the M1 reasons counted in `coverage`.
+| 2 | `bad_spot` | spot not positive (a wrong type is malformed_type here) |
+| 3 | `bad_rate` | rate or dividend_yield non-finite or out of range |
+| 4 | `invalid_mode` | mode not in {intraday, close} |
+| 5 | `invalid_lane` | lane not in {stock, etf_index} |
+| 6 | `bad_expiry` | expiry_days not an int >= 1 (as M1; per contract) |
+| 7 | `unknown_right` | right not call or put |
+| 8 | `duplicate_contract` | a contract id appears twice |
+| 9 | `bad_strike` | strike not positive |
+| 10 | `malformed_type` | quote fields, condition, style, event times and every field without a value code; more than 8 decimals |
+| 11 | `duplicate_contract` | same expiry, strike and right twice |
+| 12 | `tenor_not_allowed` | a tenor outside {9, 30, 91} |
+| 13 | `delta_not_allowed` | delta target outside the ruled set |
+| 14 | `threshold_required` | a fire rule asked without a threshold |
+| 15 | `threshold_out_of_range` | X outside 0 to 100 (a value code) |
+| 16 | `minute_out_of_range` | V3 minute outside the session grid |
+| 17 | `prior_not_before_cutoff` | prior reading time at or after the cutoff |
+| 18 | `delayed_feed_tag` | V3, intraday V1 and V4 under a delayed tag |
+**History append and load (M2 order, unchanged):** lane_mismatch, session_not_in_calendar, record_length_mismatch, non_monotone_grid, duplicate_session, out_of_order_append (6 positions; this is where position 12 of the earlier skeleton lives).
+**Snapshot:** snapshot_bad_magic, snapshot_length_mismatch, snapshot_hash_mismatch; **text load:** trailer_missing, trailer_count_mismatch, trailer_hash_mismatch (M2, unchanged).
+**View read (`scalar_baseline`, `same_minute_column`):** session_not_in_calendar (current session), minute_out_of_range, malformed_type (min_sessions, max_sessions), threshold_out_of_range (4 positions).
+An empty chain, a chain whose contracts are all excluded, or a missing history is not structural: unavailable with the reasons of the matrix.
 
 ## 5. Trusted versus untrusted inputs
-- Untrusted (validated in full at the boundary): chains from a caller, history records at append and load, parameters. Every structural code of section 4 applies.
-- Trusted (validated once, then scanned on hot paths): history views read from a store whose content hash was verified at attach, and chains already validated by `validate="full"`. `validate="scanned"` is the hot-path default; `validate="full"` is always available and gives the same codes (M2 convention). Cost statement: scanned validation is O(contracts read), full is O(chain).
+- Untrusted (validated in full at the boundary): chains from a caller, history records at append and load, parameters. Every code of section 4 applies.
+- Trusted (validated once, then scanned on hot paths): views of a store whose content hash was verified at attach, and chains already validated by `validate="full"`. `validate="scanned"` is the hot-path default; `validate="full"` is always available with the same codes (M2 convention). Cost: scanned is O(contracts read), full is O(chain).
 
 ## 6. Canonical serialization and hashing
-As M2 section 4: one JSON object per result in the key order of section 3, separators `,` and `:`, rationals as reduced "n/d" strings, one object per line, LF; results ordered by (output_id, series_id, session_id, evaluation_ns); per-unit SHA-256 and the run hash over `unit key LF unit sha256 LF` in key order. Worker count, timings, cache statistics and store hashes appear only in the run log. Result `version` is the library version string (no bump proposed, R-64).
+As M2 section 4: one JSON object per result in the key order of section 3, separators `,` and `:`, one object per line, LF; ordered by (output_id, series_id, session_id, evaluation_ns); per-unit SHA-256 and the run hash over `unit key LF unit sha256 LF` in key order. Worker count, timings, cache statistics and store hashes appear only in the run log. Result `version` is the library version string (no bump proposed, R-64).
 
 ## 7. Runner interface (unchanged defaults)
-Unit = underlying x session x cutoff; the unit reads an immutable history view; opt-in process pool, default single-process, `--workers 1` is the reference path; cap per PR 72; the runner adds no calculation; `gc.freeze()` after the store load and `content_hash()` compared after attach (M2 section 9 item 10).
+Unit = underlying x session x cutoff; the unit reads an immutable history view; opt-in process pool, default single-process, `--workers 1` is the reference path; cap per PR 72; the runner adds no calculation; `gc.freeze()` after the store load and `content_hash()` compared after attach.

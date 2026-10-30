@@ -2,7 +2,7 @@
 
 mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12
 
-Author: Architect, 2026-10-30. Status: DRAFT; starts only AFTER the PO has ruled M3A_RULING_LIST.md (one pass). This is the brief for the independent Tester; it fixes what must be authored, not the values. Inputs: M3A_CAPABILITY_MATRIX.md (outputs, closed reason set), M3A_GATE_BUDGETS.md (gates, workload), M3A_IO_CONTRACT.md (schema, structural codes, the single precedence list), M3A_RULING_LIST.md (the ruled answers; rows state the R-number they encode), PO release plan V3 section 4 (M3 generator row), docs/RELEASE_NOTE_TEMPLATE.md. Rows for an unratified design-silent ruling carry the tag PENDING-RULING.
+Author: Architect, 2026-10-30 (revision 2 after the independent review of PR 101). Status: DRAFT; starts only AFTER the PO has ruled M3A_RULING_LIST.md (one pass). This is the brief for the independent Tester; it fixes what must be authored, not the values. Inputs: M3A_CAPABILITY_MATRIX.md, M3A_GATE_BUDGETS.md, M3A_IO_CONTRACT.md (schema, structural codes, the precedence lists per entry point), M3A_RULING_LIST.md (rows state the R-number they encode), PO release plan V3 section 4 (M3 generator row), docs/RELEASE_NOTE_TEMPLATE.md. The chain input record is exactly the M1 `ChainContract` (R-98). Rows for an unratified design-silent ruling carry the tag PENDING-RULING. V11 is a design row and always built; V21 rows exist only if R-01 accepts V21.
 
 ## 1. Independence and provenance
 1. The Tester authors every fixture and expected value from the design text, the matrix, the contract and the ruled list, without reading any M3a module or the Developer tests (R26 circularity lesson).
@@ -24,14 +24,14 @@ Author: Architect, 2026-10-30. Status: DRAFT; starts only AFTER the PO has ruled
 ## 3. Generators (what must exist)
 | Gen | Purpose | Must provide |
 |---|---|---|
-| G1 smile and term surface generator | the base for every row | parameterized true volatility sigma(k, T) = a(T) + b(T) k + c(T) k^2 (a smile with known ATM level, skew slope b and curvature c, a term structure in a(T)), listed strike grids around the forward, 8 expiries bracketing 9, 30 and 91 days (and variants without a bracket), both rights, quotes priced by BSM at the true sigma (midpoint, tight spread) so the IV at every listed strike is known; American and European style flags; tie strikes (forward exactly between two strikes); deep wings; missing and one-sided quotes; locked, crossed and stale quotes; nonstandard multiplier and excluded-condition contracts |
+| G1 smile and term surface generator | the base for every row | parameterized true volatility sigma(k, T) = a(T) + b(T) k + c(T) k^2 (a smile with known ATM level, skew slope b and curvature c, a term structure in a(T)), listed strike grids around the forward, 8 expiries bracketing 9, 30 and 91 days (and variants without a bracket), both rights, quotes priced by BSM at the true sigma (midpoint, tight spread) so the IV at every listed strike is known; American and European style flags; tie strikes (forward exactly between two strikes); deep wings; missing and one-sided quotes; locked, crossed and stale quotes; excluded-condition contracts (condition other than "regular"); contracts with vega >= 4 gate and contracts below that are tagged non-gating (4-decimal quote quantisation, R-85); chain records are exactly the M1 `ChainContract` (no multiplier, no civil-date expiry, no lane) |
 | G2 25-delta oracle | expected 25-delta points | exact delta of each listed strike at its true sigma (50-digit), the bracketing pair, the delta-linear interpolated IV as an exact rational, the non-monotone-delta case (steep skew), targets exactly on a listed strike, no-bracket cases (target outside the listed deltas) |
 | G3 tenor oracle | expected 9, 30, 91 day IV | linear total variance between bracketing expiries as exact rationals; exact-expiry cases; one bracketing expiry lacking an ATM strike; no-bracket cases |
 | G4 history generators | V1, V3, V9 | 20, 21, 252 sessions of session-close values and minute grids with planted rank positions (top 1, 5, 6, 50 percent; ties at the top; constant history; zero range); missing minutes in prior sessions; half-day sessions; incomplete sessions; calendar gaps; a missing CM value on some days; lane mismatch |
-| G5 prior-reading generator | V4, V6, V7, V10 | prior frame and prior session readings, sign changes through zero, zero prior, thresholds exactly at X, unavailable prior |
-| G6 structural generator | contract section 4 | one row per code, and for every adjacent pair of positions of the single precedence list one row with both errors present (the first listed code must be reported), type-first per field cases (float, Decimal, Fraction, bool, None, bytes in each typed field) with tagged encodings |
+| G5 prior-reading generator | V4, V6, V7, V10 | prior frame and prior session readings (a reading time at or after the cutoff is structural), sign changes through zero, zero prior, thresholds exactly at X, unavailable prior |
+| G6 structural generator | contract section 4 | one row per code; for EVERY adjacent pair of each entry point list one row with both errors present (the first listed code must be reported): request 17 pairs, history append and load 5, snapshot 2, text load 2, view read 3 = 29 pair rows; plus 12 type-first cross-field rows (wrong-typed field at one position with a value error at an earlier or later position; float, Decimal, Fraction, bool, None, bytes with tagged encodings); 41 precedence rows in all |
 | G7 history-store workloads | store reuse | append and read of 252 sessions for 103 names x 4 series, retention at 252, persistence round trip, mmap snapshot attach, content hash stability under shuffled arrival |
-| G8 performance workloads | M3A-G0 and M3A-B1 to B14 | size S, M, L smile chains, the all-valid-quote chain for M3A-G0, 103-name series batches, 5 x 5 x 78 unit grid, manifest with frozen facts (quote counts, expiry counts, strikes per expiry) |
+| G8 performance workloads | M3A-G0 and M3A-B1 to B13 | size S, M, L smile chains, the all-valid-quote chain for M3A-G0, 103-name series batches, 5 x 5 x 78 unit grid, manifest with frozen facts (quote counts, expiry counts, strikes per expiry) |
 
 ## 4. Rows per family (minimum counts; every row states status, reason, value and the R-number it encodes)
 | Family | Output | Minimum rows | Must include |
@@ -42,24 +42,24 @@ Author: Architect, 2026-10-30. Status: DRAFT; starts only AFTER the PO has ruled
 | Coverage gates | M3A-0 | 24 | strikes eligible exactly at 3/5, just below, min_strikes, low_surface_coverage, expiry_min_days boundary (R-13) |
 | American labels | M3A-0 | 20 | exact-model, approximate, american_itm excluded, style_unknown excluded, label text |
 | V1 | M3A-1 | 40 | top and bottom X, upper_share and lower_share boundaries, 19, 20, 252 sessions, zero range, session_not_complete, delayed end-of-day form |
-| V3 | M3A-2 | 40 | same-minute alignment, missing minutes skipped, half-day sessions, insufficient_window, delayed_feed_tag, 252 look-back |
-| V4 | M3A-3 | 40 | ATM and 30d basis, frame and session prior, relative and absolute outputs, zero prior, no_prior_reading, threshold exactly 10 percent |
+| V3 | M3A-2 | 40 | same-minute alignment on the iv30 minute series, missing minutes skipped, half-day sessions, minute_out_of_range, delayed_feed_tag, 252 look-back |
+| V4 | M3A-3 | 40 | constant 30-day IV only, frame and session prior, `direction` up, down, either, change_points and change_ratio, zero prior, no_prior_reading, prior_not_before_cutoff, threshold exactly 10 percent |
 | V5 | M3A-4 | 36 | both pairs, longer minus shorter sign, missing tenor, threshold boundary |
 | V6 | M3A-5 | 30 | nearest and second eligible, only one expiry, coverage-excluded nearest |
-| V7 | M3A-6 | 36 | gap change and slope change, prior session from the store, threshold boundary |
+| V7 | M3A-6 | 36 | gap change only (no slope key), `prior_sessions` n = 1 and 3 with the priors list, prior sessions from the store, `direction` either, threshold boundary |
 | V8 | M3A-7 | 48 | skew sign and size, 30-day tenor from per-side CM, threshold exactly 5 points, each side missing |
 | V9 | M3A-8 | 40 | as V1 for skew |
-| V10 | M3A-9 | 48 | change in points, sign change through 0, 0 never a flip, prior frame versus prior session |
-| V11 | M3A-10 | 24 | (if R-01 accepted) both signs, boundary |
-| V21 | M3A-11 | 24 | (if R-01 accepted) negative distances, zero call distance |
+| V10 | M3A-9 | 48 | change in points, sign of the rounded-once difference, sign change through 0, 0 never a flip, prior frame versus n-th prior session, `direction` |
+| V11 | M3A-10 | 24 | design row: both signs, `direction`, boundary |
+| V21 | M3A-11 | 24 | only if R-01 accepts V21: negative distances, zero call distance |
 | Units and rounding | all | 20 | micro-vol rounding half to even at the storage boundary, points keys, rational output form |
-| History reuse | M3A-12 | 24 | retention at 252, series cap, content hash, lane mismatch, store codes inherited |
-| Structural | all | 60 | 40 codes and type cases plus 20 precedence pair rows (section 3 G6) |
+| History reuse | M3A-12 | 36 | `scalar_baseline` (missing and incomplete days skipped, min_sessions 20, max 252, no zero-padding), `same_minute_column`, retention k = 252 and the M2 default 60 unchanged, scalar in total with window_s 0, lane in the series id, content hash, store codes inherited, memory against the M2 formula |
+| Structural | all | 81 | 40 code and type rows plus the 41 precedence rows of G6 |
 | Lane | all | 6 | lane isolation |
-Total at least 692 hand-derivable rows without V11 and V21 (740 with), recomputed by the reviewer. Differential: at least 20,000 randomized cases each for the 25-delta interpolation, the tenor interpolation, the rank forms and the sign-change rule, expected values from the Tester reference; zero differences allowed. Rows within the solver tolerance (1e-4) of a threshold are not asserted; near-threshold attack rows state the ruling that decides them (R-62).
+Total at least 692 hand-derivable rows without V11 and V21 (740 with), recomputed by the reviewer. Differential: at least 20,000 randomized cases each for the 25-delta interpolation, the tenor interpolation, the rank forms and the sign-change rule, expected values from the Tester reference; zero differences allowed. Solver-derived values (IV, forward, derived series) are asserted within tolerance intervals (IV 1e-4, forward 1e-6, the M1 fixture comparison tolerances; the solver tolerance itself is 1e-10) and exact values only for quote-derived quantities; rows within an interval of a threshold are not asserted; near-threshold attack rows state the ruling that decides them (R-62, R-94). Canonical hashes of solver-derived values are Windows-only; no cross-platform byte claim.
 
 ## 5. Closed reason set coverage
-Each reason of the matrix section 5 has at least 3 rows in every family where the matrix lists it and at least one row proves it never appears elsewhere. The closed set: no_atm_strike, no_bracketing_expiry, insufficient_history, insufficient_window, session_not_complete, zero_denominator, no_delta_bracket, low_surface_coverage, no_prior_reading, zero_range_history. A reason outside the set in any result is a failure. Rows with two simultaneous conditions (at least 10) fix the gate order. The harness asserts reason and status, never only the value.
+Each reason of the matrix section 5 has at least 3 rows in every family where the matrix lists it and at least one row proves it never appears elsewhere. The closed set: no_atm_strike, no_bracketing_expiry, the M1 solver reasons (price_out_of_bounds, sigma_cap, precision_exhausted, iteration_limit, upper_asymptote), insufficient_history, session_not_complete, zero_denominator, no_delta_bracket, low_surface_coverage, fewer_than_two_expiries, no_prior_reading, zero_range_history. A reason outside the set in any result is a failure (`insufficient_window` is not in the set). Rows with two simultaneous conditions (at least 10) fix the gate order. The harness asserts reason and status, never only the value. The DELIBERATE exceptions of the matrix section 5 (R-46, R-51, R-58) each have at least 4 rows.
 
 ## 6. Mutation requirements
 The Tester authors a mutation list and runs it (the Developer does not sign off its own proof). Each mutant must be caught by at least one row, and the Tester confirms the mutated field is one the harness reads. At least 40 mutants, at least these:
@@ -77,7 +77,7 @@ Mutants of groups 7 and 8 also run through the performance, parallelism and cach
 Authored from M3A_GATE_BUDGETS.md in the PERF_ACCEPTANCE structure (workload generator, manifest, rows file, runner contract). Budgets print verbatim beside measurements.
 | Group | Rows (minimum) | Requirement |
 |---|---|---|
-| Workloads | one per gate M3A-G0 and M3A-B1 to B14 | sizes S, M, L; 103-name batches; frozen facts rechecked within +/- 10 percent before each run |
+| Workloads | one per gate M3A-G0 and M3A-B1 to B13 | sizes S, M, L; 103-name batches; frozen facts rechecked within +/- 10 percent before each run |
 | D determinism | 12 | identical hashes at 1, 2, 4, N workers x 3 repeats, batch sizes 1, 7, 64, all, shuffled unit, name, expiry and contract order, identical store content hash |
 | E batched versus single | 12 | exact equality for every output, status and reason, no tolerance; equality with the Tester reference |
 | C cache | 14 | cold equals warm; each input field and parameter changes the key; no hit across chains, cutoffs, underlyings or lanes; bounded size; eviction does not change bytes |

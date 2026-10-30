@@ -24,7 +24,7 @@ The label "synthetic workload, relative engineering budget" and the budget value
 | M2-B3 rank and M2-B2 read, per series | budget 50 us / 200 us, met at 2,000 series | M3A-B5 |
 | M2-B1 store append, M2-B17 round trip | floors 25,000 records/s write, 50,000 read, met | M3A-B6, B7 |
 | M2-B9 all M2 outputs (not yet measured), M2-B11 | budgets 1.2 s, 5 s | G0 sum of sub-budgets |
-| B7 whole workload | 2.38 min at 24 workers, 1.78 min at 48 (budget 170 min) | M3A-B11 |
+| B7 whole workload | 2.38 min at 24 workers, 1.78 min at 48 (budget 170 min) | M3A-B10 |
 | Per-worker peak RSS | 142 to 495 MiB (budget 2 GB) | M3A-B8 |
 
 ## 3. Workload (fixed before measuring; frozen facts recorded by the Tester)
@@ -39,10 +39,10 @@ The label "synthetic workload, relative engineering budget" and the budget value
 Generators: Tester, seeded, deterministic, SYNTHETIC tag, LF, no absolute paths; the surface has known skew, curvature and term values.
 
 ## 4. First task gate: M3A-G0, full-output B6 with the M3a surface set, one measurement
-Why first: the M3a outputs add work to a B6 that already carries the M2 outputs (M2-B11 is still unmeasured); the sum of sub-budgets must be checked before M3a code is optimized.
+Why first: the M3a outputs add work to a B6 that already carries the M2 outputs (M2-B9 and M2-B11 are still unmeasured); the sum of sub-budgets must be checked before M3a code is optimized. M3A-G0 supersedes any separate whole-B6 gate.
 | Item | Rule |
 |---|---|
-| Output set | the M2-G0 set (OC5, OC6, per-contract IV, ATM IV for all expiries, 30-day IV, P1 outputs) plus the M3a set: surface frame (25-delta put and call IV per expiry, tenors 9, 30, 91 days) and the point outputs M3A-3 to M3A-7 and (if R-01 accepted) M3A-10, M3A-11 on that chain; history-free (history outputs are gated by M3A-B5) |
+| Output set | the M2-G0 set (OC5, OC6, per-contract IV, ATM IV for all expiries, 30-day IV, P1 outputs) plus the M2 flow outputs of M2-B9 (budget 1.2 s) plus the M3a set: surface frame (25-delta put and call IV per expiry, tenors 9, 30, 91 days) and the point outputs M3A-3 to M3A-7, M3A-10 and (if R-01 accepts V21) M3A-11 on that chain; history-free (history outputs are gated by M3A-B5). This is the single B6-with-M2-and-M3a gate; there is no separate B10 |
 | Workload | one underlying, size M, one cutoff, the all-valid-quote smile chain |
 | Measured as | ONE timed unit that computes every output; never a sum of separately timed parts; monotonic ns around the compute call only |
 | Budget / hard | 5 s p95 / 15 s (B6 as written), nearest-rank p95 |
@@ -50,7 +50,7 @@ Why first: the M3a outputs add work to a B6 that already carries the M2 outputs 
 | Repeats | one warm-up, at least 30 timed repeats per count, unit set rotated; p50, p95, max and all samples |
 | Tool | tools/m1_runner and the M2-G0 bench phase extended to call the M3a modules (tool change only; defaults unchanged) |
 | Gate figure | compute-only; the figure with input synthesis is printed beside it, not gated |
-| Sum check (reported, not a gate) | 2.66 s measured M2-G0 p95 plus the M2 flow budget 1.2 s (M2-B9) plus the M3a increment budget 0.5 s (M3A-B1) is 4.36 s, 0.64 s under 5 s; if the measured M2-G0 plus the sum of M3a measurements exceeds 5 s the PO rules before release |
+| Sum check (reported, not a gate) | 2.66 s measured M2-G0 p95 plus the M2 flow budget 1.2 s (M2-B9) plus the M3a increment budget 0.1 s (M3A-B1) is 3.96 s, 1.04 s under 5 s; if the measured M2-G0 plus the sum of M3a measurements exceeds 5 s the PO rules before release |
 | Machine, authorship | frozen and written before the first repeat (CPU, cores, RAM, OS build, Python build, power plan, idle load); independent Tester runs and signs |
 | A miss | reported as a miss; over budget with hard met needs a PO ruling; hard breach blocks; never an edit of a budget |
 
@@ -58,21 +58,20 @@ Why first: the M3a outputs add work to a B6 that already carries the M2 outputs 
 Pass = p95 within Budget (rates: the slowest 5 percent still meets it); Hard = fail even if the PO rules otherwise. Single worker unless stated. At least 30 repeats after one warm-up. Inputs built before the timer; compute and with-input-synthesis reported separately.
 | Gate | Workload | Metric | Budget | Hard | Rationale |
 |---|---|---|---|---|---|
-| M3A-B1 | surface increment, size M, one cutoff, contract IVs cached: delta for the bracketing search, 25-delta put and call IV for every expiry, tenors 9, 30, 91 | wall | <= 0.5 s | 1.5 s | covers a naive delta for all 2,000 contracts (about 100 us each); the bracketed search needs about 130 delta evaluations; hard = 3x |
+| M3A-B1 | surface increment, size M, one cutoff, contract IVs cached: bracketed delta search (at most 200 delta evaluations, M3A-B12), 25-delta put and call IV for every expiry, tenors 9, 30, 91 | wall | <= 0.1 s | 0.5 s | per-delta cost about 250 us implied by M3A-B2 (2 ms for about 8 deltas): 200 x 250 us = 50 ms; a naive delta for all 2,000 contracts would cost 0.5 s, so the gate forces the bracketed search; batch of 103 chains (informational) 103 x 0.1 s |
 | M3A-B2 | one 25-delta point (one expiry, one side), IVs cached | per point | <= 2 ms | 10 ms | about 8 delta evaluations plus one exact interpolation |
 | M3A-B3 | constant-maturity tenors 9, 30, 91 from cached ATM IVs, size M | wall | <= 0.1 s | 0.5 s | B5 measured 0.021 s p50 including the solve |
-| M3A-B4 | point outputs M3A-3 to M3A-7, 10, 11 per name; batch of 103 names | per name; batch | <= 1 ms; <= 0.1 s | 5 ms; 0.4 s | O(1) exact arithmetic per name |
+| M3A-B4 | point outputs M3A-3 to M3A-7, 10, 11 per name; batch of 103 names | per name; batch | <= 1 ms; <= 110 ms | 5 ms; 550 ms | O(1) arithmetic per name; 103 x 1 ms plus 7 ms of batch overhead; hard = 5x |
 | M3A-B5 | history ranks: V1 and V9 (session-close values, up to 252) per series; V3 same-minute across up to 252 sessions per series | per series | <= 50 us (V1, V9); <= 150 us (V3) | 200 us; 600 us | M2-B3 class (50 us / 200 us at 20 values); V3 reads 252 grid entries without a sort |
-| M3A-B5n | the same for 103 names x 3 series at one cutoff | wall | <= 20 ms (V1, V9); <= 50 ms (V3) | 80 ms; 200 ms | linear; ratio gate as M2-B3n (median of 30 paired ratios, Budget 3.6, Hard 4.0, at 6,000 series) |
+| M3A-B5n | the same for 103 names x 3 series at one cutoff (names fixed at 103, no series-count ratio) | wall | <= 20 ms (V1, V9); <= 50 ms (V3) | 80 ms; 200 ms | absolute times only; linear in names |
 | M3A-B6 | store append of the M3a series: 252 sessions x 103 names x 4 series (about 104,000 records) | records/s | >= 25,000 | 5,000 | M2-B1 floor (met) |
 | M3A-B7 | store persistence round trip of the same set, canonical LF text and mmap snapshot | records/s write, read | >= 25,000, >= 50,000 | 5,000, 10,000 | M2-B17 floors; identical content hash after the round trip |
-| M3A-B8 | memory: peak RSS per process; store bytes at retention 252 | peak RSS; store | <= 2 GB (B9); store <= 512 MB | 4 GB; store 1 GB per worker | B9 as written; minute grid kept only for atm_iv (R-52): 103 names x 252 x 390 x 8 B about 81 MB raw; the other series are session-close values (252 integers each) |
+| M3A-B8 | memory: peak RSS per process; store bytes at retention 252 | peak RSS; store | <= 2 GB (B9); store <= 512 MB | 4 GB; store 1 GB per worker | B9 as written. Store against the M2 formula (series x K x grid x 8 B x copies): the iv30 minute grid for 103 names is 103 x 252 x 390 x 8 B = 81 MB raw and about 243 MB with the M2 layout (raw, sorted copy, merged array), inside 512 MB; the scalar series are 252 integers each (R-52) |
 | M3A-B9 | determinism (extends B12) | result hashes | identical | identical | section 7 |
-| M3A-B10 | B6 with M2 and M3a: every output of the M2-G0 set, M2 and M3a, one underlying, size M, one cutoff, compute-only | wall | <= 5 s | 15 s | B6 as written; M3a may not loosen it |
-| M3A-B11 | B7 with M3a: 5 x 5 x 78 cutoffs, size M, all outputs, run once | wall | <= 170 min | 240 min | governing B7; 60 min is an informational owner target at N workers |
-| M3A-B12 | cutoff sweep: 78 cutoffs of one session, one underlying, size M | sweep wall / (78 x single-cutoff wall) | <= 1.1 | 1.5 | no growth with sweep length; every cutoff re-solves its own IVs (spot changes), so no reuse is claimed |
-| M3A-B13 | delta evaluations per chain (count, reported p50, p95) | count | <= eligible contracts of the chain (never more than one delta per contract) | 2,000 at size M | efficiency rule for the bracketed search (R-74) |
-| M3A-B14 | scaling: 4 workers versus 1 on the 5-underlying compute phase | p50 wall ratio | >= 2.0x | none | S01 rule; N/A under 4 physical cores; correctness rows must pass at every count |
+| M3A-B10 | B7 with M3a: 5 x 5 x 78 cutoffs, size M, all outputs, run once | wall | <= 170 min | 240 min | governing B7; 60 min is an informational owner target at N workers |
+| M3A-B11 | cutoff sweep: 78 cutoffs of one session, one underlying, size M | sweep wall / (78 x single-cutoff wall) | <= 1.1 | 1.5 | no growth with sweep length; every cutoff re-solves its own IVs (spot changes), so no reuse is claimed |
+| M3A-B12 | bracketed-search count: delta evaluations per chain, size M (enforces R-74) | count | <= 200 | 400 | 8 expiries x 2 sides x about 12 evaluations; a count near 2,000 means the search degenerated to all contracts |
+| M3A-B13 | scaling: 4 workers versus 1 on the 5-underlying compute phase | p50 wall ratio | >= 2.0x | none | S01 rule; N/A under 4 physical cores; correctness rows must pass at every count |
 Whole-run informational lines: aggregate RSS at N workers, history-view transfer cost per worker (mmap, M2-B16 hard limits 15 s and 1 GB), cache hit rates.
 
 ## 6. Regression (unchanged)
