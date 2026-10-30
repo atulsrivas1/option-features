@@ -9,6 +9,7 @@ S02 (the real history store) is not used here. Expectations come from the author
 Label: synthetic workload, relative engineering budget. mock-data qualification only: passed on independently
 authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12.
 """
+import gc
 import math
 import random
 import statistics
@@ -229,10 +230,15 @@ class W08(unittest.TestCase):
             return n, time.perf_counter() - t0
 
         run(1)
+        gc.collect()
+        gc.freeze()                                                    # as the runner does after load
         rates = []
-        for _ in range(REPEATS):
-            n, dt = run(2)
-            rates.append(n / dt)
+        try:
+            for _ in range(REPEATS):
+                n, dt = run(2)
+                rates.append(n / dt)
+        finally:
+            gc.unfreeze()
         rates.sort()
         p5 = rates[max(0, math.ceil(0.05 * len(rates)) - 1)]
         full_n = 252 * 103 * 7
