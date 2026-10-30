@@ -24,47 +24,14 @@ carries `error` (the first failing code in the ruled order: unordered_prints, ne
 bad_multiplier) and the family functions answer `invalid_input` with that code.
 """
 from bisect import bisect_left, bisect_right
-from fractions import Fraction
-import re
 from itertools import accumulate
 
-NS = 1_000_000_000
-STANDARD_MULTIPLIER = 100
-TICK_DIGITS = 4
-_TICK_POW = tuple(10 ** i for i in range(TICK_DIGITS + 1))
+from .flowgrid import NS, STANDARD_MULTIPLIER, price_ticks   # shared constants and the one price parser (story A)
+
 FILTERS = ("all", "calls", "puts")
 _RIGHT_OF = {"all": ("C", "P"), "calls": ("C",), "puts": ("P",)}
 K_NONSTD, K_EXCL = 1, 2
 LARGE_CACHE_THRESHOLDS = 4
-
-
-_DECIMAL = re.compile(r"-?(\d+(\.\d*)?|\.\d+)", re.ASCII)
-
-
-def ticks4(value):
-    """Exact integer ticks of 10**-4 from a decimal string, int ticks, Decimal or Fraction. Rejects bool and
-    float; a text price must be a plain decimal; trailing zeros beyond the 4th place are accepted (value-equal),
-    a non-zero digit beyond it raises ValueError (malformed_type at the tape)."""
-    kind = type(value)
-    if kind is int:
-        return value
-    if kind is str:
-        if not _DECIMAL.fullmatch(value):
-            raise ValueError("not a decimal: %r" % (value,))
-        whole, _, frac = value.partition(".")
-        if len(frac) > TICK_DIGITS:
-            if frac[TICK_DIGITS:].strip("0"):
-                raise ValueError("non-zero digit beyond the %dth decimal: %r" % (TICK_DIGITS, value))
-            frac = frac[:TICK_DIGITS]
-        if whole in ("", "-"):
-            whole += "0"
-        return int(whole + frac) * _TICK_POW[TICK_DIGITS - len(frac)] if frac else int(whole) * _TICK_POW[TICK_DIGITS]
-    if kind is bool or kind is float:
-        raise ValueError("price must not be bool or float: %r" % (value,))
-    scaled = Fraction(value) * _TICK_POW[TICK_DIGITS]
-    if scaled.denominator != 1:
-        raise ValueError("not representable in 10**-%d ticks: %r" % (TICK_DIGITS, value))
-    return scaled.numerator
 
 
 class Group:
@@ -215,6 +182,7 @@ def build_tape(prints, contracts, validate="full"):
     rare = []
     rare_add = rare.append
     unordered = negative = bad_mult = unknown = malformed = False
+    viol, bad_key = [], set()      # positions of order violations; positions whose time or seq is wrong-typed
     pt, ps = -(1 << 127), 0
     full = validate != "off"
     get = cidx.get
@@ -223,9 +191,11 @@ def build_tape(prints, contracts, validate="full"):
         cid, t, price, size, mult, excl, seq = p[:7]
         n += 1
         if (t.__class__ is not int or size.__class__ is not int or mult.__class__ is not int
-                or seq.__class__ is not int or (excl.__class__ is not bool and excl not in (0, 1))):
-            malformed = True                      # neutral stand-ins keep the other checks (and precedence) alive
-            if t.__class__ is not int:
+                or seq.__class__ is not int or (excl.__class__ is not bool and (excl.__class__ is not int or excl not in (0, 1)))):
+            malformed = True                      # a wrong-typed field takes part in no other check (rows M2A-TYP-031 to 034):
+            if t.__class__ is not int or seq.__class__ is not int:
+                bad_key.add(n)                    # an order violation next to it is undefined, not reported
+            if t.__class__ is not int:            # it gets a neutral stand-in so the remaining checks and precedence hold
                 t = pt if pt > -(1 << 100) else 0
             if size.__class__ is not int:
                 size = 0
@@ -233,17 +203,17 @@ def build_tape(prints, contracts, validate="full"):
                 mult = 100
             if seq.__class__ is not int:
                 seq = ps
-            if excl.__class__ is not bool and excl not in (0, 1):
+            if excl.__class__ is not bool and (excl.__class__ is not int or excl not in (0, 1)):
                 excl = 0
         if price.__class__ is not int:
             try:
-                price = ticks4(price)
+                price = price_ticks(price)
             except (ValueError, TypeError, ArithmeticError):
                 malformed = True
                 price = 0
         if full:
             if t < pt or (t == pt and seq < ps):
-                unordered = True
+                viol.append(n)
             pt, ps = t, seq
             if size < 0 or price < 0:
                 negative = True
@@ -268,6 +238,7 @@ def build_tape(prints, contracts, validate="full"):
     for t, ci, kind in rare:
         g = c_group[ci]
         (g.nt if kind == K_NONSTD else g.et).append(t)
+    unordered = any(v not in bad_key and v - 1 not in bad_key for v in viol)
     tape.error = ("unordered_prints" if unordered else "negative_size_or_price" if negative
                   else "bad_multiplier" if bad_mult
                   else "unknown_contract" if unknown else "malformed_type" if malformed else None)

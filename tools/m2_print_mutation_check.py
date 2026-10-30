@@ -23,6 +23,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tests" / "m2"))
 sys.path.insert(0, str(ROOT / "qualification" / "synthetic" / "m2" / "correctness"))
 PT = "option_features/printtape.py"
+FG = "option_features/flowgrid.py"
 MP = "option_features/m2prints.py"
 EP = "option_features/episodes.py"
 
@@ -126,7 +127,7 @@ MUTS = [
     ("float_param_converted", [], MP, [("            return None\n    return None\n\n\ndef is_int", "            return None\n    if k is float:\n        return Fraction(x)\n    return None\n\n\ndef is_int", 1)], "review: float params"),
     ("f12_sweep_state_not_advanced", [], EP, [("        if upto + 1 > self.k:\n            self.k = upto + 1\n", "", 1)], "review: incremental F12"),
     ("large_cache_unbounded", [], PT, [("while len(cache) >= LARGE_CACHE_THRESHOLDS:", "while False:", 1)], "review: bounded cache"),
-    ("ticks4_not_strict", [], PT, [("        if not _DECIMAL.fullmatch(value):", "        if False:", 1)], "review: strict price text"),
+    ("price_digit_beyond_4th_accepted", [], FG, [('            if frac[TICK_DIGITS:].strip("0"):', "            if False:", 1)], "review: strict price text (shared parser)"),
     ("unknown_contract_silent", [], PT, [("                unknown = True\n                continue", "                continue", 1)], "PR 79 ruling 5"),
     ("malformed_price_silent", [], PT, [("                malformed = True\n                price = 0", "                price = 0", 1)], "PR 79 ruling 5"),
     ("f4_fire_floor_N", [], MP, [("count * nf.denominator >= nf.numerator", "count >= nf.numerator // nf.denominator", 1)], "fractional N floored"),
