@@ -34,6 +34,7 @@ from .m3a_common import round_units
 _SCALE = 10 ** 8
 _FSCALE = 1e8
 _FLOAT_ONLY = {float}
+_BIG = 2.0 ** 20            # |v| below this keeps v * 1e8 under 2^47: the product error is far below the tie window
 _FIELDS = ("atm_iv", "iv30", "atm_iv_close", "iv30_close", "skew25", "skew25_fwd", "term_30_91")
 
 
@@ -127,6 +128,8 @@ def grid_units(values):
     if not set(map(type, values)) <= _FLOAT_ONLY:
         return _slow_grid(values)
     try:
+        if values and (max(values) >= _BIG or min(values) <= -_BIG):
+            return _slow_grid(values)       # v * 1e8 would pass 2^53 and lose low bits: exact path only
         fs = [v * _FSCALE for v in values]
         rs = list(map(round, fs))
         # the product is exact to ~1e-8 of a unit; far from a .5 tie round() equals half-even on the exact value
