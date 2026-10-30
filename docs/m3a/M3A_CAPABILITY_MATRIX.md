@@ -38,6 +38,7 @@ Feed = vendor-style option quote feed (mock until RQ). "IV frame" = one chain (b
 Summary: with a chain every row is FULL; without option quotes every row is UNAVAILABLE (all contracts excluded, M1 gate reasons counted in `coverage.contract_reasons`) and never uses another source. FMP and public series supply only inputs (spot, yield, rate, calendar).
 
 ## 4. Parameters (defaults are placeholders unless ruled; every result carries the values used)
+Input ranges (RULED): `rate` finite, |rate| <= 1; `dividend_yield` finite, 0 to 1; `spot` finite and > 0 (outside: `bad_rate`, `bad_rate`, `bad_spot`).
 | Output | Parameter | Default | Status |
 |---|---|---|---|
 | request | `mode` in {intraday, close}; `lane` in {stock, etf_index}; `stale_limit_ns` | intraday; stock; 10 s (M1 Q4) | RULED shape; invalid_mode, invalid_lane codes |

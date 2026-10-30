@@ -6,7 +6,7 @@ Author: Architect, 2026-10-30. Status: SKELETON for the PO ruling pass; shapes o
 
 ## 1. Conventions (one convention per record type)
 - Chain record type: follows M1 exactly. Strikes, bid, ask and spot: a text decimal with at most 8 decimal places, or a non-bool int meaning whole units (x 10^8 ticks internally); the M1 `to_ticks` rule. The M2 ticks rule (price x 10^4) applies ONLY to print families and is not used here. The price grammar `-?(\\d+(\\.\\d*)?|\\.\\d+)` (ASCII; "1." and ".5" valid) applies to chain text decimals with the M1 limit of 8 decimals; more than 8 decimals is `malformed_type`.
-- Request scalars: `spot`, `rate`, `dividend_yield`: a non-bool int, an exact-rational string, or a finite binary64 float (as M1). `rate` and `dividend_yield` out of the ruled range or non-finite is `bad_rate`; `spot` not positive is `bad_spot`.
+- Request scalars: `spot`, `rate`, `dividend_yield`: a non-bool int, an exact-rational string, or a finite binary64 float (as M1). Ranges (RULED): `rate` finite with |rate| <= 1; `dividend_yield` finite with 0 <= dividend_yield <= 1; `spot` finite and > 0. A rate or dividend_yield outside its range or non-finite is `bad_rate`; a non-positive or non-finite spot is `bad_spot`.
 - History records and parameters: the M2 conventions (type-first per field; integers for sessions, minutes, K).
 - Times: integer nanoseconds (UTC); `expiry_days` is an integer >= 1 supplied by the caller (M1: expiry N x 24 h after the cutoff, T = N/365). No civil-date conversion in M3a (an adapter duty, RQ item).
 - IV: annual decimal as returned by M1 (binary64); thresholds and differences in points (1 point = 0.01 annual vol).
@@ -49,8 +49,8 @@ Structural errors are status invalid_input with a closed `code`; the first faili
 | # | Code | Check |
 |---|---|---|
 | 1 | `bad_cutoff` | cutoff_ns not a non-negative int |
-| 2 | `bad_spot` | spot not positive (a wrong type is malformed_type here) |
-| 3 | `bad_rate` | rate or dividend_yield non-finite or out of range |
+| 2 | `bad_spot` | spot not finite or not > 0 (a wrong type is malformed_type here) |
+| 3 | `bad_rate` | rate not finite or |rate| > 1; dividend_yield not finite or outside 0 to 1 |
 | 4 | `invalid_mode` | mode not in {intraday, close} |
 | 5 | `invalid_lane` | lane not in {stock, etf_index} |
 | 6 | `bad_expiry` | expiry_days not an int >= 1 (as M1; per contract) |
