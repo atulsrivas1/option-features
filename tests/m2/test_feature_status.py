@@ -7,6 +7,7 @@ Stdlib only, no network, fast. Checks (offline, against the files in the reposit
   (c) every PR number named in the HANDOFF.md lines that say "merged" is in that block.
 `check` is pure so that the test can prove it fails on a deliberately stale table (temp text, not the real file).
 """
+import json
 import re
 from pathlib import Path
 
@@ -90,6 +91,39 @@ def check(text, handoff):
     return errors
 
 
+ADD_DIR = ROOT / "qualification" / "synthetic" / "m2" / "correctness" / "additions"
+
+
+def disk_additions():
+    """(rows, files, manifest files) recounted from disk: every m2_cases_*.json row (a JSON list, or one JSON
+    object per line) and the lines of MANIFEST_ADDITIONS.sha256."""
+    rows = files = 0
+    for f in sorted(ADD_DIR.glob("m2_cases_*.json")):
+        files += 1
+        raw = f.read_text(encoding="utf-8")
+        try:
+            data = json.loads(raw)
+            data = data if isinstance(data, list) else next(v for v in data.values() if isinstance(v, list))
+            rows += sum(1 for o in data if isinstance(o, dict) and "id" in o)
+        except ValueError:
+            for line in raw.split(chr(10)):
+                try:
+                    o = json.loads(line)
+                except ValueError:
+                    continue
+                rows += isinstance(o, dict) and "id" in o
+    manifest = sum(1 for line in (ADD_DIR / "MANIFEST_ADDITIONS.sha256").read_text(encoding="ascii").split(chr(10)) if line.strip())
+    return rows, files, manifest
+
+
+def check_additions(text, disk):
+    m = re.search(r"^Additions rows: (\d+); files: (\d+); manifest files: (\d+)$", text, re.M)
+    if not m:
+        return ["no 'Additions rows: N; files: F; manifest files: M' line"]
+    got = tuple(int(x) for x in m.groups())
+    return [] if got == tuple(disk) else ["additions line says %s, disk recount is %s" % (got, tuple(disk))]
+
+
 def _real():
     return (ROOT / "docs" / "FEATURE_STATUS.md").read_text(encoding="ascii"), (ROOT / "HANDOFF.md").read_text(encoding="ascii")
 
@@ -97,6 +131,21 @@ def _real():
 def test_feature_status_matches_its_tables():
     text, handoff = _real()
     assert check(text, handoff) == []
+
+
+def test_additions_line_matches_disk():
+    text, _ = _real()
+    assert check_additions(text, disk_additions()) == []
+
+
+def test_additions_check_fails_when_stale():
+    text, _ = _real()
+    rows, files, manifest = disk_additions()
+    for stale in (text.replace("Additions rows: %d;" % rows, "Additions rows: %d;" % (rows - 1), 1),
+                  text.replace("files: %d;" % files, "files: %d;" % (files + 1), 1),
+                  text.replace("manifest files: %d" % manifest, "manifest files: %d" % (manifest - 1), 1)):
+        assert stale != text and check_additions(stale, (rows, files, manifest))
+    assert check_additions("no line here", (rows, files, manifest))
 
 
 def test_check_fails_on_a_stale_table():
