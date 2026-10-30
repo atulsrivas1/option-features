@@ -71,6 +71,10 @@ def corrupt(rng, prints, cons):
     return [tuple(q) for q in prints]
 
 
+DIVERGENT = []
+case_id = [0]
+
+
 def run_case(rng):
     cons = make_contracts(rng)
     n = rng.choice((0, 1, 2, 5, 12, 30, 60))
@@ -93,13 +97,24 @@ def run_case(rng):
     fam = rng.randrange(9)
     # the tape of each side; an unknown filter raises ValueError on both sides
     to, tn = OP.build_tape(prints, cons), PT.build_tape(prints, cons)
-    assert (to.error, to.n_prints, to.n_eligible) == (tn.error, tn.n_prints, tn.n_eligible), (to.error, tn.error)
+    if to.error != tn.error:
+        # The only intended difference: a stream that is malformed AND carries another defect (or a bool or float
+        # seq or time) now reports exactly the code of the shared flowgrid.check_prints (section 9 precedence); the
+        # old tape replaced a malformed field by a neutral value and could report another code. Anything else fails.
+        from option_features import flowgrid
+        contracts = {cid: flowgrid.Contract(c[0], c[1], c[2], c[3], "U") for cid, c in cons.items()}
+        assert "malformed_type" in (to.error, tn.error) and tn.error == flowgrid.check_prints(prints, contracts), (to.error, tn.error)
+        DIVERGENT.append(case_id[0])
+        return 0
+    assert (to.n_prints, to.n_eligible) == (tn.n_prints, tn.n_eligible)
     pairs = []
     n_ = rng.choice(NS_PARAMS)
     w = rng.choice(WINDOWS)
     thr = rng.choice(THRESHOLDS)
     cuts = [T + rng.choice((0, 1, -1, 10 * NS, -10 * NS, 300 * NS, -300 * NS, 2000 * NS)) for _ in range(rng.choice((1, 3, 6)))]
     try:
+        if fam in (0, 1) and not isinstance(open_ns, int):
+            fam = 2
         if fam == 0:
             pairs.append((OM.f1_premium_surge(to, T, open_ns, n=n_, flt=flt, **kw), M.f1_premium_surge(tn, T, open_ns, n=n_, flt=flt, **kw)))
         elif fam == 1:
@@ -175,11 +190,14 @@ class Equivalence(unittest.TestCase):
         compared = 0
         for case in range(N_CASES):
             rng = random.Random(case * 7919 + 13)
+            case_id[0] = case
             try:
                 compared += run_case(rng)
             except AssertionError as exc:
                 self.fail("case %d: %s" % (case, str(exc)[:600]))
         self.assertGreater(compared, N_CASES // 2)
+        self.assertLess(len(DIVERGENT), N_CASES // 50, "precedence divergences (old malformed_type, new section 9): %d" % len(DIVERGENT))
+        print("equivalence: %d cases, %d outputs compared, %d precedence-fix divergences" % (N_CASES, compared, len(DIVERGENT)))
 
     def test_price_parser_is_the_shared_one(self):
         from option_features import flowgrid

@@ -42,11 +42,12 @@ class Strict(unittest.TestCase):
             self.assertEqual(call()["code"], "window_not_allowed")
         self.assertEqual(M.f4_large_prints(tape, T, n="3/2")["status"], "available")
 
-    def test_ticks4_is_strict(self):
+    def test_price_ticks_is_strict(self):
+        from option_features.flowgrid import price_ticks
         for bad in ("1e5", " 1", "1_0", "١", "--1", "", ".", "1.2.3", "1.00001", True, 1.5, None):
             with self.assertRaises((ValueError, TypeError)):
-                PT.ticks4(bad)
-        self.assertEqual((PT.ticks4(".5"), PT.ticks4("5."), PT.ticks4("1.00000"), PT.ticks4("-.5"), PT.ticks4("80")),
+                price_ticks(bad)
+        self.assertEqual((price_ticks(".5"), price_ticks("5."), price_ticks("1.00000"), price_ticks("-.5"), price_ticks("80")),
                          (5000, 50000, 10000, -5000, 800000))
 
     def test_non_int_fields_are_malformed_type(self):

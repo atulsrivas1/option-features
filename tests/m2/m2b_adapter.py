@@ -103,8 +103,14 @@ def _run_row(row):
 
 
 def shape(res):
-    from option_features.m2prints import to_wire
-    w = to_wire(res)
+    if isinstance(res, dict):                  # pre-alignment record (kept so the same adapter runs on both sides)
+        from option_features.m2prints import to_wire
+        w = to_wire(res)
+    else:
+        from option_features import flowresult
+        w = flowresult.to_wire(res)
+        if getattr(res, "ratio_reason", None):
+            w["ratio_reason"] = res.ratio_reason
     e = {k: w[k] for k in ("status", "reason", "code", "value", "fired", "label", "coverage")}
     if w.get("ratio_reason"):
         e["ratio_reason"] = w["ratio_reason"]

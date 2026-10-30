@@ -24,47 +24,14 @@ carries `error` (the first failing code in the ruled order: unordered_prints, ne
 bad_multiplier) and the family functions answer `invalid_input` with that code.
 """
 from bisect import bisect_left, bisect_right
-from fractions import Fraction
-import re
 from itertools import accumulate
 
-NS = 1_000_000_000
-STANDARD_MULTIPLIER = 100
-TICK_DIGITS = 4
-_TICK_POW = tuple(10 ** i for i in range(TICK_DIGITS + 1))
+from .flowgrid import NS, STANDARD_MULTIPLIER, price_ticks   # shared constants and the one price parser (story A)
+
 FILTERS = ("all", "calls", "puts")
 _RIGHT_OF = {"all": ("C", "P"), "calls": ("C",), "puts": ("P",)}
 K_NONSTD, K_EXCL = 1, 2
 LARGE_CACHE_THRESHOLDS = 4
-
-
-_DECIMAL = re.compile(r"-?(\d+(\.\d*)?|\.\d+)", re.ASCII)
-
-
-def ticks4(value):
-    """Exact integer ticks of 10**-4 from a decimal string, int ticks, Decimal or Fraction. Rejects bool and
-    float; a text price must be a plain decimal; trailing zeros beyond the 4th place are accepted (value-equal),
-    a non-zero digit beyond it raises ValueError (malformed_type at the tape)."""
-    kind = type(value)
-    if kind is int:
-        return value
-    if kind is str:
-        if not _DECIMAL.fullmatch(value):
-            raise ValueError("not a decimal: %r" % (value,))
-        whole, _, frac = value.partition(".")
-        if len(frac) > TICK_DIGITS:
-            if frac[TICK_DIGITS:].strip("0"):
-                raise ValueError("non-zero digit beyond the %dth decimal: %r" % (TICK_DIGITS, value))
-            frac = frac[:TICK_DIGITS]
-        if whole in ("", "-"):
-            whole += "0"
-        return int(whole + frac) * _TICK_POW[TICK_DIGITS - len(frac)] if frac else int(whole) * _TICK_POW[TICK_DIGITS]
-    if kind is bool or kind is float:
-        raise ValueError("price must not be bool or float: %r" % (value,))
-    scaled = Fraction(value) * _TICK_POW[TICK_DIGITS]
-    if scaled.denominator != 1:
-        raise ValueError("not representable in 10**-%d ticks: %r" % (TICK_DIGITS, value))
-    return scaled.numerator
 
 
 class Group:
@@ -223,21 +190,21 @@ def build_tape(prints, contracts, validate="full"):
         cid, t, price, size, mult, excl, seq = p[:7]
         n += 1
         if (t.__class__ is not int or size.__class__ is not int or mult.__class__ is not int
-                or seq.__class__ is not int or (excl.__class__ is not bool and excl not in (0, 1))):
-            malformed = True                      # neutral stand-ins keep the other checks (and precedence) alive
-            if t.__class__ is not int:
+                or seq.__class__ is not int or (excl.__class__ is not bool and (excl.__class__ is not int or excl not in (0, 1)))):
+            malformed = True                      # other checks (and precedence) stay alive: numbers keep their value,
+            if not isinstance(t, (int, float)):   # anything else gets a neutral stand-in
                 t = pt if pt > -(1 << 100) else 0
-            if size.__class__ is not int:
+            if not isinstance(size, (int, float)):
                 size = 0
-            if mult.__class__ is not int:
+            if not isinstance(mult, (int, float)):
                 mult = 100
-            if seq.__class__ is not int:
+            if not isinstance(seq, (int, float)):
                 seq = ps
-            if excl.__class__ is not bool and excl not in (0, 1):
+            if excl.__class__ is not bool and (excl.__class__ is not int or excl not in (0, 1)):
                 excl = 0
         if price.__class__ is not int:
             try:
-                price = ticks4(price)
+                price = price_ticks(price)
             except (ValueError, TypeError, ArithmeticError):
                 malformed = True
                 price = 0
