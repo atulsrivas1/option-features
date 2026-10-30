@@ -69,6 +69,9 @@ Unit = underlying x session x cutoff (key `SYN1/03/045`); the unit reads an immu
 - F2d `fired` is null in M2 (design request DR-M2-1, matrix section 11).
 
 
+## 8. Story B output rules (PR 79)
+See section 9 (single authoritative section) for: shapes, structural codes and precedence, price grammar, F18 `ratio_reason` and `version`, F12 coverage and early-grid rules, store I/O and runner rules. Nothing is restated here.
+
 ## 9. M2-GRID, structural codes, store I/O and runner rules (ratified interim, pending design ratification where the design is silent)
 Single authoritative section: every ruling below lives only here. PR 79 section 8 content merges into this section when PR 79 lands; until then PR 79 drops any text that duplicates this section. Rows are authority: the accepted correctness rows and the fixture additions (add_grid, add_struct, add_data).
 1. M2-GRID (trade-to-grid builder). Grid point i, i = 0 to minutes-1, is at t_i = open + 60 s x i and holds the metric over the closed window [t_i - W, t_i] of eligible session prints of the lane and series. Dense `value`: {`form`: "dense", `grid`, `total`, `valid_from`: W/60}. Sparse (a contract series, `params.contract_id`): {`form`: "sparse", `sparse`: [[i, v], ...], `zero_count` = minutes minus the number of nonzero points, `total`, `valid_from`}. `valid_from` may exceed the grid (W = 3600 on a 12-minute session gives 60: all points are dropped and history gives insufficient_history). Coverage: `eligible_count`, `nonstandard_count` (non-excluded), `excluded_condition_count` over [open, close] for the lane and series, and `unavailable_points` 0. Metrics: premium, contracts, prints, put_volume, call_volume.
