@@ -313,16 +313,27 @@ def _priors(p):
         if tm is not list and tm is not tuple:
             return None
         out.extend(many)
+    readings = []
     for pr in out:
-        if type(pr) is not dict and (type(pr) in _SCALARS or not hasattr(pr, "time_ns")):
+        if type(pr) is dict:
+            readings.append(pr)
+            continue
+        if type(pr) in _SCALARS:
             return None
-    return out
+        try:                                   # a record object: read its three fields once, never trust it again
+            if isinstance(pr, (dict, list, tuple, str)) or not hasattr(pr, "time_ns"):
+                return None
+            readings.append({"time_ns": getattr(pr, "time_ns", None),
+                             "delta_convention": getattr(pr, "delta_convention", None),
+                             "convention": getattr(pr, "convention", None)})
+        except Exception:
+            return None
+    return readings
 
 
 def _prior_get(pr, name, default=None):
-    if type(pr) is dict:
-        return pr.get(name, default)
-    return getattr(pr, name, default)
+    v = pr.get(name)                     # readings are exact dicts (see _priors)
+    return default if v is None else v
 
 
 def _prior_convention(pr):
@@ -344,7 +355,8 @@ def _contracts_code(contracts):
     price = _PRICE8
     pair8 = _PAIR8
     for c in contracts:
-        if type(c) is not _CC and (not isinstance(c, tuple) or len(c) != 10):
+        tc = type(c)
+        if tc is not _CC and (tc is not tuple or len(c) != 10):
             return 6, _MT                    # not a contract record: its expiry_days cannot be read
         cid, days, right, strike, bid, ask, ev, known, style, cond = c
         # position 6: expiry_days
@@ -626,6 +638,8 @@ def m1_error_code(exc):
     places, not representable, wrong type) is malformed_type."""
     try:
         text = str(exc) if isinstance(exc, BaseException) else ""
+        if type(text) is not str:
+            return _MT
     except Exception:          # a hostile argument (deep nesting, a failing __str__) is no M1 message
         return _MT
     for prefix, code in _M1_MESSAGES:
