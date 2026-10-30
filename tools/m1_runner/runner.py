@@ -67,6 +67,10 @@ class WorkerFailedError(RunnerError):
     pass
 
 
+class StoreAttachError(RunnerError):
+    """A history-store snapshot could not be attached or verified by a worker (damaged, truncated or wrong content)."""
+
+
 # ----------------------------------------------------------------------------- caps (pure, injectable)
 def system_cores():
     try:
@@ -256,6 +260,8 @@ def pick_chunk(pending, last, active):
 # ----------------------------------------------------------------------------- the unit loop (shared by both paths)
 def _compute_chunk(spec, keys, fault, state, emit, worker_id):
     """Compute the units of one chunk. state: {'history': SessionHistory|None, 'units': int} (per worker or per run)."""
+    if spec.family != "m1":
+        return _compute_chunk_m2(spec, keys, fault, state, emit, worker_id)
     out = []
     u, s, _ = parse_key(keys[0])
     horizon = (max(parse_key(k)[2] for k in keys) + 1) * workload.gen.CUTOFF_STEP_NS
@@ -276,6 +282,44 @@ def _compute_chunk(spec, keys, fault, state, emit, worker_id):
         if fault and fault["kind"] == "drop_unit" and fault["unit_key"] == key:
             continue
         out.append((key, hashlib.sha256(data).hexdigest(), data if emit == "full" else None))
+    return out
+
+
+def _compute_chunk_m2(spec, keys, fault, state, emit, worker_id):
+    """M2 units (m2workload). `all` adds the M1 unit of the same underlying and cutoff with the session mapped k - 20."""
+    from . import m2workload
+    ctx = state.get("m2ctx")
+    if ctx is None:
+        ctx = state["m2ctx"] = m2workload.Context()
+    ctx.timing = {}
+    state["hist_s"], state["timing"] = 0.0, ctx.timing
+    out, m1_spec, m1_hist = [], None, state.get("history")
+    for key in keys:
+        if fault and fault["kind"] == "hang_worker" and fault["worker"] == worker_id:
+            time.sleep(10 ** 6)
+        m1_bytes = None
+        if spec.family == "all":
+            u, k, c = parse_key(key)
+            m1_spec = spec._replace(family="m1", sessions=(k - 20,), cutoffs=(c,), unit_prints=None, mutation=None, params=None)
+            m1_key = workload.unit_key(u, k - 20, c)
+            horizon = (c + 1) * workload.gen.CUTOFF_STEP_NS
+            if m1_hist is None or m1_hist.key != (spec.seed, spec.shape, u, k - 20) or m1_hist.horizon_ns < horizon:
+                th = time.perf_counter()
+                m1_hist = workload.SessionHistory(m1_spec, u, k - 20, horizon)
+                ctx.timing["synthesis_s"] = ctx.timing.get("synthesis_s", 0.0) + time.perf_counter() - th
+            m1_bytes = workload.compute_unit(m1_spec, m1_key, m1_hist, ctx.timing)
+            state["history"] = m1_hist
+        data = m2workload.compute_m2_unit(spec, key, ctx, m1_bytes)
+        state["units"] += 1
+        if fault and fault["kind"] == "kill_worker" and fault["worker"] == worker_id and state["units"] >= fault["after_units"]:
+            os._exit(137)
+        if fault and fault["kind"] == "drop_unit" and fault["unit_key"] == key:
+            continue
+        digest = hashlib.sha256(data).hexdigest()
+        out.append((key, digest, data if emit == "full" else None))
+        if fault and fault["kind"] == "duplicate_unit" and fault["unit_key"] == key:
+            out.append((key, digest, data if emit == "full" else None))
+    state["hist_s"] = ctx.timing.get("synthesis_s", 0.0)
     return out
 
 
@@ -306,6 +350,16 @@ def _worker_main(conn, wid):
                 return
             if msg[0] == "stop":
                 return
+            if msg[0] == "setup":
+                try:
+                    from . import m2workload
+                    ctx2 = state.setdefault("m2ctx", m2workload.Context())
+                    conn.send(("ready", m2workload.attach_or_adopt(ctx2, msg[1])))
+                except BaseException as exc:  # noqa: BLE001
+                    code = getattr(exc, "code", type(exc).__name__)
+                    conn.send(("attach_error", "%s: %s" % (code, exc)))
+                    return
+                continue
             _, cid, spec, keys, emit, fault, count, run_no = msg
             if state.get("run") != run_no:   # no state is shared between runs: drop the cached session history
                 state["run"], state["history"] = run_no, None
@@ -320,7 +374,7 @@ def _worker_main(conn, wid):
                     if counter:
                         counter.__exit__()
                 stats = {"wall_s": time.perf_counter() - t0, "cpu_s": time.process_time() - c0, "units": len(res),
-                         "history_s": state["hist_s"], "timing": state["timing"], "rss_peak": peak_rss_bytes(), "arb": counter.n if counter else None, "history_updates": state["history"].n_updates}
+                         "history_s": state["hist_s"], "timing": state["timing"], "rss_peak": peak_rss_bytes(), "arb": counter.n if counter else None, "history_updates": state["history"].n_updates if state.get("history") is not None else 0}
                 conn.send(("done", cid, res, stats))
             except BaseException:  # noqa: BLE001 - reported to the parent, which fails the run with a named error
                 conn.send(("error", cid, traceback.format_exc()))
@@ -388,7 +442,8 @@ def write_outputs(result, out_dir):
 def _check_fault(fault, workers_used):
     if fault is None:
         return None
-    kinds = {"kill_worker": ("worker", "after_units"), "drop_unit": ("unit_key",), "hang_worker": ("worker",)}
+    kinds = {"kill_worker": ("worker", "after_units"), "drop_unit": ("unit_key",), "hang_worker": ("worker",),
+             "duplicate_unit": ("unit_key",), "truncate_store": ("bytes",), "corrupt_store": ("offset",)}
     if not isinstance(fault, dict) or fault.get("kind") not in kinds:
         raise ValueError("unknown fault %r" % (fault,))
     if set(fault) != {"kind", *kinds[fault["kind"]]}:
@@ -397,6 +452,8 @@ def _check_fault(fault, workers_used):
         raise ValueError("%s needs workers >= 2 (the in-process reference path has no worker to kill)" % fault["kind"])
     if fault["kind"] in ("kill_worker", "hang_worker") and not 0 <= fault["worker"] < workers_used:
         raise ValueError("fault worker %r is not one of the %d workers" % (fault["worker"], workers_used))
+    if fault["kind"] in ("truncate_store", "corrupt_store") and workers_used < 2:
+        raise ValueError("%s needs workers >= 2 (the in-process reference path attaches no snapshot)" % fault["kind"])
     return dict(fault)
 
 
@@ -420,7 +477,8 @@ class Runner:
     """workers=1: in-process reference path. workers>=2: persistent spawn pool (opt-in). Use as a context manager."""
 
     def __init__(self, workers=DEFAULT_WORKERS, b9_peak_bytes=B9_BUDGET_BYTES, aggregate_hard_bytes=None,
-                 cores=None, ram_bytes=None, timeout_s=7200.0, fault=None, count_arb=False, log=None):
+                 cores=None, ram_bytes=None, timeout_s=7200.0, fault=None, count_arb=False, log=None,
+                 store_bytes_budget=512 * (1 << 20), store_bytes_hard=1 << 30, workdir=None):
         self.cap = worker_cap(cores, ram_bytes, b9_peak_bytes, aggregate_hard_bytes)
         self.workers_requested = workers
         self.workers_used, self.clamp = resolve_workers(workers, self.cap)
@@ -428,6 +486,101 @@ class Runner:
         self.aggregate_hard_bytes, self.timeout_s, self.count_arb, self.log_path = self.cap["aggregate_hard_bytes"], timeout_s, count_arb, log
         self._procs, self._conns, self._env, self._broken, self._rss = [], [], [], False, {}
         self._seq = 0
+        self.store_bytes_budget, self.store_bytes_hard, self._workdir, self._own_workdir = store_bytes_budget, store_bytes_hard, workdir, None
+        self._stores, self._generation, self._inline_ctx = {}, 0, None
+
+    # -- history store (M2): generation in the parent, transfer as a binary snapshot with a NEW file name per generation
+    def _store_dir(self):
+        if self._workdir is None:
+            import tempfile
+            self._workdir = self._own_workdir = tempfile.mkdtemp(prefix="m2-store-")
+        os.makedirs(self._workdir, exist_ok=True)
+        return self._workdir
+
+    def _store_generation(self, spec):
+        from . import m2workload
+        mut = m2workload.parse_mutation(spec.mutation)
+        store_mut = json.dumps(mut, sort_keys=True) if mut and mut["kind"] in m2workload.STORE_MUTATION_KINDS else None
+        key = (spec.seed, spec.series_count, store_mut)
+        faulted = bool(self.fault and self.fault["kind"] in ("truncate_store", "corrupt_store"))
+        gen = self._stores.get(key)
+        if gen is not None and not faulted and (self.workers_used == 1 or gen.get("path")):
+            return gen
+        if gen is None or faulted:
+            t0 = time.perf_counter()
+            store = m2workload.build_store(spec.seed, spec.series_count, json.loads(store_mut) if store_mut else None)
+            gen = {"store": store, "build_s": time.perf_counter() - t0, "mutation": store_mut, "path": None}
+            gen["content_hash"] = store.content_hash()
+            self._generation += 1
+            gen["generation"] = self._generation
+        if self.workers_used >= 2:
+            t0 = time.perf_counter()
+            self._generation += 1
+            gen["generation"] = self._generation
+            path = os.path.join(self._store_dir(), "history-g%d-%s.m2bin" % (gen["generation"], gen["content_hash"][:12]))
+            gen["store"].binary_snapshot_to(path)
+            gen["path"], gen["write_s"], gen["file_bytes"] = path, time.perf_counter() - t0, os.path.getsize(path)
+            if faulted:
+                size = gen["file_bytes"]
+                if self.fault["kind"] == "truncate_store":
+                    with open(path, "r+b") as f:
+                        f.truncate(max(0, size - int(self.fault["bytes"])))
+                else:
+                    with open(path, "r+b") as f:
+                        off = min(int(self.fault["offset"]), size - 1)
+                        f.seek(off)
+                        b = f.read(1)
+                        f.seek(off)
+                        f.write(bytes([b[0] ^ 0xFF]))
+        if not faulted:
+            self._stores[key] = gen
+        return gen
+
+    def _setup_pool_store(self, spec, gen):
+        """Send the snapshot to every worker and wait for the attach acks (content_hash compared, gc.freeze done)."""
+        setup = {"path": gen["path"], "content_hash": gen["content_hash"], "mutation": gen["mutation"], "file_bytes": gen["file_bytes"]}
+        for wid in range(self.workers_used):
+            try:
+                self._conns[wid].send(("setup", setup))
+            except (OSError, ValueError):
+                raise WorkerCrashedError("worker %d is not reachable (exit code %s) while sending the store setup" % (wid, _exitcode(self._procs[wid])))
+        acks, deadline = {}, time.monotonic() + self.timeout_s
+        while len(acks) < self.workers_used:
+            waiting = [w for w in range(self.workers_used) if w not in acks]
+            ready = _wait_ready([self._conns[w] for w in waiting], 0.5)
+            for w in waiting:
+                if self._conns[w] in ready or not self._procs[w].is_alive():
+                    try:
+                        msg = self._conns[w].recv() if self._conns[w].poll() else None
+                    except (EOFError, OSError):
+                        msg = None
+                    if msg is None:
+                        raise WorkerCrashedError("worker %d (pid %s) exited with code %s while attaching the history store" % (
+                            w, self._env[w]["pid"], _exitcode(self._procs[w])))
+                    if msg[0] == "attach_error":
+                        raise StoreAttachError("worker %d could not attach history store %s: %s" % (w, os.path.basename(gen["path"]), msg[1]))
+                    acks[w] = msg[1]
+            if time.monotonic() > deadline:
+                raise WorkerTimeoutError("workers did not attach the history store within %.1f s" % self.timeout_s)
+        for w, a in sorted(acks.items()):
+            if a.get("private_bytes", 0) > self.store_bytes_hard:
+                raise MemoryLimitError("worker %d store memory %d bytes exceeds the hard limit %d bytes" % (w, a["private_bytes"], self.store_bytes_hard))
+        return [dict(a, worker=w) for w, a in sorted(acks.items())]
+
+    def restart_pool(self):
+        """Terminate this Runner's own workers and start fresh ones (the generated stores and snapshot files are kept)."""
+        if self.workers_used < 2:
+            return
+        for c in self._conns:
+            try:
+                c.send(("stop",))
+            except (OSError, ValueError):
+                pass
+        for p in self._procs:
+            p.join(5)
+        self._terminate()
+        self._procs, self._conns, self._env, self._broken = [], [], [], False
+        self._start_pool()
 
     # -- lifecycle
     def __enter__(self):
@@ -516,6 +669,11 @@ class Runner:
                 p.join(10)
             self._terminate()
         self._procs, self._conns = [], []
+        if self._own_workdir:
+            import shutil
+            shutil.rmtree(self._own_workdir, ignore_errors=True)   # only the directory this Runner created
+            self._own_workdir = self._workdir = None
+            self._stores = {}
 
     # -- one run
     def run(self, spec, batch_size=None, order="natural", emit="digest", out_dir=None):
@@ -532,7 +690,22 @@ class Runner:
         batch = batch_size if batch_size is not None else auto_batch_size(len(keys), self.workers_used, group)
         chunks = make_chunks(keys, batch, order)
         t0 = time.perf_counter()
+        store_log = None
         try:
+            from . import m2workload
+            if spec.family != "m1" and m2workload.uses_store(spec):
+                ts = time.perf_counter()
+                gen = self._store_generation(spec)
+                if self.workers_used >= 2:
+                    attach = self._setup_pool_store(spec, gen)
+                else:
+                    self._inline_ctx = self._inline_ctx or m2workload.Context()
+                    setup = {"path": "in-process-%d" % gen["generation"], "content_hash": gen["content_hash"], "mutation": gen["mutation"]}
+                    attach = [m2workload.attach_or_adopt(self._inline_ctx, setup, gen["store"])]
+                store_log = {"generation": gen["generation"], "content_sha256": gen["content_hash"], "build_s": gen["build_s"],
+                             "write_s": gen.get("write_s"), "file_bytes": gen.get("file_bytes"), "setup_s": time.perf_counter() - ts,
+                             "attach": attach, "budget_bytes": self.store_bytes_budget, "hard_bytes": self.store_bytes_hard,
+                             "over_budget_workers": [a["worker"] for a in attach if a.get("private_bytes", 0) > self.store_bytes_budget and "worker" in a]}
             if self.workers_used == 1:
                 pairs, stats = self._run_inline(spec, chunks, emit)
             else:
@@ -547,7 +720,7 @@ class Runner:
         log = {"workers_requested": self.workers_requested, "workers_used": self.workers_used, "pool": self.workers_used >= 2,
                "clamp": self.clamp, "worker_cap": self.cap, "batch_size": batch, "chunks": len(chunks), "order": order,
                "wall_s": wall, "units_per_s": len(keys) / wall if wall else None, "worker_env": [dict(e) for e in self._env],
-               **stats}
+               "store": store_log, **stats}
         result = RunResult(spec, merged, emit, log)
         if out_dir is not None:
             write_outputs(result, out_dir)
@@ -564,7 +737,7 @@ class Runner:
         return out
 
     def _run_inline(self, spec, chunks, emit):
-        state, pairs, arb, walls = {"history": None, "units": 0}, [], {"price_interval": 0, "forward": 0, "bounds": 0, "solves": 0}, []
+        state, pairs, arb, walls = {"history": None, "units": 0, "m2ctx": self._inline_ctx}, [], {"price_interval": 0, "forward": 0, "bounds": 0, "solves": 0}, []
         counter = workload.ArbCounter() if self.count_arb else None
         if counter:
             counter.__enter__()

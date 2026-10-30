@@ -57,9 +57,11 @@ SHORT_DTE_MAX_DAYS = 30
 CIVIL_DAY_BASE = 739000
 TINY = {"expiries_days": [7, 28, 35, 63], "strikes": 5}
 SHAPES = ("T", "S", "M", "L")
-_SpecBase = namedtuple("Spec", "seed shape underlyings sessions cutoffs contract_order gating prints",
+_SpecBase = namedtuple("Spec", "seed shape underlyings sessions cutoffs contract_order gating prints "
+                       "family series_count history_sessions mutation unit_prints path cache params",
                        defaults=(gen.DEFAULT_SEED, "M", tuple(gen.UNDERLYINGS), tuple(range(1, gen.SESSIONS + 1)),
-                                 tuple(range(gen.CUTOFFS_PER_SESSION)), "natural", "mixed", PRINTS_PER_CONTRACT))
+                                 tuple(range(gen.CUTOFFS_PER_SESSION)), "natural", "mixed", PRINTS_PER_CONTRACT,
+                                 "m1", 2000, 20, None, None, "batched", "warm", None))
 
 
 class Spec(_SpecBase):
@@ -70,6 +72,13 @@ class Spec(_SpecBase):
 
 
 def validate_spec(spec):
+    if spec.family != "m1":
+        from . import m2workload
+        for s in spec.sessions:
+            if not 21 <= s <= 25:
+                raise ValueError("M2 evaluated sessions are 21 to 25, got %r" % (s,))
+        m2workload.validate_m2(spec)
+        spec = spec._replace(sessions=(1,))  # the generic checks below do not apply to the M2 session numbering
     if spec.shape not in SHAPES:
         raise ValueError("unknown shape %r (expected one of %s)" % (spec.shape, ", ".join(SHAPES)))
     for name in ("underlyings", "sessions", "cutoffs"):

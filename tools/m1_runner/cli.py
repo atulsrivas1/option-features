@@ -34,9 +34,13 @@ def parse_fault(text):
         return {"kind": kind, "worker": int(args[0]), "after_units": int(args[1])}
     if kind == "hang_worker" and len(args) == 1:
         return {"kind": kind, "worker": int(args[0])}
-    if kind == "drop_unit" and len(args) == 1:
+    if kind in ("drop_unit", "duplicate_unit") and len(args) == 1:
         return {"kind": kind, "unit_key": args[0]}
-    raise SystemExit("bad --fault %r (kill_worker:W:N | hang_worker:W | drop_unit:KEY)" % text)
+    if kind == "truncate_store" and len(args) == 1:
+        return {"kind": kind, "bytes": int(args[0])}
+    if kind == "corrupt_store" and len(args) == 1:
+        return {"kind": kind, "offset": int(args[0])}
+    raise SystemExit("bad --fault %r (kill_worker:W:N | hang_worker:W | drop_unit:KEY | duplicate_unit:KEY | truncate_store:BYTES | corrupt_store:OFFSET)" % text)
 
 
 def main(argv=None):
@@ -62,14 +66,24 @@ def main(argv=None):
     ap.add_argument("--timeout-s", type=float, default=7200.0)
     ap.add_argument("--count-arb", action="store_true")
     ap.add_argument("--fault", default=None)
+    ap.add_argument("--family", default="m1", help="m1 (default) or an M2 family: prints|window|volume|concentration|grid|baseline|history|episodes|store|m2|all")
+    ap.add_argument("--series-count", type=int, default=2000)
+    ap.add_argument("--history-sessions", type=int, default=20)
+    ap.add_argument("--mutation", default=None, help="JSON, M2 kinds print|contract|history|calendar|param")
+    ap.add_argument("--path", default="batched", choices=("batched", "single"))
+    ap.add_argument("--cache", default="warm")
+    ap.add_argument("--unit-prints", type=int, default=None, help="prints per unit (test lever; default the frozen 40,000)")
+    ap.add_argument("--store-bytes-hard", type=int, default=1 << 30)
     a = ap.parse_args(argv)
     extra = {} if a.seed is None else {"seed": a.seed}
     spec = m1_runner.Spec(shape=a.shape, underlyings=tuple(a.underlyings.split(",")), sessions=ints(a.sessions),
-                          cutoffs=ints(a.cutoffs), contract_order=a.contract_order, **extra)
+                          cutoffs=ints(a.cutoffs), contract_order=a.contract_order, family=a.family, series_count=a.series_count,
+                          history_sessions=a.history_sessions, mutation=a.mutation, path=a.path, cache=a.cache,
+                          unit_prints=a.unit_prints, **extra)
     try:
         with m1_runner.Runner(workers=a.workers, b9_peak_bytes=a.b9_peak_bytes, aggregate_hard_bytes=a.aggregate_hard_bytes,
                               cores=a.cores, ram_bytes=a.ram_bytes, timeout_s=a.timeout_s, fault=parse_fault(a.fault),
-                              count_arb=a.count_arb, log=a.log) as r:
+                              count_arb=a.count_arb, log=a.log, store_bytes_hard=a.store_bytes_hard) as r:
             res = r.run(spec, batch_size=a.batch_size, order=a.order, emit=a.emit, out_dir=a.out)
     except m1_runner.RunnerError as e:
         print("%s: %s" % (type(e).__name__, e), file=sys.stderr)
