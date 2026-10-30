@@ -17,18 +17,20 @@ used (R-51, owner decision 5); the LAST `max_sessions` available sessions are us
 skips a session whose grid is shorter than minute + 1 (no zero-padding, R-43, R-113). n < min_sessions is unavailable
 insufficient_history (the value then carries only n).
 
-View-read structural codes (IO contract section 4, contract-codes decision of PR 112), first failing code reported:
-  1 session_not_in_calendar  `as_of` not a calendar session
+View-read structural codes (IO contract section 4, PR 112), first failing code reported. Positions 1 to 4 and the
+value part of 5 are the shared S09 rule `m3a_validate.validate_view_read` (R-190: one rule for request and view read):
+  1 session_not_in_calendar  `as_of` not a calendar session (a non-text as_of is malformed_type)
   2 minute_out_of_range      minute outside [0, minutes of the `as_of` session) (same_minute_column; a non-int minute
                              is malformed_type here, type-first)
   3 malformed_type           min_sessions or max_sessions not an int >= 1 (bool is not an int), then
     invalid_session_window   max_sessions < min_sessions (value code, after the type checks of the slot)
-  4 threshold_out_of_range   `x` given and outside 0..100 or not finite (a non-number `x` is malformed_type here)
-  5 convention_mismatch      skew-type series only (metric not convention-free): the request convention (default
-                             "spot") differs from the metric's (`_fwd` = forward) or from a selected record's
-                             `delta_convention` (a record without the field is "spot"), R-160; a non-string request
-                             convention is malformed_type and another string convention_not_allowed at this slot
-                             (docs/decisions/2026-10-30-m3a-s02.md)
+  4 threshold_out_of_range   `x` outside 0..100; `x` is a non-bool int, Fraction, or integer / "a/b" text; float,
+                             Decimal, bool and other text are malformed_type here (R-190 item 3)
+  5 convention_mismatch      skew-type series only (metric not convention-free, R-159): the request convention
+                             differs from the metric's (`_fwd` = forward) or from a selected record's
+                             `delta_convention` (absent = "spot"), R-160. Not supplied = "spot"; a supplied None, a
+                             non-string or another string is malformed_type at this slot (R-190 items 1 and 2)
+A series_id, metric or window_s that cannot be looked up (unhashable) is malformed_type (totality).
 
 Record returned (`HistoryRead`, plain slots, no hidden state): status in {available, unavailable, invalid_input},
 reason (insufficient_history or None), code (structural or None), value:
@@ -38,11 +40,9 @@ reason (insufficient_history or None), code (structural or None), value:
 Memory formula helpers (budgets M3A-B8, rows M3A-H-046..049, 075): `grid_store_bytes`, `scalar_store_bytes`.
 """
 from bisect import bisect_left
-from decimal import Decimal
-from fractions import Fraction
-import math
 
-from .flowstore import _FULL_IDX, CONVENTIONS, _sparse
+from .flowstore import _FULL_IDX, _sparse
+from .m3a_validate import validate_view_read
 
 STORE_BUDGET_BYTES = 768 * 1024 * 1024       # M3A-B8 store budget (RULED), 805,306,368 B
 STORE_HARD_BYTES = 1024 * 1024 * 1024        # M3A-B8 hard limit per worker, 1,073,741,824 B
@@ -65,55 +65,35 @@ def _invalid(code):
     return HistoryRead("invalid_input", None, code, None)
 
 
-def _count(v):
-    return type(v) is int and v >= 1
+_NOT_GIVEN = object()                        # `delta_convention` not supplied: "spot" (R-190 item 2)
 
 
-def _x_code(x):
-    """None, or the code of a bad `x` (position 4)."""
-    t = type(x)
-    if t is int or t is float or t is Fraction or t is Decimal:
-        if t is float or t is Decimal:
-            if not (x == x) or x in (math.inf, -math.inf):        # NaN or infinite
-                return "threshold_out_of_range"
-        return None if 0 <= x <= 100 else "threshold_out_of_range"
-    return "malformed_type"
-
-
-def _checks(store, as_of, min_sessions, max_sessions, x, minute):
-    """Positions 1 to 4 (position 5 needs the selected records). None when all pass."""
-    cal = store.calendar
+def _checks(store, series_id, metric, window_s, as_of, min_sessions, max_sessions, x, minute, delta_convention):
+    """Positions 1 to 5 except the record scan: the shared S09 rule (m3a_validate.validate_view_read, R-190), so
+    request and view read cannot drift; plus a key that cannot be looked up (unhashable) is malformed_type."""
     try:
-        pos = cal.position(as_of)
-    except TypeError:                     # unhashable as_of is not a calendar session
-        pos = None
-    if pos is None:
-        return "session_not_in_calendar"
-    if minute is not _SCALAR:
-        if type(minute) is not int:
-            return "malformed_type"
-        if not 0 <= minute < cal.minutes[pos]:
-            return "minute_out_of_range"
-    if not _count(min_sessions) or not _count(max_sessions):
+        hash((series_id, metric, window_s))
+    except TypeError:
         return "malformed_type"
-    if max_sessions < min_sessions:
-        return "invalid_session_window"
-    if x is not None:
-        return _x_code(x)
-    return None
+    conv = "spot" if delta_convention is _NOT_GIVEN else delta_convention
+    form = "scalar_baseline" if minute is _SCALAR else "same_minute_column"
+    if minute is not _SCALAR and minute is None:
+        minute = "missing"                   # a minute is required for this form: malformed_type at position 2
+    try:
+        return validate_view_read(store.calendar, as_of, form, min_sessions, max_sessions, x,
+                                  None if minute is _SCALAR else minute,
+                                  metric if isinstance(metric, str) and metric not in CONVENTION_FREE else None,
+                                  conv)
+    except (TypeError, ValueError, ArithmeticError):
+        return "malformed_type"
 
 
 def _conv_code(metric, delta_convention, recs):
-    """Position 5 for skew-type series; None when it passes or the series is convention-free."""
+    """Position 5, record scan (validate_view_read already checked the value and the metric's own convention):
+    a selected record whose `delta_convention` (absent = "spot") differs from the request (R-160)."""
     if metric in CONVENTION_FREE:
         return None
-    want = "spot" if delta_convention is None else delta_convention
-    if type(want) is not str:
-        return "malformed_type"
-    if want not in CONVENTIONS:
-        return "convention_not_allowed"
-    if want != ("forward" if isinstance(metric, str) and metric.endswith("_fwd") else "spot"):
-        return "convention_mismatch"
+    want = "spot" if delta_convention is _NOT_GIVEN else delta_convention
     for r in recs:
         if (r.conv or "spot") != want:
             return "convention_mismatch"
@@ -209,7 +189,7 @@ def _probe(r, minute):
 
 
 def _read(store, series_id, metric, as_of, min_sessions, max_sessions, lane, delta_convention, x, window_s, minute):
-    code = _checks(store, as_of, min_sessions, max_sessions, x, minute)
+    code = _checks(store, series_id, metric, window_s, as_of, min_sessions, max_sessions, x, minute, delta_convention)
     if code is not None:
         return _invalid(code)
     recs, sessions, values = _select(store, series_id, metric, window_s, lane, as_of, max_sessions, minute)
@@ -223,14 +203,14 @@ def _read(store, series_id, metric, as_of, min_sessions, max_sessions, lane, del
 
 
 def scalar_baseline(store, series_id, metric, as_of, min_sessions=20, max_sessions=252, lane="stock",
-                    delta_convention=None, x=None, window_s=0):
+                    delta_convention=_NOT_GIVEN, x=None, window_s=0):
     """The last `max_sessions` available session values (record totals) of a scalar series before `as_of`."""
     return _read(store, series_id, metric, as_of, min_sessions, max_sessions, lane, delta_convention, x, window_s,
                  _SCALAR)
 
 
 def same_minute_column(store, series_id, metric, as_of, minute, min_sessions=20, max_sessions=252, lane="stock",
-                       delta_convention=None, x=None, window_s=0):
+                       delta_convention=_NOT_GIVEN, x=None, window_s=0):
     """The grid value at index `minute` of the last `max_sessions` available sessions of a minute series before
     `as_of`; sessions whose grid is shorter than minute + 1 are skipped."""
     return _read(store, series_id, metric, as_of, min_sessions, max_sessions, lane, delta_convention, x, window_s,

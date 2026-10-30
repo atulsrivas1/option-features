@@ -249,7 +249,7 @@ class Reads(unittest.TestCase):
         self.assertEqual(f(st, "A/stock/iv30", "iv30", c, 1, min_sessions=True).code, "malformed_type")
         self.assertEqual(f(st, "A/stock/iv30", "iv30", c, 1, max_sessions=5, x=101).code, "invalid_session_window")
         self.assertEqual(f(st, "A/stock/iv30", "iv30", c, 1, x=101).code, "threshold_out_of_range")
-        self.assertEqual(f(st, "A/stock/iv30", "iv30", c, 1, x="5").code, "malformed_type")
+        self.assertIsNone(f(st, "A/stock/iv30", "iv30", c, 1, x="5").code)       # integer text accepted (R-190)
         self.assertEqual(f(st, "A/stock/iv30", "iv30", c, 1, x=float("nan")).code, "malformed_type")   # R-190
         self.assertEqual(f(st, "A/stock/iv30", "iv30", c, 1, x=100).status, "available")
 
@@ -287,11 +287,11 @@ class Reads(unittest.TestCase):
         r = MH.scalar_baseline(st, "A/stock/iv30_close", "iv30_close", last)
         self.assertNotIn(last, r.value["sessions"])
         self.assertEqual(r.value["sessions"][-1], cal.ids[258])
-        r2 = MH.scalar_baseline(st, "A/stock/iv30_close", "iv30_close", cal.ids[200])
-        self.assertEqual(r2.value["sessions"][-1], cal.ids[199])
+        r2 = MH.scalar_baseline(st, "A/stock/iv30_close", "iv30_close", cal.ids[201])
+        self.assertEqual(r2.value["sessions"][-1], cal.ids[200])
         m1 = MH.same_minute_column(st, "A/stock/iv30", "iv30", last, 3)
-        m2 = MH.same_minute_column(st, "A/stock/iv30", "iv30", cal.ids[200], 3)
-        self.assertEqual((m1.value["values"][-1], m2.value["values"][-1]), (25803, 19903))
+        m2 = MH.same_minute_column(st, "A/stock/iv30", "iv30", cal.ids[201], 3)
+        self.assertEqual((m1.value["values"][-1], m2.value["values"][-1]), (25803, 20003))
 
     def test_lane_and_metric_convention(self):
         cal, st = self.cal, self.st
