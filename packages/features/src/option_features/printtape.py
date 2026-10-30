@@ -20,8 +20,7 @@ Design (owner goal: performance)
 Input rows are tuples `(contract_id, time_ns, price, size, multiplier, condition_excluded, seq[, side])`
 sorted by (time_ns, seq); `side` is ignored (AMB-2). `contracts` maps a contract id to
 `(right, strike_ticks, expiry, lane)` with right "C" or "P". Structural problems do not raise: the tape
-carries `error` (the code of `stream_code`: unordered_prints, type-first malformed_type, negative_size_or_price,
-bad_multiplier, unknown_contract, malformed_type; no input raises) and the family functions answer `invalid_input` with that code.
+carries `error` (the code of `stream_code`, the per-position classification of item 15; no input raises) and the family functions answer `invalid_input` with that code.
 """
 from bisect import bisect_left, bisect_right
 from itertools import accumulate
@@ -176,19 +175,21 @@ def _register(cid, contracts, cidx, c_id, c_right, c_strike, c_expiry, c_lane, c
 
 def stream_code(prints, contracts):
     """The structural code of a print list under the ruled per-field contract (IO contract section 9, items 5, 13, 15),
-    or None. No exception escapes, whatever the objects in the list (unhashable contract ids, NaN, bytes, nested
-    objects, huge ints, short or non-sequence prints). Authoritative slow path: `build_tape` runs its fused fast loop
-    and calls this only when the fast loop saw anything unusual, so the code never depends on loop details.
+    or None; the same classification as `flowgrid.check_prints` (story A), but total: no exception escapes, whatever
+    the objects in the list (unhashable contract ids, NaN, bytes, nested objects, huge ints, objects whose hash,
+    comparison or arithmetic raises, short and non-sequence prints). Authoritative slow path: `build_tape` runs its
+    fused fast loop and calls this only when the fast loop saw anything unusual.
 
-    Codes in the order of the single list: (1) unordered_prints: an adjacent pair of prints whose times and seqs are all
-    ints (bool excluded) and out of order by (time_ns, seq); a pair with a non-int time or seq is not compared;
-    (2) malformed_type for a wrong-typed time, seq, size or multiplier (type first, before any value code);
-    (3) negative_size_or_price: a well-typed negative size, or a well-typed negative price on a print whose size is
-    well-typed; (4) bad_multiplier: a well-typed multiplier <= 0; (5) unknown_contract: a hashable contract id absent from
-    `contracts`; (6) malformed_type for the remaining fields (price not an int or a valid decimal text, a
-    condition_excluded other than a bool, 0 or 1, an unhashable contract id, a print that is not a sequence of at least 7
-    items). The whole list is scanned; a malformed print never hides another print's error."""
-    unordered = type_first = neg = bad = unknown = late = False
+    Positions, in order (a wrong-typed field reports `malformed_type` at the position where its value check would run;
+    within a position a value code beats `malformed_type`; the whole list is scanned): (1) ordering: unordered_prints
+    for a genuine adjacent out-of-order pair of prints whose time and seq are ints (bool excluded; a pair with a non-int
+    time or seq is not compared), else malformed_type for a wrong-typed time or seq; (2) negative_size_or_price: a
+    well-typed negative size, or a well-typed negative price on a print whose size is well-typed; else malformed_type for
+    a wrong-typed size; (3) bad_multiplier: an int <= 0, else malformed_type for a wrong-typed multiplier; (4)
+    unknown_contract: a hashable contract id absent from `contracts`; (5) malformed_type for the fields with no value
+    code (price not an int or a valid decimal text, condition_excluded other than a bool, 0 or 1, an unhashable contract
+    id, a print that is not a sequence of at least 7 items)."""
+    ord_val = ord_mal = neg_val = neg_mal = bad_val = bad_mal = unknown = other = False
     pt = ps = None
     prev_ok = False
     try:
@@ -199,44 +200,52 @@ def stream_code(prints, contracts):
         try:
             cid, t, price, size, mult, excl, seq = p[0], p[1], p[2], p[3], p[4], p[5], p[6]
         except Exception:
-            late = True
+            other = True
             prev_ok = False
             continue
-        ts_ok = type(t) is int and type(seq) is int
-        size_ok = type(size) is int
-        if not ts_ok or not size_ok or type(mult) is not int:
-            type_first = True
-        if ts_ok and prev_ok and (t < pt or (t == pt and seq < ps)):
-            unordered = True
-        pt, ps, prev_ok = t, seq, ts_ok
+        if type(t) is int and type(seq) is int:
+            if prev_ok and (t < pt or (t == pt and seq < ps)):
+                ord_val = True
+            pt, ps, prev_ok = t, seq, True
+        else:
+            ord_mal = True
+            prev_ok = False
         try:
             ticks = price_ticks(price)
         except Exception:
             ticks = None
-            late = True
-        if size_ok and (size < 0 or (ticks is not None and ticks < 0)):
-            neg = True
-        if type(mult) is int and mult <= 0:
-            bad = True
+            other = True
+        if type(size) is not int:
+            neg_mal = True
+        elif size < 0 or (ticks is not None and ticks < 0):
+            neg_val = True
+        if type(mult) is not int:
+            bad_mal = True
+        elif mult <= 0:
+            bad_val = True
         if type(excl) is not bool and not (type(excl) is int and excl in (0, 1)):
-            late = True
+            other = True
         if contracts is not None:
             try:
                 if cid not in contracts:
                     unknown = True
             except Exception:
-                late = True
-    if unordered:
+                other = True
+    if ord_val:
         return "unordered_prints"
-    if type_first:
+    if ord_mal:
         return "malformed_type"
-    if neg:
+    if neg_val:
         return "negative_size_or_price"
-    if bad:
+    if neg_mal:
+        return "malformed_type"
+    if bad_val:
         return "bad_multiplier"
+    if bad_mal:
+        return "malformed_type"
     if unknown:
         return "unknown_contract"
-    if late:
+    if other:
         return "malformed_type"
     return None
 
