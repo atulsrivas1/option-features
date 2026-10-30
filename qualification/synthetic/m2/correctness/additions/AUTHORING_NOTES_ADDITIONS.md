@@ -5,7 +5,7 @@ mock-data qualification only: passed on independently authored synthetic fixture
 Status: authored, not run against any implementation. Every dataset carries provenance SYNTHETIC. Seed 20261029, Python 3.12 stdlib only.
 The merged files (parent folder, MANIFEST.sha256) are unchanged; this folder only adds files. Reuses m2common.py, m2_ref.py and m2_load.py read-only.
 
-## 1. Scope (167 rows, 6 files)
+## 1. Scope (185 rows, 7 files)
 - m2_cases_add_struct.json (60): unknown_contract 10 and malformed_type 10 (2 rows each for F1, F4, F7, F17, F18; bool price 3, float price 3, float size,
   float time 2, bool multiplier 2, over-precision text 3), precedence pairs 10 (2 rows each: unordered+negative, negative+bad_multiplier,
   bad_multiplier+unknown_contract, unknown_contract+malformed_type, malformed_type+window_not_allowed), F1 delayed with unknown contract 2, trailing-zero text
@@ -20,7 +20,7 @@ The merged files (parent folder, MANIFEST.sha256) are unchanged; this folder onl
   nonstandard, excluded-condition and both-flag prints with coverage counts, lane tag, sparse contract series (3 rows), ties.
 Rows follow the merged compact format (m2_load.py). Generators gen_m2add_<name>.py (seeded, LF, no absolute paths, --out relative) use m2add_oracle.py
 (oracle A', wraps the merged oracle A). Independent second implementation: m2add_ref.py (wraps m2_ref, own validators and grammar scan, bisect prefix sums,
-own grid builder). m2add_selfcheck.py recomputes all 167 rows (0 mismatches) and asserts the per-category minimums by tag; m2add_mutants.py runs 52 mutants,
+own grid builder). m2add_selfcheck.py recomputes all 185 rows (0 mismatches) and asserts the per-category minimums by tag; m2add_mutants.py runs 54 mutants,
 each caught by at least 2 mapped rows (m2add_mutation_results.txt).
 
 ## 2. PO rulings encoded (extend the merged contract)
@@ -40,7 +40,7 @@ minute lies in no grid value and counts in the session total only; a print exact
   The contract text says bool; if ints must be rejected the merged rows would change. For the PO.
 - AMB-A6 A float time equal to an integer (1.0) is malformed_type like any float.
 
-## 4. Mutation table (52 mutants; see m2add_mutation_results.txt)
+## 4. Mutation table (54 mutants; see m2add_mutation_results.txt)
 Structural: unknown_ignored, bool_price_ok, float_price_ok, over_precision_ok, trailing_zero_rejected, float_window_ok, float_size_ok, float_time_ok,
 bool_multiplier_ok, grammar_lenient, int_price_as_usd, int_price_rejected, flag_any_ok, seq_bool_ok; precedence: negative_before_unordered,
 multiplier_before_negative, malformed_before_unknown, window_before_malformed. Data: preopen_not_clipped, n_truncated, big_float, f12_p60_window900,
@@ -72,6 +72,13 @@ g_half_day_390, g_sparse_zero_wrong.
 - Revisions: no merged row changes. The canonical-line change (grid_idx for sparse records) touches no valid merged store row; all 47 merged store rows are
   reproduced under the new rules (revisions/check_merged_store.py, revisions/REVISIONS_NOTE.md). The additions row STORE-006 and every sparse hash were regenerated.
 - DAT-030 (version '0.2.0a1'): the oracle and the second implementation both emit expected.version when params.expect_version is set; the row is also tagged harness_checked.
+
+## 8. Round 5 (cutoff before session open)
+- m2_cases_add_cutoff.json (18): a cutoff before open gives an EMPTY window for F4, F7, F17, F18 (counts and premiums zero, coverage zero, status available; F7 and F18 with a
+  zero denominator give zero_denominator; never negative). Prints lie before open and between the cutoff and open (repro: prints at open-300, -90, -80, -70, -60 s,
+  cutoff open-100 s; F4 threshold_ticks=1 expects zeros). F4 4 rows, F7 3, F17 8 (a sweep of cutoffs -100, -60, -30 s, -1 ns, 0, +1 ns, +30, +60 s straddling open),
+  F18 3. The contract has no sweep output of its own, so a sweep is a series of single-cutoff rows over the same prints.
+- Mutants: negative_counts (in-window minus pre-open) and cutoff_unavailable, each caught by at least 2 rows; preopen_not_clipped also covers these rows.
 
 ## 5. Files read and independence
 Read: docs/m2 IO contract (merged, sections 6 and 7), fixture requirements, capability matrix (as earlier) and the PO rulings in the requests. Nothing under

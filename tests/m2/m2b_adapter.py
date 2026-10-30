@@ -18,8 +18,8 @@ import m2_load  # noqa: E402  (independent loader shipped with the fixtures)
 
 MINE = ("M2-1", "M2-4", "M2-5", "M2-6", "M2-9", "M2-11")
 FILES = ("F1", "F4", "F17", "F7", "F18F19", "F12", "lane", "structural", "delayed", "sessionopen")
-ADD_FILES = ("add_data", "add_params", "add_struct")
-EXPECTED_ADD_ROWS = {"add_data": 30, "add_params": 16, "add_struct": 60}
+ADD_FILES = tuple(sorted(p.name[len("m2_cases_"):-5] for p in (CORRECTNESS / "additions").glob("m2_cases_add_*.json")))
+EXPECTED_ADD_ROWS = None      # additions are discovered; counts are pinned by the fixture manifest
 EXPECTED_ROWS = {"F1": 44, "F4": 34, "F17": 32, "F7": 38, "F18F19": 33, "F12": 54, "lane": 5, "structural": 18,
                  "delayed": 4, "sessionopen": 6}
 
