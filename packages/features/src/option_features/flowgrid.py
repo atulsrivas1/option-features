@@ -103,52 +103,64 @@ def price_ticks(price):
 
 
 def check_prints(prints, contracts=None):
-    """First structural code of a print list or None, RULED precedence (IO contract section 9, items 5, 13, 14):
-    unordered_prints, negative_size_or_price, bad_multiplier (multiplier <= 0), unknown_contract (contract id not in
-    `contracts`, when given), malformed_type (price, size, multiplier, time or seq of the wrong type, a bad price text, a
-    condition_excluded flag other than a bool, 0 or 1). `unordered_prints` compares ADJACENT prints by (time_ns, seq);
-    a pair in which either print has a non-int (or bool) time or seq is not compared, so [5, False, 2] is
-    malformed_type, and a genuine out-of-order pair elsewhere in the list still counts. Every check scans the whole
-    list; a malformed field never hides another print's error. TYPE FIRST (RULED, PR 93): any field that is not an int
-    (bool excluded) or, for the price, a text decimal, is malformed_type before any value-based code (negative_size_or_price,
-    bad_multiplier); no exception escapes (Decimal NaN, str or None fields included)."""
-    unordered = neg = bad = unknown = malformed = False
+    """First structural code of a print list or None. RULED (IO contract section 9 items 5, 13, 14, 15): TYPE FIRST, PER
+    FIELD. A wrong-typed field (float, Decimal, Fraction, bool, None, bytes, ...) reports `malformed_type` at the position of
+    the single precedence list where that field's value check would run; the positions, in order:
+      1. ordering: `unordered_prints` for a genuine adjacent out-of-order pair of well-typed prints (time before seq; a
+         pair with a non-int time or seq is not compared); else `malformed_type` for a wrong-typed time or seq;
+      2. `negative_size_or_price`: size first (an int < 0), then price (a negative well-typed price of a print whose size is
+         well-typed); a wrong-typed size is `malformed_type` here, even beside a negative price;
+      3. `bad_multiplier` (an int <= 0); a wrong-typed multiplier is `malformed_type` here;
+      4. `unknown_contract` (id not in `contracts`, when given);
+      5. `malformed_type` for the fields with no value code (price type or text, condition_excluded, an unhashable id).
+    Within a position a value code beats `malformed_type`. The whole list is scanned, a malformed print hides no other
+    print's error, and no exception escapes (NaN Decimals, str or None fields, unhashable ids included)."""
+    ord_val = ord_mal = neg_val = neg_mal = bad_val = bad_mal = unknown = other = False
     pt = ps = None
     prev_ok = False
     for p in prints:
         cid, t, price, size, mult, excl, seq = p[0], p[1], p[2], p[3], p[4], p[5], p[6]
-        ts_ok = type(t) is int and type(seq) is int
-        if not ts_ok or type(size) is not int or type(mult) is not int:
-            malformed = True
-        if ts_ok and prev_ok and (t < pt or (t == pt and seq < ps)):
-            unordered = True
-        pt, ps, prev_ok = t, seq, ts_ok
+        if type(t) is int and type(seq) is int:
+            if prev_ok and (t < pt or (t == pt and seq < ps)):
+                ord_val = True
+            pt, ps, prev_ok = t, seq, True
+        else:
+            ord_mal = True
+            prev_ok = False
         ticks = _parse_price(price)
+        if type(size) is not int:
+            neg_mal = True
+        elif size < 0 or (ticks is not None and ticks < 0):
+            neg_val = True
         if ticks is None:
-            malformed = True
-        elif ticks < 0:
-            neg = True
+            other = True
+        if type(mult) is not int:
+            bad_mal = True
+        elif mult <= 0:
+            bad_val = True
         if type(excl) is not bool and not (type(excl) is int and excl in (0, 1)):
-            malformed = True
-        if type(size) is int and size < 0:
-            neg = True
-        if type(mult) is int and mult <= 0:
-            bad = True
+            other = True
         if contracts is not None:
             try:
                 if cid not in contracts:
                     unknown = True
             except TypeError:                        # an unhashable contract id
-                malformed = True
-    if unordered:
+                other = True
+    if ord_val:
         return "unordered_prints"
-    if neg:
+    if ord_mal:
+        return "malformed_type"
+    if neg_val:
         return "negative_size_or_price"
-    if bad:
+    if neg_mal:
+        return "malformed_type"
+    if bad_val:
         return "bad_multiplier"
+    if bad_mal:
+        return "malformed_type"
     if unknown:
         return "unknown_contract"
-    if malformed:
+    if other:
         return "malformed_type"
     return None
 

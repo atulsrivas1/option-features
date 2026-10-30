@@ -798,8 +798,8 @@ class Section9Rules(unittest.TestCase):
         # precedence: unordered, negative, bad multiplier, unknown contract, malformed type
         self.assertEqual(chk(self._p(t=9), self._p(t=5, price="-1.0000", mult=0, cid="ZZ")), "unordered_prints")
         self.assertEqual(chk(self._p(price="-1.0000", mult=0, cid="ZZ")), "negative_size_or_price")
-        self.assertEqual(chk(self._p(mult=0, cid="ZZ", size=1.5)), "bad_multiplier")
-        self.assertEqual(chk(self._p(cid="ZZ", size=1.5)), "unknown_contract")
+        self.assertEqual(chk(self._p(mult=0, cid="ZZ", size=1.5)), "malformed_type")      # item 15: a wrong-typed size reports at its slot, before bad_multiplier
+        self.assertEqual(chk(self._p(cid="ZZ", size=1.5)), "malformed_type")
         self.assertEqual(chk(self._p(size=1.5, price=1.5)), "malformed_type")
         self.assertEqual(flowgrid.price_ticks(".5"), 5000)
         self.assertEqual(flowgrid.price_ticks("1."), 10000)
@@ -833,6 +833,38 @@ class Section9Rules(unittest.TestCase):
         self.assertEqual(chk([self._p(seq=3, size="x"), self._p(seq=1)]), "unordered_prints")
         # a list in which the only defect is a malformed field of one print, then an ordered pair
         self.assertEqual(chk([self._p(seq=1, price=1.5), self._p(seq=2)]), "malformed_type")
+
+    def test_item_15_slots(self):
+        """IO contract section 9 item 15: type first per field, each wrong-typed field at its own slot of the precedence list."""
+        import decimal
+        flowgrid = lib()[0]
+        D = decimal.Decimal
+        contracts = {"K0": flowgrid.Contract("C", 1, "2026-12-18", "stock", "N")}
+        chk = lambda ps: flowgrid.check_prints(ps, contracts)  # noqa: E731
+        P = self._p
+        self.assertEqual(chk([P(mult=100.0, cid="ZZ")]), "malformed_type")           # (a) the multiplier slot precedes unknown_contract
+        self.assertEqual(chk([P(price=1.5, cid="ZZ")]), "unknown_contract")          # (b) price has no value code: its slot is after
+        self.assertEqual(chk([P(size=-3, cid="ZZ")]), "negative_size_or_price")
+        self.assertEqual(chk([P(size=1.5, price="-1.0000")]), "malformed_type")      # (c) size first
+        self.assertEqual(chk([P(size=5, price="-1.0000")]), "negative_size_or_price")
+        self.assertEqual(chk([P(size=-1, price=1.5)]), "negative_size_or_price")
+        self.assertEqual(chk([P(size=1.5, mult=0)]), "malformed_type")               # size slot precedes bad_multiplier
+        self.assertEqual(chk([P(mult=0, cid="ZZ", size=5, price=1.5)]), "bad_multiplier")
+        self.assertEqual(chk([P(price=1.5, mult=100.0, cid="ZZ")]), "malformed_type")
+        # the ordering slot: a genuine pair beats every wrong-typed field, a wrong-typed time or seq beats the later slots
+        self.assertEqual(chk([P(seq=3), P(seq=1, size=1.5)]), "unordered_prints")
+        self.assertEqual(chk([P(seq=3, mult=1.5), P(seq=1), P(seq=2.5)]), "unordered_prints")
+        self.assertEqual(chk([P(seq=1.5), P(seq=2, size=-1)]), "malformed_type")     # ordering slot before negative_size_or_price
+        self.assertEqual(chk([P(t=1.5, size=-1)]), "malformed_type")
+        self.assertEqual(chk([P(seq=None), P(seq=1, mult=0)]), "malformed_type")
+        self.assertEqual(chk([P(t=5, seq=9), P(t=3.0, seq=0), P(t=2, seq=0)]), "malformed_type")   # (5,3.0) and (3.0,2) not compared
+        # no exception on any input; unhashable ids and NaN decimals
+        for bad in ([1], {"a": 1}, (1, [2]), D("NaN"), b"x", None, 2.5):
+            self.assertIn(chk([P(cid=bad)]), ("malformed_type", "unknown_contract"), repr(bad))
+            self.assertEqual(chk([P(cid=bad, size=-1)]), "negative_size_or_price")
+        for field in ("price", "size", "mult", "t", "seq", "excl"):
+            for bad in (D("NaN"), D("sNaN"), float("nan"), float("inf"), "x", None, b"1", [1], {1: 2}, 1.5, True):
+                self.assertIn(chk([P(**{field: bad})]), ("malformed_type", None), (field, repr(bad)))
 
     def test_additions_rows_print_codes(self):
         """Every additions row with prints: the print-level code (or None for an available row) of check_prints equals the
@@ -919,7 +951,7 @@ class TapeAgreement(unittest.TestCase):
         sizes = [0, 1, 5, 100, -1, -5, True, False, 1.5, -1.5, "5", None, D("5"), D("NaN"), Fr(5), b"5"]
         mults = [100, 100, 100, 10, 1, 0, -100, True, 100.0, "100", None, D("100"), D("NaN"), Fr(100)]
         excls = [0, 0, 0, 1, True, False, 2, -1, 1.0, "1", None, D("1")]
-        cids = ["K0", "K0", "K1", "ZZ", None, 7]
+        cids = ["K0", "K0", "K1", "ZZ", None, 7, [1], {"a": 1}, D("NaN")]
         return times, seqs, prices, sizes, mults, excls, cids
 
     def test_tape_and_check_prints_agree_over_random_lists(self):
