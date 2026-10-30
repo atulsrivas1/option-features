@@ -27,7 +27,7 @@ class RowIntegrity(unittest.TestCase):
         by = {}
         for f, r in ROWS:
             by[f] = by.get(f, 0) + 1
-        self.assertEqual(by, A.EXPECTED_ROWS)
+        self.assertEqual(by, dict(A.EXPECTED_ROWS, **A.EXPECTED_ADD_ROWS))
         self.assertEqual(len({r["id"] for _, r in ROWS}), len(ROWS))
 
 

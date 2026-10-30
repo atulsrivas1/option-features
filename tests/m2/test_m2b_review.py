@@ -9,8 +9,8 @@ import random
 import unittest
 from fractions import Fraction
 
-from option_features import episodes as E, m2prints as M, printtape as PT
-from test_m2b_properties import LANES, NS, OPEN, SEEDS, Scenario
+from option_features import episodes as E, m2prints as _M, printtape as PT
+from test_m2b_properties import LANES, M, NS, OPEN, SEEDS, Scenario
 
 CONS = {"A": ("C", 1, "2026-11-20", "stock")}
 
@@ -138,7 +138,7 @@ class PreOpen(unittest.TestCase):
                  (lambda o: M.f18_put_share(tape, T, at_least="0", open_ns=o), "put_volume"),
                  (lambda o: M.f7_concentration(tape, T, open_ns=o), "total_premium"))
         for fn, key in pairs:
-            clipped, plain = fn(OPEN), fn(None)
+            clipped, plain = fn(OPEN), fn(OPEN - 1000 * NS)
             self.assertNotEqual(clipped["value"][key], plain["value"][key])
             self.assertEqual(clipped["coverage"]["eligible_count"], 1)
         sw = M.f7_sweep(tape, [T, OPEN + 61 * NS], open_ns=OPEN)
@@ -150,6 +150,19 @@ class PreOpen(unittest.TestCase):
         self.assertEqual(M.f18_sweep(tape, [T], at_least="0", open_ns=OPEN)[0]["value"]["put_volume"], 0)
         self.assertEqual(M.f4_sweep(tape, [T], threshold_ticks=1, open_ns=OPEN)[0]["value"]["large_count"], 1)
 
+    def test_open_is_required_for_f4_f7_f17_f18(self):
+        tape = PT.build_tape([("A", OPEN + NS, "1.0000", 5, 100, 0, 0)], CONS)
+        T = OPEN + 60 * NS
+        for call in (lambda: _M.f4_large_prints(tape, T), lambda: _M.f7_concentration(tape, T),
+                     lambda: _M.f17_window_premium(tape, T, "A"), lambda: _M.f18_put_share(tape, T, at_least=1),
+                     lambda: _M.f4_large_prints(tape, T, open_ns=1.5), lambda: _M.f7_sweep(tape, [T])[0],
+                     lambda: _M.f17_sweep(tape, [T], ["A"])[0][0], lambda: _M.f18_sweep(tape, [T], at_least=1)[0]):
+            r = call()
+            self.assertEqual((r["status"], r["code"]), ("invalid_input", "malformed_type"))
+        for call in (lambda: _M.f17_columns(tape, T), lambda: _M.f17_sweep_columns(tape, [T])):
+            with self.assertRaises(ValueError):
+                call()
+
     def test_sweeps_with_open_equal_single_on_random_streams(self):
         for seed in range(1, 1 + min(6, len(SEEDS))):
             sc = Scenario(seed)
@@ -159,6 +172,42 @@ class PreOpen(unittest.TestCase):
                 for T, a, b in zip(sc.cuts, f7, f17):
                     self.assertEqual(M.canonical_line(a), M.canonical_line(M.f7_concentration(sc.tape, T, window_s=W, open_ns=OPEN)))
                     self.assertEqual([M.canonical_line(r) for r in b], [M.canonical_line(r) for r in M.f17_many(sc.tape, T, open_ns=OPEN)])
+
+
+class FractionalThresholds(unittest.TestCase):
+    """Exact comparison with a fractional N (a floor of N or of the ratio would flip these)."""
+
+    def test_f4_count_against_fractional_n(self):
+        tape = PT.build_tape([("A", OPEN + 100 * NS, "10.0000", 3, 100, 0, 0)], CONS)
+        T = OPEN + 200 * NS
+        self.assertFalse(M.f4_large_prints(tape, T, threshold_ticks=1, n="3/2")["fired"])      # count 1 < 3/2
+        self.assertTrue(M.f4_large_prints(tape, T, threshold_ticks=1, n="1")["fired"])
+        self.assertFalse(M.f4_large_prints(tape, T, threshold_ticks=1, n="5/4")["fired"])
+
+    def test_f1_ratio_against_fractional_n(self):
+        def tape_for(a, b):                      # p900 = (a + b) units, p60 = b units; ratio = 15 b / (a + b)
+            return PT.build_tape([("A", OPEN + 400 * NS, 10000, a, 100, 0, 0), ("A", OPEN + 870 * NS, 10000, b, 100, 0, 1)], CONS)
+        T = OPEN + 900 * NS
+        t32 = tape_for(9, 1)                     # ratio 3/2
+        for n, want in (("3/2", True), ("7/4", False), (2, False), ("5/4", True), ("1", True)):
+            r = M.f1_premium_surge(t32, T, OPEN, n=n)
+            self.assertEqual((r["value"]["ratio"], r["fired"]), (Fraction(3, 2), want), n)
+        t2 = tape_for(13, 2)                     # ratio 2
+        for n, want in (("5/2", False), ("2", True), ("9/4", False), ("3/2", True)):
+            self.assertEqual(M.f1_premium_surge(t2, T, OPEN, n=n)["fired"], want, n)
+
+
+class TextParameters(unittest.TestCase):
+    def test_rational_text_grammar(self):
+        tape = PT.build_tape([("A", OPEN + NS, "1.0000", 5, 100, 0, 0)], CONS)
+        T = OPEN + 900 * NS
+        for bad in ("1_0", " 3 ", "3 ", "1e3", "+3", "3/", "/3", "1/0", "\u0663", "", "1.", "--1"):
+            r = M.f1_premium_surge(tape, T, OPEN, n=bad)
+            self.assertEqual((r["status"], r["code"]), ("invalid_input", "malformed_type"), bad)
+        for good in ("3", "-3", "3/2", ".5", "0.5", "2.50"):
+            self.assertEqual(M.f1_premium_surge(tape, T, OPEN, n=good)["status"], "available", good)
+        r = E.f12_episodes([], [], T, OPEN, grid_s=60.0)
+        self.assertEqual((r["status"], r["code"]), ("invalid_input", "malformed_type"))
 
 
 class FractionalAndCoverage(unittest.TestCase):

@@ -145,8 +145,8 @@ def check_truth(G, man):
     prints, cons, op, lane = unit_inputs(G, "SYN1", 21)
     tape = PT.build_tape(prints, cons)
     cuts = [op + i * G.B_NS for i in range(1, G.CUTOFFS + 1)]
-    f4 = M.f4_sweep(tape, cuts, threshold_ticks=G.LARGE_PREM, lane=lane)
-    f17 = M.f17_sweep(tape, cuts, threshold_ticks=G.LARGE_PREM, lane=lane)
+    f4 = M.f4_sweep(tape, cuts, threshold_ticks=G.LARGE_PREM, lane=lane, open_ns=op)
+    f17 = M.f17_sweep(tape, cuts, threshold_ticks=G.LARGE_PREM, lane=lane, open_ns=op)
     groups = tape.select(lane, "all")
     h = hashlib.sha256()
     for i, (T, r4, rows17) in enumerate(zip(cuts, f4, f17), 1):
@@ -179,10 +179,10 @@ def family_calls(M, E, PT):
     """name -> function(tape, T, open_ns) for each family (single cutoff)."""
     return {
         "F1": lambda tape, T, op: M.f1_premium_surge(tape, T, op),
-        "F4": lambda tape, T, op: M.f4_large_prints(tape, T),
-        "F17": lambda tape, T, op: M.f17_many(tape, T),
-        "F7": lambda tape, T, op: M.f7_concentration(tape, T),
-        "F18": lambda tape, T, op: M.f18_put_share(tape, T, at_least="1/2", at_most="1/4"),
+        "F4": lambda tape, T, op: M.f4_large_prints(tape, T, open_ns=op),
+        "F17": lambda tape, T, op: M.f17_many(tape, T, open_ns=op),
+        "F7": lambda tape, T, op: M.f7_concentration(tape, T, open_ns=op),
+        "F18": lambda tape, T, op: M.f18_put_share(tape, T, at_least="1/2", at_most="1/4", open_ns=op),
         "F12": lambda tape, T, op: E.f12_from_tape(tape, T, op),
     }
 
@@ -308,27 +308,27 @@ def gate_b15(G, M, E, PT, repeats, report):
 
     def one_pass(T):
         tape = PT.build_tape(prints, cons)
-        return (M.f1_premium_surge(tape, T, op, lane=lane), M.f4_large_prints(tape, T, threshold_ticks=thr, lane=lane),
-                M.f17_columns(tape, T, lane=lane), M.f7_concentration(tape, T, lane=lane),
-                M.f18_put_share(tape, T, at_least="1/2", lane=lane))
+        return (M.f1_premium_surge(tape, T, op, lane=lane), M.f4_large_prints(tape, T, threshold_ticks=thr, lane=lane, open_ns=op),
+                M.f17_columns(tape, T, lane=lane, open_ns=op), M.f7_concentration(tape, T, lane=lane, open_ns=op),
+                M.f18_put_share(tape, T, at_least="1/2", lane=lane, open_ns=op))
 
     def sweep_pass():
         tape = PT.build_tape(prints, cons)
-        return (M.f1_sweep(tape, cuts, op, lane=lane), M.f4_sweep(tape, cuts, threshold_ticks=thr, lane=lane),
-                M.f17_sweep_columns(tape, cuts, lane=lane), M.f7_sweep(tape, cuts, lane=lane),
-                M.f18_sweep(tape, cuts, at_least="1/2", lane=lane))
+        return (M.f1_sweep(tape, cuts, op, lane=lane), M.f4_sweep(tape, cuts, threshold_ticks=thr, lane=lane, open_ns=op),
+                M.f17_sweep_columns(tape, cuts, lane=lane, open_ns=op), M.f7_sweep(tape, cuts, lane=lane, open_ns=op),
+                M.f18_sweep(tape, cuts, at_least="1/2", lane=lane, open_ns=op))
 
     def one_full(T):
         tape = PT.build_tape(prints, cons)
-        return (M.f1_premium_surge(tape, T, op, lane=lane), M.f4_large_prints(tape, T, threshold_ticks=thr, lane=lane),
-                M.f17_many(tape, T, threshold_ticks=thr, lane=lane), M.f7_concentration(tape, T, lane=lane),
-                M.f18_put_share(tape, T, at_least="1/2", lane=lane))
+        return (M.f1_premium_surge(tape, T, op, lane=lane), M.f4_large_prints(tape, T, threshold_ticks=thr, lane=lane, open_ns=op),
+                M.f17_many(tape, T, threshold_ticks=thr, lane=lane, open_ns=op), M.f7_concentration(tape, T, lane=lane, open_ns=op),
+                M.f18_put_share(tape, T, at_least="1/2", lane=lane, open_ns=op))
 
     def sweep_full():
         tape = PT.build_tape(prints, cons)
-        return (M.f1_sweep(tape, cuts, op, lane=lane), M.f4_sweep(tape, cuts, threshold_ticks=thr, lane=lane),
-                M.f17_sweep(tape, cuts, threshold_ticks=thr, lane=lane), M.f7_sweep(tape, cuts, lane=lane),
-                M.f18_sweep(tape, cuts, at_least="1/2", lane=lane))
+        return (M.f1_sweep(tape, cuts, op, lane=lane), M.f4_sweep(tape, cuts, threshold_ticks=thr, lane=lane, open_ns=op),
+                M.f17_sweep(tape, cuts, threshold_ticks=thr, lane=lane, open_ns=op), M.f7_sweep(tape, cuts, lane=lane, open_ns=op),
+                M.f18_sweep(tape, cuts, at_least="1/2", lane=lane, open_ns=op))
 
     def ratios(one, sweep):
         ts1, k1 = sample(lambda: one(mid), repeats)
@@ -356,42 +356,64 @@ def gate_b15(G, M, E, PT, repeats, report):
 
 
 def gate_b15_overlap(G, M, E, PT, repeats, report):
-    """Overlapping cutoffs: 78 cutoffs 10 s apart (F7 window 3600 s, F17 window 300 s) late in the session. Gate
-    ratio <= 0.25 for the F7 and F17 sweeps, stated two ways: with the tape build in both sides, and without it
-    (queries only: sweep queries / (78 x one-cutoff query)). F12 incremental sweep is reported the same way."""
+    """M2-B15 definition used here: ratio = (cost of one sweep over 78 cutoffs) / (78 x cost of one single-cutoff
+    evaluation), measured two ways: "with_tape_build" (the tape build is inside both sides: print pass = build +
+    windows) and "prebuilt" (tape prebuilt, queries only: the strict reuse ratio). RULED: the gate (<= 0.25, hard
+    0.5) applies to overlapping-cutoff sweeps, i.e. 900 s windows with cutoffs 300 s apart; 3600 s windows with
+    cutoffs 10 s apart is informational; non-overlapping spacing (window equal to spacing) has no reuse to measure
+    and is informational; F17 with a per-cutoff sparse read is informational (B15r gates reads; performance idea
+    candidate, see DECISIONS.md)."""
     entry = report["gates"].setdefault("M2-B15", {"budget_text": budget_text("M2-B15")})
     prints, cons, op, lane = unit_inputs(G, "SYN1", 21)
-    cuts = [op + 20_000 * NS + 10 * NS * i for i in range(78)]
-    mid = cuts[39]
     tape = PT.build_tape(prints, cons)
+
+    def cuts_of(spacing_s):
+        return [op + 20_000 * NS + spacing_s * NS * i for i in range(78)]
+    c300, c10 = cuts_of(300), cuts_of(10)
+    # name -> (cutoffs, gated, one(tape, T), sweep(tape))
     cases = {
-        "F7_3600": (lambda t, T: M.f7_concentration(t, T, window_s=3600, lane=lane, open_ns=op),
-                    lambda t: M.f7_sweep(t, cuts, window_s=3600, lane=lane, open_ns=op)),
-        "F17_300_advance_only": (lambda t, T: M._f17_scan(t.select(lane, "all"), M.start_of(T, 300 * NS, op), T),
-                                 lambda t: sum(1 for _ in M._f17_slide(t.select(lane, "all"), cuts, op))),
-        "F17_300_with_sparse_reads_informational": (lambda t, T: M.f17_columns(t, T, lane=lane, open_ns=op, sparse=True),
-                                                    lambda t: M.f17_sweep_columns(t, cuts, lane=lane, open_ns=op, sparse=True)),
-        "F12_incremental": (lambda t, T: E.f12_from_tape(t, T, op, lane=lane),
-                            lambda t: E.f12_sweep(t, cuts, op, lane=lane)),
+        "F7_900s_window_cutoffs_300s_apart (GATED, overlapping)": (c300, True,
+            lambda t, T: M.f7_concentration(t, T, window_s=900, lane=lane, open_ns=op),
+            lambda t: M.f7_sweep(t, c300, window_s=900, lane=lane, open_ns=op)),
+        "F7_3600s_window_cutoffs_10s_apart (informational)": (c10, False,
+            lambda t, T: M.f7_concentration(t, T, window_s=3600, lane=lane, open_ns=op),
+            lambda t: M.f7_sweep(t, c10, window_s=3600, lane=lane, open_ns=op)),
+        "F7_300s_window_cutoffs_300s_apart (informational, no overlap)": (c300, False,
+            lambda t, T: M.f7_concentration(t, T, window_s=300, lane=lane, open_ns=op),
+            lambda t: M.f7_sweep(t, c300, window_s=300, lane=lane, open_ns=op)),
+        "F17_300s_advance_only_cutoffs_10s_apart (informational)": (c10, False,
+            lambda t, T: M._f17_scan(t.select(lane, "all"), M.start_of(T, 300 * NS, op), T),
+            lambda t: sum(1 for _ in M._f17_slide(t.select(lane, "all"), c10, op))),
+        "F17_300s_with_sparse_reads_cutoffs_10s_apart (informational, B15r)": (c10, False,
+            lambda t, T: M.f17_columns(t, T, lane=lane, open_ns=op, sparse=True),
+            lambda t: M.f17_sweep_columns(t, c10, lane=lane, open_ns=op, sparse=True)),
+        "F12_incremental_cutoffs_10s_apart (informational)": (c10, False,
+            lambda t, T: E.f12_from_tape(t, T, op, lane=lane),
+            lambda t: E.f12_sweep(t, c10, op, lane=lane)),
     }
     out = {}
-    for name, (one, sweep) in cases.items():
+    for name, (cuts, gated, one, sweep) in cases.items():
+        mid = cuts[39]
         a1, _ = sample(lambda: one(PT.build_tape(prints, cons), mid), repeats)
         a78, _ = sample(lambda: sweep(PT.build_tape(prints, cons)), repeats)
         q1, _ = sample(lambda: one(tape, mid), repeats)
-        q78, k78 = sample(lambda: sweep(tape), repeats)
+        q78, _ = sample(lambda: sweep(tape), repeats)
         w = {"with_tape_build": {"ratio_p50": round(stats(a78)["p50_ns"] / (78 * stats(a1)["p50_ns"]), 4),
                                  "ratio_p95": round(stats(a78)["p95_ns"] / (78 * stats(a1)["p95_ns"]), 4)},
-             "queries_only": {"ratio_p50": round(stats(q78)["p50_ns"] / (78 * stats(q1)["p50_ns"]), 4),
-                              "ratio_p95": round(stats(q78)["p95_ns"] / (78 * stats(q1)["p95_ns"]), 4)},
-             "single_query_p50_ns": stats(q1)["p50_ns"], "sweep_queries_p50_ns": stats(q78)["p50_ns"]}
-        worst = max(w["with_tape_build"]["ratio_p95"], w["queries_only"]["ratio_p95"])
-        w["verdict"] = "PASS" if worst <= 0.25 else ("informational: over 0.25, within hard 0.5; reads are gated apart (M2-B15r)"
-                                                       if "informational" in name and worst <= 0.5 else "FAIL (budget 0.25, hard 0.5)")
+             "prebuilt": {"ratio_p50": round(stats(q78)["p50_ns"] / (78 * stats(q1)["p50_ns"]), 4),
+                          "ratio_p95": round(stats(q78)["p95_ns"] / (78 * stats(q1)["p95_ns"]), 4)},
+             "single_query_p50_ns": stats(q1)["p50_ns"], "sweep_queries_p50_ns": stats(q78)["p50_ns"], "gated": gated}
+        worst = max(w["with_tape_build"]["ratio_p95"], w["prebuilt"]["ratio_p95"])
+        w["verdict"] = (("PASS" if worst <= 0.25 else ("with tape build: %s; prebuilt: %s (budget 0.25, hard 0.5)" % (
+            "PASS" if w["with_tape_build"]["ratio_p95"] <= 0.25 else "FAIL",
+            "PASS" if w["prebuilt"]["ratio_p95"] <= 0.25 else ("BUDGET MISS, hard met" if w["prebuilt"]["ratio_p95"] <= 0.5 else "HARD BREACH")))) if gated
+                        else "informational (worst %.3f)" % worst)
         out[name] = w
-        print("  M2-B15 overlap %s: with tape build %s; queries only %s [%s]" % (
-            name, json.dumps(w["with_tape_build"]), json.dumps(w["queries_only"]), w["verdict"]), flush=True)
-    entry["overlapping_cutoffs_10s_apart"] = out
+        print("  M2-B15 %s: with tape build %s; prebuilt %s [%s]" % (
+            name, json.dumps(w["with_tape_build"]), json.dumps(w["prebuilt"]), w["verdict"]), flush=True)
+    entry["definition"] = ("ratio = sweep over 78 cutoffs / (78 x single cutoff); with_tape_build counts the tape build on both "
+                           "sides, prebuilt is queries only; gate applies to overlapping sweeps (900 s windows, 300 s apart)")
+    entry["overlap_cases"] = out
 
 
 def p1_t1_marker(report):

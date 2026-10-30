@@ -18,6 +18,8 @@ import m2_load  # noqa: E402  (independent loader shipped with the fixtures)
 
 MINE = ("M2-1", "M2-4", "M2-5", "M2-6", "M2-9", "M2-11")
 FILES = ("F1", "F4", "F17", "F7", "F18F19", "F12", "lane", "structural", "delayed", "sessionopen")
+ADD_FILES = ("add_data", "add_params", "add_struct")
+EXPECTED_ADD_ROWS = {"add_data": 30, "add_params": 16, "add_struct": 60}
 EXPECTED_ROWS = {"F1": 44, "F4": 34, "F17": 32, "F7": 38, "F18F19": 33, "F12": 54, "lane": 5, "structural": 18,
                  "delayed": 4, "sessionopen": 6}
 
@@ -26,6 +28,9 @@ def load_rows():
     rows = []
     for f in FILES:
         _, rs = m2_load.load_dataset(str(CORRECTNESS / ("m2_cases_%s.json" % f)))
+        rows.extend((f, r) for r in rs if r["output_id"] in MINE)
+    for f in ADD_FILES:
+        _, rs = m2_load.load_dataset(str(CORRECTNESS / "additions" / ("m2_cases_%s.json" % f)))
         rows.extend((f, r) for r in rs if r["output_id"] in MINE)
     return rows
 

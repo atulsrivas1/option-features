@@ -12,10 +12,23 @@ import random
 import unittest
 from fractions import Fraction
 
-from option_features import episodes as E, m2prints as M, printtape as PT
+from option_features import episodes as E, m2prints as _M, printtape as PT
 
 NS = 1_000_000_000
 OPEN = 1_790_000_000 * NS
+
+
+class _WithOpen:
+    """The request session's open is required by F4, F7, F17 and F18: inject it unless the test passes one."""
+
+    def __getattr__(self, name):
+        fn = getattr(_M, name)
+        if name.startswith(("f4_", "f7_", "f17_", "f18_")):
+            return lambda *a, **k: fn(*a, **{"open_ns": OPEN, **k})
+        return fn
+
+
+M = _WithOpen()
 LANES = ("stock", "etf_index")
 
 

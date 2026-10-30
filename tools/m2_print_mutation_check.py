@@ -105,7 +105,7 @@ MUTS = [
     ("f7_fire_exclusive", [], MP, [("fired = best_s * th.denominator >= cut or best_e * th.denominator >= cut", "fired = best_s * th.denominator > cut or best_e * th.denominator > cut", 1)], "share exactly 3/5"),
     ("f7_fire_strike_only", [], MP, [("fired = best_s * th.denominator >= cut or best_e * th.denominator >= cut", "fired = best_s * th.denominator >= cut", 1)], ""),
     ("f7_zero_total_available", [], MP, [("    if total == 0:\n        return result(\"M2-6\"", "    if total < 0:\n        return result(\"M2-6\"", 1)], ""),
-    ("f7_sweep_no_removal", [], MP, [("                by_s[c_strike[c]] -= v\n", "                by_s[c_strike[c]] -= 0\n", 1)], "sweep path"),
+    ("f7_sweep_no_removal", [], MP, [("                fold(ci, p, lo, nl, -1)\n", "                pass\n", 1)], "sweep path"),
     ("f18_share_swapped", ["f18_swap"], MP, [('"put_share": Fraction(put, total)', '"put_share": Fraction(call, total)', 1)], ""),
     ("f18_exclusive", ["f18_exclusive"], MP,
      [("put * al.denominator >= al.numerator * total", "put * al.denominator > al.numerator * total", 1),
@@ -129,6 +129,10 @@ MUTS = [
     ("ticks4_not_strict", [], PT, [("        if not _DECIMAL.fullmatch(value):", "        if False:", 1)], "review: strict price text"),
     ("unknown_contract_silent", [], PT, [("                unknown = True\n                continue", "                continue", 1)], "PR 79 ruling 5"),
     ("malformed_price_silent", [], PT, [("                malformed = True\n                price = 0", "                price = 0", 1)], "PR 79 ruling 5"),
+    ("f4_fire_floor_N", [], MP, [("count * nf.denominator >= nf.numerator", "count >= nf.numerator // nf.denominator", 1)], "fractional N floored"),
+    ("f1_fire_floor_ratio", [], MP, [("fired = 15 * p60 * nf.denominator >= nf.numerator * p900", "fired = (15 * p60) // p900 >= nf.numerator // nf.denominator", 1)], "fractional ratio floored"),
+    ("rational_text_loose", [], MP, [("    if k is str and _RATIONAL.fullmatch(x):", "    if k is str:", 1)], "text parameter grammar"),
+    ("open_not_required_f4", [], MP, [("bad_param=nf is None or not is_int(threshold_ticks) or not is_int(open_ns))", "bad_param=nf is None or not is_int(threshold_ticks))", 1)], "open_ns required"),
     ("f12_peak_not_exact", [], EP, [("pk_a, pk_b, pk_k = a, b, k", "pk_a, pk_b, pk_k = a, b, k if pk_k is None else pk_k", 2)], "peak time sticks to the first point"),
 ]
 

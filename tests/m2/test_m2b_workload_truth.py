@@ -31,8 +31,8 @@ class WorkloadTruth(unittest.TestCase):
         tape = PT.build_tape(prints, cons)
         op = G.session_open_ns(21)
         cuts = [op + i * G.B_NS for i in range(1, G.CUTOFFS + 1)]
-        f4 = M.f4_sweep(tape, cuts, threshold_ticks=G.LARGE_PREM)
-        f17 = M.f17_sweep(tape, cuts, threshold_ticks=G.LARGE_PREM)
+        f4 = M.f4_sweep(tape, cuts, threshold_ticks=G.LARGE_PREM, open_ns=op)
+        f17 = M.f17_sweep(tape, cuts, threshold_ticks=G.LARGE_PREM, open_ns=op)
         groups = tape.select("stock", "all")
         h = hashlib.sha256()
         for i, (T, r4, rows17) in enumerate(zip(cuts, f4, f17), 1):
