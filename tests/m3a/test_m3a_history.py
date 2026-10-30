@@ -281,6 +281,32 @@ class Reads(unittest.TestCase):
         self.assertEqual(g(st, "A/stock/iv30", "iv30", c, 1, x=0).status, "available")
         self.assertEqual(g(st, "A/stock/iv30", "iv30", c, 1, x=-1).code, "threshold_out_of_range")
 
+    def test_none_sessions_mean_defaults(self):
+        st, c = self.st, self.cal.ids[260]
+        for kw in ({"min_sessions": None}, {"max_sessions": None}, {"min_sessions": None, "max_sessions": None}):
+            a = MH.scalar_baseline(st, "A/stock/iv30_close", "iv30_close", c, **kw)
+            b = MH.scalar_baseline(st, "A/stock/iv30_close", "iv30_close", c)
+            self.assertEqual((a.status, a.value), (b.status, b.value), kw)
+            a = MH.same_minute_column(st, "A/stock/iv30", "iv30", c, 3, **kw)
+            b = MH.same_minute_column(st, "A/stock/iv30", "iv30", c, 3)
+            self.assertEqual((a.status, a.value), (b.status, b.value), kw)
+
+    def test_subclass_keys_are_malformed(self):
+        class S(str):
+            def __hash__(self):
+                raise RuntimeError("caller code")
+
+        class I(int):
+            def __hash__(self):
+                raise RuntimeError("caller code")
+
+        st, c = self.st, self.cal.ids[260]
+        for sid, met, w, lane in ((S("A/stock/iv30"), "iv30", 0, "stock"), ("A/stock/iv30", S("iv30"), 0, "stock"),
+                                  ("A/stock/iv30", "iv30", I(0), "stock"), ("A/stock/iv30", "iv30", 0, S("stock")),
+                                  ("A/stock/iv30", "iv30", True, "stock")):
+            self.assertEqual(MH.scalar_baseline(st, sid, met, c, window_s=w, lane=lane).code, "malformed_type")
+            self.assertEqual(MH.same_minute_column(st, sid, met, c, 1, window_s=w, lane=lane).code, "malformed_type")
+
     def test_as_of_excluded_and_cache_per_as_of(self):
         cal, st = self.cal, self.st
         last = cal.ids[259]                          # the last stored session
