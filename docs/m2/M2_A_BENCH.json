@@ -10,20 +10,20 @@
     "append 200125 records (k=25)": {
      "unit": "records/s",
      "value": {
-      "p50_rate": 143667.29977193422,
-      "p5_rate": 123887.45045662702,
+      "p50_rate": 85394.92651939922,
+      "p5_rate": 78281.91833004417,
       "time": {
-       "max": 1.7005053,
+       "max": 2.563373,
        "n": 30,
-       "p50": 1.3898275,
-       "p95": 1.6153775
+       "p50": 2.3364163,
+       "p95": 2.5564652
       }
      }
     },
     "append open then seal each": {
      "unit": "records/s (informational)",
      "value": {
-      "p50_rate": 140224.65794467542
+      "p50_rate": 87930.20663697418
      }
     }
    }
@@ -38,15 +38,15 @@
     "process working set and peak (bench, includes all stores)": {
      "unit": "bytes",
      "value": {
-      "peak": 2360340480,
-      "working_set": 1093111808
+      "peak": 2170245120,
+      "working_set": 1033396224
      }
     },
     "store (k=20) series, records, est bytes": {
      "unit": "(getsizeof estimate; series counts distinct series ids)",
      "value": {
-      "est_bytes": 65033525,
-      "est_bytes_per_series": 32500,
+      "est_bytes": 67595125,
+      "est_bytes_per_series": 33780,
       "records": 160100,
       "rings": 8005,
       "series": 2001
@@ -55,10 +55,10 @@
     "tracemalloc bytes of the k=20 store, per contract series": {
      "unit": "bytes (budget: 64 KB per contract-level series; 512 MB store)",
      "value": {
-      "bytes_per_contract_series": 37199,
+      "bytes_per_contract_series": 38544,
       "contract_series": 2000,
       "records": 160100,
-      "store_bytes": 74399582
+      "store_bytes": 77089238
      }
     }
    }
@@ -73,19 +73,19 @@
     "A part: 78 cutoffs x 2000 series SEPARATE calls (not fused)": {
      "unit": "s",
      "value": {
-      "max": 12.6056765,
+      "max": 13.1387005,
       "n": 3,
-      "p50": 12.266544,
-      "p95": 12.6056765
+      "p50": 12.8579099,
+      "p95": 13.1387005
      }
     },
     "A part: 78 cutoffs x 2000 series fused reads": {
      "unit": "s (reads = 78 x 4 x 2000 = 624000)",
      "value": {
-      "max": 12.008968,
+      "max": 12.171826,
       "n": 3,
-      "p50": 11.9665859,
-      "p95": 12.008968
+      "p50": 12.1565799,
+      "p95": 12.171826
      }
     }
    }
@@ -97,56 +97,63 @@
     "metric": "seconds per worker start (GATED); bytes per worker (GATED)"
    },
    "results": {
-    "fresh worker, mmap snapshot": {
+    "fresh worker, binary mmap snapshot (zero copy)": {
      "unit": "seconds, private rss delta bytes",
      "value": {
-      "rss_delta": 202354688,
-      "seconds": 1.2117365999147296
+      "rss_delta": 205434880,
+      "seconds": 1.2594677000306547
      }
     },
-    "fresh worker, snapshot read into bytes": {
+    "fresh worker, binary snapshot read into bytes": {
      "unit": "seconds, private rss delta bytes",
      "value": {
-      "rss_delta": 202395648,
-      "seconds": 1.1473473999649286
+      "rss_delta": 204947456,
+      "seconds": 1.2117790000047535
+     }
+    },
+    "fresh worker, ruled text snapshot (M2SNAP1)": {
+     "unit": "seconds, private rss delta bytes",
+     "value": {
+      "rss_delta": 227573760,
+      "seconds": 2.962756199995056
      }
     },
     "fresh worker, store load (text)": {
      "unit": "seconds, private rss delta bytes",
      "value": {
-      "rss_delta": 248643584,
-      "seconds": 3.8114969001617283
+      "rss_delta": 227356672,
+      "seconds": 2.5704228000249714
      }
     },
     "mmap snapshot (zero copy) seconds per worker start": {
      "unit": "s",
      "value": {
-      "max": 2.2136486,
+      "max": 2.2995788,
       "n": 5,
-      "p50": 1.8816034,
-      "p95": 2.2136486
+      "p50": 1.9714791,
+      "p95": 2.2995788
      }
     },
     "snapshot bytes": {
      "unit": "bytes (file, shared by all workers)",
-     "value": 86986896
+     "value": 87387144
     },
     "snapshot bytes copy seconds per worker start": {
      "unit": "s",
      "value": {
-      "max": 1.8595973,
+      "max": 1.8894195,
       "n": 5,
-      "p50": 1.8102733,
-      "p95": 1.8595973
+      "p50": 1.8211531,
+      "p95": 1.8894195
      }
     },
     "store load (text) seconds per worker start": {
      "unit": "s",
      "value": {
-      "max": 4.475332,
+      "max": 3.0580663,
       "n": 5,
-      "p50": 4.293761,
-      "p95": 4.475332
+      "p50": 2.9877484,
+      "p95": 3.0580663
      }
     }
    }
@@ -165,27 +172,27 @@
     "read 200125 records (verified, lazy grid)": {
      "unit": "records/s",
      "value": {
-      "p50_rate": 45333.45819430601,
-      "p5_rate": 43742.545051761335,
+      "p50_rate": 62888.01235857464,
+      "p5_rate": 60308.39808719993,
       "time": {
-       "max": 4.5750653,
+       "max": 3.3183604,
        "n": 5,
-       "p50": 4.4145099,
-       "p95": 4.5750653
+       "p50": 3.182244,
+       "p95": 3.3183604
       }
      }
     },
     "write 200125 records": {
      "unit": "records/s",
      "value": {
-      "bytes": 246396220,
-      "p50_rate": 30188.657044863474,
-      "p5_rate": 29848.890560178177,
+      "bytes": 205666112,
+      "p50_rate": 24399.953776337414,
+      "p5_rate": 23102.5320444385,
       "time": {
-       "max": 6.7046043,
+       "max": 8.6624704,
        "n": 5,
-       "p50": 6.6291455,
-       "p95": 6.7046043
+       "p50": 8.2018598,
+       "p95": 8.6624704
       }
      }
     }
@@ -201,8 +208,8 @@
     "per-session build, prints/s": {
      "unit": "prints/s (p5 judged)",
      "value": {
-      "p50_rate": 87700.28497061547,
-      "p5_rate": 76733.64794228015,
+      "p50_rate": 87156.74506142653,
+      "p5_rate": 75466.67498977782,
       "samples": 50
      }
     }
@@ -218,8 +225,8 @@
     "warm rank-ready view per series": {
      "unit": "s per series",
      "value": {
-      "p50_s": 1.3e-06,
-      "p95_s": 1.9e-06,
+      "p50_s": 1.5e-06,
+      "p95_s": 2e-06,
       "samples": 6000
      }
     }
@@ -235,8 +242,8 @@
     "cold view + sorted build per series": {
      "unit": "s per series",
      "value": {
-      "p50_s": 0.0002807,
-      "p95_s": 0.0007185,
+      "p50_s": 0.0002824,
+      "p95_s": 0.0007104,
       "samples": 6000
      }
     }
@@ -252,37 +259,37 @@
     "N=2000 warm views": {
      "unit": "s",
      "value": {
-      "max": 0.0010339,
+      "max": 0.001088,
       "n": 30,
-      "p50": 0.0008456,
-      "p95": 0.0010289
+      "p50": 0.0008666,
+      "p95": 0.001055
      }
     },
     "N=500 warm views": {
      "unit": "s",
      "value": {
-      "max": 0.0001869,
+      "max": 0.0002542,
       "n": 30,
-      "p50": 0.0001748,
-      "p95": 0.0001805
+      "p50": 0.0001732,
+      "p95": 0.0002229
      }
     },
     "N=6000 warm views": {
      "unit": "s",
      "value": {
-      "max": 0.003343,
+      "max": 0.0029092,
       "n": 30,
-      "p50": 0.0025518,
-      "p95": 0.0033174
+      "p50": 0.0025815,
+      "p95": 0.0028554
      }
     },
     "time(6000)/time(2000), median of paired ratios (RULED statistic, hard 4.0)": {
      "unit": "ratio",
-     "value": 2.9734231475811392
+     "value": 2.9324804548685144
     },
     "time(6000)/time(2000), ratio of p50 (also reported)": {
      "unit": "ratio",
-     "value": 3.0177388836329233
+     "value": 2.9788829909993075
     }
    }
   },
@@ -296,16 +303,16 @@
     "f2_eod per series (warm)": {
      "unit": "s per series",
      "value": {
-      "p50_s": 4.5e-06,
-      "p95_s": 5.8e-06,
+      "p50_s": 5.4e-06,
+      "p95_s": 7.5e-06,
       "samples": 6000
      }
     },
     "f2_intraday per series (warm)": {
      "unit": "s per series",
      "value": {
-      "p50_s": 6.2e-06,
-      "p95_s": 7.6e-06,
+      "p50_s": 7.3e-06,
+      "p95_s": 9e-06,
       "samples": 6000
      }
     }
@@ -321,37 +328,37 @@
     "N=2000 F2a batch": {
      "unit": "s",
      "value": {
-      "max": 0.0164854,
+      "max": 0.0161095,
       "n": 30,
-      "p50": 0.0143091,
-      "p95": 0.0160812
+      "p50": 0.0149879,
+      "p95": 0.0159464
      }
     },
     "N=500 F2a batch": {
      "unit": "s",
      "value": {
-      "max": 0.0044681,
+      "max": 0.0042253,
       "n": 30,
-      "p50": 0.0028934,
-      "p95": 0.0034776
+      "p50": 0.0033872,
+      "p95": 0.0041305
      }
     },
     "N=6000 F2a batch": {
      "unit": "s",
      "value": {
-      "max": 0.0615612,
+      "max": 0.066406,
       "n": 30,
-      "p50": 0.0440861,
-      "p95": 0.0611764
+      "p50": 0.0478321,
+      "p95": 0.0653353
      }
     },
     "time(6000)/time(2000), median of paired ratios (RULED statistic, hard 4.0)": {
      "unit": "ratio",
-     "value": 2.987966372542208
+     "value": 3.341602605863192
     },
     "time(6000)/time(2000), ratio of p50 (also reported)": {
      "unit": "ratio",
-     "value": 3.0809834301248857
+     "value": 3.1913810473782185
     }
    }
   },
@@ -365,25 +372,25 @@
     "F10 batch N=2000": {
      "unit": "s",
      "value": {
-      "max": 0.0336692,
+      "max": 0.0331945,
       "n": 30,
-      "p50": 0.017381,
-      "p95": 0.0320771
+      "p50": 0.0184218,
+      "p95": 0.0330297
      }
     },
     "f10 per series (warm)": {
      "unit": "s per series",
      "value": {
-      "p50_s": 8.1e-06,
-      "p95_s": 1e-05,
+      "p50_s": 9.3e-06,
+      "p95_s": 1.14e-05,
       "samples": 6000
      }
     },
     "f20 per series (warm)": {
      "unit": "s per series",
      "value": {
-      "p50_s": 1.01e-05,
-      "p95_s": 1.25e-05,
+      "p50_s": 1.13e-05,
+      "p95_s": 1.39e-05,
       "samples": 6000
      }
     }
@@ -399,10 +406,10 @@
     "A part: fused F2a,b,c,d + F10, 2000 series": {
      "unit": "s (excludes the shared print pass and B stories)",
      "value": {
-      "max": 0.1253257,
+      "max": 0.1230452,
       "n": 30,
-      "p50": 0.1105793,
-      "p95": 0.1234654
+      "p50": 0.1155634,
+      "p95": 0.1198174
      }
     }
    }

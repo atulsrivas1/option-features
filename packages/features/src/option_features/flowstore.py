@@ -73,28 +73,43 @@ def _sparse(rec):
     return rec
 
 
-def _grid_text(rec):
+def _grid_text(rec, cache=None):
     """Grid as supplied: dense records list every point up to the supplied length (no padding); sparse records list
-    the supplied values only (the indexes go in `_idx_text`)."""
+    the supplied values only (the indexes go in `_idx_text`). `cache` (one dump call) reuses the text of a value array
+    shared by several records."""
     if rec.txt is not None:
         return rec.txt
     _sparse(rec)
     idx, vals = rec.idx, rec.vals
-    vals = vals if type(vals) is tuple else vals.tolist()
     if rec.sparse:
-        return ",".join(map(str, vals))
+        if cache is not None:
+            got = cache.get(id(vals))
+            if got is not None:
+                return got[1]
+        text = ",".join(map(str, vals if type(vals) is tuple else vals.tolist()))
+        if cache is not None:
+            cache[id(vals)] = (vals, text)
+        return text
+    vals = vals if type(vals) is tuple else vals.tolist()
     tokens = ["0"] * rec.minutes
     for i, v in zip(idx if type(idx) is tuple else idx.tolist(), vals):
         tokens[i] = str(v)
     return ",".join(tokens)
 
 
-def _idx_text(rec):
+def _idx_text(rec, cache=None):
     if rec.itxt is not None:
         return rec.itxt
     _sparse(rec)
     idx = rec.idx
-    return ",".join(map(str, idx if type(idx) is tuple else idx.tolist()))
+    if cache is not None:
+        got = cache.get(id(idx))
+        if got is not None:
+            return got[1]
+    text = ",".join(map(str, idx if type(idx) is tuple else idx.tolist()))
+    if cache is not None:
+        cache[id(idx)] = (idx, text)
+    return text
 
 
 def _own(x, memo):
@@ -237,10 +252,10 @@ def _head(series_id, metric):
     return '{"series_id":%s,"metric":%s,"session_id":' % (json.dumps(series_id), json.dumps(metric))
 
 
-def _body(head, window_s, rec):
+def _body(head, window_s, rec, cache=None):
     if rec.sparse:
         return '%s%s,"window_s":%d,"grid":[%s],"grid_idx":[%s],"total":%d,"complete":%s}' % (
-            head, json.dumps(rec.session_id), window_s, _grid_text(rec), _idx_text(rec), rec.total,
+            head, json.dumps(rec.session_id), window_s, _grid_text(rec, cache), _idx_text(rec, cache), rec.total,
             "true" if rec.complete else "false")
     return '%s%s,"window_s":%d,"grid":[%s],"total":%d,"complete":%s}' % (
         head, json.dumps(rec.session_id), window_s, _grid_text(rec), rec.total, "true" if rec.complete else "false")
@@ -435,8 +450,9 @@ class HistoryStore:
         return [_rec_sha(s, m, w, r) for (s, m, w), _, r in self._records()]
 
     def lines(self):
+        cache = {}
         for (s, m, w), ring, r in self._records():
-            body = _body(ring.head, w, r)
+            body = _body(ring.head, w, r, cache)
             yield body[:-1] + ',"content_sha256":"' + _rec_sha(s, m, w, r, body) + '"}'
 
     def content_hash(self):
