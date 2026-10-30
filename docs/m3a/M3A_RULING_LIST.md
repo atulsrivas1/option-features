@@ -2,12 +2,14 @@
 
 mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12
 
+Status: RULED 2026-10-30 (PO), interim pending design ratification where the design is silent. All 102 recommended rulings (R-01 to R-102) are accepted as written by the PO pass of 2026-10-30; SETTLED rows are unchanged; the explicit decisions and the exceptions list are in docs/decisions/2026-10-30-m3a-ruling-pass.md. The text below keeps the original wording; "RECOMMENDED" now reads as RULED.
+
 Author: Architect, 2026-10-30. Status: for ONE PO pass BEFORE any fixture author starts. 102 ambiguities and design-silent edge cases (R-01 to R-102), each with options and the Architect RECOMMENDED ruling. Rows marked SETTLED were ruled by the independent review of PR 101 (PO rulings) or follow directly from the M1 input record; they stay in the list so the ids are stable. Everything else is a proposal. Lesson of M2 applied: the precedence lists, type-first per field, trusted versus untrusted inputs and the canonical forms are decided here, once (R-66 to R-71). Where the design is silent an accepted ruling is interim pending design ratification. Companions: M3A_CAPABILITY_MATRIX.md, M3A_GATE_BUDGETS.md, M3A_FIXTURE_REQUIREMENTS.md, M3A_IO_CONTRACT.md. Sources: volatility-radar.md (VR), option-contracts.md (OC), workers audit (AUD), M1 code and M2 rulings.
 
 ## A. Scope
 | ID | Topic | Options | RECOMMENDED |
 |---|---|---|---|
-| R-01 | M3a row list | V1, V3-V10 only; add V11; add V21 | SETTLED: V11 is a design row and JOINS M3a (same two 25-delta points; tracker moved by the Auditor); V21 stays PROPOSED (derived from V8): accept it as M3A-11 or move it to M3b |
+| R-01 | M3a row list | V1, V3-V10 only; add V11; add V21 | SETTLED: V11 is a design row and JOINS M3a (same two 25-delta points; tracker moved by the Auditor); RULED 2026-10-30: V21 is INCLUDED (M3A-11) |
 | R-02 | V2 (ATM IV, M1) points unit and threshold form | leave M1 annual decimal; add points and threshold output | add the points form and threshold rule as a thin wrapper in M3a; M1 bytes unchanged |
 | R-03 | Rows left for later | V12-V15, V22 (M3b), V16-V19, V20, frame builder, presets | defer all; named as not built in the release note (history reuse is NOT deferred, see R-89) |
 | R-04 | Delta definition used to place 25 delta | spot delta N(d1)e^{-qT}; forward delta; delta with ATM IV | spot delta of the BSM model at the contract OWN IV with e^{-qT}, absolute value for puts (R25 Greeks convention); target 0.25 inclusive |
@@ -137,7 +139,7 @@ Author: Architect, 2026-10-30. Status: for ONE PO pass BEFORE any fixture author
 | R-96 | Deliberate exceptions register | silent; stated | R-46, R-51, R-58 and R-81 are stated as DELIBERATE exceptions in the matrix section 5 with their sources; the re-audit records V3 and V4 as "partial: 30-day form only" |
 | R-97 | Entry and crossing forms | in scope; deferred | deferred by name (design 2.8), like M2; the comparison forms V4, V7, V10 stay in scope |
 | R-98 | Chain input record | extend; exact M1 | EXACTLY the M1 `ChainContract` plus request-level cutoff_ns, spot, rate, dividend_yield; lane only on history records; one convention per record type: chain strikes and quotes follow M1 (text decimal up to 8 places, or non-bool int = whole units x 10^8), the M2 ticks rule applies to print families only |
-| R-99 | Envelope extensions | silent; stated | `labels` (list), `coverage.contract_reasons` and the M3a coverage keys EXTEND the M2 Result envelope (M2 `label` becomes `labels`); additive, M2 results unchanged |
+| R-99 | Envelope extensions | silent; stated | RULED: M2 outputs keep their `label` field unchanged (no change to any M2 result); M3a results use `labels` (list); `coverage.contract_reasons` and the M3a coverage keys EXTEND the envelope, which supports both; additive |
 | R-100 | `cutoff_ns` versus `evaluation_ns` | independent; equal | `evaluation_ns` equals the chain `cutoff_ns` for every M3a output; a request with different values is the new structural VALUE code `cutoff_mismatch` at position 10, after the type checks of that slot (M2 reserves malformed_type for wrong types) |
 | R-101 | Scan order across contracts | contract-major; position-major | position-major: for each position of the request list in order, all contracts are scanned in input order; the reported code is the lowest failing position, ties by contract order; within one contract the fields of one position are checked in the order written |
 | R-102 | Duplicate-contract worked examples | none; two | (a) two contracts share an id and the second also has a wrong-typed bid: `duplicate_contract` (position 8) is reported before `malformed_type` (position 10), whatever the contract order; (b) two contracts with different ids share expiry, strike and right and one has a wrong-typed bid: `malformed_type` (position 10) is reported before `duplicate_contract` (position 11) |
