@@ -4,7 +4,7 @@
 
 Owner of this file: the Auditor on creation (PO-directed, M2 F-row re-audit); afterwards every release PR updates it (rule in docs/RELEASE_NOTE_TEMPLATE.md). As of 2026-10-30 against origin/main d3567af (M2 story B, PR 79). PR 80 (M2 story A: history store, grid builder, F2a-d, F10, F20, F19) is OPEN and not on main: its rows say "built, PR 80 pending merge" and become plain "done" (F2d stays partial) when it merges.
 
-How the statuses were checked: rows were derived from the design text (option-contracts, flow, volatility-radar, positioning), the baseline PARITY_CHECK (81 design rows) and PO_PARITY_RECONCILIATION, and then verified against the packages source, not the documents: exported functions were listed per module on main and on the PR 80 head (printtape, m2prints, episodes, imbalance, spreadwin, chainiv, windows, shares, quotes, quotehist; flowrank, flowstore, flowgrid, flowresult), fixture rows were recounted from the files (M2 correctness 570 rows in 14 files, additions 185 rows in 7 files, P1 121, M1 OC 110, M1 IV 41 plus 28 extra), and the M2 test suites were run (tests/m2: 430 passed, 1 skipped on main; 817 passed, 1 skipped on the PR 80 head). Performance figures are copied from the records named in each row, not re-measured by the Auditor.
+How the statuses were checked: rows were derived from the design text (option-contracts, flow, volatility-radar, positioning), the baseline PARITY_CHECK (81 design rows) and PO_PARITY_RECONCILIATION, and then verified against the packages source, not the documents: exported functions were listed per module on main and on the PR 80 head (printtape, m2prints, episodes, imbalance, spreadwin, chainiv, windows, shares, quotes, quotehist; flowrank, flowstore, flowgrid, flowresult), fixture rows were recounted by loading the files (M2 correctness 570 rows in 14 files, additions 185 rows in 7 files, P1 121, M1 OC 110, M1 IV 41 plus 28 extra), and the M2 test suites were run (tests/m2 on origin/main d3567af: 431 collected, 430 passed, 1 skipped (the PR 79 merge message says 431, the collected total); 817 passed, 1 skipped on the PR 80 head). Performance figures are copied from the records named in each row, not re-measured by the Auditor.
 
 Legend. Status: done (built and passing its independently authored rows), partial (part of the row is built or a gate is open), pending (nothing built), dropped. Evidence applies to every row: synthetic fixtures only; Windows x64, CPython 3.12 only; not validated on recorded data. The Evidence column adds the surface (lib: library module only, not on the wire; wire: operation of the frozen evaluator or variants1 schema; doc) and whether an independent review took place. Interim design rulings (requests 1-3, 6, 8 and the M2 rulings Q1-Q18, AMB-1..19, GRID) are pending design ratification; a changed answer regenerates the dependent fixtures, so every row that depends on one lists it under pending reasons. "Done" never means wired: no P1, M1 or M2 output is on the wire (wire exposure is a candidate16 item).
 
@@ -21,6 +21,10 @@ By status:
 | pending | 44 | 64 | 0 |
 | dropped | 0 | 1 | 0 |
 | total | 81 | 113 | 9 |
+
+Done and merged 30; built, PR 80 pending merge 8 (Developer evidence only; Tester approved at 81763a48 with conditions being applied).
+
+Done rows on the wire: 7; library-only: 30 (computed from the Evidence column; the remaining surface value is doc).
 
 Design rows counted by the baseline audit: 81 (OC 6, G 8, presets 1, F 25 including tick fallback and crossing form, V 22, PO 19). Baseline classes were 5 match, 12 differs, 13 partial, 51 missing, which is not directly comparable: this tracker folds the baseline DIFFERS class into done or partial after the P1 changes.
 
@@ -57,7 +61,7 @@ Every release carries the label sentence verbatim, stays PRERELEASE (D7), makes 
 | M5 | pending | Shadow, list-eligible scanner presets (D6) and the equity-side join (also F8, F11) | M4 accepted; own matrix; universe generator with planted matches per preset; scanner authorization flag stays false |
 | RQ | pending, last | Vendor feed adapter, display-rights rules, recorded data (local), B1-B12 on real sizes, Linux x64 and Windows x64 evidence, D8 sources wired, divergence review; first release allowed to make recorded-data claims | M5 accepted, all earlier labels clean, owner items supplied (feed credential, first download permission and spend ceiling, display-rights table, Linux environment) |
 
-Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry gates for M3, M4 and M5 beyond "previous release accepted" and "own matrix and fixtures first" are not ruled in V3; they are listed here as the standing rule, not as new rulings.
+Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry gates for M3, M4 and M5 beyond "previous release accepted" and "own matrix and fixtures first" are not ruled in V3; they are listed here as the standing rule, not as new rulings. After M3-M5 the RQ entry gate applies: all earlier labels clean and the owner items supplied.
 
 ## 3. Feature tables
 
@@ -85,29 +89,29 @@ Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry g
 
 | Id | Name | Status | Release | PRs | Evidence | Pending reasons |
 |---|---|---|---|---|---|---|
-| F1 | 1-minute premium rate at least 3x the 15-minute rate | done | M2 | 79 | lib; independent review: yes (Tester, 3 rounds; final re-run not recorded) | Wire exposure (candidate16); Q7 ratification (no floor, insufficient_window) |
-| F2a | Premium in top X% of the last 20 sessions | done (built, PR 80 pending merge) | M2 | 80 (pending merge) | lib; independent review: no (Developer evidence only; Tester re-run pending) | PR 80 merge; Tester re-run; Q1-Q3 ratification (time-of-day alignment is a design gap, flow.md 2.7); no crossing form; wire exposure |
-| F2b | Contracts in top X% of the last 20 sessions | done (built, PR 80 pending merge) | M2 | 80 (pending merge) | lib; independent review: no (Developer evidence only; Tester re-run pending) | As F2a |
-| F2c | Print rate in top X% of the last 20 sessions | done (built, PR 80 pending merge) | M2 | 80 (pending merge) | lib; independent review: no (Developer evidence only; Tester re-run pending) | As F2a; Q18 rate definition (interim) |
-| F2d | Average of the F2a-c percentiles | partial (built, PR 80 pending merge) | M2 | 80 (pending merge) | lib; independent review: no (Developer evidence only; Tester re-run pending) | DR-M2-1: design must give the F2d fire rule and default X, `fired` is null until then; PR 80 merge |
+| F1 | 1-minute premium rate at least 3x the 15-minute rate | done | M2 | 79 (fixtures 78, 82, 84) | lib; independent review: yes (Tester approve at 9f6617b; PO accepted, PR 79 merge message) | Wire exposure (candidate16); Q7 ratification (no floor, insufficient_window) |
+| F2a | Premium in top X% of the last 20 sessions | done (built, PR 80 pending merge) | M2 | 80 (pending merge; fixtures 78, 82, 84) | lib; independent review: no (Developer evidence only; Tester approved at 81763a48 with conditions being applied) | PR 80 merge; Tester re-run; Q1-Q3 ratification (time-of-day alignment is a design gap, flow.md 2.7); no crossing form; wire exposure |
+| F2b | Contracts in top X% of the last 20 sessions | done (built, PR 80 pending merge) | M2 | 80 (pending merge; fixtures 78, 82, 84) | lib; independent review: no (Developer evidence only; Tester approved at 81763a48 with conditions being applied) | As F2a |
+| F2c | Print rate in top X% of the last 20 sessions | done (built, PR 80 pending merge) | M2 | 80 (pending merge; fixtures 78, 82, 84) | lib; independent review: no (Developer evidence only; Tester approved at 81763a48 with conditions being applied) | As F2a; Q18 rate definition (interim) |
+| F2d | Average of the F2a-c percentiles | partial (built, PR 80 pending merge) | M2 | 80 (pending merge; fixtures 78, 82, 84) | lib; independent review: no (Developer evidence only; Tester approved at 81763a48 with conditions being applied) | DR-M2-1: design must give the F2d fire rule and default X, `fired` is null until then; PR 80 merge |
 | F3 | Premium in window ending now, calls and puts | done | P1 | 63 | lib; independent review: yes | Wire exposure (candidate16) |
-| F4 | N prints of $100k or more | done | M2 | 79 | lib; independent review: yes (Tester, 3 rounds; final re-run not recorded) | Wire exposure; Q8 ratification (N = 1 and $100k are placeholders) |
+| F4 | N prints of $100k or more | done | M2 | 79 (fixtures 78, 82, 84) | lib; independent review: yes (Tester approve at 9f6617b; PO accepted, PR 79 merge message) | Wire exposure; Q8 ratification (N = 1 and $100k are placeholders) |
 | F5 | At least X% of premium expiring within 2 days | done | P1 | 63 | lib; independent review: yes | Request 6 ratification; wire exposure |
 | F6 | Out-of-the-money share of premium | done | P1 | 63 | lib; independent review: yes | Request 6 ratification; wire exposure |
-| F7 | 60% of premium in one strike or expiry | done | M2 | 79 | lib; independent review: yes (Tester, 3 rounds; final re-run not recorded) | Wire exposure; Q10 ratification; performance candidate (F7 at 3x window overlap) |
+| F7 | 60% of premium in one strike or expiry | done | M2 | 79 (fixtures 78, 82, 84) | lib; independent review: yes (Tester approve at 9f6617b; PO accepted, PR 79 merge message) | Wire exposure; Q10 ratification; performance candidate (F7 at 3x window overlap) |
 | F8 | Share of universe premium | pending | M5 | - | - | Needs a universe: equity-side join (M5); the matrix proposes the deferral, V3 text does not name the release |
 | F9 | Repeated or multi-venue prints within a second | partial | R26 | R26 release | wire; independent review: yes | Request 7 (grouping wording); side-split lanes, exclusive first-unassigned windows as shipped |
-| F10 | Contracts unusual against baseline | done (built, PR 80 pending merge) | M2 | 80 (pending merge) | lib; independent review: no (Developer evidence only; Tester re-run pending) | PR 80 merge; request 9 and Q4 ratification (median vs mean default); wire exposure |
+| F10 | Contracts unusual against baseline | done (built, PR 80 pending merge) | M2 | 80 (pending merge; fixtures 78, 82, 84) | lib; independent review: no (Developer evidence only; Tester approved at 81763a48 with conditions being applied) | PR 80 merge; request 9 and Q4 ratification (median vs mean default); wire exposure |
 | F11 | Price response | pending | M5 | - | - | Needs an underlying price series (equity-side join); proposed M5, not in V3 text |
-| F12 | N unusual episodes today | done | M2 | 79 | lib; independent review: yes (Tester, 3 rounds; final re-run not recorded) | Wire exposure; Q11 ratification; no cross-session state |
+| F12 | N unusual episodes today | done | M2 | 79 (fixtures 78, 82, 84) | lib; independent review: yes (Tester approve at 9f6617b; PO accepted, PR 79 merge message) | Wire exposure; Q11 ratification; no cross-session state |
 | F13 | Call-ask plus put-bid premium | done | P1 | 63 | lib; independent review: yes | Request 8 ratification; wire exposure; legacy midpoint-split mode stays on the wire (R26) |
 | F14 | Put-ask plus call-bid premium | done | P1 | 63 | lib; independent review: yes | As F13 |
 | F15 | Ask-side premium | done | P1 | 63 | lib; independent review: yes | As F13 |
 | F16 | Bid-side premium | done | P1 | 63 | lib; independent review: yes | As F13 |
-| F17 | One contract, 5 minutes, at least $X | done | M2 | 79 | lib; independent review: yes (Tester, 3 rounds; final re-run not recorded) | Wire exposure; Q9 ratification; performance candidate (sparse reads per cutoff) |
-| F18 | Put share of option volume | done | M2 | 79 | lib; independent review: yes (Tester, 3 rounds; final re-run not recorded) | Wire exposure; Q12 ratification (thresholds not defaulted) |
-| F19 | Put/call volume ratio percentile of 20 sessions | done (built, PR 80 pending merge) | M2 | 80 (pending merge) | lib; independent review: no (Developer evidence only; Tester re-run pending) | PR 80 merge; Q13 ratification; wire exposure |
-| F20 | Session contracts or premium at least N x 20-session average | done (built, PR 80 pending merge) | M2 | 80 (pending merge) | lib; independent review: no (Developer evidence only; Tester re-run pending) | PR 80 merge; request 9 and Q4 ratification; wire exposure |
+| F17 | One contract, 5 minutes, at least $X | done | M2 | 79 (fixtures 78, 82, 84) | lib; independent review: yes (Tester approve at 9f6617b; PO accepted, PR 79 merge message) | Wire exposure; Q9 ratification; performance candidate (sparse reads per cutoff) |
+| F18 | Put share of option volume | done | M2 | 79 (fixtures 78, 82, 84) | lib; independent review: yes (Tester approve at 9f6617b; PO accepted, PR 79 merge message) | Wire exposure; Q12 ratification (thresholds not defaulted) |
+| F19 | Put/call volume ratio percentile of 20 sessions | done (built, PR 80 pending merge) | M2 | 80 (pending merge; fixtures 78, 82, 84) | lib; independent review: no (Developer evidence only; Tester approved at 81763a48 with conditions being applied) | PR 80 merge; Q13 ratification; wire exposure |
+| F20 | Session contracts or premium at least N x 20-session average | done (built, PR 80 pending merge) | M2 | 80 (pending merge; fixtures 78, 82, 84) | lib; independent review: no (Developer evidence only; Tester approved at 81763a48 with conditions being applied) | PR 80 merge; request 9 and Q4 ratification; wire exposure |
 | Tick fallback | Optional tick-rule fallback for F13-F16 | pending | later | - | - | Optional; design flow.md 2.8 keeps it apart; no release assigned |
 | Crossing form | Crossing form for F2a-c | pending | later | - | - | Engine concern: needs prior-evaluation state; deferred in M2 (matrix section 7) |
 
@@ -172,9 +176,9 @@ Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry g
 | M1-2 | Per-contract IV with American-style labels | done | M1 | 68, 70 | lib; independent review: yes | Request 12 ratification; wire exposure |
 | M1-3 | Chain ATM IV | done | M1 | 68, 70 | lib; independent review: yes | Request 11 ratification; wire exposure |
 | M1-4 | 30-day constant-maturity IV | done | M1 | 68, 70 | lib; independent review: yes | Request 11 ratification; wire exposure |
-| M2-1 | Shared columnar print tape (printtape) | done | M2 | 79 | lib; independent review: yes (Tester, 3 rounds; final re-run not recorded) | Align Result type to story A (M2-5) |
-| M2-2 | History store: retention ring, sorted views, canonical text, snapshots (flowstore) | done (built, PR 80 pending merge) | M2 | 80 (pending merge) | lib; independent review: no (Developer evidence only; Tester re-run pending) | PR 80 merge; Tester re-run; store byte cap above 512 MB reported, not enforced |
-| M2-3 | Trade-to-grid builder, Result type, canonical lines (flowgrid, flowresult) | done (built, PR 80 pending merge) | M2 | 80 (pending merge) | lib; independent review: no (Developer evidence only; Tester re-run pending) | PR 80 merge; Tester re-run |
+| M2-1 | Shared columnar print tape (printtape) | done | M2 | 79 (fixtures 78, 82, 84) | lib; independent review: yes (Tester approve at 9f6617b; PO accepted, PR 79 merge message) | Align Result type to story A (M2-5) |
+| M2-2 | History store: retention ring, sorted views, canonical text, snapshots (flowstore) | done (built, PR 80 pending merge) | M2 | 80 (pending merge; fixtures 78, 82, 84) | lib; independent review: no (Developer evidence only; Tester approved at 81763a48 with conditions being applied) | PR 80 merge; Tester re-run; store byte cap above 512 MB reported, not enforced |
+| M2-3 | Trade-to-grid builder, Result type, canonical lines (flowgrid, flowresult) | done (built, PR 80 pending merge) | M2 | 80 (pending merge; fixtures 78, 82, 84) | lib; independent review: no (Developer evidence only; Tester approved at 81763a48 with conditions being applied) | PR 80 merge; Tester re-run |
 | M2-4 | M2-G0 full-output B6 measurement and runner full unit | done | M2 | 77 | lib; independent review: partial (Tester conditions applied; Tester re-run pending) | Tester re-run |
 | M2-5 | Align story B (printtape, m2prints, episodes) to story A Result type | pending | M2 | - | - | Needs PR 80 merged; follow-up named in the PR 79 ruling |
 | M2-6 | Runner integration of M2 families (worker scaling, gc.freeze after store load, mmap attach) | pending | M2 | - | - | Not done: story B notes runner integration not done; the runner rules are ruled, not exercised |
@@ -278,7 +282,7 @@ chain.activity (0-100 score; request 13), pricing.price, greeks.signed_delta, gr
 - R25 and R26 rows cite the release, not PR numbers (the early PRs were not traced). The R25 and R26 behaviour was taken from the baseline parity audit and the shipped naming map, and the P1 changes from the merged P1 modules; the R25 evaluator was not re-run here.
 - Retro process items of P1 (WSL pass of every harness, hash-record generator, wording grep gate) were not traced to artifacts, so they are not rows.
 - Whether the design session has answered any request is not recorded in this repository; the design repository was not searched for replies.
-- Story B: the Tester rounds are in DECISIONS, but no final Tester re-run of the merged tree or explicit PO acceptance of the code is recorded; the independent-review cell says so.
+- Story B review and acceptance: see the independent-review cell of its rows (Tester approve at 9f6617b; PO accepted in the PR 79 merge message).
 - Story A (PR 80): the 817-test pass on its head was run by the Auditor; the mutation result (75 of 76 mutants caught, 1 equivalent) and benchmark figures are Developer records. The branch may move before merge.
 - All performance figures are copied from DECISIONS, M1_CLOSE and the benchmark JSON files; none was re-measured. The Auditor ran no benchmark and no python-flint suite (python-flint is not installed in this session).
 - V16-V22, F8, F11 release assignments are proposals, not V3 text.
