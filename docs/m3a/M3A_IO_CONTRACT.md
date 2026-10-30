@@ -45,7 +45,7 @@ Fire rules: comparisons inclusive ("at least X", "at most X") on the rounded dec
 
 ## 4. Structural codes and precedence lists (one list PER ENTRY POINT, as M2)
 Structural errors are status invalid_input with a closed `code`; the first failing code of the entry point list is reported. Type-first per field (M2 ruling): a wrong-typed field reports `malformed_type` at the position where that field value check would run; a field with no value code reports it at the `malformed_type` slot; within one position fields are checked in the order written. M1 raises ValueError for these conditions; the M3a wrapper maps them to codes.
-**Request (chain and parameters), 18 positions:**
+**Request (chain and parameters), 18 positions (position 10 holds two codes in the order written, so 19 codes and 18 adjacent code pairs):**
 | # | Code | Check |
 |---|---|---|
 | 1 | `bad_cutoff` | cutoff_ns not a non-negative int |
@@ -57,7 +57,7 @@ Structural errors are status invalid_input with a closed `code`; the first faili
 | 7 | `unknown_right` | right not call or put |
 | 8 | `duplicate_contract` | a contract id appears twice |
 | 9 | `bad_strike` | strike not positive |
-| 10 | `malformed_type` | quote fields, condition, style, event times and every field without a value code; more than 8 decimals |
+| 10 | `malformed_type`, then `cutoff_mismatch` | malformed_type: quote fields, condition, style, event times and every field without a value code; more than 8 decimals. cutoff_mismatch (a VALUE code, M2 reserves malformed_type for wrong types): `evaluation_ns` differs from the chain `cutoff_ns`; checked after the type checks of the same slot |
 | 11 | `duplicate_contract` | same expiry, strike and right twice |
 | 12 | `tenor_not_allowed` | a tenor outside {9, 30, 91} |
 | 13 | `delta_not_allowed` | delta target outside the ruled set |
