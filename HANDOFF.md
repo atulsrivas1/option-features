@@ -18,13 +18,9 @@ Updated 2026-10-29 (M1 CLOSED, see docs/M1_CLOSE.md; P1 DONE, 0.2.0a1 on main, m
 - Accepted after independent code review (approve-with-conditions, then delta re-check approve) and an independent Tester re-run with python-flint 0.9.0 (DECISIONS.md, last entries). Interim design rulings stay pending ratification; wire exposure of quotes/windows/shares is a candidate16 item.
 - M1 CLOSED 2026-10-29 (accepted as built, prerelease, synthetic data; docs/M1_CLOSE.md has built-vs-scope, B2-B7 numbers, risks, M2 proposal): Stage 0/1/2, OC5/OC6, chain IV, opt-in, default single-process runner all merged. Risks: thin B2/B3 margin on string path, input synthesis 23% CPU at 48 workers (idea candidate), full-output B6 run still to do. NEXT: M2 flow completion (capability matrix and gate budgets first, then independent fixtures, then code). Owner goal: performance. Open: tag and wheel rebuild, owner items (python-flint scratch venv, B7 machine).
 
-## R26: stays PRERELEASE (Windows x64 cp312); notes docs/r26-variants/RELEASE_NOTES.md, scoped label in RELEASE_NOTES section 15
-
-## M1 Stage 2 (PR 71): merged; independent Tester re-run done (details in DECISIONS.md). B6 IV part about 1.4 s p50 compute-only.
-
-- M2 (2026-10-29): docs/m2 merged (PR 75); PO-M2-AMB rulings (19 ambiguities) in docs PR on branch docs/m2-amb-rulings (not merged). Next: Tester fixtures, M2-G0 first task gate, then code.
-
-- M2-GRID rulings (2026-10-30): docs PR on branch docs/m2-grid-rulings (not merged); IO contract section 9. PR 79 adds section 8.
+## M2 and the feature tracker (2026-10-30)
+- docs/FEATURE_STATUS.md is the single live tracker of every planned feature (status, release, PRs, evidence, pending reasons, counts, gates). RULE: every release PR updates it (docs/RELEASE_NOTE_TEMPLATE.md rule 7). Created by the M2 F-row re-audit docs PR (branch docs/feature-status, not merged).
+- M2: story B merged (PR 79, F1, F4, F7, F12, F17, F18); story A is PR 80 (store, grid, F2a-d, F10, F20, F19), open, rows read "built, PR 80 pending merge". docs/FLOW_NAMING_MAP.md carries the M2 rows. Next: PR 80 merge and Tester re-runs, align B to A Result type, runner integration, F7/F17 perf follow-up, M3 matrix.
 
 ## Next
 0. Independent freeze review of CANDIDATE13_FREEZE_RECORD: DONE (approve-with-conditions, applied); next coordinator freeze and merge. Then candidate14 (PO R27 rulings): lift exclusion of the 3 null-nondict rows, harness assertion for the extra-stream control row, re-issue filter, hashes, counts and release notes. PO to review: N5 rows flagged (proposed), assumption-2 confirmation, A>K disclosure, sorted-literal excluded_ids, nonexpected two-control rows as negative controls (the last three already PO-ruled; see DECISIONS.md).
