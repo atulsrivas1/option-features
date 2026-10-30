@@ -229,13 +229,14 @@ class _Cols:
             if len(rec.idx) != m:                    # zero points: sparse form, read record by record
                 return False
             vals = rec.vals
-        if type(vals) is tuple or (len(vals) and (min(vals) < -(1 << 63) or max(vals) >= (1 << 63))):
+        q = isinstance(vals, array) and vals.typecode == "q"
+        if type(vals) is tuple or (not q and len(vals) and (min(vals) < -(1 << 63) or max(vals) >= (1 << 63))):
             return False
         if self.block is None:
             self.block = array("q", bytes(8 * self.cap * self.stride))
             self.mv = memoryview(self.block)
         off = row * self.stride
-        self.mv[off:off + m] = array("q", vals)
+        self.mv[off:off + m] = vals if q else array("q", vals)
         rec.vals = self.mv[off:off + m]
         rec.idx = _full_idx(m)
         rec.txt = rec.itxt = None
@@ -450,7 +451,12 @@ class HistoryStore:
             if total is None:
                 total = sum(vals)
         if vals is grid and _is_m3a_series(series_id):
-            vals = list(grid)    # an M3a full grid goes to the ring block (int64) in _store: no narrowed copy first
+            # an M3a full grid goes to the ring block: convert to int64 HERE, before any mutation, so a bad element
+            # raises (TypeError, as narrow does on M2) and the append changes nothing (all-or-nothing)
+            try:
+                vals = array("q", grid)
+            except OverflowError:
+                vals = narrow(grid)
         else:
             vals = narrow(vals)
         self._store(series_id, metric, window_s, _Rec(session_id, minutes, idx, vals, total, bool(complete),
@@ -524,9 +530,11 @@ class HistoryStore:
         if len(recs) > self._series_k.get(series_id, self.k):
             del recs[next(iter(recs))]
         if ring.m3a is not None:
-            ring.m3a.push(rec)
-        if type(rec.vals) is list:                # not placed in a block: the M2 narrowed form
-            rec.vals = narrow(rec.vals)
+            try:
+                ring.m3a.push(rec)
+            except BaseException:
+                ring.m3a = None                   # never half-updated: rebuilt from ring.recs on the next read
+                raise
 
     def _new_cols(self, series_id):
         mins = self.calendar.minutes
