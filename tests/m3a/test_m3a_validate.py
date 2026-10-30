@@ -795,6 +795,66 @@ class CallerInputGuards(unittest.TestCase):
         self.assertIsNone(V.validate_view_read(cal, "2026-01-05", "scalar_baseline", 20, 252, series_id=_Hostile()))
 
 
+def _raising(base):
+    """A subclass of `base` whose container dunders and attribute lookups raise."""
+    def boom(self, *a, **k):
+        raise RuntimeError("hostile %s" % base.__name__)
+    names = ("__len__", "__iter__", "__getitem__", "__contains__", "__eq__", "__hash__", "get", "__str__",
+             "__getattr__", "partition", "strip", "startswith", "endswith", "rpartition")
+    return type("Raising" + base.__name__, (base,), {n: boom for n in names if hasattr(base, n) or n == "__getattr__"})
+
+
+class SubclassGuards(unittest.TestCase):
+    """Exact type checks on every caller-supplied container: subclasses with raising dunders give a code (review of
+    PR 121)."""
+
+    def test_request_entry(self):
+        T, L, D, S = _raising(tuple), _raising(list), _raising(dict), _raising(str)
+        r = _request("M3A-0")
+        r["contracts"].append(T(range(10)))
+        self.assertEqual(_run(r), "malformed_type")
+        r = _request("M3A-0")
+        r["contracts"] = L(r["contracts"])
+        self.assertEqual(_run(r), "malformed_type")
+        r = _request("M3A-0")
+        r["params"] = D(r["params"])
+        self.assertEqual(_run(r), "malformed_type")
+        r = _request("M3A-0")
+        r["output_id"] = S("M3A-0")
+        self.assertEqual(_run(r), "malformed_type")
+        for key, val in (("tenors", L([9])), ("mode", S("intraday")), ("delta_convention", S("spot")),
+                         ("min_coverage", S("3/5")), ("feed_delay_tag", S("live"))):
+            r = _request("M3A-0")
+            r["params"][key] = val
+            self.assertEqual(_run(r), "malformed_type", key)
+        for key, val in (("priors", L([{"time_ns": 1}])), ("prior", D(time_ns=1)), ("prior", _Hostile()),
+                         ("priors", [T(range(3))])):
+            r = _request("M3A-9")
+            r["params"][key] = val
+            self.assertEqual(_run(r), "malformed_type", key)
+        r = _request("M3A-0")
+        _set_contract(r, 0, strike=S("100"))
+        self.assertEqual(_run(r), "malformed_type")
+        r = _request("M3A-0")
+        r["spot"] = S("100")
+        self.assertEqual(_run(r), "malformed_type")
+
+    def test_view_read_entry(self):
+        S = _raising(str)
+        cal = Calendar([("2026-01-05", 390)])
+        self.assertEqual(V.validate_view_read(cal, S("2026-01-05"), "scalar_baseline", 20, 252), "malformed_type")
+        self.assertEqual(V.validate_view_read(cal, "2026-01-05", S("scalar_baseline"), 20, 252), "malformed_type")
+        self.assertIsNone(V.validate_view_read(cal, "2026-01-05", "scalar_baseline", 20, 252,
+                                               series_id=S("S/stock/skew25")))
+        self.assertEqual(V.validate_view_read(cal, "2026-01-05", "scalar_baseline", 20, 252,
+                                              series_id="S/stock/skew25", delta_convention=S("spot")),
+                         "malformed_type")
+
+    def test_m1_error_code(self):
+        E = type("E", (ValueError,), {"__str__": lambda self: (_ for _ in ()).throw(RuntimeError("x"))})
+        self.assertEqual(V.m1_error_code(E("spot must be positive")), "malformed_type")
+
+
 class ValidationCost(unittest.TestCase):
     """Developer measurement of the validation cost (printed; the hard bound is loose: validation is O(contracts) and
     must stay a small share of M3A-G0). mock-data qualification only: passed on independently authored synthetic
