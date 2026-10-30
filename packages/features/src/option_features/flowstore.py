@@ -420,27 +420,30 @@ class HistoryStore:
                 source = fh.read()
             need_trailer = True
         if isinstance(source, (bytes, bytearray, memoryview)):
-            source = bytes(source)
-        elif not isinstance(source, str):
+            raw = bytes(source)
+        elif isinstance(source, str):
+            raw = source.encode("ascii")
+        else:
             raise TypeError("load needs a path or canonical content")
-        text = source if isinstance(source, str) else source.decode("ascii")
         store = cls(calendar, k, strict_calendar)
-        if not text:
+        if not raw:
             return store
+        trailer = None
+        cut = raw.rfind(b'{"trailer":')
+        if cut == 0 or (cut > 0 and raw[cut - 1] == 10):
+            try:
+                trailer = json.loads(raw[cut:])
+            except ValueError:
+                raise ValueError("bad trailer")
+            raw, tail_bytes = raw[:cut], raw[cut:]
+        if need_trailer and trailer is None:
+            raise ValueError("missing trailer")
+        text = raw.decode("ascii")
         rows = text.split("\n")
         if rows[-1] == "":
             rows.pop()
-        trailer = None
-        if rows and rows[-1][:11] == '{"trailer":':
-            try:
-                trailer = json.loads(rows.pop())
-            except ValueError:
-                raise ValueError("bad trailer")
-        if need_trailer and trailer is None:
-            raise ValueError("missing trailer")
         if trailer is not None:
-            body = "".join([r + "\n" for r in rows]).encode("ascii")
-            if trailer.get("records") != len(rows) or trailer.get("content_sha256") != hashlib.sha256(body).hexdigest():
+            if trailer.get("records") != len(rows) or trailer.get("content_sha256") != hashlib.sha256(raw).hexdigest():
                 raise ValueError("trailer mismatch (truncated or altered file)")
         match = _LINE.match
         prev_key = None
