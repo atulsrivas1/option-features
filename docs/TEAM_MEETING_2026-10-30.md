@@ -17,7 +17,7 @@ Chair: Product Owner. Present (roles): PO, Architect (docs author), Developers (
 | RQ | pending, last | adapter, display rights, recorded data, real-size budgets, Linux evidence |
 
 ### 1.2 Feature status (docs/FEATURE_STATUS.md, enforced by tests/m2/test_feature_status.py)
-113 rows (81 design rows + 32 release items): done 40, partial 9, pending 63, dropped 1 (R28a as a separate release). Design rows: done 28, partial 9, pending 44. Done rows on the wire: 7; library-only: 31. "Done" means library module, independent fixtures, independent review, synthetic and Windows only. Pending by release: M2 2-3 (alignment follow-ups, runner integration), M3 24, M4 21, M5 5, RQ 7, later 4.
+113 rows (81 design rows + 32 release items): done 40, partial 9, pending 63, dropped 1 (R28a as a separate release). Design rows: done 28, partial 9, pending 44. Done rows on the wire: 7; library-only: 31. "Done" means library module, independent fixtures, independent review, synthetic and Windows only. Pending by release: M2 2 (runner integration and the F7/F17 follow-up), M3 24, M4 21, M5 5, RQ 7, later 4.
 
 ### 1.3 Performance, owner goal one (budgets B1-B12 and M2 gates)
 | Gate | Budget / hard | Measured | Status |
@@ -27,15 +27,15 @@ Chair: Product Owner. Present (roles): PO, Architect (docs author), Developers (
 | B3 OC6 50 updates | 200 us / 1 ms | 114-127 us (Ticks), 175-181 us (strings) p95 | met; string path margin only about 10 percent: thin |
 | B4 / B5 chain ATM / 30-day IV | 1 s / 1.5 s | 0.063 s / 0.021 s | met |
 | B6 IV part, size M, all-valid chain | 5 s / 15 s | 8.62 s before, 2.80 s p95 after Stages 0-2 | met |
-| M2-G0 full output set, one worker | 5 s / 15 s | p50 2.35-2.41 s, p95 2.58-2.66 s | met, about 2x margin |
-| B7 whole workload | 170 / 240 min | M1 runner 2.38 min at 24 workers; M2 family all 8.91 min (parked branch) | met; developer runs, Tester re-ran scaling only |
+| M2-G0 full output set, one worker | 5 s / 15 s | p50 2.29-2.41 s, p95 2.55-2.66 s (one worker, before and after the PR 77 conditions; Tester measured 2.35-2.39 / 2.58) | met, about 2x margin |
+| B7 whole workload | 170 / 240 min | M1 runner 2.38 min at 24 workers (repo record); M2 family all 8.91 min: UNVERIFIED, runner branch only | met for M1; developer runs, Tester re-ran scaling only |
 | M2 store B1 append | 25k records/s | 69-87k p5 | met |
-| M2 B18 trade-to-grid | 50k prints/s | 59-82k p5 | met |
-| M2 B2n/B3n ratio (6,000 vs 2,000) | 3.6 budget, 4.0 hard | 3.2-3.67 paired median | pass hard; thin |
-| M2 B16 worker start | 5 s / 512 MB at 2,000; hard 15 s / 1 GB at 6,000 | 2.5-4.0 s / 202 MB at 2,000; 7-12 s / 600 MB at 6,000 | hard met; budget missed at 6,000 (not gated) |
+| M2 B18 trade-to-grid | 50k prints/s | 59-66k p5 (repo; Tester 69k; 70k at PR 80); 82k only in the parked runner report (unverified) | met |
+| M2 B2n/B3n ratio (6,000 vs 2,000) | 3.6 budget, 4.0 hard | B3n paired median 3.12-3.67 across runs (Tester 3.25-3.33); B2n 2.76-3.65 | pass hard; thin |
+| M2 B16 worker start | 5 s / 512 MB at 2,000; hard 15 s / 1 GB at 6,000 | repo: binary mmap start 4.37-4.6 s / 407 MB private at 6,000, text load 8.1 s / 651 MB (Tester 6.7-6.9 s / 522 MB private); at 2,000 2.3-2.5 s / 183 MB. Runner branch (unverified): 2.5-4.0 s / 202 MB at 2,000, 8.3-11.7 s / 603 MB at 6,000 | hard met; budget thin or missed at 6,000 (not gated) |
 | M2 B13 store per series | 64 KB | 37-69 KB depending on measurer | thin |
-| Ratio rules 1e6/1e5 (print families) | <= 12 | 9.6-11.7 | thin (F18 11.7) |
-Caveats: synthetic generators we wrote; relative budgets; one host; B7 not independently re-run by a Tester; the 5-20x float-filter claim was never a target and the measured Stage 1 gain is 3.3x, Stage 2 about 3x, Stage 0 1.37x per solve (combined 3.1x on the gate chain, 8.62 to 2.80 s). The certified solver results are identical to the pre-change solver on every compared contract (about 370,000 solves in the Tester differential).
+| Ratio rules 1e6/1e5 (print families) | <= 12 | 9.8-11.74 across Tester and developer runs | thin (F18 11.7) |
+Caveats: synthetic generators we wrote; relative budgets; one host; B7 not independently re-run by a Tester; the 5-20x float-filter claim was never a target and the measured Stage 1 gain is 3.3x, Stage 2 about 3x, Stage 0 1.37x per solve (combined 3.1x on the gate chain, 8.62 to 2.80 s). The certified solver results are identical to the pre-change solver on every compared contract (Tester differentials per stage: 22,400, 28,800 and 61,600 contracts, the last over 6 variants for 369,600 solves).
 
 ### 1.4 Order of work
 Owner direction (V3): all features and indicators first on synthetic data; vendor adapter last (RQ). We are following it: no adapter, vendor or network work exists in the repo.
@@ -60,7 +60,7 @@ Found while preparing this meeting: the repository has no CI; suites are run by 
 - Stop doing: per-ambiguity fixture round trips; third and fourth docs review rounds; hand-typed counts; reviewers advising deletions; developers reporting numbers as gate results before the Tester measures.
 
 ## 5. Parked and tracked items
-- Runner integration (branch m2/runner-integration, pushed, no PR): done: m2 and all families as units, M2BIN attach (new file per generation, content hash compare, gc.freeze), per-worker store memory with 1 GB hard limit, faults, perf_sut v3 for G0, B11, B12, B16, B17, B18 and D/E/C/R/S/K rows, 31 failing-first tests, docs. Measured at 24 workers (developer evidence): G0 per-unit p95 3.01 s, efficiency 0.89; B16 2,000 series 2.5-4.0 s / 202 MiB, 6,000 series 8.3-11.7 s / 603 MiB; B17 write 33.9k, read 75.4k records/s p5; B18 81.7k prints/s p5; B12 whole workload (1,950 units, family all) 8.91 min against 170/240; S01 scaling 4.9x at 4 workers. Not done: S02 trade-stream scaling, full hash matrix on the whole workload, B11 at 30 repeats, B1-B10 and B13-B15r bindings; about half a day plus a Tester re-run.
+- Runner integration (branch m2/runner-integration, pushed, no PR; every figure below is UNVERIFIED developer evidence from the parked branch, not in repo source or DECISIONS): done: m2 and all families as units, M2BIN attach (new file per generation, content hash compare, gc.freeze), per-worker store memory with 1 GB hard limit, faults, perf_sut v3 for G0, B11, B12, B16, B17, B18 and D/E/C/R/S/K rows, 31 failing-first tests, docs. Measured at 24 workers (developer evidence): G0 per-unit p95 3.01 s, efficiency 0.89; B16 2,000 series 2.5-4.0 s / 202 MiB, 6,000 series 8.3-11.7 s / 603 MiB; B17 write 33.9k, read 75.4k records/s p5; B18 81.7k prints/s p5; B12 whole workload (1,950 units, family all) 8.91 min against 170/240; S01 scaling 4.9x at 4 workers. Not done: S02 trade-stream scaling, full hash matrix on the whole workload, B11 at 30 repeats, B1-B10 and B13-B15r bindings; about half a day plus a Tester re-run.
 - Runner rulings needed: (1) rank fixture truth 7,440 versus 7,340 values (the manifest ranks 7,440 but the library drops 5 points per session by AMB-4: the library is right, the manifest should say 7,340: the fixture author corrects it); (2) S02 definition: unit-sharded (default) with a contract-sharded variant reported; (3) N above 24 for B12: allowed up to the cap, reported as informational.
 - Totality follow-ups: (1) story A check_prints still raises on 78,859 of 600,000 hostile lists (test skipped): fix in a small PR; (2) build_tape on hostile contract records: the contracts map is trusted and adapter-validated (documented); (3) f17_columns and f17_sweep_columns are internal trusted entry points (documented).
 - Other tracked: mutation-tool targets after code rewrites; trusted-contracts note in the I/O contract (added in this PR); design requests awaiting the design session; scratch and junk files in author and Tester scratch folders (owner-only to delete); python-flint scratch venv approval; B7 machine confirmation.
