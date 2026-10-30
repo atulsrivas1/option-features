@@ -18,6 +18,8 @@ import sys
 import tempfile
 import time
 import unittest
+from decimal import Decimal
+from fractions import Fraction
 
 import m3a_harness as H
 from option_features import m3a_history as MH
@@ -248,8 +250,24 @@ class Reads(unittest.TestCase):
         self.assertEqual(f(st, "A/stock/iv30", "iv30", c, 1, max_sessions=5, x=101).code, "invalid_session_window")
         self.assertEqual(f(st, "A/stock/iv30", "iv30", c, 1, x=101).code, "threshold_out_of_range")
         self.assertEqual(f(st, "A/stock/iv30", "iv30", c, 1, x="5").code, "malformed_type")
-        self.assertEqual(f(st, "A/stock/iv30", "iv30", c, 1, x=float("nan")).code, "threshold_out_of_range")
+        self.assertEqual(f(st, "A/stock/iv30", "iv30", c, 1, x=float("nan")).code, "malformed_type")   # R-190
         self.assertEqual(f(st, "A/stock/iv30", "iv30", c, 1, x=100).status, "available")
+
+    def test_r190_convention_and_x_types(self):
+        cal, st = self.cal, self.st
+        st.add_series("A/stock/skew25", 252)
+        for i in range(25):
+            st.append("A/stock/skew25", "skew25", 0, cal.ids[i], [], total=i)
+        f, c = MH.scalar_baseline, cal.ids[30]
+        for bad in ("fwd", 1, None):          # wrong string, non-string, supplied None: malformed_type (R-190)
+            self.assertEqual(f(st, "A/stock/skew25", "skew25", c, delta_convention=bad).code, "malformed_type", bad)
+        self.assertEqual(f(st, "A/stock/skew25", "skew25", c).status, "available")       # not supplied = spot
+        g = MH.same_minute_column
+        for bad in (50.0, Decimal("50"), True, "abc"):
+            self.assertEqual(g(st, "A/stock/iv30", "iv30", cal.ids[260], 1, x=bad).code, "malformed_type", bad)
+        self.assertEqual(g(st, "A/stock/iv30", "iv30", cal.ids[260], 1, x="50").status, "available")
+        self.assertEqual(g(st, "A/stock/iv30", "iv30", cal.ids[260], 1, x="201/2").code, "threshold_out_of_range")
+        self.assertEqual(g(st, "A/stock/iv30", "iv30", cal.ids[260], 1, x=Fraction(1, 2)).status, "available")
 
     def test_no_sorted_copy_built(self):
         MH.scalar_baseline(self.st, "A/stock/iv30_close", "iv30_close", self.cal.ids[260])
