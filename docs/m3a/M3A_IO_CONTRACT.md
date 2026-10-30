@@ -40,7 +40,7 @@ Number forms (RULED): quote-derived exact values (counts, coverage ratios) are i
 | M3A-8 V9 | as V1 for the skew series |
 | M3A-9 V10 | `now`, `priors`, `change_points`, `sign_now`, `sign_prior`, `sign_changed` (sign of the rounded-once difference) |
 | M3A-10 V11 | `wings_mid`, `atm_iv`, `curvature_points` |
-| M3A-11 V21 (PROPOSED) | `put_distance`, `call_distance`, `ratio` |
+| M3A-11 V21 (RULED included) | `put_distance`, `call_distance`, `ratio` |
 Fire rules: comparisons inclusive ("at least X", "at most X") on the rounded decimals and the `direction` parameter (up, down, either); percentile rule as M2 for top X percent (upper_share <= X/100) and bottom X percent (lower_share <= X/100).
 
 ## 4. Structural codes and precedence lists (one list PER ENTRY POINT, as M2)
