@@ -269,6 +269,55 @@ class Reads(unittest.TestCase):
         self.assertEqual(g(st, "A/stock/iv30", "iv30", cal.ids[260], 1, x="201/2").code, "threshold_out_of_range")
         self.assertEqual(g(st, "A/stock/iv30", "iv30", cal.ids[260], 1, x=Fraction(1, 2)).status, "available")
 
+    def test_totality_unhashable_and_odd_x(self):
+        st, c = self.st, self.cal.ids[260]
+        for sid, met, w in ((["A"], "iv30", 0), ("A/stock/iv30", {"m": 1}, 0), ("A/stock/iv30", "iv30", [0])):
+            self.assertEqual(MH.scalar_baseline(st, sid, met, c, window_s=w).code, "malformed_type")
+            self.assertEqual(MH.same_minute_column(st, sid, met, c, 1, window_s=w).code, "malformed_type")
+        g = MH.same_minute_column
+        for bad in (Decimal("sNaN"), Decimal("NaN"), float("nan"), float("inf"), Decimal("Infinity")):
+            self.assertEqual(g(st, "A/stock/iv30", "iv30", c, 1, x=bad).code, "malformed_type", bad)
+        self.assertEqual(g(st, "A/stock/iv30", "iv30", c, 1, x=10 ** 400).code, "threshold_out_of_range")
+        self.assertEqual(g(st, "A/stock/iv30", "iv30", c, 1, x=0).status, "available")
+        self.assertEqual(g(st, "A/stock/iv30", "iv30", c, 1, x=-1).code, "threshold_out_of_range")
+
+    def test_as_of_excluded_and_cache_per_as_of(self):
+        cal, st = self.cal, self.st
+        last = cal.ids[259]                          # the last stored session
+        r = MH.scalar_baseline(st, "A/stock/iv30_close", "iv30_close", last)
+        self.assertNotIn(last, r.value["sessions"])
+        self.assertEqual(r.value["sessions"][-1], cal.ids[258])
+        r2 = MH.scalar_baseline(st, "A/stock/iv30_close", "iv30_close", cal.ids[200])
+        self.assertEqual(r2.value["sessions"][-1], cal.ids[199])
+        m1 = MH.same_minute_column(st, "A/stock/iv30", "iv30", last, 3)
+        m2 = MH.same_minute_column(st, "A/stock/iv30", "iv30", cal.ids[200], 3)
+        self.assertEqual((m1.value["values"][-1], m2.value["values"][-1]), (25803, 19903))
+
+    def test_lane_and_metric_convention(self):
+        cal, st = self.cal, self.st
+        r = MH.scalar_baseline(st, "A/stock/iv30_close", "iv30_close", cal.ids[260], lane="etf_index")
+        self.assertEqual((r.reason, r.value["n"]), ("insufficient_history", 0))
+        st.add_series("F/stock/skew25_fwd", 252)
+        st.add_series("F/stock/skew25", 252)
+        for i in range(25):
+            st.append("F/stock/skew25_fwd", "skew25_fwd", 0, cal.ids[i], [], total=i, delta_convention="forward")
+            st.append("F/stock/skew25", "skew25", 0, cal.ids[i], [], total=i, delta_convention="forward")
+        f = MH.scalar_baseline
+        self.assertEqual(f(st, "F/stock/skew25_fwd", "skew25_fwd", cal.ids[30], delta_convention="spot").code,
+                         "convention_mismatch")
+        self.assertEqual(f(st, "F/stock/skew25", "skew25", cal.ids[30], delta_convention="forward").code,
+                         "convention_mismatch")
+        self.assertEqual(f(st, "F/stock/skew25_fwd", "skew25_fwd", cal.ids[30], delta_convention="forward").status,
+                         "available")
+
+    def test_load_rejects_bad_convention_field(self):
+        cal = _cal()
+        st = HistoryStore(cal)
+        st.append("A/stock/skew25_fwd", "skew25_fwd", 0, cal.ids[0], [], total=1, delta_convention="forward")
+        text = st.dump().replace(b'"forward"', b'"fwd"')
+        with self.assertRaises(ValueError):
+            HistoryStore.load(text, cal, verify=False)
+
     def test_no_sorted_copy_built(self):
         MH.scalar_baseline(self.st, "A/stock/iv30_close", "iv30_close", self.cal.ids[260])
         MH.same_minute_column(self.st, "A/stock/iv30", "iv30", self.cal.ids[260], 3)
