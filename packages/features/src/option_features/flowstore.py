@@ -3,7 +3,9 @@
 Pure and single-threaded; exact integers only (`Fraction` appears in view statistics at the output boundary).
 
 Key = (series_id, metric, window_s); one ring per key, append-only in session order, retention `k` (default 20, hard
-cap 60) counting every stored record, complete or not. A record is a sparse grid (ascending `array('H')` indexes of
+cap 60) counting every stored record, complete or not. M3a (story S02, R-52, R-114): `add_series(series_id, k)` declares
+a per-series k up to 252 for the M3a series (M3A_METRICS and skew-type `<metric>_fwd`); M2 series keep k <= 60. An M3a
+record may carry `delta_convention` (R-160), written in its canonical line only when given (no M2 line changes). A record is a sparse grid (ascending `array('H')` indexes of
 the nonzero points, `array('q')` values, or a plain list when a value exceeds 64 bits), the session total, a
 complete flag; zeros are implicit. Series are created lazily by the first append, so a contract without prints costs
 nothing. Sealed records never change; completing an incomplete record (`seal`) is the only mutation.
@@ -33,6 +35,10 @@ from .flowgrid import _pack_q, narrow
 from .flowresult import M2StructuralError
 
 MAX_K = 60
+MAX_SERIES_K = 252      # M3a (R-52, R-114): per-series k via add_series, M3a series only; M2 series keep MAX_K
+# M3a series metrics (series_id "<UNDERLYING>/<lane>/<metric>", R-153, R-159); skew-type `<metric>_fwd` included
+M3A_METRICS = frozenset(("atm_iv", "atm_iv_close", "iv30", "iv30_close", "skew25", "skew25_fwd", "term_30_91"))
+CONVENTIONS = ("spot", "forward")
 _SNAP_MAGIC = b"M2SNAP1"
 _BIN_NAME = b"M2BIN"
 _BIN_VERSION = (1).to_bytes(2, "little")
@@ -46,12 +52,29 @@ _LINE = re.compile(r'\{"series_id":(".*?"),"metric":(".*?"),"session_id":(".*?")
 
 
 class _Rec:
-    __slots__ = ("session_id", "minutes", "idx", "vals", "total", "complete", "sha", "txt", "sparse", "itxt")
+    __slots__ = ("session_id", "minutes", "idx", "vals", "total", "complete", "sha", "txt", "sparse", "itxt", "conv")
 
-    def __init__(self, session_id, minutes, idx, vals, total, complete, txt=None, sparse=False, itxt=None):
+    def __init__(self, session_id, minutes, idx, vals, total, complete, txt=None, sparse=False, itxt=None, conv=None):
         self.session_id, self.minutes, self.idx, self.vals = session_id, minutes, idx, vals
         self.total, self.complete, self.sha, self.txt = total, complete, None, txt
-        self.sparse, self.itxt = sparse, itxt
+        self.sparse, self.itxt, self.conv = sparse, itxt, conv
+
+
+_FULL_IDX = {}
+
+
+def _full_idx(n):
+    """Shared index array 0..n-1 for dense grids without a zero point (the M3a minute series): one copy per grid
+    length instead of one per record (the store never mutates a stored array)."""
+    a = _FULL_IDX.get(n)
+    if a is None:
+        a = _FULL_IDX[n] = array("H", range(n))
+    return a
+
+
+def _is_m3a_series(series_id):
+    metric = series_id.rsplit("/", 1)[-1] if isinstance(series_id, str) else None
+    return metric is not None and (metric in M3A_METRICS or metric.endswith("_fwd"))
 
 
 def _sparse(rec):
@@ -257,11 +280,15 @@ def _head(series_id, metric):
 
 def _body(head, window_s, rec, cache=None):
     if rec.sparse:
-        return '%s%s,"window_s":%d,"grid":[%s],"grid_idx":[%s],"total":%d,"complete":%s}' % (
+        body = '%s%s,"window_s":%d,"grid":[%s],"grid_idx":[%s],"total":%d,"complete":%s}' % (
             head, json.dumps(rec.session_id), window_s, _grid_text(rec, cache), _idx_text(rec, cache), rec.total,
             "true" if rec.complete else "false")
-    return '%s%s,"window_s":%d,"grid":[%s],"total":%d,"complete":%s}' % (
-        head, json.dumps(rec.session_id), window_s, _grid_text(rec), rec.total, "true" if rec.complete else "false")
+    else:
+        body = '%s%s,"window_s":%d,"grid":[%s],"total":%d,"complete":%s}' % (
+            head, json.dumps(rec.session_id), window_s, _grid_text(rec), rec.total, "true" if rec.complete else "false")
+    if rec.conv is not None:     # M3a record delta_convention (R-160); absent on every M2 record: M2 lines unchanged
+        body = '%s,"delta_convention":"%s"}' % (body[:-1], rec.conv)
+    return body
 
 
 def _rec_sha(series_id, metric, window_s, rec, body=None):
@@ -282,21 +309,43 @@ class HistoryStore:
         self._hits = self._misses = 0
         self._buf = None
         self._chash = None          # content hash carried by a binary snapshot, valid until the store changes
+        self._series_k = {}         # M3a per-series k (add_series); every other series uses self.k
 
     # ------------------------------------------------------------------ writes
     def add_series(self, series_id, k):
-        raise NotImplementedError
+        """Declare the retention k of one series id (every metric and window of that id), R-114: k in 1..252 for an M3a
+        series (metric in M3A_METRICS or a skew-type `<metric>_fwd`), 1..60 (MAX_K) for any other (M2) series.
+        Lowering k evicts the oldest records at once; raising it keeps what is stored. ValueError otherwise."""
+        if type(k) is not int:
+            raise ValueError("k must be an int")
+        cap = MAX_SERIES_K if _is_m3a_series(series_id) else MAX_K
+        if not 1 <= k <= cap:
+            raise ValueError("k must be in 1..%d for series %r" % (cap, series_id))
+        self._series_k[series_id] = k
+        for key, ring in self._rings.items():
+            if key[0] == series_id and len(ring.recs) > k:
+                self._chash = None
+                ring.views.clear()
+                recs = ring.recs
+                for sid in list(recs)[:len(recs) - k]:
+                    del recs[sid]
+
+    def k_of(self, series_id):
+        """Retention of a series id: its add_series k, else the store k."""
+        return self._series_k.get(series_id, self.k)
 
     def append(self, series_id, metric, window_s, session_id, grid, total=None, complete=True, grid_idx=None,
                lane="stock", minutes=None, delta_convention=None):
-        if delta_convention is not None:
-            raise NotImplementedError
         """Append one session record: a dense `grid` list (zero-padded to the session minutes at read time), or, with
         `grid_idx`, the values at those indexes (sparse; kept as supplied). Errors (M2StructuralError), RULED order:
         lane_mismatch (the ring lane is the lane of the first append), session_not_in_calendar (strict calendar),
         record_length_mismatch (dense grid longer than the session minutes, or a sparse index outside [0, minutes)),
         non_monotone_grid (sparse indexes not strictly ascending), duplicate_session (equal to the last appended session of
-        the series), out_of_order_append (earlier). The store keeps its own typed copy."""
+        the series), out_of_order_append (earlier). The store keeps its own typed copy.
+        `delta_convention` (M3a, R-160): None (no field, read as "spot") or "spot" / "forward", stored as given and
+        written in the canonical line only when given; any other value is ValueError (no append code, R-160)."""
+        if delta_convention is not None and delta_convention not in CONVENTIONS:
+            raise ValueError("delta_convention must be None, 'spot' or 'forward'")
         if grid_idx is None:
             idx = None
             minutes = len(grid)
@@ -307,14 +356,18 @@ class HistoryStore:
         sparse = grid_idx is not None
         minutes = self._prepare(series_id, metric, window_s, session_id, lane, minutes, idx, sparse, None)
         if not sparse:
-            idx = array("H")
-            vals = []
-            i = 0
-            for v in grid:
-                if v:
-                    idx.append(i)
-                    vals.append(v)
-                i += 1
+            if minutes and minutes <= 65536 and 0 not in grid:
+                idx = _full_idx(minutes)       # no zero point: every index, one shared array (same content)
+                vals = grid
+            else:
+                idx = array("H")
+                vals = []
+                i = 0
+                for v in grid:
+                    if v:
+                        idx.append(i)
+                        vals.append(v)
+                    i += 1
             if total is None:
                 total = sum(grid)
         else:
@@ -322,7 +375,7 @@ class HistoryStore:
             if total is None:
                 total = sum(vals)
         self._store(series_id, metric, window_s, _Rec(session_id, minutes, idx, narrow(vals), total, bool(complete),
-                                                      None, sparse), lane)
+                                                      None, sparse, None, delta_convention), lane)
 
     def append_record(self, record, complete=True, lane="stock", _memo=None):
         """Append a prebuilt sparse `GridRecord` (see flowgrid.build_session_records), same checks. The store copies
@@ -387,7 +440,7 @@ class HistoryStore:
         recs[rec.session_id] = rec
         if ring.views:
             ring.views.clear()
-        if len(recs) > self.k:
+        if len(recs) > self._series_k.get(series_id, self.k):
             del recs[next(iter(recs))]
 
     def seal(self, series_id, metric, window_s, session_id):
@@ -494,13 +547,14 @@ class HistoryStore:
         _atomic_write(os.fspath(path), self.dump())
 
     @classmethod
-    def load(cls, source, calendar, k=20, strict_calendar=True, verify=True, lane="stock"):
+    def load(cls, source, calendar, k=20, strict_calendar=True, verify=True, lane="stock", series_k=None):
         """Store from canonical text: `os.PathLike` is a path; `str`, `bytes`, `bytearray`, `memoryview` are the content
         itself; empty content gives an empty store; other types raise TypeError. Non-empty content must end with the
         trailer line: after the lines parse, `trailer_missing`, `trailer_count_mismatch` (N differs from the record
         count) or `trailer_hash_mismatch` (hex differs from the content hash of the loaded records) are raised as
         M2StructuralError; a malformed line or a wrong per-line content_sha256 raises ValueError. `lane` is a string or a
-        series_id -> lane mapping that sets the lane of every loaded ring (default "stock")."""
+        series_id -> lane mapping that sets the lane of every loaded ring (default "stock"). `series_k` (M3a): a
+        series_id -> k mapping applied with add_series before the lines are read (the text carries no k)."""
         if isinstance(source, os.PathLike):
             with open(source, "rb") as fh:
                 source = fh.read()
@@ -511,6 +565,7 @@ class HistoryStore:
         else:
             raise TypeError("load needs a path or canonical content")
         store = cls(calendar, k, strict_calendar)
+        store._declare(series_k)
         if not raw:
             return store
         rows = raw.decode("ascii").split("\n")
@@ -532,6 +587,11 @@ class HistoryStore:
             raise M2StructuralError("trailer_hash_mismatch")
         return store
 
+    def _declare(self, series_k):
+        if series_k:
+            for sid in sorted(series_k):
+                self.add_series(sid, series_k[sid])
+
     def _parse_rows(self, rows, lane, verify):
         """Parse canonical record lines into this (empty) store; returns the claimed per-record sha list in order."""
         match = _LINE.match
@@ -549,6 +609,11 @@ class HistoryStore:
                 raise ValueError("not a canonical history line")
             g0 = ln.find('],"grid_idx":[', m.end(), g1)
             tail = ln[g1 + 10:].split(",")
+            conv = None
+            if len(tail) == 4 and tail[2][:19] == '"delta_convention":':     # M3a record field (R-160)
+                conv = tail.pop(2)[20:-1]
+                if conv not in CONVENTIONS:
+                    raise ValueError("not a canonical history line")
             if len(tail) != 3 or tail[1][:11] != '"complete":' or tail[2][:17] != '"content_sha256":' or tail[2][-2:] != '"}':
                 raise ValueError("not a canonical history line")
             claimed = tail[2][18:-2]
@@ -576,15 +641,16 @@ class HistoryStore:
             if g0 >= 0:
                 txt, itxt = ln[m.end():g0], ln[g0 + 14:g1]
                 minutes = calendar.minutes[pos] if pos is not None else 0
-                rec = _Rec(sid, minutes, None, None, int(tail[0]), tail[1][11:] == "true", txt, True, itxt)
+                rec = _Rec(sid, minutes, None, None, int(tail[0]), tail[1][11:] == "true", txt, True, itxt, conv)
             else:
                 txt = ln[m.end():g1]
-                rec = _Rec(sid, (txt.count(",") + 1) if txt else 0, None, None, int(tail[0]), tail[1][11:] == "true", txt)
+                rec = _Rec(sid, (txt.count(",") + 1) if txt else 0, None, None, int(tail[0]), tail[1][11:] == "true", txt,
+                           False, None, conv)
                 if pos is not None and rec.minutes > calendar.minutes[pos]:
                     raise M2StructuralError("record_length_mismatch")
             rec.sha = claimed
             ring.recs[sid] = rec
-            if len(ring.recs) > self.k:
+            if len(ring.recs) > self._series_k.get(series_id, self.k):
                 del ring.recs[next(iter(ring.recs))]
             shas.append(claimed)
         return shas
@@ -602,7 +668,7 @@ class HistoryStore:
         _atomic_write(os.fspath(path), self.snapshot())
 
     @classmethod
-    def from_snapshot(cls, buffer, calendar, k=20, strict_calendar=True, lane="stock", verify=True):
+    def from_snapshot(cls, buffer, calendar, k=20, strict_calendar=True, lane="stock", verify=True, series_k=None):
         """Store from a `snapshot()` buffer (bytes, mmap, shared memory, memoryview). Structural errors with closed codes,
         in this order: `snapshot_bad_magic`, `snapshot_length_mismatch` (including truncation), `snapshot_hash_mismatch`.
         The lines are then parsed as in `load` (per-line hashes verified; grids parsed on first use)."""
@@ -616,6 +682,7 @@ class HistoryStore:
         if hashlib.sha256(body).digest() != bytes(mv[head + 8:head + 40]):
             raise M2StructuralError("snapshot_hash_mismatch")
         store = cls(calendar, k, strict_calendar)
+        store._declare(series_k)
         if body:
             rows = body.decode("ascii").split("\n")
             if rows[-1] == "":
@@ -630,7 +697,7 @@ class HistoryStore:
         hosts only (`snapshot_byteorder` otherwise)."""
         if sys.byteorder != "little":
             raise M2StructuralError("snapshot_byteorder")
-        table, blobs, off = [], [], 0
+        table, blobs, off, conv = [], [], 0, []
         for key in sorted(self._rings):
             ring = self._rings[key]
             recs = []
@@ -638,6 +705,8 @@ class HistoryStore:
                 r = _sparse(ring.recs[sid])
                 n = len(r.idx)
                 head = [sid, r.minutes, r.total, 1 if r.complete else 0, n, off, "H", 1 if r.sparse else 0]
+                if r.conv is not None:
+                    conv.append([key[0], key[1], key[2], sid, r.conv])
                 ib = array("H", r.idx).tobytes()
                 if isinstance(r.vals, tuple):
                     head.append([int(v) for v in r.vals])
@@ -650,8 +719,12 @@ class HistoryStore:
                 off += len(blob)
                 recs.append(head)
             table.append([key[0], key[1], key[2], ring.lane, recs])
-        meta = json.dumps({"k": self.k, "content_hash": self.content_hash(), "series": table},
-                          separators=(",", ":")).encode("ascii")
+        meta = {"k": self.k, "content_hash": self.content_hash(), "series": table}
+        if self._series_k:                 # M3a keys only when used: an M2 store keeps its exact snapshot bytes
+            meta["series_k"] = {s: self._series_k[s] for s in sorted(self._series_k)}
+        if conv:
+            meta["conv"] = conv
+        meta = json.dumps(meta, separators=(",", ":")).encode("ascii")
         start = len(_BIN_MAGIC) + 8 + 32 + 8
         pad = (-(start + len(meta))) % 8
         rest = b"".join([len(meta).to_bytes(8, "little"), meta, b" " * pad] + blobs)
@@ -698,6 +771,7 @@ class HistoryStore:
         base = start + n + ((-(start + n)) % 8)
         store = cls(calendar, k or meta["k"], strict_calendar)
         store._buf = buffer
+        store._declare(meta.get("series_k"))
         store._chash = meta.get("content_hash")
         for series_id, metric, window_s, stored_lane, recs in meta["series"]:
             if lane is None:
@@ -715,6 +789,8 @@ class HistoryStore:
                 idx = mv[a:a + cnt * 2].cast("H")
                 vals = tuple(row[8]) if len(row) > 8 else mv[a + ib:a + ib + cnt * _SIZE[tc]].cast(tc)
                 out[sid] = _Rec(sid, minutes, idx, vals, total, bool(complete), None, bool(sparse))
+        for series_id, metric, window_s, sid, cv in meta.get("conv", ()):
+            store._rings[(series_id, metric, window_s)].recs[sid].conv = cv
         return store
 
     def binary_snapshot_to(self, path):

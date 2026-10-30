@@ -23,7 +23,7 @@ import m3a_harness as H
 from option_features import m3a_history as MH
 from option_features.flowgrid import Calendar
 from option_features.flowresult import M2StructuralError
-from option_features.flowstore import MAX_K, HistoryStore
+from option_features.flowstore import MAX_K, HistoryStore, HistoryView
 
 SET, FILE = "author2", "m3a_cases_history.json"
 ROWS = H.rows(SET, FILE)
@@ -80,7 +80,7 @@ def run_row(row):
                 if k != store.k:
                     store.add_series(series, k)
             conv = op[7] if len(op) > 7 else None
-            sid = cal.ids[i]
+            sid = cal.ids[i] if type(i) is int else i     # a session id outside the calendar is given as text
             if op[0] == "s":
                 store.append(series, metric, 0, sid, [], total=val, complete=bool(complete), lane=lane,
                              delta_convention=conv)
@@ -201,7 +201,7 @@ class Convention(unittest.TestCase):
         st.append("A/stock/iv30_close", "iv30_close", 0, cal.ids[0], [], total=5)
         line = next(st.lines())
         self.assertNotIn("delta_convention", line)
-        self.assertEqual(line[:-84], '{"series_id":"A/stock/iv30_close","metric":"iv30_close","session_id":"S0000",'
+        self.assertEqual(line[:line.rindex(',"content_sha256"')], '{"series_id":"A/stock/iv30_close","metric":"iv30_close","session_id":"S0000",'
                                      '"window_s":0,"grid":[],"total":5,"complete":true')
 
 
@@ -216,7 +216,8 @@ class Reads(unittest.TestCase):
             st.append("A/stock/iv30_close", "iv30_close", 0, cal.ids[i], [], total=i, complete=(i % 7 != 3))
 
     def test_scalar_skips_incomplete_and_caps(self):
-        r = MH.scalar_baseline(self.st, "A/stock/iv30_close", "iv30_close", self.cal.ids[270], max_sessions=5)
+        r = MH.scalar_baseline(self.st, "A/stock/iv30_close", "iv30_close", self.cal.ids[270], min_sessions=5,
+                               max_sessions=5)
         self.assertEqual(list(r.value["values"]), [254, 256, 257, 258, 259])
         self.assertEqual(r.value["n"], 5)
 
@@ -254,7 +255,21 @@ class Reads(unittest.TestCase):
         MH.scalar_baseline(self.st, "A/stock/iv30_close", "iv30_close", self.cal.ids[260])
         MH.same_minute_column(self.st, "A/stock/iv30", "iv30", self.cal.ids[260], 3)
         for ring in self.st._rings.values():
-            self.assertEqual(ring.views, {})
+            for v in ring.views.values():
+                self.assertNotIsInstance(v, HistoryView)
+                self.assertIsInstance(v, MH._Base)
+
+    def test_cache_dropped_by_append_and_seal(self):
+        cal, st = self.cal, self.st
+        a = MH.scalar_baseline(st, "A/stock/iv30_close", "iv30_close", cal.ids[262])
+        st.append("A/stock/iv30_close", "iv30_close", 0, cal.ids[260], [], total=-5, complete=False)
+        b = MH.scalar_baseline(st, "A/stock/iv30_close", "iv30_close", cal.ids[262])
+        self.assertEqual(b.value["values"], a.value["values"][1:])     # the append evicted the oldest (k 252)
+        st.seal("A/stock/iv30_close", "iv30_close", 0, cal.ids[260])
+        c = MH.scalar_baseline(st, "A/stock/iv30_close", "iv30_close", cal.ids[262])
+        self.assertEqual(c.value["values"], b.value["values"] + (-5,))
+        st.drop_caches()
+        self.assertEqual(MH.scalar_baseline(st, "A/stock/iv30_close", "iv30_close", cal.ids[262]).value, c.value)
 
     def test_reads_do_not_change_store(self):
         before = self.st.dump()
@@ -378,9 +393,11 @@ class PerfStore(unittest.TestCase):
     def test_W10_peak_rss_and_store(self):
         if self.peak1 is None:
             self.skipTest("Windows process counters only")
-        print("\nW10 peak working set %.1f MiB (budget <= 2 GB, hard 4 GB); store private bytes %.1f MiB "
-              "(budget <= 768 MiB, hard 1 GiB; %s)" % (self.peak1 / 2 ** 20, (self.priv1 - self.priv0) / 2 ** 20, LABEL))
-        self.assertLessEqual(self.peak1, 2 * 10 ** 9)
+        _, peak = _private_bytes()          # after the B6 build and (by name order) the W09 round trip
+        print("\nW10 peak working set of the test process %.1f MiB (budget <= 2 GB, hard 4 GB); store private bytes "
+              "%.1f MiB (budget <= 768 MiB, hard 1 GiB; %s)" % (peak / 2 ** 20, (self.priv1 - self.priv0) / 2 ** 20,
+                                                                LABEL))
+        self.assertLessEqual(peak, 2 * 10 ** 9)
         self.assertLessEqual(self.priv1 - self.priv0, MH.STORE_BUDGET_BYTES)
 
     def test_W09_round_trip(self):
@@ -392,7 +409,8 @@ class PerfStore(unittest.TestCase):
             st.dump_to(p)
             w_txt = time.perf_counter() - t0
             t0 = time.perf_counter()
-            back = HistoryStore.load(open(p, "rb").read(), cal, series_k=_series_k())
+            with open(p, "rb") as fh:
+                back = HistoryStore.load(fh.read(), cal, series_k=_series_k())
             r_txt = time.perf_counter() - t0
             self.assertEqual(back.content_hash(), h0)
             r = MH.scalar_baseline(back, "N007/stock/skew25_fwd", "skew25_fwd", cal.ids[SESSIONS],
@@ -422,25 +440,34 @@ class PerfStore(unittest.TestCase):
             self.assertGreaterEqual(n / r, 50000)
 
     def test_B5_read_share(self):
+        """Per series, 252 sessions, 103 names: `cold` = the first read of a session (selection built, cache dropped
+        before each pass, outside the timer); `sweep` = a later cutoff of the same session (selection cached, the
+        minute moves with the cutoff: what V3 reads at 77 of 78 cutoffs); `warm` = the same read again."""
         st, as_of = self.store, self.cal.ids[SESSIONS]
         out = {}
-        for label, fn in (("scalar_baseline 252", lambda n: MH.scalar_baseline(
-                st, "N%03d/stock/iv30_close" % n, "iv30_close", as_of)),
-                          ("same_minute_column 252", lambda n: MH.same_minute_column(
-                              st, "N%03d/stock/iv30" % n, "iv30", as_of, 195))):
-            fn(0)
-            runs = []
-            for _ in range(30):
-                t0 = time.perf_counter()
-                for n in range(NAMES):
-                    fn(n)
-                runs.append((time.perf_counter() - t0) / NAMES)
-            out[label] = (statistics.median(runs), sorted(runs)[int(0.95 * len(runs)) - 1])
-        print("\nB5 read share per series: scalar_baseline p50 %.1f us p95 %.1f us (V1/V9 budget <= 50 us); "
-              "same_minute_column p50 %.1f us p95 %.1f us (V3 budget <= 150 us); %s"
-              % tuple([x * 1e6 for v in out.values() for x in v] + [LABEL]))
-        self.assertLessEqual(out["scalar_baseline 252"][1], 50e-6)
-        self.assertLessEqual(out["same_minute_column 252"][1], 150e-6)
+        forms = (("scalar_baseline", lambda n, m: MH.scalar_baseline(st, "N%03d/stock/iv30_close" % n, "iv30_close",
+                                                                        as_of)),
+                 ("same_minute_column", lambda n, m: MH.same_minute_column(st, "N%03d/stock/iv30" % n, "iv30", as_of,
+                                                                              m)))
+        for label, fn in forms:
+            fn(0, 0)
+            for mode in ("cold", "sweep", "warm"):
+                runs = []
+                for rep in range(30):
+                    if mode == "cold":
+                        st.drop_caches()
+                    minute = (rep * 13) % GRID if mode == "sweep" else 195
+                    t0 = time.perf_counter()
+                    for n in range(NAMES):
+                        fn(n, minute)
+                    runs.append((time.perf_counter() - t0) / NAMES)
+                out[label, mode] = (statistics.median(runs), sorted(runs)[int(0.95 * len(runs)) - 1])
+        lines = ["  %-18s %-5s p50 %6.1f us p95 %6.1f us" % (k[0], k[1], v[0] * 1e6, v[1] * 1e6) for k, v in out.items()]
+        print("\nB5 read share per series (V1/V9 budget <= 50 us, V3 budget <= 150 us per series, whole request; "
+              "%s):\n%s" % (LABEL, "\n".join(lines)))
+        for mode in ("cold", "sweep", "warm"):
+            self.assertLessEqual(out["scalar_baseline", mode][1], 50e-6, mode)
+            self.assertLessEqual(out["same_minute_column", mode][1], 150e-6, mode)
 
 
 class PerfRetention(unittest.TestCase):
