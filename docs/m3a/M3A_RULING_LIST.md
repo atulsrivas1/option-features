@@ -115,7 +115,7 @@ Author: Architect, 2026-10-30. Prepared for ONE PO pass BEFORE any fixture autho
 | R-76 | Parallel unit and history dependency | per underlying; unit with immutable view | the M1 runner unit with an immutable M2 view; build phase ordered per underlying |
 | R-77 | Module boundary | extend chainiv; new module | a new surface module beside chainiv (chainiv bytes and gates unchanged) |
 | R-78 | First task gate | G0 as M2-G0 plus separate whole-B6 | single M3A-G0: one-worker B6 with the M2-G0 set, the M2 flow outputs (M2-B9) and the M3a outputs; no separate B10 |
-| R-79 | Store budget at retention 252 | 512 MB / 1 GB (M2); lower | 512 MB budget, 1 GB hard per worker; bytes per series reported |
+| R-79 | Store budget at retention 252 | 512 MB / 1 GB (M2); lower | 768 MB budget, 1 GB hard per worker (amended 2026-10-30 by the PO after owner decisions 2 and 3: two minute series per name; hard limit unchanged); bytes per series reported; sorted copies lazy, not built for reads that do not need them; the gate measures private bytes |
 | R-80 | Runner and perf adapter | extend m1_runner; new | extend tools/m1_runner (opt-in, default single-process); perf_sut adapter deferred |
 
 ## I. Added after the review of PR 101
