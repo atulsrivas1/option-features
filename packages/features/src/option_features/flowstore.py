@@ -31,6 +31,7 @@ from .flowgrid import GridRecord, _pack_q
 from .flowresult import M2StructuralError
 
 MAX_K = 60
+_SNAP_MAGIC = b"M2HISTSNAP1\n"
 _VIEW_CACHE = 4
 
 _LINE = re.compile(r'\{"series_id":(".*?"),"metric":(".*?"),"session_id":(".*?"),"window_s":(\d+),"grid":\[([-0-9,]*)\],'
@@ -201,6 +202,7 @@ class HistoryStore:
         self.calendar, self.k, self.strict_calendar = calendar, k, strict_calendar
         self._rings = {}
         self._hits = self._misses = 0
+        self._buf = None
 
     # ------------------------------------------------------------------ writes
     def append(self, series_id, metric, window_s, session_id, grid, total=None, complete=True, grid_idx=None,
@@ -405,6 +407,71 @@ class HistoryStore:
             if len(ring.recs) > store.k:
                 del ring.recs[next(iter(ring.recs))]
         return store
+
+    # ------------------------------------------------------------------ binary snapshot (shared memory / mmap transfer)
+    def snapshot(self):
+        """The whole store as one bytes object: a header with the record table, then the raw arrays (8-byte aligned).
+        `from_snapshot` over a `bytes`, an `mmap` or a `multiprocessing.shared_memory` buffer builds a store whose
+        records are zero-copy read-only views of that buffer (the view transfer option of M2-B16)."""
+        table, blobs, off = [], [], 0
+        for key in sorted(self._rings):
+            ring = self._rings[key]
+            recs = []
+            for sid in sorted(ring.recs):
+                r = _sparse(ring.recs[sid])
+                n = len(r.idx)
+                head = [sid, r.minutes, r.total, 1 if r.complete else 0, n, off]
+                try:
+                    vb = array("q", r.vals).tobytes() if not isinstance(r.vals, array) else r.vals.tobytes()
+                    ib = array("H", r.idx).tobytes() if not isinstance(r.idx, array) else r.idx.tobytes()
+                except OverflowError:
+                    head.append([int(v) for v in r.vals])
+                    vb, ib = b"", array("H", r.idx).tobytes()
+                pad = (-len(ib)) % 8
+                blobs.append(ib + bytes(pad) + vb)
+                off += len(ib) + pad + len(vb)
+                recs.append(head)
+            table.append([key[0], key[1], key[2], ring.lane, recs])
+        meta = json.dumps({"k": self.k, "series": table}, separators=(",", ":")).encode("ascii")
+        pad = (-(len(_SNAP_MAGIC) + 8 + len(meta))) % 8
+        return b"".join([_SNAP_MAGIC, len(meta).to_bytes(8, "little"), meta, b" " * pad] + blobs)
+
+    def snapshot_to(self, path):
+        with open(path, "wb") as fh:
+            fh.write(self.snapshot())
+
+    @classmethod
+    def from_snapshot(cls, buffer, calendar, k=None, strict_calendar=False):
+        """Store over a snapshot buffer (bytes, mmap or shared memory); nothing is copied, the caller keeps the buffer
+        alive (the store holds a reference). Records are read-only."""
+        mv = memoryview(buffer)
+        if bytes(mv[:len(_SNAP_MAGIC)]) != _SNAP_MAGIC:
+            raise ValueError("not a history snapshot")
+        n = int.from_bytes(mv[len(_SNAP_MAGIC):len(_SNAP_MAGIC) + 8], "little")
+        start = len(_SNAP_MAGIC) + 8
+        meta = json.loads(bytes(mv[start:start + n]))
+        base = start + n + ((-(start + n)) % 8)
+        store = cls(calendar, k or meta["k"], strict_calendar)
+        store._buf = buffer
+        for series_id, metric, window_s, lane, recs in meta["series"]:
+            ring = store._rings[(series_id, metric, window_s)] = _Ring(lane, _head(series_id, metric))
+            out = ring.recs
+            for row in recs:
+                sid, minutes, total, complete, cnt, off = row[:6]
+                a = base + off
+                ib = (cnt * 2 + 7) // 8 * 8
+                idx = mv[a:a + cnt * 2].cast("H")
+                if len(row) > 6:
+                    vals = row[6]
+                else:
+                    vals = mv[a + ib:a + ib + cnt * 8].cast("q")
+                out[sid] = _Rec(sid, minutes, idx, vals, total, bool(complete))
+        return store
+
+    def drop_caches(self):
+        """Forget every cached view (memory control; never changes a result)."""
+        for ring in self._rings.values():
+            ring.views.clear()
 
     # ------------------------------------------------------------------ log-only facts
     def stats(self):

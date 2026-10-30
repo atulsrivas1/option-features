@@ -336,6 +336,37 @@ class StoreViews(unittest.TestCase):
         with self.assertRaises(ValueError):
             flowstore.HistoryStore.load(bad, cal, k=8)
 
+    def test_snapshot_round_trip_bytes_and_mmap(self):
+        import mmap
+        _, flowstore, flowrank, flowresult = lib()
+        rng = random.Random(10)
+        cal = self._cal(12, lambda i: 40)
+        store = flowstore.HistoryStore(cal, k=11)
+        for s in ("A", "B"):
+            for i in range(11):
+                g = [rng.choice([0, 0, 1, 5, 2 ** 70 if (s == "B" and i == 2) else 9]) for _ in range(40)]
+                store.append(s, "premium", 60, cal.ids[i], g, total=sum(g), complete=i != 4 or s == "B")
+        snap = store.snapshot()
+
+        def check(loaded):
+            self.assertEqual(loaded.dump(), store.dump())
+            self.assertEqual(loaded.retained(), store.retained())
+            for s in ("A", "B"):
+                a, b = store.baseline(s, "premium", 60, cal.ids[11], 7), loaded.baseline(s, "premium", 60, cal.ids[11], 7)
+                self.assertEqual(a is None, b is None)
+                if a is not None:
+                    self.assertEqual((a.rank(5), a.median(), a.mean()), (b.rank(5), b.median(), b.mean()))
+
+        check(flowstore.HistoryStore.from_snapshot(snap, cal))
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "s.bin")
+            store.snapshot_to(path)
+            with open(path, "rb") as fh:
+                mm = mmap.mmap(fh.fileno(), 0, access=mmap.ACCESS_READ)
+                check(flowstore.HistoryStore.from_snapshot(mm, cal))    # the store is gone when the map closes
+                mm.close()
+        self.assertEqual(store.baseline("A", "premium", 60, cal.ids[11], 7), None)   # session 4 incomplete for A
+
     def test_hash_independent_of_series_arrival_order(self):
         _, flowstore, _, _ = lib()
         cal = self._cal(6, lambda i: 4)
