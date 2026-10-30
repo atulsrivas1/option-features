@@ -10,7 +10,7 @@ from collections import Counter
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, ".."))
 sys.path.insert(0, HERE)
-import m2_load  # noqa: E402
+import m2add_load  # noqa: E402
 import m2add_ref  # noqa: E402
 
 LABEL = ("mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, "
@@ -18,7 +18,7 @@ LABEL = ("mock-data qualification only: passed on independently authored synthet
 _P = [("real", "-data"), ("market", " data"), ("produc", "tion"), ("validated against", " vendor"), ("data", "bento"),
       ("linux", " parity"), ("byte", "-identical")]
 FORBIDDEN = [a + b for a, b in _P]
-EXPECT = {"add_struct": 60, "add_data": 30, "add_grid": 23, "add_store": 24, "add_snapshot": 14, "add_params": 16, "add_cutoff": 18}
+EXPECT = {"add_struct": 61, "add_data": 30, "add_grid": 23, "add_store": 24, "add_snapshot": 14, "add_params": 16, "add_cutoff": 18, "add_types": 40, "add_order": 25, "add_typefirst": 47}
 CODES = {None, "unordered_prints", "negative_size_or_price", "bad_multiplier", "unknown_contract", "malformed_type",
          "duplicate_session", "non_monotone_grid", "session_not_in_calendar", "window_not_allowed", "threshold_required",
          "out_of_order_append", "delayed_feed_tag", "lane_mismatch", "record_length_mismatch", "snapshot_bad_magic", "snapshot_length_mismatch", "snapshot_hash_mismatch", "trailer_missing", "trailer_count_mismatch", "trailer_hash_mismatch", "grid_not_60s"}
@@ -33,13 +33,15 @@ def run(d):
     rows, counts, bad = [], {}, []
     for path in sorted(glob.glob(os.path.join(d, "m2_cases_add_*.json"))):
         name = os.path.basename(path)[len("m2_cases_"):-5]
-        head, rs = m2_load.load_dataset(path)
+        head, rs = m2add_load.load_dataset(path)
         assert head["provenance"] == "SYNTHETIC" and head["label"] == LABEL
         low = open(path, encoding="ascii").read().lower()
         for t in FORBIDDEN:
             assert t not in low, (t, path)
         assert not ABS_PATH.search(low)
         counts[name] = len(rs)
+        if name == "add_types":
+            assert "decoding" in head and any(r.get("requires_decoding") for r in rs), "decoding header and flagged rows"
         for r in rs:
             assert r["expected"]["code"] in CODES, r["id"]
             if canon(m2add_ref.evaluate(r)) != canon(r["expected"]):
@@ -86,7 +88,22 @@ def coverage(rows):
     need(t["prec_pair_store"] >= 12, "store precedence pairs")
     for o in ("M2-4", "M2-5", "M2-6", "M2-9"):
         need(t[("cutoff_before_open", o)] >= 2, "cutoff before open " + o)
+    for g in ("order_float_seq", "order_float_time", "order_mixed_ok", "order_mixed_fault", "order_skipped_pair"):
+        for o in ("M2-1", "M2-4", "M2-6", "M2-5", "M2-9"):
+            need(t[(g, o)] >= 1, g + " " + o)
+    for g in ("float_size", "float_multiplier", "neg_decimal", "neg_fraction", "str_none_field", "pair_elsewhere", "decimal_nan",
+              "unhashable_contract_id", "cross_field"):
+        need(t[g] >= 2, g)
+    for g in ("float_size", "float_multiplier", "decimal_nan", "unhashable_contract_id"):
+        for o in ("M2-1", "M2-4", "M2-6", "M2-5", "M2-9"):
+            need(t[(g, o)] >= 1, g + " " + o)
+    need(t["price_bytes"] >= 2 and t["price_decimal"] >= 5, "bytes and decimal rows")
     need(t["sweep"] >= 8 and t["repro"] >= 3, "cutoff sweep and repro rows")
+    for g in ("flag_float", "price_decimal", "price_fraction", "bool_seq_types"):
+        for o in ("M2-1", "M2-4", "M2-6", "M2-5", "M2-9"):
+            need(t[(g, o)] >= 1, g + " " + o)
+    for g in ("prec_multi", "seq_invented", "seq_hidden", "price_none", "float_price", "bool_price"):
+        need(t[g] >= 2, g)
 
 
 if __name__ == "__main__":
@@ -94,6 +111,6 @@ if __name__ == "__main__":
     rows, counts, bad = run(d)
     coverage(rows)
     print("rows", len(rows), counts, "mismatches", len(bad), bad[:5])
-    ok = not bad and all(EXPECT.get(k) == v for k, v in counts.items()) and len(rows) == 185
+    ok = not bad and all(EXPECT.get(k) == v for k, v in counts.items()) and len(rows) == 298
     print("ADD_SELFCHECK", "PASS" if ok else "FAIL")
     sys.exit(0 if ok else 1)

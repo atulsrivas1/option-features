@@ -59,22 +59,34 @@ def norm(inp):
 
 
 def precheck(inp):
+    """single precedence list; a wrong-typed field reports malformed_type at the slot where its value check runs:
+    ordering (time, seq), negative_size_or_price (size), bad_multiplier (multiplier), unknown_contract (contract id),
+    then the malformed_type slot (price type and grammar, condition_excluded)"""
     ps = inp.get("prints") or []
     for a, b in zip(ps, ps[1:]):
         if is_int(a[1]) and is_int(b[1]) and is_int(a[6]) and is_int(b[6]) and (a[1], a[6]) > (b[1], b[6]):
             return "unordered_prints"
     for p in ps:
-        if (is_int(p[3]) and p[3] < 0) or (price_ok(p[2]) and Fr(p[2]) < 0):
+        if not (is_int(p[1]) and is_int(p[6])):
+            return "malformed_type"
+    for p in ps:
+        if not is_int(p[3]):
+            return "malformed_type"
+        if p[3] < 0 or (isinstance(p[2], str) and price_ok(p[2]) and Fr(p[2]) < 0) or (is_int(p[2]) and p[2] < 0):
             return "negative_size_or_price"
     for p in ps:
-        if is_int(p[4]) and p[4] <= 0:
+        if not is_int(p[4]):
+            return "malformed_type"
+        if p[4] <= 0:
             return "bad_multiplier"
     cons = inp.get("contracts") or {}
     for p in ps:
+        if not isinstance(p[0], str):
+            return "malformed_type"
         if p[0] not in cons:
             return "unknown_contract"
     for p in ps:
-        if not (price_ok(p[2]) and is_int(p[3]) and is_int(p[4]) and is_int(p[1]) and is_int(p[6]) and flag_ok(p[5])):
+        if not (price_ok(p[2]) and flag_ok(p[5])):
             return "malformed_type"
     return None
 

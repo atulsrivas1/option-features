@@ -243,7 +243,8 @@ def gate_b10(G, M, E, PT, streams, repeats, report):
         st["verdict"] = verdict_rate(st, 50_000, 20_000)
         ts2, sep_keep = sample(separate, max(5, repeats // 6))
         st2 = stats(ts2, n)
-        same = [M.canonical_line(r) for r in shared_keep if "output_id" in r] == [M.canonical_line(r) for r in sep_keep if "output_id" in r]
+        same = ([M.canonical_line(r) for r in shared_keep if not isinstance(r, list)]
+                == [M.canonical_line(r) for r in sep_keep if not isinstance(r, list)])
         entry["sizes"][str(n)] = {"shared_pass": st, "six_separate_passes": st2, "shared_over_separate_p50": round(st["p50_ns"] / st2["p50_ns"], 3),
                                   "shared_equals_separate": same}
         print("  M2-B10 n=%d: shared p50 %.3f s (rate at p95 %d/s) [%s]; six separate p50 %.3f s; ratio %.3f; equal=%s" % (

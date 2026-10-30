@@ -38,11 +38,12 @@ def _version():
 class Result:
     """One M2 result. `value` holds ints and Fractions (never float); `coverage` is a dict or None."""
     __slots__ = ("output_id", "series_id", "session_id", "evaluation_ns", "status", "reason", "code", "value", "fired",
-                 "params", "coverage", "label", "lane", "per_statistic", "parts_shown")
+                 "params", "coverage", "label", "lane", "per_statistic", "parts_shown", "ratio_reason")
 
     def __init__(self, output_id, series_id, session_id, evaluation_ns, status, reason=None, code=None, value=None,
                  fired=None, params=None, coverage=None, label=None, lane="stock", per_statistic=None,
-                 parts_shown=None):
+                 parts_shown=None, ratio_reason=None):
+        self.ratio_reason = ratio_reason
         self.output_id, self.series_id, self.session_id, self.evaluation_ns = output_id, series_id, session_id, evaluation_ns
         self.status, self.reason, self.code, self.value, self.fired = status, reason, code, value, fired
         self.params, self.coverage, self.label, self.lane = params, coverage, label, lane
@@ -64,6 +65,12 @@ class Result:
     def invalid(cls, output_id, code, series_id=None, session_id=None, evaluation_ns=None, params=None, lane="stock"):
         return cls(output_id, series_id, session_id, evaluation_ns, "invalid_input", None, code, None, None, params,
                    None, None, lane)
+
+    def __getitem__(self, key):
+        """Read access by wire key (`result["status"]`); `version` is the package version."""
+        if key == "version":
+            return _version()
+        return getattr(self, key)
 
     def __repr__(self):
         return "Result(%s %s %s%s)" % (self.output_id, self.series_id, self.status,
@@ -94,6 +101,8 @@ def to_wire(result):
         if v is None and k in ("per_statistic", "parts_shown"):
             continue
         d[k] = show(v)
+    if result.ratio_reason is not None:       # F18 only, omitted when null (section 9), after version
+        d["ratio_reason"] = result.ratio_reason
     return d
 
 

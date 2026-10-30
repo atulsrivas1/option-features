@@ -102,7 +102,8 @@ def build(rng):
     # trailing dot is valid in the text grammar
     row("M2-4", [P("C1", d(10), "1000.", 100, seq=0)], ["grammar_text", "dot_trailing", "accepted"])
     row("M2-9", [P("P1", d(11), "1.", 5, seq=0), P("C1", d(10), "1.", 5, seq=1)], ["grammar_text", "dot_trailing", "accepted"], prm=pq)
-    assert len(R.rows) == 60, len(R.rows)
+    row("M2-6", [P("C1", d(10), True, 5)], ["prec_pair", "malformed_type", "window_not_allowed", "bool_price"], prm={"window_s": 45})
+    assert len(R.rows) == 61, len(R.rows)
     return R.rows
 
 
