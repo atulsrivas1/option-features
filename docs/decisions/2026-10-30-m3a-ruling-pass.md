@@ -30,6 +30,7 @@ R-04, R-09, R-14, R-27 to R-30, R-40, R-42, R-44, R-81. A changed design answer 
 5. Scalar baseline with partial history: missing and incomplete days skipped, at least 20 available sessions.
 
 ## 5. Fixture-author brief (requirements; detail in docs/m3a/M3A_FIXTURE_REQUIREMENTS.md)
+- Process rules: docs/decisions/2026-10-30-process-and-m3-m5-split.md (two-round review cap, merge-order rule).
 - Fresh checkout of origin/main; docs/m3a (matrix, budgets, fixtures, I/O contract, ruling list) and the M1 and M2 docs are the inputs.
 - Owner goals in every deliverable: performance (budgets as hard gates, single-worker gates, two-stage synthetic then real, the opt-in default single-process runner reused, batched, memory and cache rules); all features and indicators first on synthetic data; adapter work last (RQ); the label sentence verbatim in every header and no forbidden term (docs/RELEASE_NOTE_TEMPLATE.md label rule 1).
 - Independence: the Tester authors every fixture and expected value from the design text, the matrix, the contract and the ruled list, without reading any M3a module or the Developer tests, never using the library under test or the M1 solver to derive an expectation; a second reviewer re-derives at least 25 percent of the hand rows and all boundary rows.
