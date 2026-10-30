@@ -30,7 +30,8 @@ value part of 5 are the shared S09 rule `m3a_validate.validate_view_read` (R-190
                              differs from the metric's (`_fwd` = forward) or from a selected record's
                              `delta_convention` (absent = "spot"), R-160. Not supplied = "spot"; a supplied None, a
                              non-string or another string is malformed_type at this slot (R-190 items 1 and 2)
-A series_id, metric or window_s that cannot be looked up (unhashable) is malformed_type (totality).
+A series_id, metric or lane that is not exactly a str, or a window_s that is not exactly an int, is malformed_type
+(exact types, as S09: a subclass could run caller code). min_sessions or max_sessions None means the default (20, 252).
 
 Record returned (`HistoryRead`, plain slots, no hidden state): status in {available, unavailable, invalid_input},
 reason (insufficient_history or None), code (structural or None), value:
@@ -71,9 +72,8 @@ _NOT_GIVEN = object()                        # `delta_convention` not supplied: 
 def _checks(store, series_id, metric, window_s, as_of, min_sessions, max_sessions, x, minute, delta_convention):
     """Positions 1 to 5 except the record scan: the shared S09 rule (m3a_validate.validate_view_read, R-190), so
     request and view read cannot drift; plus a key that cannot be looked up (unhashable) is malformed_type."""
-    try:
-        hash((series_id, metric, window_s))
-    except TypeError:
+    # exact types (as S09): a str or int subclass could run caller code in hash or ==
+    if type(series_id) is not str or type(metric) is not str or type(window_s) is not int:
         return "malformed_type"
     conv = "spot" if delta_convention is _NOT_GIVEN else delta_convention
     form = "scalar_baseline" if minute is _SCALAR else "same_minute_column"
@@ -189,6 +189,12 @@ def _probe(r, minute):
 
 
 def _read(store, series_id, metric, as_of, min_sessions, max_sessions, lane, delta_convention, x, window_s, minute):
+    if min_sessions is None:                 # None = the default, as validate_view_read documents
+        min_sessions = 20
+    if max_sessions is None:
+        max_sessions = 252
+    if type(lane) is not str:
+        return _invalid("malformed_type")
     code = _checks(store, series_id, metric, window_s, as_of, min_sessions, max_sessions, x, minute, delta_convention)
     if code is not None:
         return _invalid(code)
