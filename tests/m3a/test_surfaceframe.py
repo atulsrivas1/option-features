@@ -396,7 +396,7 @@ def _sample_rows():
 
 class FloatsStrength(unittest.TestCase):
     def test_some_float_differs_from_its_text(self):
-        differs = 0
+        differs = {"atm_iv": 0, "put25_iv": 0, "call25_iv": 0, "tenor": 0}
         for row in ROWS:
             if row["expected"]["status"] == "invalid_input":
                 continue
@@ -404,12 +404,14 @@ class FloatsStrength(unittest.TestCase):
             res = _run(row, stats=stats)
             for d, fl in stats["floats"]["expiries"].items():
                 item = res.frame["expiries"][d]
-                texts = (item["atm_iv"], item["put25_iv"]["value"], item["call25_iv"]["value"])
-                for v, t in zip((fl["atm_iv"], fl["put25_iv"], fl["call25_iv"]), texts):
-                    differs += v is not None and v != float(t)
+                texts = {"atm_iv": item["atm_iv"], "put25_iv": item["put25_iv"]["value"],
+                         "call25_iv": item["call25_iv"]["value"]}
+                for k, t in texts.items():
+                    differs[k] += fl[k] is not None and fl[k] != float(t)
             for t, v in stats["floats"]["tenors"].items():
-                differs += v is not None and v != float(res.frame["tenors"][t]["iv"])
-        self.assertGreater(differs, 100)
+                differs["tenor"] += v is not None and v != float(res.frame["tenors"][t]["iv"])
+        for k, n in differs.items():                 # each kind carries the unrounded value, not the text
+            self.assertGreater(n, 10, k)
 
     def test_floats_equal_independent_kernel_values(self):
         rows = _sample_rows()
