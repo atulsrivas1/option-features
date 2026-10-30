@@ -31,7 +31,7 @@ def parse(text):
         elif l.startswith("| ") and not l.startswith("| Id ") and not l.startswith("|---"):
             c = _cells(l)
             assert len(c) == 7, l
-            rows.append({"id": c[0], "status": c[2].split()[0], "release": c[3], "prs": c[4], "design": design})
+            rows.append({"id": c[0], "status": c[2].split()[0], "status_cell": c[2], "release": c[3], "prs": c[4], "pend": c[6], "design": design})
     return lines, rows
 
 
@@ -83,11 +83,23 @@ def check(text, handoff):
             n = int(m.group(1))
             if n not in block:
                 errors.append("%s cites PR %d which is not in the Merged PRs block (mark it open or add it)" % (r["id"], n))
+    opened = set()
     for l in handoff.split("\n"):
-        if re.search(r"\bmerged\b", l) and l.startswith("- ") and "(open)" not in l:
-            for n in re.findall(r"PR (\d+)", l):
-                if int(n) not in block:
-                    errors.append("HANDOFF says PR %s merged but it is not in the Merged PRs block" % n)
+        if re.match(r"^\s*(-|\d+\.)\s", l):
+            if re.match(r"^\s*(-|\d+\.)\s+Open PRs:", l):
+                opened |= {int(n) for n in re.findall(r"\b(\d{2,3})\b", l.split("Open PRs:", 1)[1].split(".")[0])}
+            elif re.search(r"\bmerged\b", l) and "(open)" not in l:
+                for n in re.findall(r"PR (\d+)", l):
+                    if int(n) not in block:
+                        errors.append("HANDOFF says PR %s merged but it is not in the Merged PRs block" % n)
+    for n in sorted(opened & block):
+        errors.append("PR %d is in both the HANDOFF Open PRs line and the Merged PRs block" % n)
+    for r in rows:
+        if r["status"] == "done" and re.search(r"pending merge|\(open", r["prs"] + " " + r["status_cell"]):
+            errors.append("%s is done but its status or PR cell says pending merge or open" % r["id"])
+        for m in re.finditer(r"\b(\d{2,3})\b\s*\(open", r["prs"] + " " + r["pend"]):
+            if int(m.group(1)) not in opened:
+                errors.append("%s cites PR %s as open but the HANDOFF Open PRs line does not list it" % (r["id"], m.group(1)))
     return errors
 
 
@@ -114,6 +126,26 @@ def disk_additions():
                 rows += isinstance(o, dict) and "id" in o
     manifest = sum(1 for line in (ADD_DIR / "MANIFEST_ADDITIONS.sha256").read_text(encoding="ascii").split(chr(10)) if line.strip())
     return rows, files, manifest
+
+
+def check_manifest():
+    """Every manifest entry exists with the listed sha256, and every m2_cases_*.json is listed."""
+    import hashlib
+    errors, names = [], set()
+    for line in (ADD_DIR / "MANIFEST_ADDITIONS.sha256").read_text(encoding="ascii").split(chr(10)):
+        if not line.strip():
+            continue
+        digest, name = line.split(" *", 1)
+        names.add(name)
+        f = ADD_DIR / name
+        if not f.is_file():
+            errors.append("manifest lists %s but it is not in the directory" % name)
+        elif hashlib.sha256(f.read_bytes()).hexdigest() != digest:
+            errors.append("sha256 of %s differs from the manifest" % name)
+    for f in ADD_DIR.glob("m2_cases_*.json"):
+        if f.name not in names:
+            errors.append("%s is not listed in the manifest" % f.name)
+    return errors
 
 
 def check_additions(text, disk):
@@ -163,3 +195,36 @@ def test_check_fails_on_a_stale_pr_cell():
     text, handoff = _real()
     stale = text.replace("| P1-1 | Version bump 0.2.0a1 and sibling pins | done | P1 | 63, 66 |", "| P1-1 | Version bump 0.2.0a1 and sibling pins | done | P1 | 63, 66, 998 |", 1)
     assert stale != text and any("998" in e for e in check(stale, handoff))
+
+
+def test_manifest_matches_directory():
+    assert check_manifest() == []
+
+
+NL = chr(10)
+OLDROW = "| P1-1 | Version bump 0.2.0a1 and sibling pins | done | P1 | 63, 66 |"
+
+
+def test_handoff_accepts_indented_and_numbered_lines():
+    text, handoff = _real()
+    for prefix in ("  - ", "1. ", "   2. "):
+        assert any("PR 998" in e for e in check(text, handoff + NL + prefix + "PR 998 merged" + NL))
+
+
+def test_open_and_merged_lists_must_not_overlap():
+    text, handoff = _real()
+    assert any("both" in e for e in check(text, handoff + NL + "- Open PRs: 79" + NL))
+
+
+def test_open_pr_cell_needs_an_open_prs_line():
+    text, handoff = _real()
+    stale = text.replace(OLDROW, "| P1-1 | Version bump 0.2.0a1 and sibling pins | partial | P1 | 63, 66, 977 (open) |", 1)
+    assert stale != text and any("977" in e for e in check(stale, handoff))
+
+
+def test_done_row_never_pending_merge_or_open():
+    text, handoff = _real()
+    stale = text.replace(OLDROW, "| P1-1 | Version bump 0.2.0a1 and sibling pins | done | P1 | 63, 66 (open) |", 1)
+    assert stale != text and any("is done but" in e for e in check(stale, handoff))
+    stale2 = text.replace("| P1-1 | Version bump 0.2.0a1 and sibling pins | done |", "| P1-1 | Version bump 0.2.0a1 and sibling pins | done (built, PR 80 pending merge) |", 1)
+    assert stale2 != text and any("is done but" in e for e in check(stale2, handoff))
