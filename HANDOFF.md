@@ -1,55 +1,38 @@
-# Handoff (keep under 60 lines; update after every merge)
-Updated 2026-10-29 (M1 CLOSED, see docs/M1_CLOSE.md; P1 DONE, 0.2.0a1 on main, merge 62a178c; candidate15 frozen, CANDIDATE15_FREEZE_RECORD.md: 2666 of 2668; R27 evidence recorded in RELEASE_NOTES section 16 (T8 draft, docs review and PO accept pending): harness v15.1 is the gate harness, label extended to candidate15 on Windows, Linux evidence on WSL2 is not a label; PRERELEASE). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
+# Handoff (keep under 60 lines; edited only by the PO or the release closer)
 
-## PO release plan V3 (2026-10-29, authoritative; DECISIONS.md has the entries)
-- Main goal (owner): performance. Use cores, memory and caches fully to calculate faster without breaking correctness. B1-B12 are hard acceptance gates (synthetic-size stage until RQ; label "synthetic workload, relative engineering budget"). Developer designs for multi-core, vectorised/batched calculation, caching, minimal allocation; Tester authors independent perf, parallelism-determinism, batched-vs-single, cache and memory fixtures.
-- Order: R27 done, P1 (0.2.0a1), M1 (was R28b, OC5/OC6/ATM IV/30-day IV), M2 flow, M3 surface, M4 positioning, M5 scanners, RQ last. R28a is DROPPED; ALL adapter/Databento/network work only in the final RQ release.
-- Label through M5, verbatim in every release note: "mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12". Rules: docs/RELEASE_NOTE_TEMPLATE.md; docs reviewer greps the forbidden list as a gate. Stays PRERELEASE.
-- Performance rulings (DECISIONS.md, D4 amended): opt-in process-pool runner (opt-in, default single-process) = LAST M1 story (workers <= min(cores, RAM/B9), merge by unit key); solver stages: Fraction hoist, float-filtered bisection with certified fallback and proven bound, Stage 0 then Stage 1 both in M1; Newton only as verified bracket seed; true-value change = separate PO ruling and candidate bump; governing B7 = 170/240 min; Linux process check, not claimed; eight acceptance tests authored by the independent Tester. Owner-only: python-flint scratch venv approval, B7 machine cores/RAM.
-- P1 and M1 fixtures authored independently (Tester, no implementation read), reviewed by an independent reviewer; interim rulings on design requests 1-3 (option A each) are pending design ratification; a changed answer redoes fixtures. M1 code starts when P1 is accepted. P1 bump plan: docs/P1_VERSION_BUMP_PLAN.md.
+mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12
 
-## M1 status (2026-10-29): CLOSED; Stage 0, 1, 2, stories A and B, runner PR 72 all merged
-- M2-G0 (PR m2/g0-full-output-b6, Developer evidence only, Tester must re-run): full-output B6 1 worker compute-only p50 2.41 / p95 2.66 s (with sign_aggregate) vs 5 s budget (met); IV 57 percent, signing 27 percent; matrix identical at 1/2/4/24 workers; data docs/m2/M2_G0_BENCH.json, DECISIONS.md last entry.
-- Runner (m1/process-pool-runner, Developer evidence only; Tester re-runs determinism, kill, scaling, platform replays; PO accepts): tools/m1_runner/ (opt-in, default single-process; 1 worker = in-process reference), tools/m1_runner_bench.py, docs/M1_RUNNER.md, docs/m1/M1_RUNNER_BENCH.json, tests/m1/test_runner.py (29 tests, ~41 s).
-- Measured post-Stage-2 (synthetic workload, relative engineering budget; 2x Xeon 8160, 48 physical / 96 logical, 254 GiB; cap min(physical cores, 0.5 x RAM / 2 GB) = 48): identical hashes at 1, 2, 4, 48 workers x 3, batches, orders; B6 compute p95 1.53 s (1 worker), 1.63 s per unit at 48; B7 1.78 min at 48 workers, 2.38 min at 24 (budget 170 min). Details in DECISIONS.md.
-- Older story A/B/history lines were moved verbatim to DECISIONS.md (entry "Restored verbatim from HANDOFF.md", runner PR). PO rulings on PR 72 applied (cap, B9 fact, perf_sut deferred); Tester drives the CLI.
+Updated 2026-10-30 (session stop at the owner's request). Previous text is archived verbatim in docs/decisions/2026-10-30-handoff-archive.md. Read this, then docs/FEATURE_STATUS.md (live tracker), docs/decisions/ (README, newest first), DECISIONS.md (frozen log plus index), docs/TEAM_MEETING_2026-10-30.md. Rules: independent author, reviewer and Tester roles; two review rounds (a third only for a correctness defect); one ruling batch before fixtures; fresh origin/main checkouts for authors and reviewers; merge-order rule (fixtures after the code they need; main never red); run `gh auth switch --user atulsrivas1` and re-verify the active account before EVERY push or merge (it flips back); verify pushes with git ls-remote; kill only your own process ids; no deletions without the owner. Owner goals: performance (budgets are hard gates), all features first on synthetic data, adapter work last (RQ).
 
-## P1 (0.2.0a1): DONE, PO accepted 2026-10-29 (PR 63, merge 62a178c on main)
-- Accepted after independent code review (approve-with-conditions, then delta re-check approve) and an independent Tester re-run with python-flint 0.9.0 (DECISIONS.md, last entries). Interim design rulings stay pending ratification; wire exposure of quotes/windows/shares is a candidate16 item.
-- M1 CLOSED 2026-10-29 (accepted as built, prerelease, synthetic data; docs/M1_CLOSE.md has built-vs-scope, B2-B7 numbers, risks, M2 proposal): Stage 0/1/2, OC5/OC6, chain IV, opt-in, default single-process runner all merged. Risks: thin B2/B3 margin on string path, input synthesis 23% CPU at 48 workers (idea candidate), full-output B6 run still to do. NEXT: M2 flow completion (capability matrix and gate budgets first, then independent fixtures, then code). Owner goal: performance. Open: tag and wheel rebuild, owner items (python-flint scratch venv, B7 machine).
+## State on main
+- Done and accepted: R27, P1 (0.2.0a1), M1 (closed, docs/M1_CLOSE.md), M2 built (stories A and B, store, type-first rules, 570 + 298 fixture rows, M2-G0 2.3-2.7 s against 5 s), tracker (PR 85, 86, 100), CI (PR 105: windows-2022, CPython 3.12, six suites plus the tracker test, hash-pinned wheels, run 41083403896 green), M3a docs (matrix, budgets, fixture requirements, contract skeleton, ruling pass: PR 101, 103), python-flint scratch measurement (PR 102), team meeting (PR 99).
+- M2 is not closed: the close record is not written and the runner integration is parked (below).
 
-## M2 and the feature tracker (2026-10-30)
-- docs/FEATURE_STATUS.md is the single live tracker of every planned feature (status, release, PRs, evidence, pending reasons, counts, gates). RULE: every release PR updates it (docs/RELEASE_NOTE_TEMPLATE.md rule 7). Created by the M2 F-row re-audit docs PR (branch docs/feature-status, not merged).
-- M2: story B (PR 79), story A (PR 80), Result type alignment (PR 88) and FEATURE_STATUS (PR 85) merged; F2d stays partial (DR-M2-1). PR 93 (check_prints type-first), PR 96 (type-first fixtures) and PR 97 merged.
-- Decision records: one file per PR in docs/decisions/ (README there); DECISIONS.md is frozen; HANDOFF is edited only by the PO or the release closer. Merged and open PRs: the 'Merged PRs:' and 'Open PRs:' lines of docs/FEATURE_STATUS.md. M3-M5 are split into M3a-c, M4a-b, M5a-b (record 2026-10-30).
+## Open PRs at stop (verify with gh pr list)
+- PR 104 (docs/m3a-rulings-2, head b157db8b, mergeable): M3a rulings R-103..R-161, contract section 8 shapes, owner decisions 2-5, store budget 768 MB. The independent bounded review of the LATEST head was requested (reviewer a95725bae60b926a0) and NOT delivered at stop: obtain it (or redo) before merging. Items already ruled in R-141..R-150: frame status rule, null value for M3A-0, R-128/R-145 wording against inverse.py, metric names.
+- PR 106 (docs/tracker-ci-m3a-decisions, head 58e88a5a, mergeable): tracker CI status and owner decisions 1-5 final. Needs a bounded review and merge, after PR 104.
 
-## Next
-0. Independent freeze review of CANDIDATE13_FREEZE_RECORD: DONE (approve-with-conditions, applied); next coordinator freeze and merge. Then candidate14 (PO R27 rulings): lift exclusion of the 3 null-nondict rows, harness assertion for the extra-stream control row, re-issue filter, hashes, counts and release notes. PO to review: N5 rows flagged (proposed), assumption-2 confirmation, A>K disclosure, sorted-literal excluded_ids, nonexpected two-control rows as negative controls (the last three already PO-ruled; see DECISIONS.md).
-OWNER ITEMS first (parked until the owner returns):
-1. PyPI wheel permission for Windows qualification: APPROVED by the owner and done; python-flint 0.9.0, duckdb 1.5.6, setuptools 80.9.0 (win_amd64 cp312) downloaded, sizes and sha256 verified against PyPI (see docs/r26-variants/WINDOWS_PARTIAL_QUALIFICATION_RECORD.md).
-2. Qualification scope.
-3. Release acceptance and the qualified-vs-prerelease label. Criteria: Windows qualification passes; demo works (merged, synthetic-only); two-control fix landed (done); /checkpoint and /config coverage (done) or scoped out; every flagged id disclosed; owner accepts.
-4. DONE: the pending-decision review is complete; all decisions are now PO-ruled (see DECISIONS.md, "PO ratification of pending decisions" and "PO rulings on the six items"); some rulings carry open conditions (items 9b-9e). No review items remain for the owner.
-5. Worktree cleanup (.claude/worktrees in the three repos, including s24-freeze12 after merge).
-Team items:
-6. Independent freeze review of candidate12: DONE (approve-with-conditions, conditions applied). Next: coordinator freeze and merge of the record PR. Candidate13 supersedes it once its record PR is reviewed and merged.
-7. Q4 and the narrower-rollup clause are SCOPED OUT with disclosure (PO R27 ruling, 2026-10-28); N5-restore-q3-dropped-with-extra-stream-added also scoped out. Reopen only on owner-supplied contract text.
-8. Release notes finalization (record section 8 items; filter re-issued for candidate13 hashes, counts and the 5 excluded ids; draft kept in the private work folder).
-8b. New fixtures for uncovered Q3 / field_set positions; code and codec changes land together (PO condition).
-9. Regenerate the flagged rows, assumption-2 block first (18 rows/graphs plus the 9 held rows).
-9b-9g. Open conditions (full text in DECISIONS.md): A>K merge identity_conflict fixture first; PR 34 six rows under Reading B; two-control F4 fix with frozen rows unchanged per the v9 replay; release notes disclose c-domain/c-completeness untested; CP3 Q2 order not asserted and Q4 held; assumption 2 already encoded in the 9 B and 9 B3 rows (PO acceptance pending via PR 49).
+## Owner decisions (FINAL, 2026-10-30)
+1 V21 included in M3a. 2 V3 and V4 implement BOTH forms (iv_form atm|30d, default atm; ATM = M1 atm_iv of the nearest eligible expiry). 3 delta_convention spot|forward (default spot; metrics skew25 and skew25_fwd; convention_mismatch is structural). 4 a percentile over a constant history is unavailable (zero_range_history). 5 the scalar baseline allows partial history (missing days skipped, at least 20 sessions). Earlier approvals: M3-M5 split into M3a-c, M4a-b, M5a-b; two-round review cap; one decision file per PR; CI merged; python-flint scratch venv (measurement only).
 
-## variants2 backlog
-- Contract-versus-code conflict: BOUNDARY_CONTRACT line 322 may mandate canonicalizing -0.0, while variants1 rejects -0.0 permanently. Resolve in variants2.
-- -0.0 pinning row already exists: N4-premium-b64-negative-zero-price-rejected (invalid_scalar, stage 4); no new row needed, only the pointer flag remains (analysis finding, PO acceptance pending via PR 49 review).
-- Before any "qualified" release: independent controller review.
-## Gotchas
-- Controller runs need absolute paths; contained run via python -I -B, never reuse a failed attempt dir.
-- Add .gitignore for bytecode before any run; commit-then-remove leaks into branch history.
-- Fixture-vs-contract triage before bending code; Sonnet (not Haiku) for storage/restore work.
-- Pinned counts learned from a first run (workers partial 32) must be recomputed by a reviewer.
-- A mutation that does not trip proves nothing: confirm the mutated field is one the harness reads.
-- Check gh auth (atulsrivas1) before every push.
+## M3a fixture sets (scratchpad m3a-fixtures/author1..4; NOT committed; independent authors; no oracle recheck done; none run against code)
+- Folder: C:\Users\MONIKA~1\AppData\Local\Temp\claude\C--Atul-Claude\0e5f6c2d-0322-4065-927e-a3702f72ac99\scratchpad\m3a-fixtures\ ; each set has a MANIFEST.sha256 listing explicit files; scratch files stay out of PRs.
+- author1 (surface frame, 25-delta, tenors, coverage, American labels): about 250-260 rows; the update with Q-13 solver-bound rows, coverage-isolating rows and both delta conventions was IN FLIGHT at stop (agent a564ab1c1e27d96a7).
+- author2 (V1, V3, V9, history reuse, units): 281 rows at last report; update for D17 positions and convention_mismatch only at request/view read (not at append) in flight (agent ac65429228ee51afc).
+- author3 (V4-V8, V10, V11, V21): 374 rows, 48 mutants, owner decisions 2 and 3 applied; bounded oracle recheck not yet requested (agent a9afaae804a11428f; round 1 review by a0138db344f127028 closed).
+- author4 (structural, lane, perf): 148 structural + 42 aux + 6 lane + 71 resource rows, 49 mutants; dropping the 4 DCP2 rows at stop (agent a24acc0ffe09b2bf4).
 
-## M2 story B (2026-10-30): PR on m2/print-windows, Developer evidence only (DECISIONS.md last two entries)
-- printtape/m2prints/episodes: 268 of 268 rows, 77 of 77 mutants, benches in docs/m2/M2B_PRINT_BENCH.json; tests tests/m2/*m2b*; tools/m2_print_{benchmark,mutation_check}.py. Next: Tester re-run, merge story A and align Result type.
+## Parked
+- M2 runner integration: branch m2/runner-integration (pushed, no PR, ls-remote 265fb7e6); figures in docs/TEAM_MEETING_2026-10-30.md are unverified developer evidence; open rulings: rank fixture 7,340 versus 7,440 (library is right), S02 unit-sharded by default, N above 24 for B12 informational.
+- Totality follow-ups: story A check_prints raises on hostile lists (tracked); contracts map trusted and adapter-validated; f17 column entry points internal.
+- Performance candidates: F7 density-adaptive windows, F17 sparse reads, lazy ring/record creation, input synthesis sharing, Newton seed (deferred), perf_sut bindings B1-B10. CI follow-ups: pin actions by commit SHA, pip bootstrap unpinned, no Linux job (no recorded hash).
+- Scratch worktrees (owner-only deletion): wt-ci (holds the CI branch), wt-v3, and many scratchpad folders.
+
+## Pending owner questions
+Linux evidence before RQ (WSL has no bash here); docs-only PR roles (full independence or relaxed); approval of a one-time scratch and worktree cleanup; B7 reference machine (2 x Xeon 8160, 48 physical cores, 254 GiB); design-session ratification of interim rulings (requests 1-3, 6, 8, DR-M2-1, the M2 AMB set, M3a design-silent rulings); go or no-go for the Developer M3a code after the fixtures merge.
+
+## Next (in order)
+1. Get the PR 104 verdict on the latest head, fix, merge; bounded review and merge PR 106.
+2. Authors 1-4 finish the in-flight updates; bounded oracle recheck per set with fresh checkouts (different reviewers than the authors: Testers a628f204e8d54dbfc, a88a5239b25cb607a, a0138db344f127028, a3beda279317b791d; oracle reviewer a95725bae60b926a0); round 2 only for correctness defects.
+3. Commit the fixtures to qualification/synthetic/m3a/ by explicit file lists (LF, MANIFEST), PO acceptance, merge; update docs/FEATURE_STATUS.md; run the tracker test.
+4. Start M3a Developer code (pure modules beside chainiv: surface frame, 25-delta, tenors, V rows, history reuse via the M2 store with k up to 252, scalar_baseline, same_minute_column): failing-first fixtures, mutation tools, M3A-G0 and the single-worker gates, Tester re-runs, runner reuse. Then the M3a close record; M3b, M3c, M4a-b, M5a-b, RQ later.
