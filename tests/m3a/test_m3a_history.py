@@ -368,6 +368,126 @@ class Reads(unittest.TestCase):
         self.assertEqual(self.st.dump(), before)
 
 
+class Layout(unittest.TestCase):
+    """The M3a store layout (flowstore._Cols): all-or-nothing appends, eviction at k, add_series, int64 bounds,
+    detach on eviction, and an injected-failure fuzz against a twin store that never saw the failed append."""
+
+    def _read_all(self, st, cal, series="A/stock/iv30", metric="iv30"):
+        out = []
+        for a in cal.ids:
+            for m in (0, 1, 5, 11):
+                r = MH.same_minute_column(st, series, metric, a, m, min_sessions=1)
+                out.append((r.status, r.code, r.value and (r.value["n"], r.value["sessions"], r.value["values"])))
+        return out
+
+    def test_F1_failed_append_changes_nothing(self):
+        cal = _cal(10, 6)
+        st = HistoryStore(cal)
+        st.add_series("A/stock/iv30", 3)
+        st.append("A/stock/iv30", "iv30", 0, cal.ids[0], [1, 2, 3, 4, 5, 6])
+        for bad in (1.5, Decimal("2"), Fraction(1, 2)):
+            before = (st.dump(), self._read_all(st, cal))
+            with self.assertRaises(TypeError):
+                st.append("A/stock/iv30", "iv30", 0, cal.ids[1], [bad, 2, 3, 4, 5, 6])
+            self.assertEqual((st.dump(), self._read_all(st, cal)), before, bad)
+        for i in (1, 2, 3):
+            st.append("A/stock/iv30", "iv30", 0, cal.ids[i], [i] * 6)
+        r = MH.same_minute_column(st, "A/stock/iv30", "iv30", cal.ids[5], 2, min_sessions=1)
+        self.assertEqual(r.value["sessions"], tuple(cal.ids[1:4]))
+        self.assertEqual(list(st.retained().values())[0], cal.ids[1:4])
+        st.dump()
+
+    def test_m2_series_same_error_as_before(self):
+        cal = _cal(10, 6)
+        st = HistoryStore(cal)
+        with self.assertRaises(TypeError):
+            st.append("P/stock/premium", "premium", 60, cal.ids[0], [1.5, 2, 3])
+        self.assertEqual(len(st), 0)
+
+    def test_m15_eviction_exactly_at_k(self):
+        cal = _cal(10, 6)
+        st = HistoryStore(cal)
+        st.add_series("A/stock/iv30", 3)
+        for i in range(3):
+            st.append("A/stock/iv30", "iv30", 0, cal.ids[i], [i + 1] * 6)
+        r = MH.same_minute_column(st, "A/stock/iv30", "iv30", cal.ids[9], 1, min_sessions=1)
+        self.assertEqual((r.value["sessions"], r.value["values"]), (tuple(cal.ids[0:3]), (1, 2, 3)))
+        st.append("A/stock/iv30", "iv30", 0, cal.ids[3], [4] * 6)
+        r = MH.same_minute_column(st, "A/stock/iv30", "iv30", cal.ids[9], 1, min_sessions=1)
+        self.assertEqual((r.value["sessions"], r.value["values"]), (tuple(cal.ids[1:4]), (2, 3, 4)))
+
+    def test_m09_add_series_after_reads(self):
+        cal = _cal(30, 6)
+        st = HistoryStore(cal)
+        st.add_series("A/stock/iv30", 20)
+        for i in range(20):
+            st.append("A/stock/iv30", "iv30", 0, cal.ids[i], [i + 1] * 6)
+        self.assertEqual(MH.same_minute_column(st, "A/stock/iv30", "iv30", cal.ids[25], 1, min_sessions=1).value["n"], 20)
+        st.add_series("A/stock/iv30", 5)
+        r = MH.same_minute_column(st, "A/stock/iv30", "iv30", cal.ids[25], 1, min_sessions=1)
+        self.assertEqual(r.value["values"], (16, 17, 18, 19, 20))
+        st.add_series("A/stock/iv30", 252)
+        st.append("A/stock/iv30", "iv30", 0, cal.ids[20], [99] * 6)
+        r = MH.same_minute_column(st, "A/stock/iv30", "iv30", cal.ids[25], 1, min_sessions=1)
+        self.assertEqual(r.value["values"], (16, 17, 18, 19, 20, 99))
+
+    def test_m10_int64_bounds(self):
+        cal = _cal(10, 3)
+        st = HistoryStore(cal)
+        st.add_series("A/stock/iv30", 252)
+        vals = [2 ** 63 - 1, -2 ** 63, 2 ** 63, -2 ** 63 - 1]
+        for i, v in enumerate(vals):
+            st.append("A/stock/iv30", "iv30", 0, cal.ids[i], [v, v, v])
+        r = MH.same_minute_column(st, "A/stock/iv30", "iv30", cal.ids[9], 2, min_sessions=1)
+        self.assertEqual(r.value["values"], tuple(vals))
+        back = HistoryStore.load(st.dump(), cal, series_k={"A/stock/iv30": 252})
+        self.assertEqual(MH.same_minute_column(back, "A/stock/iv30", "iv30", cal.ids[9], 2, min_sessions=1).value,
+                         r.value)
+        self.assertEqual(back.dump(), st.dump())
+
+    def test_m07_detach_on_eviction(self):
+        cal = _cal(10, 4)
+        st = HistoryStore(cal)
+        st.add_series("A/stock/iv30", 2)
+        st.append("A/stock/iv30", "iv30", 0, cal.ids[0], [7, 7, 7, 7])
+        st.append("A/stock/iv30", "iv30", 0, cal.ids[1], [8, 8, 8, 8])
+        view = st.baseline("A/stock/iv30", "iv30", 0, cal.ids[2], k=2)
+        held = st._rings[("A/stock/iv30", "iv30", 0)].recs[cal.ids[0]]
+        for i in (2, 3):
+            st.append("A/stock/iv30", "iv30", 0, cal.ids[i], [9 + i] * 4)
+        self.assertEqual(list(held.vals), [7, 7, 7, 7])
+        self.assertEqual(view.mean(), Fraction(15, 2))
+
+    def test_injected_failure_fuzz(self):
+        for seed in range(400):
+            rng = random.Random(seed)
+            cal = _cal(40, rng.choice([4, 6]))
+            k = rng.choice([2, 3, 5, 252])
+            a, b = HistoryStore(cal), HistoryStore(cal)
+            for st in (a, b):
+                st.add_series("A/stock/iv30", k)
+            steps = []
+            for i in range(rng.randint(3, 30)):
+                m = cal.minutes[i]
+                grid = [rng.choice([0, rng.randint(1, 9), 2 ** 63, rng.randint(1, 10 ** 8)]) for _ in range(m)]
+                steps.append((cal.ids[i], grid, rng.random() < 0.8))
+            fail_at = rng.randrange(len(steps))
+            for j, (sid, grid, comp) in enumerate(steps):
+                if j == fail_at:
+                    bad = list(grid)
+                    bad[rng.randrange(len(bad))] = rng.choice([1.5, Decimal("3"), Fraction(1, 3)])
+                    with self.assertRaises(TypeError, msg=seed):
+                        a.append("A/stock/iv30", "iv30", 0, sid, bad, complete=comp)
+                    continue
+                for st in (a, b):
+                    st.append("A/stock/iv30", "iv30", 0, sid, grid, complete=comp)
+                if rng.random() < 0.2:
+                    for st in (a, b):
+                        st.seal("A/stock/iv30", "iv30", 0, sid)
+            self.assertEqual(a.dump(), b.dump(), seed)
+            self.assertEqual(self._read_all(a, cal), self._read_all(b, cal), seed)
+
+
 class Memory(unittest.TestCase):
     def test_formula(self):
         self.assertEqual(MH.grid_store_bytes(2 * 103, 252, 390, 3),
