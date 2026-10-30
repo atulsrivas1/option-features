@@ -1,0 +1,16 @@
+# 2026-10-30: M3a second ruling batch (25 ambiguities found by the four fixture authors)
+
+Decided: PO (second ruling batch, relayed by the independent reviewer). Status: RULED 2026-10-30 (PO second batch), interim pending design ratification where the design is silent. Supersedes: the wording of R-83 (coverage terms) by R-103, and modifies R-71 (empty chain) by R-106; the first ruling pass is docs/decisions/2026-10-30-m3a-ruling-pass.md. Label: mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12
+
+## Rulings
+- Coverage (R-103, R-104): R-83 as written made the 3/5 gate unreachable. Listed strike = any contract record at the strike; eligible strike = at least one eligible quote (either right); min_strikes counts strikes; the near-the-money clause (at least 2 eligible strikes per right within +-10 percent of the forward, inclusive) is a coverage gate; no_atm_strike is checked before low_surface_coverage; a coverage-excluded expiry is treated like an expiry without an ATM strike in tenor interpolation.
+- Labels and empty chain (R-105, R-106): a mixed frame carries both model labels (sorted); an unavailable result has labels []; an empty chain is unavailable with the new reason no_eligible_contract.
+- Types (R-107, R-123, R-124, R-125): text or float expiry_days is malformed_type, a wrong value bad_expiry; wrong-typed cutoff_ns, expiry_days, mode, lane, right is malformed_type; the code field is `code`; None bid or ask is a missing quote (invalid_quote); non-finite floats use the tagged object {"py_type": "float", "text": "nan|inf|-inf"}.
+- M3A-0 shape (R-108): the shape authored in author1 AUTHORING_NOTES D-10 is ratified interim and is in the I/O contract section 8.
+- Solver failure (R-109): a failure on one contract excludes that contract (reason counted in coverage.contract_reasons) and the expiry continues if coverage holds.
+- History (R-110 to R-114): max_sessions = last N available sessions; reason order upstream, insufficient_history, session_not_complete, zero_range_history; a history lane differing at read is insufficient_history, lane_mismatch at append only; same_minute_column skips short-grid sessions (no zero-padding); store.add_series(series_id, k), k up to 252.
+- Prior and derived (R-115 to R-118): V10 prior_kind and condition per direction; V5 pair in {9-30, 30-91}; change_ratio unitless; V21 distances in points (x100) and no default threshold; fewer than n priors is insufficient_history; a bracketing expiry lacking a 25-delta bracket gives no_delta_bracket for the tenor; gate order: upstream and frame reasons, prior-reading checks, threshold.
+- Structural (R-119 to R-122): delta_target {0.25} only; threshold names at_least, at_most, x; positions 16 to 18 apply only to outputs using that parameter; three pair rows that cannot hold both errors are equivalent swaps; threshold_out_of_range also at view read for x.
+- Performance (R-126, R-127): iv30 minute series (not an atm_iv grid); unit-key session ordinals 01 to 05 (documented deviation from M2); "vega >= 4" is the M1 vega per 1.00 of volatility.
+
+The ruling list now has 127 rows (R-01 to R-127); all rulings are interim pending design ratification where the design is silent.

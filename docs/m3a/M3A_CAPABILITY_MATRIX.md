@@ -44,7 +44,7 @@ Input ranges (RULED): `rate` finite, |rate| <= 1; `dividend_yield` finite, 0 to 
 | request | `mode` in {intraday, close}; `lane` in {stock, etf_index}; `stale_limit_ns` | intraday; stock; 10 s (M1 Q4) | RULED shape; invalid_mode, invalid_lane codes |
 | M3A-0 | tenors (days) | 9, 30, 91 (closed set) | catalogue; R-14 |
 | M3A-0 | delta target | 0.25 absolute | design; R-04 |
-| M3A-0 | `min_strikes`, `min_coverage` | 4 eligible strikes (at least 2 per right within +-10 percent of the forward), 3/5 of listed strikes (listed = strike with an eligible quote for either right) | worker placeholder 60 percent; R-20, R-83 |
+| M3A-0 | `min_strikes`, `min_coverage` | 4 eligible strikes strikes, not contracts (at least 2 eligible strikes per right within +-10 percent of the forward, inclusive, is a coverage gate), 3/5 of listed strikes; listed strike = any contract record at that strike, eligible strike = at least one eligible quote, either right (R-103) | worker placeholder 60 percent; R-20, R-83 |
 | M3A-1/2/8 | X (top percent); `min_sessions`; `max_sessions` | 5; 20; 252 | design: "at least 20 prior sessions" only; 252 is the worker V3 figure; R-44 extends it to V1 and V9 as an interim ruling (design-silent) |
 | M3A-3..10 | `direction` in {up, down, either} | per design wording: V4 up; V5 above (up); V6 up; V7 either; V8 up; V10 either; V11 up; V21 up; inclusivity per R-35 | R-84 |
 | M3A-3 | threshold | 10 percent, relative | worker placeholder; R-41 |
@@ -65,6 +65,7 @@ Statuses: available, unavailable (reason), invalid_input (structural code). The 
 | insufficient_history | M2 | fewer than min_sessions available prior sessions, including none stored (design "new") |
 | session_not_complete | M2 | close-mode form before the session is sealed |
 | zero_denominator | M2 | a ratio or percent-change denominator is 0 |
+| no_eligible_contract | new (R-106) | no contract passes the M1 gates, including an empty chain; the frame is unavailable |
 | no_delta_bracket | new | the 25-delta target is not bracketed by two eligible strikes of that right; no extrapolation |
 | low_surface_coverage | new | the expiry lacks the minimum eligible strikes or coverage |
 | fewer_than_two_expiries | new | V6 needs two eligible expiries (not no_bracketing_expiry) |
@@ -90,3 +91,6 @@ V1, V4 to V11: pending to match (modules) except V3 and V4, recorded as "partial
 
 ## 10. Limits
 Synthetic only. Design thresholds are placeholders (volatility-radar.md section 12). Solver tolerances are 1e-10 (`DEFAULT_SOLVER`); 1e-4 is the M1 FIXTURE comparison tolerance (4-decimal quote quantisation, vega >= 4). Solver-derived values are binary64: outputs are decimal strings rounded half-even to 8 decimals; canonical hashes of solver-derived values are Windows-only (no cross-platform byte claim). Windows x64, CPython 3.12. No real-size performance claim before RQ.
+
+## 11. Second ruling batch (RULED 2026-10-30 (PO second batch), interim pending design ratification where the design is silent)
+Coverage terms, gate order inside an expiry (no_atm_strike before low_surface_coverage; a coverage-excluded expiry is treated like an expiry without an ATM strike in tenor interpolation), labels on mixed frames (both labels, sorted; unavailable: []), the empty-chain reason `no_eligible_contract`, solver failure on one contract (exclude it, continue if coverage holds), history rules (last N available sessions; reason order upstream, insufficient_history, session_not_complete, zero_range_history; history lane at read is insufficient_history) and the M3A-0 value shape are ruled in M3A_RULING_LIST.md R-103 to R-127 and M3A_IO_CONTRACT.md section 8.

@@ -32,7 +32,7 @@ The label "synthetic workload, relative engineering budget" and the budget value
 |---|---|---|
 | Underlyings, evaluated sessions, cutoffs | 5, 5, 78 per session (B7 shape) | V3 stage rule |
 | Chain size | S 500, M 2,000, L 6,000 contracts (smile surface generator, 8 expiries bracketing 9, 30 and 91 days for M) | as B4 to B6 |
-| History | 252 prior complete sessions per underlying for the iv30, skew25 and term series (session-close values); the atm_iv minute grid on 252 sessions; generated values, not solved from chains | design 252-session look-back, 20 minimum |
+| History | 252 prior complete sessions per underlying for the iv30, skew25 and term series (session-close values); the iv30 minute series on 252 sessions (R-126); generated values, not solved from chains | design 252-session look-back, 20 minimum |
 | Universe for batch gates | 103 names (the covered universe) as series of values, not 103 solved chains | design |
 | Grid | 60 s, 390 values per full session | M2 |
 | Unit | underlying x session x cutoff (runner key SYN1/03/045); a unit reads an immutable history view | M1 runner |
