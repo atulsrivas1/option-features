@@ -709,6 +709,92 @@ class MutantKillers(unittest.TestCase):
             self.assertEqual(_run(r), code, v)
 
 
+class R190Pins(unittest.TestCase):
+    """R-190: the view read reports only codes of its own list; percentile x has one type rule (request and view)."""
+
+    def test_view_read_bad_convention_string_is_malformed(self):
+        cal = Calendar([("2026-01-05", 390)])
+        for conv in ("mid", "Spot", "", None, 5):
+            self.assertEqual(V.validate_view_read(cal, "2026-01-05", "scalar_baseline", 20, 252,
+                                                  series_id="S/stock/skew25", delta_convention=conv),
+                             "malformed_type", conv)
+        self.assertIsNone(V.validate_view_read(cal, "2026-01-05", "scalar_baseline", 20, 252,
+                                               series_id="S/stock/iv30", delta_convention="mid"))
+
+    def test_x_float_decimal_bool_malformed_both_entries(self):
+        from decimal import Decimal
+        cal = Calendar([("2026-01-05", 390)])
+        for x in (50.0, Decimal("50"), True, "50.0", "abc"):
+            self.assertEqual(V.validate_view_read(cal, "2026-01-05", "scalar_baseline", 20, 252, x=x),
+                             "malformed_type", x)
+            r = _request("M3A-1")
+            r["params"]["x"] = x
+            self.assertEqual(_run(r), "malformed_type", x)
+        for x, code in ((50, None), ("50", None), (Fraction(101, 2), None), ("101/2", None), ("201/2",
+                                                                                          "threshold_out_of_range")):
+            self.assertEqual(V.validate_view_read(cal, "2026-01-05", "scalar_baseline", 20, 252, x=x), code, x)
+        self.assertIs(V.x_value, V._x_value)
+        self.assertEqual(V.x_value("101/2"), Fraction(101, 2))
+        self.assertIsNone(V.x_value(50.0))
+
+
+class _Hostile:
+    def __eq__(self, other):
+        raise RuntimeError("hostile __eq__")
+
+    def __hash__(self):
+        raise RuntimeError("hostile __hash__")
+
+    def get(self, *a):
+        raise RuntimeError("hostile get")
+
+    def __iter__(self):
+        raise RuntimeError("hostile iter")
+
+
+class CallerInputGuards(unittest.TestCase):
+    """Caller-supplied output_id, params, contracts and form never make the validator raise."""
+
+    def test_output_id(self):
+        for oid in (_Hostile(), ["M3A-0"], None, 5, "M3A-99", "m3a-0"):
+            r = _request("M3A-0")
+            r["output_id"] = oid
+            self.assertEqual(_run(r), "malformed_type", repr(oid))
+        r = _request("M3A-0", _d_bad_spot)
+        r["output_id"] = _Hostile()
+        self.assertEqual(_run(r), "bad_spot")          # earlier positions still win
+
+    def test_params(self):
+        for p in (_Hostile(), [("mode", "intraday")], 5, "x"):
+            r = _request("M3A-0")
+            r["params"] = p
+            self.assertEqual(_run(r), "malformed_type", repr(p))
+        r = _request("M3A-0")
+        r["params"] = None
+        self.assertIsNone(_run(r))
+
+    def test_contracts_container_and_records(self):
+        for cs in (_Hostile(), 5, None, "abc"):
+            r = _request("M3A-0")
+            r["contracts"] = cs
+            self.assertEqual(_run(r), "malformed_type", repr(cs))
+        for c in (_Hostile(), (1, 2, 3), 5, None, {"contract_id": "a"}):
+            r = _request("M3A-0")
+            r["contracts"].append(c)
+            self.assertEqual(_run(r), "malformed_type", repr(c))
+        r = _request("M3A-0")
+        r["contracts"] = tuple(r["contracts"])
+        self.assertIsNone(_run(r))
+        r["contracts"] = [tuple(c) for c in r["contracts"]]
+        self.assertIsNone(_run(r))
+
+    def test_view_read_form_and_series(self):
+        cal = Calendar([("2026-01-05", 390)])
+        for form in (_Hostile(), 5, None):
+            self.assertEqual(V.validate_view_read(cal, "2026-01-05", form, 20, 252, minute=5), "malformed_type")
+        self.assertIsNone(V.validate_view_read(cal, "2026-01-05", "scalar_baseline", 20, 252, series_id=_Hostile()))
+
+
 class ValidationCost(unittest.TestCase):
     """Developer measurement of the validation cost (printed; the hard bound is loose: validation is O(contracts) and
     must stay a small share of M3A-G0). mock-data qualification only: passed on independently authored synthetic
