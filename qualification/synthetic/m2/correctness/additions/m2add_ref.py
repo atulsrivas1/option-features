@@ -86,15 +86,47 @@ def v_unordered(inp, prm, out):
             return "unordered_prints"
 
 
+def _sz_ok(p):
+    return good_int(p[3]) or (MU("float_size_ok") and type(p[3]) is float)
+
+
+def _mu_ok(p):
+    return good_int(p[4]) or (MU("bool_multiplier_ok") and type(p[4]) is bool) or (MU("float_multiplier_ok") and type(p[4]) is float)
+
+
+def _tm_ok(p):
+    return good_int(p[1]) or (MU("float_time_ok") and type(p[1]) is float)
+
+
+def _sq_ok(p):
+    return good_int(p[6]) or (MU("seq_bool_ok") and type(p[6]) is bool)
+
+
+def _cid_ok(p):
+    return type(p[0]) is str or MU("contract_id_type_ignored")
+
+
+def v_timeseq(inp, prm, out):
+    if MU("types_last"):
+        return None
+    for p in inp.get("prints") or []:
+        if not (_tm_ok(p) and _sq_ok(p)):
+            return "malformed_type"
+
+
 def v_negative(inp, prm, out):
     for p in inp.get("prints") or []:
-        if (good_int(p[3]) and p[3] < 0) or (type(p[2]) is int and p[2] < 0) or (type(p[2]) is str and text_price(p[2]) and Fraction(p[2]) < 0):
+        if not _sz_ok(p) and not MU("types_last"):
+            return "malformed_type"
+        if (type(p[3]) is int and p[3] < 0) or (type(p[2]) is int and p[2] < 0) or (type(p[2]) is str and text_price(p[2]) and Fraction(p[2]) < 0):
             return "negative_size_or_price"
 
 
 def v_multiplier(inp, prm, out):
     for p in inp.get("prints") or []:
-        if good_int(p[4]) and p[4] <= 0:
+        if not _mu_ok(p) and not MU("types_last"):
+            return "malformed_type"
+        if type(p[4]) is int and p[4] <= 0:
             return "bad_multiplier"
 
 
@@ -103,18 +135,24 @@ def v_unknown(inp, prm, out):
         return None
     known = inp.get("contracts") or {}
     for p in inp.get("prints") or []:
+        if MU("contract_id_type_ignored"):
+            if p[0] not in known:
+                return "unknown_contract"
+            continue
+        if type(p[0]) is not str:
+            if not MU("types_last"):
+                return "malformed_type"
+            continue
         if p[0] not in known:
             return "unknown_contract"
 
 
 def v_malformed(inp, prm, out):
     for p in inp.get("prints") or []:
-        sz = good_int(p[3]) or (MU("float_size_ok") and type(p[3]) is float)
-        tm = good_int(p[1]) or (MU("float_time_ok") and type(p[1]) is float)
-        mu = good_int(p[4]) or (MU("bool_multiplier_ok") and type(p[4]) is bool)
-        sq = good_int(p[6]) or (MU("seq_bool_ok") and type(p[6]) is bool)
         fl = (p[5] in (0, 1) and type(p[5]) in (int, bool)) or MU("flag_any_ok") or (MU("flag_float_ok") and type(p[5]) is float)
-        if not (text_price(p[2]) and sz and mu and tm and sq and fl):
+        if not (text_price(p[2]) and fl):
+            return "malformed_type"
+        if MU("types_last") and not (_cid_ok(p) and _sz_ok(p) and _mu_ok(p) and _tm_ok(p) and _sq_ok(p)):
             return "malformed_type"
 
 
@@ -135,15 +173,19 @@ def v_window_early(inp, prm, out):
 
 
 def validators():
-    order = [v_unordered, v_negative, v_multiplier, v_unknown, v_window_early, v_malformed]
+    order = [v_unordered, v_timeseq, v_negative, v_multiplier, v_unknown, v_malformed]
+    if MU("window_before_malformed"):
+        order = [v_unordered, v_timeseq, v_negative, v_multiplier, v_unknown, v_window_early, v_malformed]
     if MU("prec_malformed_first"):
-        order = [v_malformed, v_unordered, v_negative, v_multiplier, v_unknown, v_window_early]
+        order = [v_malformed, v_unordered, v_timeseq, v_negative, v_multiplier, v_unknown, v_window_early]
     if MU("negative_before_unordered"):
-        order = [v_negative, v_unordered, v_multiplier, v_unknown, v_window_early, v_malformed]
+        order = [v_negative, v_unordered, v_timeseq, v_multiplier, v_unknown, v_malformed]
     if MU("multiplier_before_negative"):
-        order = [v_unordered, v_multiplier, v_negative, v_unknown, v_window_early, v_malformed]
+        order = [v_unordered, v_timeseq, v_multiplier, v_negative, v_unknown, v_malformed]
     if MU("malformed_before_unknown"):
-        order = [v_unordered, v_negative, v_multiplier, v_malformed, v_unknown, v_window_early]
+        order = [v_unordered, v_timeseq, v_negative, v_multiplier, v_malformed, v_unknown]
+    if MU("types_last"):
+        order = [v_unordered, v_timeseq, v_negative, v_multiplier, v_unknown, v_malformed]
     return order
 
 
