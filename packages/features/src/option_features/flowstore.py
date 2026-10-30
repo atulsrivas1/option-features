@@ -284,8 +284,13 @@ class HistoryStore:
         self._chash = None          # content hash carried by a binary snapshot, valid until the store changes
 
     # ------------------------------------------------------------------ writes
+    def add_series(self, series_id, k):
+        raise NotImplementedError
+
     def append(self, series_id, metric, window_s, session_id, grid, total=None, complete=True, grid_idx=None,
-               lane="stock", minutes=None):
+               lane="stock", minutes=None, delta_convention=None):
+        if delta_convention is not None:
+            raise NotImplementedError
         """Append one session record: a dense `grid` list (zero-padded to the session minutes at read time), or, with
         `grid_idx`, the values at those indexes (sparse; kept as supplied). Errors (M2StructuralError), RULED order:
         lane_mismatch (the ring lane is the lane of the first append), session_not_in_calendar (strict calendar),
