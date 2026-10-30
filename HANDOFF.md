@@ -50,3 +50,6 @@ Team items:
 - Pinned counts learned from a first run (workers partial 32) must be recomputed by a reviewer.
 - A mutation that does not trip proves nothing: confirm the mutated field is one the harness reads.
 - Check gh auth (atulsrivas1) before every push.
+
+## M2 story B (2026-10-30): PR on m2/print-windows, Developer evidence only (DECISIONS.md last two entries)
+- printtape/m2prints/episodes: 268 of 268 rows, 65 of 65 mutants, benches in docs/m2/M2B_PRINT_BENCH.json; tests tests/m2/*m2b*; tools/m2_print_{benchmark,mutation_check}.py. Next: Tester re-run, merge story A and align Result type.
