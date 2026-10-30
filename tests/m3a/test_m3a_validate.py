@@ -614,6 +614,30 @@ class NeverRaises(unittest.TestCase):
         self.assertEqual(V.m1_error_code(deep), "malformed_type")
 
 
+class ArchitectureReview(unittest.TestCase):
+    def test_non_string_contract_id_is_malformed_at_position_8(self):
+        r = _request("M3A-0")
+        _set_contract(r, 0, contract_id=1)
+        _set_contract(r, 1, strike="0")
+        self.assertEqual(_run(r), "malformed_type")
+        r = _request("M3A-0")
+        _set_contract(r, 0, contract_id=None)
+        _set_contract(r, 1, right="x")
+        self.assertEqual(_run(r), "unknown_right")
+
+    def test_level_thresholds_typed_at_position_10(self):
+        for name in ("at_least", "at_most"):
+            r = _request("M3A-4", _d_tenor)
+            r["params"][name] = 1.5
+            self.assertEqual(_run(r), "malformed_type", name)
+            r = _request("M3A-4", _d_cutoff_mismatch)
+            r["params"][name] = 1.5
+            self.assertEqual(_run(r), "malformed_type", name)
+            r = _request("M3A-1", _d_tenor)
+            r["params"][name] = 1.5               # not used by a percentile output
+            self.assertIsNone(_run(r))
+
+
 class MutantKillers(unittest.TestCase):
     def test_bool_is_not_int(self):
         r = _request("M3A-0")
