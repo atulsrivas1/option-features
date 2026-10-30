@@ -1,0 +1,742 @@
+{
+ "arb": {
+  "arb_calls_per_solve": {
+   "counts": {
+    "bounds": 2989,
+    "forward": 2961,
+    "price_interval": 33309,
+    "solves": 2989
+   },
+   "mean": 13.134493141518902,
+   "solves": 2989,
+   "total": 39259
+  },
+  "note": "untimed counter run; counters are log-only",
+  "spec": {
+   "contract_order": "natural",
+   "cutoffs": [
+    10,
+    39,
+    70
+   ],
+   "gating": "valid",
+   "prints": 20,
+   "seed": 20261029,
+   "sessions": [
+    1
+   ],
+   "shape": "M",
+   "underlyings": [
+    "SYN1"
+   ]
+  }
+ },
+ "frozen": {
+  "budgets": {
+   "B6": "all outputs, 1 underlying, size M, 1 cutoff: <= 5 s p95, hard 15 s (PERF_ACCEPTANCE.md; a miss is reported as a miss, never a budget edit)",
+   "B9": "<= 2 GB per process, hard 4 GB per process; cap uses the 2 GB budget, aggregate limit 50 percent of host RAM (configurable)"
+  },
+  "git_dirty": false,
+  "git_head": "67aeb573170daf3d45b0ee86a314d0d243af0511",
+  "machine": {
+   "cpu_load_percent_before": "9",
+   "cpu_name": "Intel(R) Xeon(R) Platinum 8160 CPU @ 2.10GHz",
+   "executable": "C:\\Users\\Monikasrivas1\\Documents\\ChatGPT\\Equity Features\\work\\r25-20261020\\method-development-env\\Scripts\\python.exe",
+   "label": "synthetic workload, relative engineering budget",
+   "logical_cores": 96,
+   "os_build": "26300",
+   "physical_cores": 48,
+   "platform": "Windows-11-10.0.26300-SP0",
+   "power_plan": "Power Scheme GUID: 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c  (High performance)",
+   "python": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]",
+   "python_flint": "0.9.0",
+   "pythonhashseed_in_workers": "0",
+   "ram_bytes": 273400750080,
+   "sockets": "2"
+  },
+  "max_workers": 24,
+  "protocol": "single worker in-process, warm-up 2, repeats 30, compute-only (inputs prebuilt and excluded), nearest-rank percentiles",
+  "workload": {
+   "classify_stream_records": 339660,
+   "contracts_per_chain": 2000,
+   "cutoff_index": 39,
+   "cutoff_ns": 12000000000000,
+   "families": [
+    "oc5",
+    "oc6",
+    "iv_build",
+    "iv_contract",
+    "atm",
+    "iv30",
+    "p1_spread",
+    "p1_signing",
+    "p1_window",
+    "p1_shares",
+    "serialize"
+   ],
+   "gating": "valid (all chain quotes valid for IV)",
+   "input_fingerprint_sha256": "af750ab5842aee4a510b6f2d92ea95e5dc5301698b40ed6df7e4a84c81525df7",
+   "label": "synthetic workload, relative engineering budget",
+   "perf_manifest_sha256": "2d405bc4a12f3f97c6dddc41f5be4c3512a1d7ed186e47b3ac94cbd86b51eeee",
+   "print_mix": "70% within 4 s after a quote update, 30% uniform in trailing hour; price 35% ask, 35% bid, 15% inside, 7% one tick beyond touch, 8% near mid; size 1..100; 2% multiplier 10",
+   "print_windows_ns": [
+    300000000000,
+    1800000000000
+   ],
+   "prints_per_contract": 20,
+   "prints_per_unit": 40000,
+   "quote_updates_in_unit_stream": 299660,
+   "seed": 20261029,
+   "shape": "M",
+   "short_dte_max_days": 30,
+   "spec": {
+    "contract_order": "natural",
+    "cutoffs": [
+     39
+    ],
+    "gating": "valid",
+    "prints": 20,
+    "seed": 20261029,
+    "sessions": [
+     1
+    ],
+    "shape": "M",
+    "underlyings": [
+     "SYN1"
+    ]
+   },
+   "unit": "SYN1/01/039"
+  }
+ },
+ "g0": {
+  "breakdown_s": {
+   "atm": {
+    "max_s": 0.000672199996188283,
+    "p50_s": 0.0005286999512463808,
+    "p95_s": 0.0006176000460982323,
+    "share_of_total_p50": 0.0002310522603422785
+   },
+   "iv30": {
+    "max_s": 4.1800085455179214e-05,
+    "p50_s": 3.260001540184021e-05,
+    "p95_s": 4.120008088648319e-05,
+    "share_of_total_p50": 1.4246846870387026e-05
+   },
+   "iv_build": {
+    "max_s": 0.0072453999891877174,
+    "p50_s": 0.006254900014027953,
+    "p95_s": 0.007043999852612615,
+    "share_of_total_p50": 0.002733514128475156
+   },
+   "iv_contract": {
+    "max_s": 1.5405200999230146,
+    "p50_s": 1.3010074999183416,
+    "p95_s": 1.359966500196606,
+    "share_of_total_p50": 0.5685658242822607
+   },
+   "oc5": {
+    "max_s": 0.014871099963784218,
+    "p50_s": 0.013906300067901611,
+    "p95_s": 0.014860699884593487,
+    "share_of_total_p50": 0.00607732619628957
+   },
+   "oc6": {
+    "max_s": 0.025881299981847405,
+    "p50_s": 0.02417390001937747,
+    "p95_s": 0.02548369998112321,
+    "share_of_total_p50": 0.010564468991529246
+   },
+   "p1_shares": {
+    "max_s": 0.1840133999940008,
+    "p50_s": 0.17540279985405505,
+    "p95_s": 0.18365519982762635,
+    "share_of_total_p50": 0.07665446777723932
+   },
+   "p1_signing": {
+    "max_s": 0.6468486001249403,
+    "p50_s": 0.6225771999452263,
+    "p95_s": 0.6453977001365274,
+    "share_of_total_p50": 0.2720784614142631
+   },
+   "p1_spread": {
+    "max_s": 0.05577029986307025,
+    "p50_s": 0.04895920003764331,
+    "p95_s": 0.051832100143656135,
+    "share_of_total_p50": 0.021396131788133377
+   },
+   "p1_window": {
+    "max_s": 0.2961517998483032,
+    "p50_s": 0.057233399944379926,
+    "p95_s": 0.06024640006944537,
+    "share_of_total_p50": 0.02501211962105915
+   },
+   "serialize": {
+    "max_s": 0.2632307999301702,
+    "p50_s": 0.03280790010467172,
+    "p95_s": 0.035061300033703446,
+    "share_of_total_p50": 0.014337696567585916
+   }
+  },
+  "breakdown_sum_p50_s": 2.282884399872273,
+  "budget": "all outputs, 1 underlying, size M, 1 cutoff: <= 5 s p95, hard 15 s (PERF_ACCEPTANCE.md; a miss is reported as a miss, never a budget edit)",
+  "compute_only": {
+   "hard_ok": true,
+   "max_s": 2.5503570998553187,
+   "p50_s": 2.2882267001550645,
+   "p95_s": 2.546709399903193,
+   "samples_s": [
+    2.3365023999940604,
+    2.376991500146687,
+    2.3181273001246154,
+    2.314016900025308,
+    2.283504599938169,
+    2.2871747000608593,
+    2.2911179000511765,
+    2.3297627000138164,
+    2.5503570998553187,
+    2.346588100073859,
+    2.263774399878457,
+    2.2933167999144644,
+    2.2909258999861777,
+    2.272027000086382,
+    2.27700910018757,
+    2.263185900170356,
+    2.298868900164962,
+    2.2667026999406517,
+    2.546709399903193,
+    2.2702213001903147,
+    2.277533199870959,
+    2.316249900031835,
+    2.2882267001550645,
+    2.319079899927601,
+    2.2361309002153575,
+    2.2531121999491006,
+    2.2320487000979483,
+    2.2553743000607938,
+    2.511788599891588,
+    2.2385615999810398
+   ],
+   "verdict_p95": "within budget"
+  },
+  "fresh_unit_wall_incl_synthesis_s_informational": 7.37666349997744,
+  "input_synthesis_s_reported_separately": {
+   "note": "history = quote history of the session up to the cutoff (generator); chain = chain rows; prints = frozen trade stream; prep = conversion into library input shapes. Excluded from compute-only.",
+   "synth_chain_s": 0.012506600003689528,
+   "synth_history_s": 4.345115500036627,
+   "synth_prep_s": 0.23401400004513562,
+   "synth_prints_s": 0.3119576000608504,
+   "total_s": 4.903593700146303
+  },
+  "peak_memory_bytes_single_worker": {
+   "after_inputs": 288169984,
+   "b9": "2 GB budget, 4 GB hard",
+   "before_inputs": 29753344,
+   "process_peak_working_set": 288169984
+  },
+  "repeats": 30,
+  "result_bytes": 930020,
+  "result_sha256": "a0ab32705a83e0fb4a619a138912ed4dcc65607b21da1ce8359724bc16e7a278",
+  "result_sha256_all_repeats_equal": true,
+  "unit": "SYN1/01/039",
+  "warmups": 2
+ },
+ "matrix": {
+  "all_identical": true,
+  "batch_order_runs": [
+   {
+    "aggregate_peak_rss_bytes": 1903693824,
+    "batch_requested": 1,
+    "batch_size": 1,
+    "chunks": 78,
+    "equals_single_process_reference": true,
+    "order": "natural",
+    "peak_rss_per_worker_bytes": [
+     484397056,
+     478031872,
+     472948736,
+     468316160
+    ],
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 1.176328823756607,
+    "wall_s": 66.30799010000192,
+    "workers_used": 4
+   },
+   {
+    "aggregate_peak_rss_bytes": 2246397952,
+    "batch_requested": 7,
+    "batch_size": 7,
+    "chunks": 12,
+    "equals_single_process_reference": true,
+    "order": "reversed",
+    "peak_rss_per_worker_bytes": [
+     484397056,
+     533925888,
+     596897792,
+     631177216
+    ],
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 0.9608730439254489,
+    "wall_s": 81.17617670004256,
+    "workers_used": 4
+   },
+   {
+    "aggregate_peak_rss_bytes": 2249265152,
+    "batch_requested": 16,
+    "batch_size": 16,
+    "chunks": 5,
+    "equals_single_process_reference": true,
+    "order": "shuffle:11",
+    "peak_rss_per_worker_bytes": [
+     487264256,
+     533925888,
+     596897792,
+     631177216
+    ],
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 0.9503561646137355,
+    "wall_s": 82.07449260004796,
+    "workers_used": 4
+   },
+   {
+    "aggregate_peak_rss_bytes": 488435712,
+    "batch_requested": 1000,
+    "batch_size": 1000,
+    "chunks": 1,
+    "equals_single_process_reference": true,
+    "order": "shuffle:5",
+    "peak_rss_per_worker_bytes": [
+     488435712,
+     0,
+     0,
+     0
+    ],
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 0.33571178114779,
+    "wall_s": 232.34215889987536,
+    "workers_used": 4
+   }
+  ],
+  "reference_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+  "runs": [
+   {
+    "aggregate_peak_rss_bytes": 483225600,
+    "batch_size": 78,
+    "chunks": 1,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     483225600
+    ],
+    "repeat": 1,
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 0.343428577667996,
+    "wall_s": 227.1214600999374,
+    "workers_requested": 1,
+    "workers_used": 1
+   },
+   {
+    "aggregate_peak_rss_bytes": 484753408,
+    "batch_size": 78,
+    "chunks": 1,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     484753408
+    ],
+    "repeat": 2,
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 0.3394643576060111,
+    "wall_s": 229.77375459996983,
+    "workers_requested": 1,
+    "workers_used": 1
+   },
+   {
+    "aggregate_peak_rss_bytes": 486572032,
+    "batch_size": 78,
+    "chunks": 1,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     486572032
+    ],
+    "repeat": 3,
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 0.33914400511370546,
+    "wall_s": 229.9907969001215,
+    "workers_requested": 1,
+    "workers_used": 1
+   },
+   {
+    "aggregate_peak_rss_bytes": 964399104,
+    "batch_size": 7,
+    "chunks": 12,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     483987456,
+     480411648
+    ],
+    "repeat": 1,
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 0.6075725288189106,
+    "wall_s": 128.37973459996283,
+    "workers_requested": 2,
+    "workers_used": 2
+   },
+   {
+    "aggregate_peak_rss_bytes": 966156288,
+    "batch_size": 7,
+    "chunks": 12,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     484524032,
+     481632256
+    ],
+    "repeat": 2,
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 0.6125895666219638,
+    "wall_s": 127.32831940008327,
+    "workers_requested": 2,
+    "workers_used": 2
+   },
+   {
+    "aggregate_peak_rss_bytes": 968232960,
+    "batch_size": 7,
+    "chunks": 12,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     485228544,
+     483004416
+    ],
+    "repeat": 3,
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 0.6224005525705657,
+    "wall_s": 125.32122549996711,
+    "workers_requested": 2,
+    "workers_used": 2
+   },
+   {
+    "aggregate_peak_rss_bytes": 1842384896,
+    "batch_size": 4,
+    "chunks": 20,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     485015552,
+     474017792,
+     452526080,
+     430825472
+    ],
+    "repeat": 1,
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 1.1762124353294747,
+    "wall_s": 66.31455140002072,
+    "workers_requested": 4,
+    "workers_used": 4
+   },
+   {
+    "aggregate_peak_rss_bytes": 1848758272,
+    "batch_size": 4,
+    "chunks": 20,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     485015552,
+     476098560,
+     453898240,
+     433745920
+    ],
+    "repeat": 2,
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 1.1818981963266069,
+    "wall_s": 65.9955317999702,
+    "workers_requested": 4,
+    "workers_used": 4
+   },
+   {
+    "aggregate_peak_rss_bytes": 1851564032,
+    "batch_size": 4,
+    "chunks": 20,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     486387712,
+     476098560,
+     455213056,
+     433864704
+    ],
+    "repeat": 3,
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 1.1581628168365232,
+    "wall_s": 67.34804369998164,
+    "workers_requested": 4,
+    "workers_used": 4
+   },
+   {
+    "aggregate_peak_rss_bytes": 10119200768,
+    "batch_size": 1,
+    "chunks": 78,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     483819520,
+     478441472,
+     473636864,
+     467795968,
+     462311424,
+     456417280,
+     451330048,
+     446312448,
+     440639488,
+     435740672,
+     429621248,
+     424255488,
+     418365440,
+     413229056,
+     407244800,
+     402317312,
+     396963840,
+     391561216,
+     386674688,
+     381104128,
+     376012800,
+     370302976,
+     365502464,
+     359600128
+    ],
+    "repeat": 1,
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 3.770110129913273,
+    "wall_s": 20.689050800167024,
+    "workers_requested": 24,
+    "workers_used": 24
+   },
+   {
+    "aggregate_peak_rss_bytes": 10138685440,
+    "batch_size": 1,
+    "chunks": 78,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     484012032,
+     479502336,
+     473767936,
+     468385792,
+     462766080,
+     457625600,
+     452681728,
+     446930944,
+     440926208,
+     436416512,
+     430604288,
+     425521152,
+     418951168,
+     414113792,
+     408514560,
+     403365888,
+     398065664,
+     392466432,
+     387653632,
+     382177280,
+     376418304,
+     371335168,
+     366055424,
+     360427520
+    ],
+    "repeat": 2,
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 3.914253656849474,
+    "wall_s": 19.927170499926433,
+    "workers_requested": 24,
+    "workers_used": 24
+   },
+   {
+    "aggregate_peak_rss_bytes": 10149212160,
+    "batch_size": 1,
+    "chunks": 78,
+    "equals_single_process_reference": true,
+    "peak_rss_per_worker_bytes": [
+     484610048,
+     479502336,
+     473911296,
+     468770816,
+     463147008,
+     457625600,
+     452681728,
+     447303680,
+     442134528,
+     436813824,
+     430661632,
+     425742336,
+     419241984,
+     415277056,
+     408608768,
+     403763200,
+     399241216,
+     393400320,
+     388673536,
+     382398464,
+     376758272,
+     371658752,
+     366510080,
+     360775680
+    ],
+    "repeat": 3,
+    "result_sha256": "0b7cd914047424bc93b98cd503256bdbc9ae0617f8a279e1f7fbed390f41aebe",
+    "units_per_s": 3.969194713443379,
+    "wall_s": 19.651341299992055,
+    "workers_requested": 24,
+    "workers_used": 24
+   }
+  ],
+  "shuffled_contract_order_equal": true,
+  "spec": {
+   "contract_order": "natural",
+   "cutoffs": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77
+   ],
+   "gating": "mixed",
+   "prints": 20,
+   "seed": 20261029,
+   "sessions": [
+    1
+   ],
+   "shape": "M",
+   "underlyings": [
+    "SYN1"
+   ]
+  },
+  "units": 78
+ },
+ "phases_done": [
+  "freeze",
+  "g0",
+  "scale",
+  "matrix",
+  "arb"
+ ],
+ "scale": {
+  "note": "informational, not a gate: n units (SYN1..5 x sessions, cutoff 39) run concurrently, one per worker; per-unit compute-only seconds from the worker timing, run wall includes input synthesis. efficiency = single-worker compute p50 / per-unit compute p50 at n workers",
+  "workers": {
+   "2": {
+    "efficiency": 0.9992462726975763,
+    "hash_stable_across_repeats": true,
+    "input_synthesis_per_unit_p50_s": 4.6441027000546455,
+    "peak_rss_per_worker_bytes_max": 411693056,
+    "per_unit_compute_max_s": 2.708632200025022,
+    "per_unit_compute_p50_s": 2.2899527000263333,
+    "per_unit_compute_p95_s": 2.597531900042668,
+    "repeats": 30,
+    "result_sha256": "e1677984431f8350c0aa19cd4c720a3eb4464c19ef21402071cd55b0d615c5a4",
+    "run_wall_max_s": 21.506568800192326,
+    "run_wall_p50_s": 20.52556629991159,
+    "run_wall_p95_s": 21.487476099980995,
+    "units_per_run": 5,
+    "verdict_unit_p95_informational": "within budget",
+    "workers_used": 2
+   },
+   "24": {
+    "efficiency": 0.8779613777075517,
+    "hash_stable_across_repeats": true,
+    "input_synthesis_per_unit_p50_s": 5.500101300422102,
+    "peak_rss_per_worker_bytes_max": 386506752,
+    "per_unit_compute_max_s": 3.075910300016403,
+    "per_unit_compute_p50_s": 2.6062954000663012,
+    "per_unit_compute_p95_s": 2.913650299888104,
+    "repeats": 30,
+    "result_sha256": "b57e09eda09bdd5495f5289d044f9175999bb39b09bd5c5ed4685445e85fcfae",
+    "run_wall_max_s": 14.901547000044957,
+    "run_wall_p50_s": 14.243539900053293,
+    "run_wall_p95_s": 14.776730800047517,
+    "units_per_run": 25,
+    "verdict_unit_p95_informational": "within budget",
+    "workers_used": 24
+   },
+   "4": {
+    "efficiency": 0.9750690428049679,
+    "hash_stable_across_repeats": true,
+    "input_synthesis_per_unit_p50_s": 4.641718200175092,
+    "peak_rss_per_worker_bytes_max": 373403648,
+    "per_unit_compute_max_s": 2.84340210002847,
+    "per_unit_compute_p50_s": 2.3467330001294613,
+    "per_unit_compute_p95_s": 2.641808900050819,
+    "repeats": 30,
+    "result_sha256": "e1677984431f8350c0aa19cd4c720a3eb4464c19ef21402071cd55b0d615c5a4",
+    "run_wall_max_s": 13.981453400105238,
+    "run_wall_p50_s": 13.54807550017722,
+    "run_wall_p95_s": 13.964017700171098,
+    "units_per_run": 5,
+    "verdict_unit_p95_informational": "within budget",
+    "workers_used": 4
+   }
+  }
+ }
+}

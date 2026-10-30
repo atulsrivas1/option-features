@@ -261,6 +261,7 @@ def _compute_chunk(spec, keys, fault, state, emit, worker_id):
     horizon = (max(parse_key(k)[2] for k in keys) + 1) * workload.gen.CUTOFF_STEP_NS
     hist = state.get("history")
     state["hist_s"] = 0.0
+    state["timing"] = timing = {}   # seconds of input synthesis and per output family, summed over the chunk; log-only
     if hist is None or hist.key != (spec.seed, spec.shape, u, s) or hist.horizon_ns < horizon:
         th = time.perf_counter()
         state["history"] = hist = workload.SessionHistory(spec, u, s, horizon)  # input synthesis, timed separately
@@ -268,7 +269,7 @@ def _compute_chunk(spec, keys, fault, state, emit, worker_id):
     for key in keys:
         if fault and fault["kind"] == "hang_worker" and fault["worker"] == worker_id:
             time.sleep(10 ** 6)
-        data = workload.compute_unit(spec, key, hist)
+        data = workload.compute_unit(spec, key, hist, timing)
         state["units"] += 1
         if fault and fault["kind"] == "kill_worker" and fault["worker"] == worker_id and state["units"] >= fault["after_units"]:
             os._exit(137)
@@ -319,7 +320,7 @@ def _worker_main(conn, wid):
                     if counter:
                         counter.__exit__()
                 stats = {"wall_s": time.perf_counter() - t0, "cpu_s": time.process_time() - c0, "units": len(res),
-                         "history_s": state["hist_s"], "rss_peak": peak_rss_bytes(), "arb": counter.n if counter else None, "history_updates": state["history"].n_updates}
+                         "history_s": state["hist_s"], "timing": state["timing"], "rss_peak": peak_rss_bytes(), "arb": counter.n if counter else None, "history_updates": state["history"].n_updates}
                 conn.send(("done", cid, res, stats))
             except BaseException:  # noqa: BLE001 - reported to the parent, which fails the run with a named error
                 conn.send(("error", cid, traceback.format_exc()))
@@ -571,7 +572,7 @@ class Runner:
             for keys in chunks:
                 t, c0 = time.perf_counter(), time.process_time()
                 pairs.extend(_compute_chunk(spec, keys, self.fault, state, emit, 0))
-                walls.append({"worker": 0, "wall_s": time.perf_counter() - t, "cpu_s": time.process_time() - c0, "history_s": state["hist_s"], "units": len(keys)})
+                walls.append({"worker": 0, "wall_s": time.perf_counter() - t, "cpu_s": time.process_time() - c0, "history_s": state["hist_s"], "timing": state["timing"], "units": len(keys)})
         finally:
             if counter:
                 counter.__exit__()
@@ -626,7 +627,7 @@ class Runner:
                 idle.append(wid)
                 pairs.extend((k, d if v is None else v) if emit == "full" else (k, d) for k, d, v in res)
                 walls.append({"worker": wid, "chunk": rcid, "wall_s": stats["wall_s"], "cpu_s": stats["cpu_s"], "units": stats["units"],
-                              "history_s": stats["history_s"]})
+                              "history_s": stats["history_s"], "timing": stats["timing"]})
                 rss[wid] = max(rss.get(wid, 0), stats["rss_peak"])
                 if stats["arb"]:
                     for k, v in stats["arb"].items():

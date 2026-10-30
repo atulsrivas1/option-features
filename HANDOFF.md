@@ -9,6 +9,7 @@ Updated 2026-10-29 (M1 CLOSED, see docs/M1_CLOSE.md; P1 DONE, 0.2.0a1 on main, m
 - P1 and M1 fixtures authored independently (Tester, no implementation read), reviewed by an independent reviewer; interim rulings on design requests 1-3 (option A each) are pending design ratification; a changed answer redoes fixtures. M1 code starts when P1 is accepted. P1 bump plan: docs/P1_VERSION_BUMP_PLAN.md.
 
 ## M1 status (2026-10-29): CLOSED; Stage 0, 1, 2, stories A and B, runner PR 72 all merged
+- M2-G0 (PR m2/g0-full-output-b6, Developer evidence only, Tester must re-run): full-output B6 1 worker compute-only p50 2.41 / p95 2.66 s (with sign_aggregate) vs 5 s budget (met); IV 57 percent, signing 27 percent; matrix identical at 1/2/4/24 workers; data docs/m2/M2_G0_BENCH.json, DECISIONS.md last entry.
 - Runner (m1/process-pool-runner, Developer evidence only; Tester re-runs determinism, kill, scaling, platform replays; PO accepts): tools/m1_runner/ (opt-in, default single-process; 1 worker = in-process reference), tools/m1_runner_bench.py, docs/M1_RUNNER.md, docs/m1/M1_RUNNER_BENCH.json, tests/m1/test_runner.py (29 tests, ~41 s).
 - Measured post-Stage-2 (synthetic workload, relative engineering budget; 2x Xeon 8160, 48 physical / 96 logical, 254 GiB; cap min(physical cores, 0.5 x RAM / 2 GB) = 48): identical hashes at 1, 2, 4, 48 workers x 3, batches, orders; B6 compute p95 1.53 s (1 worker), 1.63 s per unit at 48; B7 1.78 min at 48 workers, 2.38 min at 24 (budget 170 min). Details in DECISIONS.md.
 - Older story A/B/history lines were moved verbatim to DECISIONS.md (entry "Restored verbatim from HANDOFF.md", runner PR). PO rulings on PR 72 applied (cap, B9 fact, perf_sut deferred); Tester drives the CLI.
@@ -22,6 +23,8 @@ Updated 2026-10-29 (M1 CLOSED, see docs/M1_CLOSE.md; P1 DONE, 0.2.0a1 on main, m
 ## M1 Stage 2 (PR 71): merged; independent Tester re-run done (details in DECISIONS.md). B6 IV part about 1.4 s p50 compute-only.
 
 - M2 (2026-10-29): docs/m2 merged (PR 75); PO-M2-AMB rulings (19 ambiguities) in docs PR on branch docs/m2-amb-rulings (not merged). Next: Tester fixtures, M2-G0 first task gate, then code.
+
+- M2-GRID rulings (2026-10-30): docs PR on branch docs/m2-grid-rulings (not merged); IO contract section 9. PR 79 adds section 8.
 
 ## Next
 0. Independent freeze review of CANDIDATE13_FREEZE_RECORD: DONE (approve-with-conditions, applied); next coordinator freeze and merge. Then candidate14 (PO R27 rulings): lift exclusion of the 3 null-nondict rows, harness assertion for the extra-stream control row, re-issue filter, hashes, counts and release notes. PO to review: N5 rows flagged (proposed), assumption-2 confirmation, A>K disclosure, sorted-literal excluded_ids, nonexpected two-control rows as negative controls (the last three already PO-ruled; see DECISIONS.md).
