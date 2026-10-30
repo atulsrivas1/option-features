@@ -1,0 +1,58 @@
+SYNTHETIC. mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12
+pair_swap_req_cut_spot                     caught   4 (primary   2) OK   e.g. M3A-STRUCT-116,M3A-STRUCT-146 | adjacent precedence pair swapped
+pair_swap_req_spot_rate                    caught   4 (primary   2) OK   e.g. M3A-STRUCT-117,M3A-STRUCT-147 | adjacent precedence pair swapped
+pair_swap_req_rate_mode                    caught   4 (primary   2) OK   e.g. M3A-STRUCT-118,M3A-STRUCT-148 | adjacent precedence pair swapped
+pair_swap_req_mode_lane                    caught   2 (primary   1) OK   e.g. M3A-STRUCT-119,M3A-STRUCT-AUX-004 | adjacent precedence pair swapped
+pair_swap_req_lane_expiry                  caught   2 (primary   1) OK   e.g. M3A-STRUCT-120,M3A-STRUCT-AUX-005 | adjacent precedence pair swapped
+pair_swap_req_expiry_right                 caught   2 (primary   1) OK   e.g. M3A-STRUCT-121,M3A-STRUCT-AUX-006 | adjacent precedence pair swapped
+pair_swap_req_right_dupid                  caught   2 (primary   1) OK   e.g. M3A-STRUCT-122,M3A-STRUCT-AUX-007 | adjacent precedence pair swapped
+pair_swap_req_dupid_strike                 caught   2 (primary   1) OK   e.g. M3A-STRUCT-123,M3A-STRUCT-AUX-008 | adjacent precedence pair swapped
+pair_swap_req_strike_type                  caught   2 (primary   1) OK   e.g. M3A-STRUCT-124,M3A-STRUCT-AUX-009 | adjacent precedence pair swapped
+pair_swap_req_type_mismatch                caught   2 (primary   1) OK   e.g. M3A-STRUCT-125,M3A-STRUCT-AUX-010 | adjacent precedence pair swapped
+pair_swap_req_mismatch_dupkey              caught   2 (primary   1) OK   e.g. M3A-STRUCT-126,M3A-STRUCT-AUX-011 | adjacent precedence pair swapped
+pair_swap_req_dupkey_tenor                 caught   2 (primary   1) OK   e.g. M3A-STRUCT-127,M3A-STRUCT-AUX-012 | adjacent precedence pair swapped
+pair_swap_req_tenor_delta                  caught   2 (primary   1) OK   e.g. M3A-STRUCT-128,M3A-STRUCT-AUX-013 | adjacent precedence pair swapped
+pair_swap_req_delta_ivform                 caught   2 (primary   2) OK   e.g. M3A-STRUCT-076,M3A-STRUCT-077 | adjacent precedence pair swapped
+pair_swap_req_ivform_conv                  caught   0 (primary   0) EQV  e.g.  | adjacent precedence pair swapped (EQUIVALENT: the second check cannot run when the first fails, Q03/Q04/Q05, record-major scan)
+pair_swap_req_conv_fire                    caught   2 (primary   2) OK   e.g. M3A-STRUCT-091,M3A-STRUCT-092 | adjacent precedence pair swapped
+pair_swap_req_fire_xrange                  caught   0 (primary   0) EQV  e.g.  | adjacent precedence pair swapped (EQUIVALENT: the second check cannot run when the first fails, Q03/Q04/Q05, record-major scan)
+pair_swap_req_xrange_minute                caught   2 (primary   1) OK   e.g. M3A-STRUCT-131,M3A-STRUCT-AUX-016 | adjacent precedence pair swapped
+pair_swap_req_minute_prior                 caught   0 (primary   0) EQV  e.g.  | adjacent precedence pair swapped (EQUIVALENT: the second check cannot run when the first fails, Q03/Q04/Q05, record-major scan)
+pair_swap_req_prior_convmis                caught   2 (primary   2) OK   e.g. M3A-STRUCT-095,M3A-STRUCT-096 | adjacent precedence pair swapped
+pair_swap_req_convmis_delayed              caught   0 (primary   0) EQV  e.g.  | adjacent precedence pair swapped (EQUIVALENT: the second check cannot run when the first fails, Q03/Q04/Q05, record-major scan)
+pair_swap_hist_h_lane_h_cal                caught   2 (primary   1) OK   e.g. M3A-STRUCT-134,M3A-STRUCT-AUX-019 | adjacent precedence pair swapped
+pair_swap_hist_h_cal_h_len                 caught   0 (primary   0) EQV  e.g.  | adjacent precedence pair swapped (EQUIVALENT: the second check cannot run when the first fails, Q03/Q04/Q05, record-major scan)
+pair_swap_hist_h_len_h_mono                caught   2 (primary   1) OK   e.g. M3A-STRUCT-136,M3A-STRUCT-AUX-021 | adjacent precedence pair swapped
+pair_swap_hist_h_mono_h_dup                caught   2 (primary   1) OK   e.g. M3A-STRUCT-137,M3A-STRUCT-AUX-022 | adjacent precedence pair swapped
+pair_swap_hist_h_dup_h_ooo                 caught   0 (primary   0) EQV  e.g.  | adjacent precedence pair swapped (EQUIVALENT: the second check cannot run when the first fails, Q03/Q04/Q05, record-major scan)
+pair_swap_snap_magic_length                caught   2 (primary   1) OK   e.g. M3A-STRUCT-139,M3A-STRUCT-AUX-024 | adjacent precedence pair swapped
+pair_swap_snap_length_hash                 caught   3 (primary   2) OK   e.g. M3A-STRUCT-026,M3A-STRUCT-140 | adjacent precedence pair swapped
+pair_swap_text_missing_count               caught   0 (primary   0) EQV  e.g.  | adjacent precedence pair swapped (EQUIVALENT: the second check cannot run when the first fails, Q03/Q04/Q05, record-major scan)
+pair_swap_text_count_hash                  caught   2 (primary   1) OK   e.g. M3A-STRUCT-142,M3A-STRUCT-AUX-027 | adjacent precedence pair swapped
+pair_swap_view_v_cal_v_minute              caught   0 (primary   0) EQV  e.g.  | adjacent precedence pair swapped (EQUIVALENT: the second check cannot run when the first fails, Q03/Q04/Q05, record-major scan)
+pair_swap_view_v_minute_v_type             caught   2 (primary   1) OK   e.g. M3A-STRUCT-144,M3A-STRUCT-AUX-029 | adjacent precedence pair swapped
+pair_swap_view_v_type_v_range              caught   2 (primary   1) OK   e.g. M3A-STRUCT-145,M3A-STRUCT-AUX-030 | adjacent precedence pair swapped
+pair_swap_view_v_range_v_conv              caught   2 (primary   2) OK   e.g. M3A-STRUCT-101,M3A-STRUCT-102 | adjacent precedence pair swapped
+contract_major_scan                        caught  12 (primary   6) OK   e.g. M3A-STRUCT-120,M3A-STRUCT-121 | scan contract by contract instead of position by position (R-101)
+type_check_after_value                     caught   2 (primary   1) OK   e.g. M3A-STRUCT-147,M3A-STRUCT-AUX-032 | spot type error reported after every value code (R-67)
+cutoff_mismatch_skipped                    caught   4 (primary   3) OK   e.g. M3A-STRUCT-041,M3A-STRUCT-042 | evaluation_ns versus cutoff_ns never compared (R-100)
+spot_9_decimals_accepted                   caught   3 (primary   2) OK   e.g. M3A-STRUCT-043,M3A-STRUCT-044 | 9-decimal text and non-representable float accepted as spot (R-98)
+zero_spot_malformed                        caught   3 (primary   3) OK   e.g. M3A-STRUCT-002,M3A-STRUCT-045 | zero spot reported as malformed_type instead of bad_spot
+bool_counts_as_int                         caught   3 (primary   3) OK   e.g. M3A-STRUCT-038,M3A-STRUCT-147 | True accepted as an int
+strike_type_at_slot_10                     caught   2 (primary   1) OK   e.g. M3A-STRUCT-153,M3A-STRUCT-AUX-038 | wrong-typed strike reported at the position 10 slot, not 9 (R-67)
+dividend_before_rate                       caught   4 (primary   2) OK   e.g. M3A-STRUCT-150,M3A-STRUCT-151 | dividend_yield checked before rate inside position 3
+dup_id_after_type                          caught   4 (primary   2) OK   e.g. M3A-STRUCT-123,M3A-STRUCT-156 | duplicate id evaluated after the type slot (R-102a violated)
+dup_key_before_type                        caught   4 (primary   2) OK   e.g. M3A-STRUCT-126,M3A-STRUCT-157 | same expiry/strike/right checked before the type slot (R-102b violated)
+code_outside_closed_set                    caught  54 (primary  44) OK   e.g. M3A-STRUCT-010,M3A-STRUCT-035 | malformed_type reported as an invented code
+prior_equal_cutoff_accepted                caught   3 (primary   3) OK   e.g. M3A-STRUCT-017,M3A-STRUCT-095 | prior at the cutoff accepted (strict instead of at-or-after)
+minute_equal_grid_accepted                 caught   2 (primary   2) OK   e.g. M3A-STRUCT-016,M3A-STRUCT-132 | minute equal to the grid length accepted
+x_100_rejected                             caught   2 (primary   2) OK   e.g. M3A-STRUCT-103,M3A-STRUCT-111 | x = 100 rejected (upper bound exclusive)
+minute_last_rejected                       caught   2 (primary   2) OK   e.g. M3A-STRUCT-104,M3A-STRUCT-112 | last minute (389 of 390) rejected
+price_8_decimals_rejected                  caught   2 (primary   2) OK   e.g. M3A-STRUCT-105,M3A-STRUCT-106 | text price with exactly 8 decimals rejected
+rate_abs_1_rejected                        caught   2 (primary   2) OK   e.g. M3A-STRUCT-107,M3A-STRUCT-108 | |rate| = 1 rejected
+prior_one_ns_before_rejected               caught   2 (primary   2) OK   e.g. M3A-STRUCT-109,M3A-STRUCT-110 | prior one ns before the cutoff rejected
+trailing_zeros_trimmed                     caught   2 (primary   1) OK   e.g. M3A-STRUCT-114,M3A-STRUCT-AUX-044 | 9-decimal text with trailing zeros accepted (value-based, not length-based; R-164)
+direction_type_unchecked                   caught   2 (primary   1) OK   e.g. M3A-STRUCT-115,M3A-STRUCT-AUX-045 | non-string direction not checked (R-165)
+load_scan_position_major                   caught   8 (primary   5) OK   e.g. M3A-STRUCT-021,M3A-STRUCT-022 | history load scanned position-major instead of record-major (R-148)
+lanes_pooled                               caught   4 (primary   4) OK   e.g. M3A-LANE-003,M3A-LANE-004 | baseline read ignores the lane (lane isolation lost)
+mutants 56 (8 equivalent by Q04/Q05, 48 effective); every effective mutant caught by >= 2 rows: True; effective mutants with no primary-row catch: 0

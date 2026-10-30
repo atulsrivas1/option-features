@@ -1,0 +1,74 @@
+rank_strict_gt | upper_share counts strictly greater (ties dropped) | caught by 34 rows | M3A-V1-009,M3A-V1-010,M3A-V1-011,M3A-V1-014
+fires_exclusive | top X percent exclusive (< instead of <=) | caught by 39 rows | M3A-V1-007,M3A-V1-010,M3A-V1-012,M3A-V1-015
+ties_split | ties split half above, half below | caught by 34 rows | M3A-V1-009,M3A-V1-010,M3A-V1-011,M3A-V1-014
+mean_rank | mean-style rank (ge + n - le) / 2n | caught by 34 rows | M3A-V1-009,M3A-V1-010,M3A-V1-011,M3A-V1-014
+accept_19 | 19 sessions accepted (min_sessions - 1) | caught by 11 rows | M3A-V1-018,M3A-V1-025,M3A-V1-030,M3A-V3-013
+incomplete_counted | incomplete stored session counted | caught by 6 rows | M3A-V1-029,M3A-V1-030,M3A-V3-022,M3A-V3-023
+missing_zero_padded | missing days zero-padded into the baseline | caught by 22 rows | M3A-V1-026,M3A-V1-027,M3A-V1-028,M3A-V1-029
+today_included | today's stored record included | caught by 2 rows | M3A-V1-031,M3A-V9-024
+lookahead_included | records after the session included | caught by 4 rows | M3A-V1-031,M3A-V3-024,M3A-V3-061,M3A-V9-024
+zero_range_skipped | zero range history computed as a percentile | caught by 9 rows | M3A-V1-022,M3A-V1-023,M3A-V1-049,M3A-V3-026
+zero_range_with_x | zero range judged over history plus x | caught by 4 rows | M3A-V1-023,M3A-V1-049,M3A-V3-046,M3A-V9-047
+retention_60 | ring retention 60 instead of 252 | caught by 46 rows | M3A-V1-001,M3A-V1-002,M3A-V1-003,M3A-V1-004
+cap_ignored | max_sessions not applied | caught by 8 rows | M3A-V1-019,M3A-V1-052,M3A-V3-014,M3A-V3-066
+cap_oldest | max_sessions keeps the oldest sessions | caught by 6 rows | M3A-V1-019,M3A-V1-052,M3A-V3-014,M3A-V3-066
+round_half_up | half up instead of half to even | caught by 6 rows | M3A-V9-037,M3A-V9-038,M3A-U-001,M3A-U-003
+round_trunc | truncation instead of rounding | caught by 64 rows | M3A-V1-001,M3A-V1-002,M3A-V1-003,M3A-V1-006
+round_parts_first | skew parts rounded before subtracting | caught by 3 rows | M3A-V9-036,M3A-U-010,M3A-U-012
+bottom_uses_upper | bottom X fires on upper_share | caught by 5 rows | M3A-V1-012,M3A-V1-014,M3A-V9-012,M3A-V9-014
+top_uses_lower | top X fires on lower_share | caught by 42 rows | M3A-V1-001,M3A-V1-003,M3A-V1-005,M3A-V1-008
+delayed_ignored | delayed tag not rejected on intraday forms | caught by 4 rows | M3A-V1-035,M3A-V3-038,M3A-V3-064,M3A-V9-027
+delayed_close_rejected | close forms rejected under a delayed tag | caught by 3 rows | M3A-V1-036,M3A-V9-028,M3A-V9-062
+complete_ignored | session_not_complete not raised in close mode | caught by 3 rows | M3A-V1-033,M3A-V1-051,M3A-V9-026
+order_complete_first | gate order: session_not_complete before insufficient_history | caught by 3 rows | M3A-V1-034,M3A-V1-050,M3A-V9-049
+upstream_last | gate order: upstream reason after history reasons | caught by 4 rows | M3A-V1-047,M3A-V3-043,M3A-V3-067,M3A-V9-043
+minute_off_by_one | V3 and column read minute m+1 | caught by 49 rows | M3A-V3-001,M3A-V3-002,M3A-V3-003,M3A-V3-004
+minute_substituted | a session lacking the minute substituted by its last minute | caught by 8 rows | M3A-V3-010,M3A-V3-016,M3A-V3-018,M3A-V3-019
+halfday_zero | a session lacking the minute counted as 0 | caught by 8 rows | M3A-V3-010,M3A-V3-016,M3A-V3-018,M3A-V3-019
+minute_range_inclusive | minute equal to the grid length accepted | caught by 3 rows | M3A-V3-028,M3A-V3-030,M3A-V3-063
+negative_minute_ok | negative minute accepted | caught by 2 rows | M3A-V3-029,M3A-V3-048
+x_range_exclusive | X = 0 and X = 100 rejected | caught by 3 rows | M3A-V1-043,M3A-V1-044,M3A-U-020
+x_float_ok | float X accepted | caught by 2 rows | M3A-V1-038,M3A-V3-039
+x_decimal_ok | Decimal X accepted | caught by 3 rows | M3A-V1-041,M3A-V3-047,M3A-V9-048
+min_default_10 | default min_sessions 10 | caught by 132 rows | M3A-V1-003,M3A-V1-004,M3A-V1-005,M3A-V1-006
+x_default_10 | default X 10 | caught by 3 rows | M3A-V1-015,M3A-V3-011,M3A-V9-015
+negative_zero_text | zero shown as -0.00000000 | caught by 5 rows | M3A-V9-035,M3A-V9-039,M3A-U-006,M3A-U-013
+share_unreduced | shares not reduced | caught by 116 rows | M3A-V1-001,M3A-V1-002,M3A-V1-005,M3A-V1-006
+integral_as_fraction | integral shares shown as 1/1 | caught by 122 rows | M3A-V1-001,M3A-V1-002,M3A-V1-003,M3A-V1-004
+lane_ignored | ring lane not compared with the request lane | caught by 3 rows | M3A-V1-048,M3A-V3-044,M3A-V9-045
+labels_no_delayed | delayed label dropped | caught by 3 rows | M3A-V1-036,M3A-V9-028,M3A-V9-062
+min_sessions_zero_ok | min_sessions 0 accepted | caught by 7 rows | M3A-V1-039,M3A-V3-041,M3A-V3-078,M3A-V9-031
+x_before_sessions | X checked before min_sessions and max_sessions | caught by 4 rows | M3A-V1-039,M3A-V3-077,M3A-V9-031,M3A-V9-065
+form_swapped | form label swapped | caught by 85 rows | M3A-V1-001,M3A-V1-002,M3A-V1-003,M3A-V1-004
+iv_form_default_30d | default iv_form 30d instead of atm | caught by 2 rows | M3A-V3-049,M3A-V3-076
+iv_form_type_ok | non-string iv_form accepted | caught by 2 rows | M3A-V3-074,M3A-V3-075
+iv_form_invalid_ok | unknown iv_form accepted | caught by 5 rows | M3A-V3-071,M3A-V3-072,M3A-V3-073,M3A-V3-077
+form_mix_allowed | series of the other IV form read | caught by 2 rows | M3A-V3-068,M3A-V3-069
+iv_form_not_echoed | iv_form missing from the params echo | caught by 40 rows | M3A-V3-001,M3A-V3-002,M3A-V3-003,M3A-V3-004
+conv_default_forward | default delta_convention forward | caught by 52 rows | M3A-V9-001,M3A-V9-002,M3A-V9-003,M3A-V9-004
+conv_type_ok | non-string delta_convention accepted | caught by 2 rows | M3A-V9-060,M3A-V9-064
+conv_invalid_ok | unknown delta_convention accepted | caught by 3 rows | M3A-V9-058,M3A-V9-059,M3A-V9-065
+conv_mismatch_ignored | V9 ignores a stored convention of the other kind | caught by 4 rows | M3A-V9-056,M3A-V9-057,M3A-V9-068,M3A-V9-069
+conv_not_echoed | delta_convention missing from the echo | caught by 43 rows | M3A-V9-001,M3A-V9-002,M3A-V9-003,M3A-V9-004
+conv_unchecked_at_read | store read does not check the convention | caught by 4 rows | M3A-H-067,M3A-H-068,M3A-H-069,M3A-H-074
+missing_conv_as_forward | a record without a convention field read as forward | caught by 2 rows | M3A-H-069,M3A-H-070
+selector_first | iv_form and delta_convention checked before min_sessions and max_sessions | caught by 2 rows | M3A-V3-078,M3A-V9-066
+mismatch_after_delayed | convention_mismatch checked after delayed_feed_tag | caught by 2 rows | M3A-V9-068,M3A-V9-069
+conv_before_threshold | store read checks the convention before X | caught by 3 rows | M3A-H-071,M3A-H-072,M3A-H-073
+store_x_unchecked | store read does not range-check X | caught by 2 rows | M3A-H-071,M3A-H-072
+retention_253 | store retention 253 | caught by 5 rows | M3A-H-028,M3A-H-029,M3A-H-030,M3A-H-031
+arrival_hashed | arrival order in the hashed line | caught by 8 rows | M3A-H-032,M3A-H-033,M3A-H-034,M3A-H-035
+complete_not_hashed | complete flag always true in the line | caught by 2 rows | M3A-H-035,M3A-H-055
+lane_unchecked | lane_mismatch not raised | caught by 2 rows | M3A-H-038,M3A-H-045
+oop_ignored | out_of_order_append accepted | caught by 2 rows | M3A-H-041,M3A-H-050
+dup_allowed | duplicate_session accepted | caught by 2 rows | M3A-H-042,M3A-H-051
+seal_ignored | seal does not complete a record | caught by 2 rows | M3A-H-007,M3A-H-036
+as_of_inclusive | baseline includes as_of | caught by 3 rows | M3A-H-013,M3A-H-052,M3A-H-053
+per_series_k_ignored | per-series k ignored (default k used) | caught by 2 rows | M3A-H-031,M3A-H-054
+dump_unsorted | dump lines in arrival order of series | caught by 2 rows | M3A-H-034,M3A-H-056
+calendar_unchecked | session_not_in_calendar not raised | caught by 2 rows | M3A-H-043,M3A-H-057
+length_unchecked | record_length_mismatch not raised | caught by 2 rows | M3A-H-044,M3A-H-058
+mem_copies_2 | memory formula with 2 copies | caught by 3 rows | M3A-H-047,M3A-H-048,M3A-H-075
+mem_4_bytes | memory formula with 4 bytes per value | caught by 4 rows | M3A-H-046,M3A-H-047,M3A-H-048,M3A-H-075
+points_x1000 | points key scaled by 1000 | caught by 3 rows | M3A-U-014,M3A-U-015,M3A-U-016
+mutants 73, caught by >= 2 rows: 73

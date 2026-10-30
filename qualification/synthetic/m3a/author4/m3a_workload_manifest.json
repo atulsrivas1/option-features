@@ -1,0 +1,338 @@
+{
+ "chains": {
+  "L": {
+   "cutoff_ns": 307200000000000,
+   "expiry_days": [
+    5,
+    12,
+    19,
+    26,
+    33,
+    61,
+    89,
+    119
+   ],
+   "facts": {
+    "all_valid_quotes": true,
+    "calls": 3000,
+    "chain_sha256": "03a3f9c52f877d2900079bcdf921e92a676357c9daaa16524202cf1fd6cd3d95",
+    "contracts": 6000,
+    "expiries": 8,
+    "floored_wing_quotes": 1240,
+    "max_delta_evaluations_budget": 200,
+    "naive_delta_evaluations": 6000,
+    "puts": 3000,
+    "quote_count": 12000,
+    "strikes_per_expiry": 375
+   },
+   "spot": "101.38",
+   "truth_sha256": "9987da55499c286331bc2a04cb5c5e485d6551881b78b635d2139b61e5c83d63",
+   "unit": "SYN1/03/045"
+  },
+  "M": {
+   "cutoff_ns": 307200000000000,
+   "expiry_days": [
+    5,
+    12,
+    19,
+    26,
+    33,
+    61,
+    89,
+    119
+   ],
+   "facts": {
+    "all_valid_quotes": true,
+    "calls": 1000,
+    "chain_sha256": "844b9dba6be27ba31b8f480064cc46f9568513ae5bb8b911701637a272cbd5cc",
+    "contracts": 2000,
+    "expiries": 8,
+    "floored_wing_quotes": 422,
+    "max_delta_evaluations_budget": 200,
+    "naive_delta_evaluations": 2000,
+    "puts": 1000,
+    "quote_count": 4000,
+    "strikes_per_expiry": 125
+   },
+   "spot": "101.38",
+   "truth_sha256": "0b6057170e12bca2d281df06690d70282580bc2fdb0d27b83476959e81604c84",
+   "unit": "SYN1/03/045"
+  },
+  "S": {
+   "cutoff_ns": 307200000000000,
+   "expiry_days": [
+    7,
+    21,
+    35,
+    63,
+    98
+   ],
+   "facts": {
+    "all_valid_quotes": true,
+    "calls": 250,
+    "chain_sha256": "e7de7ebe20fbbad7506aefc1a8e847f7161fccbe835771f9284b8cb0033c538f",
+    "contracts": 500,
+    "expiries": 5,
+    "floored_wing_quotes": 98,
+    "max_delta_evaluations_budget": 200,
+    "naive_delta_evaluations": 500,
+    "puts": 250,
+    "quote_count": 1000,
+    "strikes_per_expiry": 50
+   },
+   "spot": "101.38",
+   "truth_sha256": "7fef7924a572d1776197912e3a708ab6ed3773249fce4efac5d96654e1c6d566",
+   "unit": "SYN1/03/045"
+  }
+ },
+ "generator": "gen_m3a_workloads.py",
+ "label": "mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12",
+ "perf_label": "synthetic workload, relative engineering budget",
+ "point_truth": {
+  "names": 103,
+  "samples": [
+   {
+    "name": 0,
+    "v10_change_points": "271479/250000",
+    "v10_sign_changed": false,
+    "v10_sign_now": 1,
+    "v10_sign_prior": 1,
+    "v4_change_points": "321579/200000",
+    "v4_change_ratio": "1607895/37549957",
+    "v5_30_91": "1034919/1000000",
+    "v5_9_30": "503787/1000000"
+   },
+   {
+    "name": 101,
+    "v10_change_points": "-1331899/500000",
+    "v10_sign_changed": true,
+    "v10_sign_now": -1,
+    "v10_sign_prior": 1,
+    "v4_change_points": "-288137/500000",
+    "v4_change_ratio": "-576274/27878603",
+    "v5_30_91": "1051937/1000000",
+    "v5_9_30": "-15997/50000"
+   }
+  ],
+  "sha256": "252a24c252f1c540d98741837adad28d78951ed1befb60663799a0a08f6e6010"
+ },
+ "provenance": "SYNTHETIC",
+ "quick": false,
+ "rank_truth": {
+  "lines": 618,
+  "names": 103,
+  "plan": [
+   "top_unique",
+   "top_tie",
+   "top5pct",
+   "median",
+   "bottom_tie",
+   "bottom_unique",
+   "second_from_top",
+   "bottom5pct"
+  ],
+  "samples": [
+   {
+    "lower_share": "1",
+    "n": 252,
+    "name": 0,
+    "rank_le": 252,
+    "reason": null,
+    "series": "iv30_close",
+    "status": "available",
+    "upper_share": "0",
+    "x": 41837448
+   },
+   {
+    "lower_share": "1",
+    "n": 252,
+    "name": 0,
+    "rank_le": 252,
+    "reason": null,
+    "series": "skew25",
+    "status": "available",
+    "upper_share": "0",
+    "x": 595757
+   },
+   {
+    "lower_share": "1",
+    "n": 252,
+    "name": 0,
+    "rank_le": 252,
+    "reason": null,
+    "series": "skew25_fwd",
+    "status": "available",
+    "upper_share": "0",
+    "x": 3495535
+   },
+   {
+    "lower_share": "1",
+    "n": 252,
+    "name": 0,
+    "rank_le": 252,
+    "reason": null,
+    "series": "atm_iv_close",
+    "status": "available",
+    "upper_share": "0",
+    "x": 41437448
+   },
+   {
+    "lower_share": "1",
+    "n": 252,
+    "name": 0,
+    "rank_le": 252,
+    "reason": null,
+    "series": "iv30_min@195",
+    "status": "available",
+    "upper_share": "0",
+    "x": 41898580
+   },
+   {
+    "lower_share": "1",
+    "n": 252,
+    "name": 0,
+    "rank_le": 252,
+    "reason": null,
+    "series": "atm_iv_min@195",
+    "status": "available",
+    "upper_share": "0",
+    "x": 41558793
+   }
+  ],
+  "sha256": "c4a54f956d75b8db61386296393eb919e8e7051e57c9ca04597cf200f615ef2f",
+  "zero_range_name": 101
+ },
+ "seed": 20261030,
+ "store": {
+  "budget_store_bytes": 805306368,
+  "flag": "matches the budgets doc of PR 104 (7 series, about 181,700 records, store 768 MiB); the older doc text (4 series, 104,000 records, 512 MB) is superseded; 7 series per name = 181,692 records, 721 series; 486 MB M2 layout is 60 percent of the 768 MiB budget (RULED)",
+  "formula": "names x sessions x 390 x 8 B x 2 grids (raw), x 3 for the M2 layout (raw, sorted copy, merged array)",
+  "grid_records": 51912,
+  "hard_store_bytes_per_worker": 1073741824,
+  "m2_layout_share_of_768MiB": 0.6034,
+  "minute_grid_m2_layout_bytes": 485896320,
+  "minute_grid_raw_bytes": 161965440,
+  "names": 103,
+  "records": 181692,
+  "retention_k": 252,
+  "scalar_bytes_raw": 1038240,
+  "scalar_records": 129780,
+  "series_per_name": 7,
+  "series_total": 721,
+  "sessions": 252
+ },
+ "store_content_sha256": {
+  "names_covered": 103,
+  "value": "35549e0e745dcca1e81974ebe01ad2b9736238eeb8e7649807013ab08f1d306b"
+ },
+ "sweep_B11": {
+  "all_cutoffs_new_spot_vs_previous": true,
+  "cutoffs": 78,
+  "distinct_spots": 71,
+  "note": "71 distinct spots across 78 cutoffs: a cache keyed on spot alone would hit on the repeated cutoffs and could pass B11 by accident; the cutoff must be in the key",
+  "repeated_spot_cutoff_indexes": [
+   56,
+   57,
+   60,
+   70,
+   73,
+   74,
+   75
+  ],
+  "spot_cents_sha256": "405ecbdbe077b9db30989fd9d9ee0ed976a53dd83fba8a85ad955def565f330b",
+  "unit_prefix": "SYN1/03/"
+ },
+ "truth_samples": {
+  "M_expiries_head": [
+   {
+    "atm_index": 66,
+    "atm_iv": "0.16373651",
+    "atm_strike": "101.60",
+    "atm_vega": "4.7198",
+    "call25": {
+     "bracket_index": [
+      68,
+      69
+     ],
+     "iv": "0.16220081",
+     "strike_distance_from_atm": 3
+    },
+    "expiry_days": 5,
+    "forward": "101.43556591",
+    "put25": {
+     "bracket_index": [
+      63,
+      62
+     ],
+     "iv": "0.16601291",
+     "strike_distance_from_atm": 4
+    }
+   },
+   {
+    "atm_index": 66,
+    "atm_iv": "0.16897416",
+    "atm_strike": "101.60",
+    "atm_vega": "7.3304",
+    "call25": {
+     "bracket_index": [
+      71,
+      72
+     ],
+     "iv": "0.16647726",
+     "strike_distance_from_atm": 6
+    },
+    "expiry_days": 12,
+    "forward": "101.51340935",
+    "put25": {
+     "bracket_index": [
+      61,
+      60
+     ],
+     "iv": "0.17237656",
+     "strike_distance_from_atm": 6
+    }
+   }
+  ],
+  "M_tenors": {
+   "30": {
+    "expiries_used": [
+     26,
+     33
+    ],
+    "iv": "0.18055917"
+   },
+   "9": {
+    "expiries_used": [
+     5,
+     12
+    ],
+    "iv": "0.16774193"
+   },
+   "91": {
+    "expiries_used": [
+     89,
+     119
+    ],
+    "iv": "0.20276412"
+   }
+  }
+ },
+ "units": {
+  "b10_units_size_M": 1950,
+  "count": 1950,
+  "first": [
+   "SYN1/01/000",
+   "SYN1/01/001",
+   "SYN1/01/002"
+  ],
+  "grid": "5 underlyings x 5 evaluated sessions x 78 cutoffs",
+  "key_format": "UNDERLYING/SESSION_ORDINAL(2)/CUTOFF_INDEX(3), e.g. SYN1/03/045",
+  "last": [
+   "SYN5/05/075",
+   "SYN5/05/076",
+   "SYN5/05/077"
+  ],
+  "session_ordinal_to_calendar": "calendar session = 252 + ordinal; history sessions 1..256 generated, each evaluated session has 252 prior sessions",
+  "units_sha256": "5128dd1e23c8509e6b1d67d567edc0c1edb629227a4b1b500b0e57608e5e6472"
+ }
+}

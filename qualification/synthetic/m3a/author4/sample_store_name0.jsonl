@@ -1,0 +1,4 @@
+{"label":"mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12","provenance":"SYNTHETIC","sample":"name 0, sessions 1-3: scalar series and the first 8 minutes of the iv30 grid"}
+{"iv30_close":39132448,"iv30_min_head":[39325692,39145596,39136710,39110609,39080507,39080283,39185984,38957436],"name":0,"session":1,"skew25":407989,"term_30_91":-1702582}
+{"iv30_close":37154341,"iv30_min_head":[37297715,37302355,37249421,37097915,37184521,37135866,37242297,36979362],"name":0,"session":2,"skew25":319011,"term_30_91":-1655809}
+{"iv30_close":36131304,"iv30_min_head":[36229613,36114065,35972627,36136452,36135823,36163797,35938427,36299861],"name":0,"session":3,"skew25":87684,"term_30_91":-1610669}
