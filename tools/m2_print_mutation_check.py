@@ -133,6 +133,7 @@ MUTS = [
     ("f1_fire_floor_ratio", [], MP, [("fired = 15 * p60 * nf.denominator >= nf.numerator * p900", "fired = (15 * p60) // p900 >= nf.numerator // nf.denominator", 1)], "fractional ratio floored"),
     ("rational_text_loose", [], MP, [("    if k is str and _RATIONAL.fullmatch(x):", "    if k is str:", 1)], "text parameter grammar"),
     ("open_not_required_f4", [], MP, [("bad_param=nf is None or not is_int(threshold_ticks) or not is_int(open_ns))", "bad_param=nf is None or not is_int(threshold_ticks))", 1)], "open_ns required"),
+    ("before_open_not_empty", [], MP, [("    if open_ns is not None and t_ns < open_ns:\n        return t_ns + 1", "    if False:\n        return t_ns + 1", 1)], "cutoff before open"),
     ("f12_peak_not_exact", [], EP, [("pk_a, pk_b, pk_k = a, b, k", "pk_a, pk_b, pk_k = a, b, k if pk_k is None else pk_k", 2)], "peak time sticks to the first point"),
 ]
 

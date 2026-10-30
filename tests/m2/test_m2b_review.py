@@ -174,6 +174,56 @@ class PreOpen(unittest.TestCase):
                     self.assertEqual([M.canonical_line(r) for r in b], [M.canonical_line(r) for r in M.f17_many(sc.tape, T, open_ns=OPEN)])
 
 
+class BeforeOpen(unittest.TestCase):
+    """A cutoff before session open gives an empty window: zero counts, premiums and coverage, never negative."""
+
+    def test_tester_repro_and_all_families(self):
+        cons = {"C": ("C", 1, "2026-11-20", "stock"), "P": ("P", 2, "2026-12-18", "stock")}
+        prints = [(("C", "P")[i % 2], OPEN + off * NS, "1.0000", 5, 100 if i != 3 else 10, 0, i)
+                  for i, off in enumerate((-300, -90, -80, -70, -60))]
+        tape = PT.build_tape(prints, cons)
+        T = OPEN - 100 * NS
+        r = M.f4_large_prints(tape, T, threshold_ticks=1)
+        self.assertEqual((r["status"], r["value"], r["coverage"]["eligible_count"], r["fired"]),
+                         ("available", {"large_count": 0, "large_premium": 0}, 0, False))
+        self.assertEqual(r["coverage"], {"eligible_count": 0, "nonstandard_count": 0, "excluded_condition_count": 0,
+                                         "unavailable_points": 0})
+        r = M.f7_concentration(tape, T)
+        self.assertEqual((r["status"], r["reason"], r["coverage"]["eligible_count"]), ("unavailable", "zero_denominator", 0))
+        r = M.f18_put_share(tape, T, at_least="1/2")
+        self.assertEqual((r["status"], r["reason"], r["coverage"]["eligible_count"]), ("unavailable", "zero_denominator", 0))
+        r = M.f17_window_premium(tape, T, "C")
+        self.assertEqual((r["value"]["window_premium"], r["fired"], r["coverage"]["eligible_count"]), (0, False, 0))
+        self.assertEqual(M.f17_columns(tape, T, ["C"]), [0])
+        for out in (M.f4_sweep(tape, [T], threshold_ticks=1)[0], M.f7_sweep(tape, [T])[0], M.f18_sweep(tape, [T], at_least="1/2")[0]):
+            self.assertEqual(out["coverage"]["eligible_count"], 0)
+        self.assertEqual(M.f17_sweep(tape, [T], ["C"])[0][0]["value"]["window_premium"], 0)
+        self.assertEqual(M.f17_sweep_columns(tape, [T], ["C"]), [[0]])
+
+    def test_counts_never_negative_on_random_streams(self):
+        for seed in range(1, 1 + min(6, len(SEEDS))):
+            sc = Scenario(seed)
+            cuts = [OPEN - s * NS for s in (1, 60, 100, 900, 4000)] + [OPEN, OPEN + 1] + sc.cuts[:6]
+            for W in (60, 300, 3600):
+                results = (M.f4_sweep(sc.tape, cuts, window_s=W, threshold_ticks=1)
+                           + M.f7_sweep(sc.tape, cuts, window_s=W) + M.f18_sweep(sc.tape, cuts, window_s=W, at_least="0")
+                           + [r for row in M.f17_sweep(sc.tape, cuts) for r in row])
+                singles = ([M.f4_large_prints(sc.tape, T, window_s=W, threshold_ticks=1) for T in cuts]
+                           + [M.f7_concentration(sc.tape, T, window_s=W) for T in cuts]
+                           + [M.f18_put_share(sc.tape, T, window_s=W, at_least="0") for T in cuts])
+                for r in results + singles:
+                    cv = r["coverage"]
+                    if cv is not None:
+                        self.assertTrue(all(v >= 0 for v in cv.values()), (seed, W, r))
+                    v = r["value"]
+                    if v:
+                        self.assertTrue(all(x >= 0 for x in v.values() if isinstance(x, (int, Fraction))), (seed, W, r))
+                for T, a, b in zip(cuts, M.f7_sweep(sc.tape, cuts, window_s=W), singles[len(cuts):2 * len(cuts)]):
+                    self.assertEqual(M.canonical_line(a), M.canonical_line(b))
+                    if T < OPEN:
+                        self.assertEqual(a["coverage"]["eligible_count"], 0)
+
+
 class FractionalThresholds(unittest.TestCase):
     """Exact comparison with a fractional N (a floor of N or of the ratio would flip these)."""
 

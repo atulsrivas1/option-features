@@ -64,6 +64,8 @@ def is_int(x):
 def start_of(t_ns, width_ns, open_ns):
     """Window start, clipped at session open: prints before open are never counted. `open_ns` (the request
     session's open) is required by F4, F7, F17 and F18; without it they answer malformed_type."""
+    if open_ns is not None and t_ns < open_ns:
+        return t_ns + 1                       # cutoff before open: an empty window (start after end), never negative
     start = t_ns - width_ns
     return start if open_ns is None or start >= open_ns else open_ns
 
