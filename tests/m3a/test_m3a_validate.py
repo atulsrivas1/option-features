@@ -692,6 +692,16 @@ class MutantKillers(unittest.TestCase):
         r = _request("M3A-2", _d_delayed)
         self.assertEqual(_run(r), "delayed_feed_tag")
 
+    def test_tenors_container_type(self):
+        for v in ("", "9", 9, {9}, None, {"9": 9}):
+            r = _request("M3A-0")
+            r["params"]["tenors"] = v
+            self.assertEqual(_run(r), "malformed_type", v)
+        for v in ([], (9, 30)):
+            r = _request("M3A-0")
+            r["params"]["tenors"] = v
+            self.assertIsNone(_run(r), v)
+
     def test_min_coverage_zero_denominator(self):
         for v, code in (("3/0", "malformed_type"), ("0/00", "malformed_type"), ("3/5", None), ("0.6", None)):
             r = _request("M3A-0")

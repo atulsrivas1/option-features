@@ -264,6 +264,11 @@ def _slot10_params(oid, p):
     v = g("fire")
     if v is not None and type(v) is not bool:
         return _MT
+    if oid in _LEVEL_OUT:
+        for name in ("at_least", "at_most"):          # no value code: typed at position 10
+            v = g(name)
+            if v is not None and not _level_ok(v):
+                return _MT
     if oid in _PCT_OUT:
         v = g("tail")
         if v is not None and (type(v) is not str or v not in _TAILS):
@@ -349,13 +354,14 @@ def _contracts_code(contracts):
         if right not in _RIGHTS:
             best_pos, best_code = 7, "unknown_right"
             continue
-        # position 8: duplicate contract id (an id that is not text is malformed at position 10)
-        id_ok = type(cid) is str
-        if id_ok:
-            if cid in ids:
-                best_pos, best_code = 8, "duplicate_contract"
-                continue
-            ids.add(cid)
+        # position 8: contract id, type-first (a non-text id is malformed_type here), then duplicate_contract
+        if type(cid) is not str:
+            best_pos, best_code = 8, _MT
+            continue
+        if cid in ids:
+            best_pos, best_code = 8, "duplicate_contract"
+            continue
+        ids.add(cid)
         if best_pos <= 9:
             continue
         # position 9: strike (type-first); a strike text is validated and converted once per call (memo)
@@ -381,9 +387,6 @@ def _contracts_code(contracts):
         if best_pos <= 10:
             continue
         # position 10: every field without a value code, in the order written
-        if not id_ok:
-            best_pos, best_code = 10, _MT
-            continue
         tb, ta = type(bid), type(ask)
         if tb is str and ta is str:
             if pair8(bid + "|" + ask) is None:          # both quotes in one grammar match
@@ -483,7 +486,7 @@ def validate_request(output_id, contracts, spot, rate, dividend_yield, cutoff_ns
                 return "threshold_required"
         elif level and p.get("at_least") is None and p.get("at_most") is None:
             return "threshold_required"
-    # 15 threshold_out_of_range (x), then invalid_direction; level thresholds are type-checked here
+    # 15 threshold_out_of_range (x), then invalid_direction
     if pct:
         x = p.get("x")
         if x is not None:
@@ -493,10 +496,6 @@ def validate_request(output_id, contracts, spot, rate, dividend_yield, cutoff_ns
             if xv < 0 or xv > 100:
                 return "threshold_out_of_range"
     elif level:
-        for name in ("at_least", "at_most"):
-            v = p.get(name)
-            if v is not None and not _level_ok(v):
-                return _MT
         if "direction" in p:
             code = _selector(p, "direction", _DIRECTIONS, "invalid_direction", "up")
             if code:
