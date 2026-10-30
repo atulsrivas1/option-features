@@ -25,6 +25,7 @@ from bisect import bisect_left, bisect_right
 from fractions import Fraction
 import hashlib
 import json
+import os
 import re
 
 from .flowgrid import GridRecord, _pack_q
@@ -34,8 +35,7 @@ MAX_K = 60
 _SNAP_MAGIC = b"M2HISTSNAP1\n"
 _VIEW_CACHE = 4
 
-_LINE = re.compile(r'\{"series_id":(".*?"),"metric":(".*?"),"session_id":(".*?"),"window_s":(\d+),"grid":\[([-0-9,]*)\],'
-                   r'"total":(-?\d+),"complete":(true|false),"content_sha256":"([0-9a-f]{64})"\}\Z')
+_LINE = re.compile(r'\{"series_id":(".*?"),"metric":(".*?"),"session_id":(".*?"),"window_s":(\d+),"grid":\[')
 
 
 class _Rec:
@@ -64,16 +64,11 @@ def _sparse(rec):
 
 def _grid_text(rec):
     _sparse(rec)
-    parts = []
-    prev = 0
-    for i, v in zip(rec.idx, rec.vals):
-        if i > prev:
-            parts.append("0," * (i - prev))
-        parts.append("%d," % v)
-        prev = i + 1
-    if rec.minutes > prev:
-        parts.append("0," * (rec.minutes - prev))
-    return "".join(parts)[:-1]
+    tokens = ["0"] * rec.minutes
+    idx, vals = rec.idx, rec.vals
+    for i, v in zip(idx.tolist() if type(idx) is array else idx, vals.tolist() if type(vals) is array else vals):
+        tokens[i] = str(v)
+    return ",".join(tokens)
 
 
 class _Ring:
@@ -367,7 +362,7 @@ class HistoryStore:
     @classmethod
     def load(cls, source, calendar, k=20, strict_calendar=False, verify=True):
         """Store from canonical bytes (or a path); verifies every content_sha256 and rejects non-canonical order."""
-        if isinstance(source, (str, bytes)) and not (isinstance(source, bytes) and source[:1] == b"{"):
+        if isinstance(source, (str, bytes, os.PathLike)) and not (isinstance(source, bytes) and source[:1] == b"{"):
             with open(source, "rb") as fh:
                 source = fh.read()
         text = source.decode("ascii") if isinstance(source, bytes) else source
@@ -380,14 +375,19 @@ class HistoryStore:
             m = match(ln)
             if m is None:
                 raise ValueError("not a canonical history line")
-            series_id = m.group(1)
+            g1 = ln.find('],"total":', m.end())
+            tail = ln[g1 + 10:].split(",") if g1 >= 0 else ()
+            if len(tail) != 3 or tail[1][:11] != '"complete":' or tail[2][:17] != '"content_sha256":' or tail[2][-2:] != '"}':
+                raise ValueError("not a canonical history line")
+            claimed = tail[2][18:-2]
+            series_id, metric, sid, window_s = m.groups()
             series_id = json.loads(series_id) if "\\" in series_id else series_id[1:-1]
-            metric = json.loads(m.group(2)) if "\\" in m.group(2) else m.group(2)[1:-1]
-            sid = json.loads(m.group(3)) if "\\" in m.group(3) else m.group(3)[1:-1]
-            window_s = int(m.group(4))
+            metric = json.loads(metric) if "\\" in metric else metric[1:-1]
+            sid = json.loads(sid) if "\\" in sid else sid[1:-1]
+            window_s = int(window_s)
             if verify:
-                body = ln[:ln.rindex(',"content_sha256"')] + "}"
-                if hashlib.sha256((body + "\n").encode("ascii")).hexdigest() != m.group(8):
+                body = ln[:ln.rindex(',"content_sha256"')] + "}\n"
+                if hashlib.sha256(body.encode("ascii")).hexdigest() != claimed:
                     raise ValueError("content_sha256 mismatch")
             key = (series_id, metric, window_s)
             if strict_calendar and sid not in calendar:
@@ -400,9 +400,9 @@ class HistoryStore:
             elif next(reversed(ring.recs)) >= sid:
                 raise M2StructuralError("duplicate_session" if next(reversed(ring.recs)) == sid else "out_of_order_append")
             prev_key = key
-            txt = m.group(5)
-            rec = _Rec(sid, (txt.count(",") + 1) if txt else 0, None, None, int(m.group(6)), m.group(7) == "true", txt)
-            rec.sha = m.group(8)
+            txt = ln[m.end():g1]
+            rec = _Rec(sid, (txt.count(",") + 1) if txt else 0, None, None, int(tail[0]), tail[1][11:] == "true", txt)
+            rec.sha = claimed
             ring.recs[sid] = rec
             if len(ring.recs) > store.k:
                 del ring.recs[next(iter(ring.recs))]
