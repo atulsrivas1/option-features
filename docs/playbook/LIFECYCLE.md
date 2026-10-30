@@ -52,7 +52,7 @@ After Release 0 the PO and the Architect keep working together one release AHEAD
 
 1. **Backlog to Ready.** PO and Architect keep stories Ready (section 4). The order is a generated file (section 6).
 2. **Pull.** The coordinator assigns the top Ready story of the current release to a free Developer: frozen-contract stories before stub stories; never a story whose layout source is a brief the Designer has not marked "ready for layout". One story = one branch = one PR; nobody pushes to main.
-3. **Build** to the board or brief, the contract and the strings file; legal-pending wording as its key tagged "counsel pending"; a later-release feature behind its switch, off.
+3. **Build** to the board or brief, the contract and the strings file; legal-pending wording as its key tagged "owner pending"; a later-release feature behind its switch, off.
 4. **Code review** by the other Developer (independent reviewer for non-app work).
 5. **Architecture review** by the Architect.
 6. **UI design review** by the Designer.
@@ -75,7 +75,7 @@ A story may be pulled when all hold:
 | 4 | **Gate** | Has a release gate; the gate decides when the feature may be switched on, not whether it may be built |
 | 5 | **No open build blocker** | No open decision or engineering item in its blockers; every story it needs is Ready or Done. Legal, owner and number items block switch-on, not the build |
 | 6 | **Testable acceptance criteria** | Each can be checked by a person on the running app or by reading the contract (PO checks when the story enters a sprint) |
-| 7 | **Legal-pending wording as keys** | Wording that waits on a lawyer is a tagged key; numbers the owner owns read a provisional table, else "limit to be set" |
+| 7 | **Legal-pending wording as keys** | Wording that waits on the owner (legal) is a tagged key; numbers the owner owns read a provisional table, else "limit to be set" |
 
 **Example from WatchYourList:** items 1 to 5 and 7 are checked by the backlog generator; item 6 by the PO. See `docs/planning/DEFINITIONS.md`.
 

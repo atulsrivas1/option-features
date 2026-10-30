@@ -108,7 +108,7 @@
 ## 20. Safety rules every change keeps
 1. No push to main; branch, PR, merge by the coordinator after the three reviews, PO acceptance and checks.
 2. Nothing public before its gate; later-release features are built behind a switch, off.
-3. Never write "confirmed by owner", "accepted by counsel" or "verified" without the evidence; Verified and Not verified are written honestly in every changelog entry.
+3. Never write "confirmed by owner", "accepted by the owner" or "verified" without the evidence; Verified and Not verified are written honestly in every changelog entry.
 4. No legal advice; legal-pending wording stays a tagged key; a real lawyer closes each item.
 5. No real credentials, accounts or personal data in any test.
 6. A reviewer is never the author; one role cannot grant its own approval.

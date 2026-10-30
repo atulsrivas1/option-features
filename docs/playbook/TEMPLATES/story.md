@@ -19,12 +19,12 @@ Gates file entry (read by the backlog generator):
 "{{FAMILY}}-{{N}}": { "gate": "{{release}}", "blocker": "{{item ids}}" }
 ```
 
-Blocker ids use the prefixes in `counsel-open-item.md` (the letters are a convention; choose your own). Only open decisions and unconfirmed engineering items block the build; legal, owner and number items block switch-on.
+Blocker ids use the prefixes in this project's blocker list (the letters are a convention; choose your own). Only open decisions and unconfirmed engineering items block the build; legal, owner and number items block switch-on.
 
 ## Rules of thumb
 
 - Each criterion must be testable by a person on the running app or by reading the contract.
 - One story = one branch = one PR; split a story that cannot be reviewed in one sitting.
-- Wording that waits on a lawyer is named as its strings key, tagged "counsel pending"; never invent the wording.
+- Wording that waits on the owner (legal) is named as its strings key, tagged "owner pending"; never invent the wording.
 - A story with no screen names the check that guards it.
 - After any change to Board, Contract, Data or Gate: regenerate the coverage and backlog files and run the sync check.

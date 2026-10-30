@@ -19,7 +19,6 @@ Every decision has one owner. A reviewer is never the author. A role fills a gap
 | **Developers** | Build one story per branch per PR; request contract changes through the Architect; review each other's PRs | How a story is built within the architecture | Self-review; push to main; change scope, contracts or acceptance; switch a gated feature on; add tests or CI if the project says manual only |
 | **Testers** | Verify each acceptance criterion on the running app; record results and severity in the PR | Whether a criterion passes | Accept stories; fix defects; repeat the Designer's board comparison |
 | **Reviewers (independent)** | Fresh read-only agents for code, architecture, UI design; verify claims against the code, not the author's summary | Their verdict (approve / changes / N/A with reason) | Fix what they review; review work they wrote or were briefed to defend |
-| **Counsel-prep** | Keeps the open-item list and a counsel package current; drafts questions for a real lawyer | Nothing | Give legal advice; invent wording for a legal gate; contact a lawyer |
 | **Writer / Integrator** | Applies decided changes to documents; regenerates generated files; merges the main branch into a branch; updates indexes and changelog | Nothing beyond the instruction | Change meaning; mark decisions confirmed; resolve conflicts by hand-merging generated files |
 
 ## Decision rights at a glance
@@ -47,7 +46,7 @@ Every decision has one owner. A reviewer is never the author. A role fills a gap
 | **Owner agreement:** start with **2 Developers + 1 Tester** | Dev A: UI and client state. Dev B: data adapters, switches, API-facing code. They never share files and review each other. One browser Tester | Review and test throughput, not coding, sets the pace; two lanes with no shared files avoid conflicts | The owner changes it |
 | **Owner agreement: third Developer rule** | Add a third Developer only when more than 20 Ready stories share no files | Builders need independent work | The owner changes it |
 | Always-on (always has the next release in hand; each task is a fresh agent) | PO, Architect, Designer, coordinator | They keep the next release Ready | Pause a role when it has no item of its own |
-| **Idle by default** | Researcher (between rounds), counsel-prep (on request only), Writer/Integrator and independent reviewers (spawned per PR), fix-round agents | Idle roles cost tokens for nothing | The role has a Ready item of its own |
+| **Idle by default** | Researcher (between rounds), Writer/Integrator and independent reviewers (spawned per PR), fix-round agents | Idle roles cost tokens for nothing | The role has a Ready item of its own |
 
 **Suggested defaults (not owner agreements):** if the Tester queue stays above its WIP limit, add a Tester before a Developer; do not add builders while the review queue is full.
 

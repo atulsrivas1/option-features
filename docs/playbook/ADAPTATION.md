@@ -1,6 +1,6 @@
 # Option-Features adaptation of the playbook
 
-Read this first. Where it differs from the other files in this folder, this file wins. Files are copied verbatim from the WatchYourList playbook (2026-10-30); "Example from WatchYourList" boxes and WL ids are reference only.
+Read this first. Where it differs from the other files in this folder, this file wins. Files are copied from the WatchYourList playbook (2026-10-30) with counsel references changed to owner (legal items go to the owner, no counsel role or template) and the appendix link removed; "Example from WatchYourList" boxes and WL ids are reference only.
 
 ## Not adopted (WatchYourList-specific)
 - Counsel gates and the counsel-open-item template (removed). Legal items go to the owner.
@@ -20,3 +20,8 @@ Two review rounds max (third only for a correctness defect); one decision file p
 
 ## Release 0
 Not a redesign: adopted in place. Release 0 = audit of existing design against the playbook, then continue HANDOFF "Next".
+
+## Traps to ignore
+- VARIANTS.md and WORKING-AGREEMENT.md sections 14-15 quote WatchYourList owner agreements (proprietary licence, no tests or CI). They do not apply: this repo is Apache-2.0 with CI (Variant A).
+- Review count: two reviews (architecture, code) per code PR, not three; docs-only PRs follow the same gate.
+- Decision location: one file per PR in docs/decisions/ (not docs/DECISIONS.md); HANDOFF.md is PO-only. Paths such as docs/planning/AUTONOMY-CHARTER.md mean this folder.

@@ -23,7 +23,7 @@
 {{Regions, order, sizes (phone, tablet, desktop), what is shared with other boards (cite the board number), what is retired.}}
 
 ## 6. Copy
-{{Keys from the strings file, verbatim. Wording that waits on legal: the key and the tag "counsel pending", no wording drawn as final. Proposed keys marked "proposed key".}}
+{{Keys from the strings file, verbatim. Wording that waits on legal: the key and the tag "owner pending", no wording drawn as final. Proposed keys marked "proposed key".}}
 
 ## 7. Must NOT appear
 {{Blocked vocabulary, advice language, scores, ranks, colour-only meaning, any element the owner ruled out.}}
