@@ -36,14 +36,14 @@ class AllFamilies(unittest.TestCase):
 
     def test_top_level_families(self):
         self.assertEqual(sorted(self.doc), ["atm", "iv", "iv30", "oc5", "oc6", "p1", "spot", "unit"])
-        self.assertEqual(sorted(self.doc["p1"]), ["shares", "signing", "spread", "window"])
+        self.assertEqual(sorted(self.doc["p1"]), ["shares", "sign_aggregate", "signing", "spread", "window"])
 
     def test_every_contract_has_every_per_contract_family(self):
         d = self.doc
-        for fam in (d["iv"], d["oc5"], d["oc6"], d["p1"]["spread"], d["p1"]["window"]):
+        for fam in (d["iv"], d["oc5"], d["oc6"], d["p1"]["spread"], d["p1"]["window"], d["p1"]["sign_aggregate"]):
             self.assertEqual(len(fam), N)
         ids = [r[0] for r in d["iv"]]
-        for fam in (d["oc5"], d["oc6"], d["p1"]["spread"], d["p1"]["window"]):
+        for fam in (d["oc5"], d["oc6"], d["p1"]["spread"], d["p1"]["window"], d["p1"]["sign_aggregate"]):
             self.assertEqual([r[0] for r in fam], ids)
 
     def test_all_expiries_atm_and_30_day(self):
@@ -166,6 +166,105 @@ class P1EqualsLibrary(unittest.TestCase):
                 seen_open += 1
                 self.assertEqual(row[2], workload._default(quotes.quote_spread(int(up.bid), int(up.ask)).spread))
         self.assertTrue(set(r[1] for r in by_id.values()) <= {None, "no_quote", "stale_quote", "locked_market", "crossed_market", "invalid_quote"})
+
+
+def fr(x):
+    return workload._default(x) if isinstance(x, workload.Fraction) else x
+
+
+def verify_rows(inp, doc):
+    """Direct recomputation of OC5, OC6, coverage and sign_aggregate for every contract; raises AssertionError."""
+    from option_features.imbalance import oc5
+    from option_features.spreadwin import oc6
+    ids = [r.contract_id for r in inp.rows]
+    h, cut_ns = inp.hist, inp.cutoff_ns
+    o5 = {r[0]: r for r in doc["oc5"]}
+    o6 = {r[0]: r for r in doc["oc6"]}
+    sp = {r[0]: r for r in doc["p1"]["spread"]}
+    ag = {r[0]: r for r in doc["p1"]["sign_aggregate"]}
+    tot = [0, 0, 0]
+    for i, cid in enumerate(ids):
+        r5 = oc5(h.ups[i], h.sizes[i], cut_ns, workload._OC5)
+        r6 = oc6(h.ups[i], cut_ns, 0, workload._OC6)
+        assert o5[cid] == [cid, r5.status, r5.reason, r5.label, r5.numerator, r5.denominator], ("oc5", cid)
+        assert o6[cid] == [cid, r6.status, r6.reason, r6.label, r6.regular_update_count, workload._frac(r6.value)], ("oc6", cid)
+        updates = [(u.event_ns, u.regular) for u in h.ups[i] if u.event_ns <= cut_ns]
+        cov = windows.quote_count_coverage(updates, cut_ns, workload._OC6.window_ns, workload._OC6.coverage_min)
+        assert sp[cid][-3:] == [cov.status, cov.reason, cov.regular_update_count], ("coverage", cid)
+        a = quotes.sign_aggregate(inp.agg_in[i])
+        want = [cid, a.status, a.reason] + [fr(x) for x in (a.ask_premium, a.bid_premium, a.unclassified_premium, a.classified_premium,
+                a.call_ask_plus_put_bid_premium, a.put_ask_plus_call_bid_premium, a.unclassified_share_of_total,
+                a.ask_share_of_classified, a.bid_share_of_classified)]
+        assert ag[cid] == want, ("sign_aggregate", cid)
+        for j, x in enumerate((a.ask_premium, a.bid_premium, a.unclassified_premium)):
+            tot[j] += x
+    s = doc["p1"]["signing"]
+    for j, key in enumerate(("ask_premium", "bid_premium", "unclassified_premium")):
+        assert workload.Fraction(s[key], quotes.SCALE) == tot[j], key
+
+
+class DirectRecomputation(unittest.TestCase):
+    """OC5/OC6 rows, coverage columns and the touch-policy totals equal direct library calls for every contract."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.inp = workload.build_inputs(SPEC, KEY)
+
+    def result(self):
+        return json.loads(workload.compute_from_inputs(SPEC, self.inp))
+
+    def test_all_rows_equal_direct_calls(self):
+        verify_rows(self.inp, self.result())
+
+    def test_mutant_oc5_rows_swapped_between_contracts_is_caught(self):
+        real, state = workload.oc5, {}
+
+        def swapped(*a):
+            prev = state.get("prev")
+            state["prev"] = real(*a)
+            return prev if prev is not None else state["prev"]
+        workload.oc5 = swapped
+        try:
+            doc = self.result()
+        finally:
+            workload.oc5 = real
+        with self.assertRaises(AssertionError):
+            verify_rows(self.inp, doc)
+
+    def test_mutant_oc6_rows_swapped_between_contracts_is_caught(self):
+        real, state = workload.oc6, {}
+
+        def swapped(*a):
+            prev = state.get("prev")
+            state["prev"] = real(*a)
+            return prev if prev is not None else state["prev"]
+        workload.oc6 = swapped
+        try:
+            doc = self.result()
+        finally:
+            workload.oc6 = real
+        with self.assertRaises(AssertionError):
+            verify_rows(self.inp, doc)
+
+    def test_mutant_coverage_dropped_is_caught(self):
+        real = windows.QuoteUpdateIndex.coverage
+        windows.QuoteUpdateIndex.coverage = lambda self_, t, w, m: windows.CountCoverage("unavailable", "low_quote_coverage", 0, ("OC6",))
+        try:
+            doc = self.result()
+        finally:
+            windows.QuoteUpdateIndex.coverage = real
+        with self.assertRaises(AssertionError):
+            verify_rows(self.inp, doc)
+
+    def test_mutant_sign_aggregate_dropped_is_caught(self):
+        real = quotes.sign_aggregate
+        quotes.sign_aggregate = lambda trades, **kw: real([], **kw)
+        try:
+            doc = self.result()
+        finally:
+            quotes.sign_aggregate = real
+        with self.assertRaises(AssertionError):
+            verify_rows(self.inp, doc)
 
 
 class LogOnlyTiming(unittest.TestCase):

@@ -221,14 +221,14 @@ def _default(o):
     raise TypeError("not serialisable: %r" % (type(o),))
 
 
-FAMILIES = ("oc5", "oc6", "iv_build", "iv_contract", "atm", "iv30", "p1_spread", "p1_signing", "p1_window", "p1_shares", "serialize")
+FAMILIES = ("oc5", "oc6", "iv_build", "iv_contract", "atm", "iv30", "p1_spread", "p1_signing", "p1_sign_agg", "p1_window", "p1_shares", "serialize")
 SYNTH = ("synth_history_s", "synth_chain_s", "synth_prints_s", "synth_prep_s")
 
 
 class UnitInputs:
     """Everything a unit computes from, built before the compute timer starts (input synthesis and the plain
     conversion into the library's input shapes). Holds no result."""
-    __slots__ = ("key", "spot", "rows", "cutoff_ns", "order", "hist", "cut", "expiry_days", "prints", "cover_in", "records",
+    __slots__ = ("key", "spot", "rows", "cutoff_ns", "order", "hist", "cut", "expiry_days", "prints", "cover_in", "agg_in", "records",
                  "share_prints", "civil_day")
 
 
@@ -300,6 +300,13 @@ def build_inputs(spec, key, history=None, timing=None):
     inp.cut = [bisect_right(history.times[i], cutoff_ns) for i in range(n)]
     inp.expiry_days = [m["expiry_days"] for m in metas]
     inp.cover_in = [[(t, True) for t in history.times[i][:inp.cut[i]]] for i in range(n)]
+    inp.agg_in = []   # per contract: (price text, size, right, t, quote in force (bid text, ask text, t) or None)
+    for i in range(n):
+        times, qrecs, rows = history.times[i], history.recs[i], []
+        for t, right, price, size, _ in inp.prints[i]:
+            k = bisect_right(times, t) - 1
+            rows.append((price, size, right, t, None if k < 0 else (qrecs[k][3], qrecs[k][4], qrecs[k][2])))
+        inp.agg_in.append(rows)
     recs = []
     for i in range(n):
         recs.extend(history.recs[i][:inp.cut[i]])
@@ -373,6 +380,16 @@ def compute_from_inputs(spec, inp, timing=None):
                "codes_sha256": hashlib.sha256(bytes(sc.codes) + sc.spread.tobytes() + sc.mid2.tobytes()).hexdigest()}
     lap("p1_signing", t0)
 
+    # per-contract touch-policy aggregate: premium by side, call-ask + put-bid, put-ask + call-bid, shares, status
+    t0 = clock()
+    p1_agg = []
+    for i in order:
+        a = quotes.sign_aggregate(inp.agg_in[i])
+        p1_agg.append([rows[i].contract_id, a.status, a.reason, a.ask_premium, a.bid_premium, a.unclassified_premium,
+                       a.classified_premium, a.call_ask_plus_put_bid_premium, a.put_ask_plus_call_bid_premium,
+                       a.unclassified_share_of_total, a.ask_share_of_classified, a.bid_share_of_classified])
+    lap("p1_sign_agg", t0)
+
     # window_end premium windows (explicit end = the cutoff), two window sizes per contract
     t0 = clock()
     p1_window = []
@@ -407,8 +424,9 @@ def compute_from_inputs(spec, inp, timing=None):
     oc6_rows.sort()
     p1_spread.sort(key=itemgetter(0))
     p1_window.sort(key=itemgetter(0))
+    p1_agg.sort(key=itemgetter(0))
     doc = {"unit": inp.key, "spot": inp.spot, "iv": out_iv, "atm": out_atm, "iv30": list(i30), "oc5": oc5_rows, "oc6": oc6_rows,
-           "p1": {"spread": p1_spread, "signing": signing, "window": p1_window, "shares": p1_shares}}
+           "p1": {"spread": p1_spread, "signing": signing, "sign_aggregate": p1_agg, "window": p1_window, "shares": p1_shares}}
     data = json.dumps(doc, sort_keys=True, separators=(",", ":"), ensure_ascii=True, default=_default).encode("utf-8")
     lap("serialize", t0)
     tm["compute_s"] = tm.get("compute_s", 0.0) + clock() - t_all
