@@ -56,3 +56,12 @@ jobs:
         run: .github/run_suite.ps1 m1
       - name: "m2 incl. test_feature_status (M2B_MEMORY unset, 1e6-print memory test skipped)"
         run: .github/run_suite.ps1 m2
+      - name: tracker test named, at least 12 tests
+        run: |
+          $env:PYTHONPATH = 'packages/features/src;packages/option-contracts/src;tests/m2;tests;.'
+          Remove-Item Env:M2B_MEMORY -ErrorAction SilentlyContinue
+          $out = python -B -m unittest tests.m2.test_feature_status -v 2>&1 | Out-String
+          Write-Host $out
+          if ($LASTEXITCODE -ne 0) { throw "tracker test failed" }
+          if ($out -notmatch 'Ran (\d+) tests') { throw "could not read test count" }
+          if ([int]$Matches[1] -lt 12) { throw "tracker test ran only $($Matches[1]) tests (need at least 12)" }

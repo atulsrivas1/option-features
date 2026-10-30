@@ -15,3 +15,8 @@ Label: mock-data qualification only: passed on independently authored synthetic 
 ## Not claimed
 
 No Linux job: the python-flint manylinux wheel hash is not recorded in the repository. Hosted CI results are Windows evidence on GitHub-hosted runners, not a release gate by themselves.
+
+## Follow-ups (known gaps)
+
+- Pin actions by commit SHA, with the tag in a comment (today: exact tags only).
+- pip, setuptools and wheel come from the setup-python image and are not pinned (bootstrap gap; project wheels are hash-checked).
