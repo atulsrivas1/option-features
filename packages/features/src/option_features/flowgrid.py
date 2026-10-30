@@ -160,6 +160,29 @@ def _pack_q(values):
         return list(values)
 
 
+_UNSIGNED = (("B", 255), ("H", 65535), ("I", 4294967295), ("Q", 18446744073709551615))
+
+
+def narrow(values):
+    """Smallest typed array that holds `values` exactly (unsigned B, H, I, Q; signed q when negative); a tuple when a
+    value does not fit 64 bits."""
+    if not len(values):
+        return array("B")
+    lo, hi = min(values), max(values)
+    if lo >= 0:
+        for tc, lim in _UNSIGNED:
+            if hi <= lim:
+                return array(tc, values)
+    elif lo >= -(1 << 63) and hi < (1 << 63):
+        return array("q", values)
+    return tuple(values)
+
+
+def freeze(x):
+    """Read-only form of a narrowed array (memoryview, same item format) or a tuple."""
+    return memoryview(x).toreadonly() if isinstance(x, array) else x
+
+
 def _expand(events, minutes, slot):
     """Sparse (idx, vals) of the prefix sum of {grid index: [deltas]} for `slot`, zeros dropped (general path)."""
     idx, vals = array("H"), []
@@ -326,13 +349,17 @@ def build_session_records(prints, contracts, session_id, open_ns, close_ns, minu
         for wi, w in enumerate(wins):
             for m in range(5):
                 idx, vals = _expand_dense(name_diff[wi][m], minutes)
-                records.append(GridRecord(name_series_id, names[m], w, session_id, minutes, idx, vals, name_tot[m]))
+                records.append(GridRecord(name_series_id, names[m], w, session_id, minutes, freeze(narrow(idx)),
+                                          freeze(narrow(vals)), name_tot[m]))
     if contract_series:
         for cid in sorted(ctot):
             tot = ctot[cid]
             for wi, w in enumerate(wins):
                 ip, vp, vs, vc, is_, ic = _expand3(cdiff[cid][wi], minutes)
-                records.append(GridRecord(cid, "premium", w, session_id, minutes, ip, vp, tot[0]))
-                records.append(GridRecord(cid, "contracts", w, session_id, minutes, is_, vs, tot[1]))
-                records.append(GridRecord(cid, "prints", w, session_id, minutes, ic, vc, tot[2]))
+                fi = freeze(ip)                      # one shared read-only index per (contract, session) when shared
+                fs = fi if is_ is ip else freeze(is_)
+                fc = fi if ic is ip else freeze(ic)
+                records.append(GridRecord(cid, "premium", w, session_id, minutes, fi, freeze(narrow(vp)), tot[0]))
+                records.append(GridRecord(cid, "contracts", w, session_id, minutes, fs, freeze(narrow(vs)), tot[1]))
+                records.append(GridRecord(cid, "prints", w, session_id, minutes, fc, freeze(narrow(vc)), tot[2]))
     return SessionBuild(records, elig, nonstd, excl)

@@ -106,17 +106,14 @@ def make_world(contracts, sessions, seed):
 
 
 def five_metrics(build, cons):
-    """Contract series carry premium, contracts, prints; add put_volume / call_volume so every series has the 5 metrics
-    of M2-B1 (the volume of its own right, and an all-zero record for the other right)."""
+    """Contract series carry premium, contracts, prints; add the volume of the contract's own right (shares the contracts
+    array) so a series has 4 metrics; the always-empty volume of the other right is not stored (PO ruling 4)."""
     out = []
     for r in build.records:
         out.append(r)
         if r.metric == "contracts" and r.series_id in cons:
             right = cons[r.series_id].right
-            empty = flowgrid.GridRecord(r.series_id, "put_volume" if right == "C" else "call_volume", r.window_s, r.session_id,
-                                        r.minutes, r.idx[:0], r.vals[:0], 0)
-            same = r._replace(metric="call_volume" if right == "C" else "put_volume")
-            out.extend([same, empty])
+            out.append(r._replace(metric="call_volume" if right == "C" else "put_volume"))
     return out
 
 
@@ -154,6 +151,11 @@ def main():
         b = budgets.get(gate, {})
         print("%-9s %-34s %s %s   | budget: %s | hard: %s" % (gate, name, value if isinstance(value, str) else json.dumps(value), unit,
                                                              b.get("budget"), b.get("hard")), flush=True)
+
+    def ratio_report(gate, raw2, raw6):
+        paired = sorted(x6 / x2 for x2, x6 in zip(raw2, raw6))
+        record(gate, "time(6000)/time(2000), median of paired ratios (RULED statistic, hard 4.0)", nearest_rank(paired, 50), "ratio")
+        record(gate, "time(6000)/time(2000), ratio of p50 (also reported)", summary(raw6)["p50"] / summary(raw2)["p50"], "ratio")
 
     print("building workload ...", flush=True)
     cons, cal, data = make_world(a.contracts, a.sessions, 20261029)
@@ -195,7 +197,17 @@ def main():
                 st.seal(r.series_id, r.metric, r.window_s, r.session_id)
     s_seal = timed(build_open, max(3, R // 6))
     record("M2-B1", "append open then seal each", {"p50_rate": nrec / summary(s_seal)["p50"]}, "records/s (informational)")
+    import gc
+    import tracemalloc
+    gc.collect()
+    tracemalloc.start()
+    before = tracemalloc.get_traced_memory()[0]
     store = build_store(k=20)
+    traced = tracemalloc.get_traced_memory()[0] - before
+    tracemalloc.stop()
+    ncs = len({r.series_id for r in sessions_records[0] if r.series_id in cons})
+    record("M2-B13", "tracemalloc bytes of the k=20 store, per contract series", {"contract_series": ncs, "records": store.stats()["records"], "store_bytes": traced,
+                                                                                  "bytes_per_contract_series": traced // max(1, ncs)}, "bytes (budget: 64 KB per contract-level series; 512 MB store)")
     st25 = build_store(k=a.sessions)
     stats = store.stats()
     ser = stats["series"]
@@ -240,10 +252,11 @@ def main():
         def batch():
             for s, m in sel:
                 store.baseline(s, m, 300, first, 20)
-        sm = summary(timed(batch, R))
-        times[n] = sm
+        raw = timed(batch, R)
+        sm = summary(raw)
+        times[n] = raw
         record("M2-B2n", "N=%d warm views" % n, sm, "s")
-    record("M2-B2n", "time(6000)/time(2000)", times[6000]["p50"] / times[2000]["p50"], "ratio (budget <= 3.6)")
+    ratio_report("M2-B2n", times[2000], times[6000])
     # ---------------------------------------------------------------- B3 / B4
     t_open = OPEN0 + a.sessions * 86400 * NS
     sess = flowrank.SessionInfo(as_of, t_open, t_open + MINUTES * G, MINUTES, True, "live", 12345, None)
@@ -274,16 +287,26 @@ def main():
     t3 = {}
     for n in (500, 2000, 6000):
         items = [(series[i % len(series)], "premium", xs[series[i % len(series)]][0], None) for i in range(n)]
-        sm = summary(timed(lambda: flowrank.f2_rank_many(store, items, sess, cut, 300), R))
-        t3[n] = sm
-        record("M2-B3n", "N=%d F2a batch" % n, sm, "s")
-    record("M2-B3n", "time(6000)/time(2000)", t3[6000]["p50"] / t3[2000]["p50"], "ratio (budget <= 3.6)")
+        raw = timed(lambda: flowrank.f2_rank_many(store, items, sess, cut, 300), R)
+        t3[n] = raw
+        record("M2-B3n", "N=%d F2a batch" % n, summary(raw), "s")
+    ratio_report("M2-B3n", t3[2000], t3[6000])
     items10 = [(s, xs[s][1], None) for s in series]
     record("M2-B4", "F10 batch N=%d" % len(items10), summary(timed(lambda: flowrank.f10_baseline_many(store, items10, sess, cut, 300), R)), "s")
     packs = [(s, xs[s][0], xs[s][1], xs[s][2], None) for s in series]
     sm = summary(timed(lambda: flowrank.flow_pack_many(store, sess, cut, 300, packs), R))
     record("M2-B9", "A part: fused F2a,b,c,d + F10, %d series" % len(packs), sm, "s (excludes the shared print pass and B stories)")
     sm78 = summary(timed(lambda: [flowrank.flow_pack_many(store, sess, cut + i * G // 4, 300, packs) for i in range(78)], max(3, R // 10), 0))
+    def separate(ev):
+        out = []
+        for s_, p_, v_, c_, cov_ in packs:
+            a_ = flowrank.f2_rank(store, s_, "premium", p_, sess, ev, 300)
+            b_ = flowrank.f2_rank(store, s_, "contracts", v_, sess, ev, 300)
+            c2 = flowrank.f2_rank(store, s_, "prints", c_, sess, ev, 300)
+            out.append((a_, b_, c2, flowrank.f2d_combine(a_, b_, c2, 300), flowrank.f10_baseline(store, s_, v_, sess, ev, 300)))
+        return out
+    sep78 = summary(timed(lambda: [separate(cut + i * G // 4) for i in range(78)], max(3, R // 10), 0))
+    record("M2-B15r", "A part: 78 cutoffs x %d series SEPARATE calls (not fused)" % len(packs), sep78, "s")
     record("M2-B15r", "A part: 78 cutoffs x %d series fused reads" % len(packs), sm78, "s (reads = 78 x 4 x %d = %d)" % (len(packs), 78 * 4 * len(packs)))
     # ---------------------------------------------------------------- B17 persistence, B16 transfer, B13 memory
     tmp = Path(tempfile.mkdtemp(prefix="m2a_bench_"))
@@ -337,7 +360,7 @@ def main():
         store.dump_to(path)
         store.snapshot_to(snap_path)
         base = [str(ROOT / "packages" / "features" / "src"), str(ROOT / "packages" / "option-contracts" / "src")]
-        variants = {"store load (text)": "st=flowstore.HistoryStore.load(%r,cal,k=20)" % str(path),
+        variants = {"store load (text)": "st=flowstore.HistoryStore.load(__import__('pathlib').Path(%r),cal,k=20)" % str(path),
                     "snapshot read into bytes": "st=flowstore.HistoryStore.from_snapshot(open(%r,'rb').read(),cal)" % str(snap_path),
                     "mmap snapshot": "f=open(%r,'rb');m=mmap.mmap(f.fileno(),0,access=mmap.ACCESS_READ);st=flowstore.HistoryStore.from_snapshot(m,cal)" % str(snap_path)}
         for label, stmt in variants.items():
@@ -351,7 +374,7 @@ def main():
     wset, peak = rss_bytes()
     stats = store.stats()
     record("M2-B13", "store (k=20) series, records, est bytes", {"series": stats["series"], "records": stats["records"], "est_bytes": stats["est_bytes"],
-                                                              "est_bytes_per_contract_series": stats["est_bytes"] // max(1, stats["series"])}, "(contract-level series, 5 metrics each)")
+                                                              "rings": stats["rings"], "est_bytes_per_series": stats["est_bytes"] // max(1, stats["series"])}, "(getsizeof estimate; series counts distinct series ids)")
     record("M2-B13", "process working set and peak (bench, includes all stores)", {"working_set": wset, "peak": peak}, "bytes")
     # P1-T1 marker
     try:

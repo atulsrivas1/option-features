@@ -130,7 +130,21 @@ MUTS = [
     ("cache_not_cleared_on_append", "stale cache after append or eviction", [(ST, "        if ring.views:\n            ring.views.clear()\n        if len(recs)", "        if len(recs)")]),
     ("batched_drops_last", "batched path drops the last series", [(RK, "    return [flow_pack(store, s, session, evaluation_ns, window_s, p, v, c, X, N, K, consumer_default, lane, cov)\n            for s, p, v, c, cov in items]",
                                                                   "    items = list(items)[:-1]\n    return [flow_pack(store, s, session, evaluation_ns, window_s, p, v, c, X, N, K, consumer_default, lane, cov)\n            for s, p, v, c, cov in items]")]),
-    ("fused_uses_wrong_volume", "fused path reads the wrong view", [(RK, "    e = f10_baseline(store, series_id, volume, session", "    e = f10_baseline(store, series_id, count, session")]),
+    ("fused_uses_wrong_volume", "fused path reads the wrong input", [(RK, '("contracts", volume), ("prints", count)):', '("contracts", count), ("prints", count)):')]),
+    ("fused_f10_wrong_x", "fused F10 uses the wrong input", [(RK, "contracts_view.median(), contracts_view.mean(), N,", "contracts_view.median(), contracts_view.mean(), N,"),
+                                                             (RK, "e = _finish_stats(\"M2-7\", series_id, sid, evaluation_ns, volume,", "e = _finish_stats(\"M2-7\", series_id, sid, evaluation_ns, count,")]),
+    ("fused_ignores_window_gate", "fused path skips the window gate", [(RK, "window_ok = evaluation_ns - session.open_ns >= window_s * NS", "window_ok = True")]),
+    ("lane_mismatch_dropped", "append accepts another lane", [(ST, 'if ring is not None and ring.lane != lane:', 'if False:')]),
+    ("record_length_dropped", "record length not checked", [(ST, "if pos is not None and self.check_length and cal.minutes[pos] != minutes:", "if False:")]),
+    ("trailer_not_verified", "load ignores the trailer", [(ST, 'if trailer.get("records") != len(rows) or', "if False and")]),
+    ("trailer_not_required", "path load accepts a file without trailer", [(ST, "if need_trailer and trailer is None:", "if False:")]),
+    ("snapshot_digest_skipped", "snapshot digest not verified", [(ST, "if verify and hashlib.sha256(mv[head + 40:]).digest()", "if False and hashlib.sha256(mv[head + 40:]).digest()")]),
+    ("snapshot_length_skipped", "snapshot length not verified", [(ST, 'or int.from_bytes(mv[head:head + 8], "little") != len(mv):', "or False:")]),
+    ("store_keeps_caller_arrays", "append_record keeps the caller's arrays", [(ST, "    if isinstance(x, memoryview):\n        a = array(x.format)", "    if True:\n        return x\n    if isinstance(x, memoryview):\n        a = array(x.format)")]),
+    ("strict_calendar_default_off", "load defaults to non-strict", [(ST, "def load(cls, source, calendar, k=20, strict_calendar=True,", "def load(cls, source, calendar, k=20, strict_calendar=False,")]),
+    ("lane_dropped_on_load", "load ignores the lane argument", [(ST, "ring = store._rings[key] = _Ring(lane_of(series_id), _head(series_id, metric))", "ring = store._rings[key] = _Ring(\"stock\", _head(series_id, metric))")]),
+    ("stats_counts_rings_as_series", "stats series counts rings", [(ST, 'return {"series": len({k[0] for k in self._rings}),', 'return {"series": len(self._rings),')]),
+    ("dump_not_atomic", "dump_to writes the target directly", [(ST, "os.replace(tmp, path)", "pass")]),
 ]
 
 

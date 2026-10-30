@@ -234,7 +234,7 @@ class StoreViews(unittest.TestCase):
 
     def test_ring_retention_order_and_errors(self):
         _, flowstore, _, flowresult = lib()
-        cal = self._cal(30)
+        cal = self._cal(30, lambda i: 3)
         store = flowstore.HistoryStore(cal, k=5)
         for i in range(8):
             store.append("S", "m", 300, cal.ids[i], [i, 0, 1], complete=(i % 3 != 0))
@@ -330,8 +330,26 @@ class StoreViews(unittest.TestCase):
             p = os.path.join(d, "store.lf")
             store.dump_to(p)
             with open(p, "rb") as fh:
-                self.assertEqual(fh.read(), data)
-            self.assertEqual(flowstore.HistoryStore.load(p, cal, k=8).dump(), data)
+                raw = fh.read()
+            self.assertTrue(raw.startswith(data))
+            trailer = json.loads(raw[len(data):])
+            self.assertEqual((trailer["records"], trailer["content_sha256"]), (data.count(b"\n"), hashlib.sha256(data).hexdigest()))
+            self.assertEqual(flowstore.HistoryStore.load(Path(p), cal, k=8).dump(), data)
+            cut = raw[:len(data) // 2]                                       # truncated file: no trailer
+            with open(p, "wb") as fh:
+                fh.write(cut[:cut.rindex(b"\n") + 1])
+            with self.assertRaises(ValueError):
+                flowstore.HistoryStore.load(Path(p), cal, k=8)
+            with open(p, "wb") as fh:                                         # altered file: trailer mismatch
+                fh.write(raw.replace(b'"total":1', b'"total":2', 1) if b'"total":1' in raw else raw[:5] + b"x" + raw[6:])
+            with self.assertRaises(ValueError):
+                flowstore.HistoryStore.load(Path(p), cal, k=8)
+            lines = raw.split(b"\n")
+            with open(p, "wb") as fh:                                         # a whole record line removed, trailer kept
+                fh.write(b"\n".join(lines[1:]))
+            with self.assertRaises(ValueError):
+                flowstore.HistoryStore.load(Path(p), cal, k=8)
+            self.assertEqual(os.listdir(d), ["store.lf"])                      # no temporary file left behind
         bad = data.replace(b'"total":1,', b'"total":2,', 1) if b'"total":1,' in data else data[:-3] + b"0}\n"
         with self.assertRaises(ValueError):
             flowstore.HistoryStore.load(bad, cal, k=8)
@@ -366,6 +384,82 @@ class StoreViews(unittest.TestCase):
                 check(flowstore.HistoryStore.from_snapshot(mm, cal))    # the store is gone when the map closes
                 mm.close()
         self.assertEqual(store.baseline("A", "premium", 60, cal.ids[11], 7), None)   # session 4 incomplete for A
+
+    def test_lane_load_dispatch_and_trailer(self):
+        flowgrid, flowstore, flowrank, flowresult = lib()
+        cal = self._cal(3, lambda i: 2)
+        store = flowstore.HistoryStore(cal, k=3)
+        store.append("E", "m", 60, cal.ids[0], [1, 2], lane="etf_index")
+        store.append("S", "m", 60, cal.ids[0], [3, 4])
+        data = store.dump()
+        got = flowstore.HistoryStore.load(data, cal, lane={"E": "etf_index"})
+        self.assertEqual((got._rings[("E", "m", 60)].lane, got._rings[("S", "m", 60)].lane), ("etf_index", "stock"))
+        self.assertEqual(flowstore.HistoryStore.load(data, cal, lane="etf_index")._rings[("S", "m", 60)].lane, "etf_index")
+        snap = flowstore.HistoryStore.from_snapshot(store.snapshot(), cal)
+        self.assertEqual(snap._rings[("E", "m", 60)].lane, "etf_index")           # snapshot keeps the stored lanes
+        self.assertEqual(flowstore.HistoryStore.from_snapshot(store.snapshot(), cal, lane="stock")._rings[("E", "m", 60)].lane, "stock")
+        # dispatch: str, bytes, bytearray, memoryview are content; empty content is an empty store; garbage is ValueError
+        text = data.decode()
+        for src in (text, data, bytearray(data), memoryview(data)):
+            self.assertEqual(flowstore.HistoryStore.load(src, cal).dump(), data)
+        for empty in ("", b"", bytearray(), memoryview(b"")):
+            self.assertEqual(len(flowstore.HistoryStore.load(empty, cal)), 0)
+        for bad in ("garbage", b"{}", "not a path.lf", b"\x00\x01"):
+            with self.assertRaises(ValueError):
+                flowstore.HistoryStore.load(bad, cal)
+        self.assertRaises(TypeError, flowstore.HistoryStore.load, 12, cal)
+        # strict calendar is the default of load and from_snapshot
+        small = flowgrid.Calendar([(cal.ids[0], 2)])
+        two = flowstore.HistoryStore(cal, k=3)
+        two.append("S", "m", 60, cal.ids[1], [1, 2])
+        with self.assertRaises(flowresult.M2StructuralError):
+            flowstore.HistoryStore.load(two.dump(), small)
+        with self.assertRaises(flowresult.M2StructuralError):
+            flowstore.HistoryStore.from_snapshot(two.snapshot(), small)
+        self.assertEqual(len(flowstore.HistoryStore.load(two.dump(), small, strict_calendar=False)), 1)
+        # snapshot corruption and truncation are detected
+        blob = bytearray(store.snapshot())
+        blob[-3] ^= 1
+        with self.assertRaises(ValueError):
+            flowstore.HistoryStore.from_snapshot(bytes(blob), cal)
+        with self.assertRaises(ValueError):
+            flowstore.HistoryStore.from_snapshot(bytes(blob[:-8]), cal)
+        with self.assertRaises(ValueError):                                   # length is checked even without the digest
+            flowstore.HistoryStore.from_snapshot(bytes(blob[:-8]), cal, verify=False)
+        # lane and length errors on append, series count in stats
+        with self.assertRaises(flowresult.M2StructuralError) as cm:
+            store.append("E", "m", 60, cal.ids[1], [1, 2])
+        self.assertEqual(cm.exception.code, "lane_mismatch")
+        with self.assertRaises(flowresult.M2StructuralError) as cm:
+            store.append("S", "m", 60, cal.ids[1], [1, 2, 3])
+        self.assertEqual(cm.exception.code, "record_length_mismatch")
+        st = store.stats()
+        self.assertEqual((st["series"], st["rings"], st["records"]), (2, 2, 2))
+        store.append("S", "n", 60, cal.ids[1], [1, 2])
+        self.assertEqual((store.stats()["series"], store.stats()["rings"]), (2, 3))
+
+    def test_stored_data_is_private_and_builder_output_read_only(self):
+        flowgrid, flowstore, _, _ = lib()
+        from array import array
+        cal = self._cal(2, lambda i: 4)
+        store = flowstore.HistoryStore(cal, k=2)
+        idx, vals = array("H", [1, 3]), array("q", [5, 7])
+        rec = flowgrid.GridRecord("S", "premium", 60, cal.ids[0], 4, idx, vals, 12)
+        store.append_record(rec)
+        before = store.dump()
+        idx[0] = 0
+        vals[1] = 99                                   # the caller mutates its arrays after the append
+        self.assertEqual(store.dump(), before)
+        contracts = {"K": flowgrid.Contract("C", 1, "2026-12-18", "stock", "N")}
+        b = flowgrid.build_session_records([("K", OPEN0 + 5 * NS, 10000, 2, 100, 0, 0)], contracts, cal.ids[0], OPEN0,
+                                           OPEN0 + 4 * G, 4, (60,), "stock", "N", True, "full")
+        for r in b.records:
+            self.assertTrue(r.idx.readonly if isinstance(r.idx, memoryview) else True)
+            with self.assertRaises((TypeError, ValueError)):
+                r.vals[0] = 1
+        shared = {id(r.idx) for r in b.records if r.series_id == "K"}
+        self.assertEqual(len(shared), 1)               # one shared read-only index for the three metrics of a contract
+        flowstore.HistoryStore(cal, k=2).append_many(b.records)
 
     def test_hash_independent_of_series_arrival_order(self):
         _, flowstore, _, _ = lib()
@@ -541,6 +635,15 @@ class KernelsEndToEnd(unittest.TestCase):
             items.append((sid, tot.premium, tot.volume, tot.count, None))
         many = flowrank.flow_pack_many(store, session, cut, W, items)
         self.assertEqual(len(many), len(items))
+        early = open_ns + 100 * NS                      # before open + W: fused and separate paths give the same gate
+        for i, (sid_, p_, v_, c_, cov_) in enumerate(items):
+            fused = flowrank.flow_pack(store, sid_, session, early, W, p_, v_, c_)
+            self.assertEqual(fused[0].reason, "insufficient_window" if fused[0].status == "unavailable" and fused[0].reason != "insufficient_history" else fused[0].reason)
+            sep = (flowrank.f2_rank(store, sid_, "premium", p_, session, early, W), flowrank.f2_rank(store, sid_, "contracts", v_, session, early, W),
+                   flowrank.f2_rank(store, sid_, "prints", c_, session, early, W))
+            sep += (flowrank.f2d_combine(*sep, W), flowrank.f10_baseline(store, sid_, v_, session, early, W))
+            self.assertEqual(flowresult.canonical_bytes(list(fused)), flowresult.canonical_bytes(list(sep)))
+        self.assertIn("insufficient_window", {r.reason for r in flowrank.flow_pack(store, "SYN1", session, early, W, 1, 1, 1)})
         order = list(range(len(items)))
         rng.shuffle(order)
         single = {}
@@ -554,8 +657,8 @@ class KernelsEndToEnd(unittest.TestCase):
                    flowrank.f2_rank(store, items[i][0], "prints", items[i][3], session, cut, W),
                    None,
                    flowrank.f10_baseline(store, items[i][0], items[i][2], session, cut, W))
-            self.assertEqual(flowresult.canonical_bytes([res[0], res[1], res[2], res[4]]),
-                             flowresult.canonical_bytes([sep[0], sep[1], sep[2], sep[4]]))
+            sep = sep[:3] + (flowrank.f2d_combine(sep[0], sep[1], sep[2], W),) + sep[4:]
+            self.assertEqual(flowresult.canonical_bytes(list(res)), flowresult.canonical_bytes(list(sep)))
         # a loaded store gives the same bytes as the built one
         loaded = flowstore.HistoryStore.load(store.dump(), cal, k=20)
         again = flowrank.flow_pack_many(loaded, session, cut, W, items)

@@ -15,7 +15,7 @@ import json
 REASONS = ("insufficient_history", "session_not_complete", "insufficient_window", "zero_denominator")
 CODES = ("unordered_prints", "negative_size_or_price", "bad_multiplier", "duplicate_session", "non_monotone_grid",
          "session_not_in_calendar", "window_not_allowed", "threshold_required", "out_of_order_append",
-         "delayed_feed_tag")
+         "delayed_feed_tag", "lane_mismatch", "record_length_mismatch")
 ALLOWED_WINDOWS = (60, 300, 900, 1800, 3600)
 STATUSES = ("available", "unavailable", "invalid_input")
 KEY_ORDER = ("output_id", "series_id", "session_id", "evaluation_ns", "status", "reason", "code", "value", "fired",

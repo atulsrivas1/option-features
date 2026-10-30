@@ -225,14 +225,47 @@ def f19_percentile(store, series_id, put, call, session, evaluation_ns, window_s
 # ------------------------------------------------------------------ fused and batched forms
 def flow_pack(store, series_id, session, evaluation_ns, window_s, premium, volume, count, X=5, N=2, K=20,
               consumer_default="median", lane="stock", coverage=None):
-    """F2a, F2b, F2c, F2d and F10 for one series (a fused read: the contracts view serves F2b and F10, the three views
-    are looked up once); equal to the separate calls."""
-    a = f2_rank(store, series_id, "premium", premium, session, evaluation_ns, window_s, "intraday", X, K, lane, coverage)
-    b = f2_rank(store, series_id, "contracts", volume, session, evaluation_ns, window_s, "intraday", X, K, lane, coverage)
-    c = f2_rank(store, series_id, "prints", count, session, evaluation_ns, window_s, "intraday", X, K, lane, coverage)
-    d = f2d_combine(a, b, c, window_s, X)
-    e = f10_baseline(store, series_id, volume, session, evaluation_ns, window_s, N, K, consumer_default, lane, coverage)
-    return a, b, c, d, e
+    """F2a, F2b, F2c, F2d and F10 for one series from one fused evaluation: the structural and window gates are decided
+    once, each of the three views is looked up once (the contracts view serves F2b and F10, its sorted array is built
+    once), and F2d is derived from the three ranks without another read. Results equal the separate calls byte for
+    byte (tested)."""
+    code = _struct(store, session, window_s, True, True)
+    if code:
+        return (f2_rank(store, series_id, "premium", premium, session, evaluation_ns, window_s, "intraday", X, K, lane, coverage),
+                f2_rank(store, series_id, "contracts", volume, session, evaluation_ns, window_s, "intraday", X, K, lane, coverage),
+                f2_rank(store, series_id, "prints", count, session, evaluation_ns, window_s, "intraday", X, K, lane, coverage),
+                Result.invalid("M2-3", code, series_id, session.session_id, evaluation_ns, {"X": X, "window_s": window_s}, lane),
+                f10_baseline(store, series_id, volume, session, evaluation_ns, window_s, N, K, consumer_default, lane, coverage))
+    sid = session.session_id
+    window_ok = evaluation_ns - session.open_ns >= window_s * NS
+    mins = window_s // 60
+    baseline = store.baseline
+    out = []
+    contracts_view = None
+    for metric, x in (("premium", premium), ("contracts", volume), ("prints", count)):
+        view = baseline(series_id, metric, window_s, sid, K, lane)
+        if metric == "contracts":
+            contracts_view = view
+        params = {"X": X, "K": K, "form": "intraday", "metric": metric, "window_s": window_s}
+        if view is None or view.n == 0:
+            out.append(Result.unavailable("M2-2", series_id, sid, evaluation_ns, "insufficient_history", params, lane=lane))
+        elif not window_ok:
+            out.append(Result.unavailable("M2-2", series_id, sid, evaluation_ns, "insufficient_window", params, lane=lane))
+        else:
+            n, le, ge = view.rank(x)
+            value = {"x": Fraction(x, mins) if metric == "prints" else x, "n": n, "rank_le": Fraction(le, n),
+                     "upper_share": Fraction(ge, n), "form": "intraday", "metric": metric}
+            out.append(Result.available("M2-2", series_id, sid, evaluation_ns, value, _fires(ge, n, X), params, coverage,
+                                        None, lane))
+    f10_params = {"N": N, "K": K, "window_s": window_s, "consumer_default": consumer_default}
+    if contracts_view is None or contracts_view.n == 0:
+        e = _na_stats("M2-7", series_id, sid, evaluation_ns, "insufficient_history", f10_params, consumer_default, lane)
+    elif not window_ok:
+        e = _na_stats("M2-7", series_id, sid, evaluation_ns, "insufficient_window", f10_params, consumer_default, lane)
+    else:
+        e = _finish_stats("M2-7", series_id, sid, evaluation_ns, volume, contracts_view.median(), contracts_view.mean(), N,
+                          consumer_default, f10_params, coverage, lane)
+    return out[0], out[1], out[2], f2d_combine(out[0], out[1], out[2], window_s, X), e
 
 
 def flow_pack_many(store, session, evaluation_ns, window_s, items, X=5, N=2, K=20, consumer_default="median",

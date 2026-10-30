@@ -260,7 +260,9 @@ def _run_store(row):
     from option_features.flowresult import M2StructuralError, Result
     from option_features.flowstore import HistoryStore
     inp = row["inputs"]
-    store = HistoryStore(_calendar(inp), k=inp.get("k", 20))
+    # check_length=False: rows STORE-033 and STORE-034 append grids of 1 value to 3-minute sessions and expect success;
+    # PO ruling 10 (record_length_mismatch) contradicts them (defect report to the PO, DECISIONS.md)
+    store = HistoryStore(_calendar(inp), k=inp.get("k", 20), check_length=False)
     try:
         for op in inp["ops"]:
             if op[0] == "append":
