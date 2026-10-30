@@ -2,18 +2,20 @@
 
 Stdlib only, no network, fast. Checks (offline, against the files in the repository):
   (a) the summary tables (by status, by release, design rows) equal a recount of the feature-table rows;
-  (b) the machine-readable line "Merged PRs: n, n, ..." exists, and every PR number cited in the feature tables
+  (b) the machine-readable lines "Merged PRs: n, ..." and "Open PRs: ..." exist, and every PR number cited in the feature tables
       (PR column, except entries marked open) is in it;
-  (c) every PR number named in the HANDOFF.md lines that say "merged" is in that block.
+  (c) every PR number named in the HANDOFF.md lines that say "merged" is in that block (HANDOFF is edited only at
+      release close, so it is never checked for open PRs).
 `check` is pure so that the test can prove it fails on a deliberately stale table (temp text, not the real file).
 """
 import json
 import re
+import unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 STATUSES = ("done", "partial", "pending", "dropped")
-RELEASES = ("R25", "R26", "P1", "M1", "M2", "M3", "M4", "M5", "RQ", "later")
+RELEASES = ("R25", "R26", "P1", "M1", "M2", "M3a", "M3b", "M3c", "M4a", "M4b", "M5a", "M5b", "RQ", "later")
 
 
 def _cells(line):
@@ -55,6 +57,13 @@ def merged_block(lines):
     return None
 
 
+def open_block(lines):
+    for l in lines:
+        if l.startswith("Open PRs:"):
+            return {int(x) for x in re.findall(r"\b\d{2,3}\b", l)}
+    return None
+
+
 def check(text, handoff):
     errors = []
     lines, rows = parse(text)
@@ -83,29 +92,25 @@ def check(text, handoff):
             n = int(m.group(1))
             if n not in block:
                 errors.append("%s cites PR %d which is not in the Merged PRs block (mark it open or add it)" % (r["id"], n))
-    opened = set()
+    opened = open_block(lines)
+    if opened is None:
+        errors.append("no 'Open PRs:' line")
+        opened = set()
+    # HANDOFF is edited only at release close (docs/decisions/README.md): it is checked only for merged claims
+    # (a stale HANDOFF names fewer PRs, never wrong ones), never for open PRs.
     for l in handoff.split("\n"):
-        if re.match(r"^\s*(-|\d+\.)\s", l):
-            if re.match(r"^\s*(-|\d+\.)\s+Open PRs:", l):
-                opened |= {int(n) for n in re.findall(r"\b(\d{2,3})\b", l.split("Open PRs:", 1)[1].split(".")[0])}
-            elif re.search(r"\bmerged\b", l) and "(open)" not in l:
-                for n in re.findall(r"PR (\d+)", l):
-                    if int(n) not in block:
-                        errors.append("HANDOFF says PR %s merged but it is not in the Merged PRs block" % n)
-    for l in handoff.split(chr(10)):
-        if "Open PRs:" in l or not re.search(r"\bopen\b", l, re.I):
-            continue
-        for n in re.findall(r"PR (\d+)", l):
-            if int(n) not in block and int(n) not in opened:
-                errors.append("HANDOFF names PR %s as open but the Open PRs line does not list it" % n)
+        if re.match(r"^\s*(-|\d+\.)\s", l) and re.search(r"\bmerged\b", l) and "(open)" not in l:
+            for n in re.findall(r"PR (\d+)", l):
+                if int(n) not in block:
+                    errors.append("HANDOFF says PR %s merged but it is not in the Merged PRs block" % n)
     for n in sorted(opened & block):
-        errors.append("PR %d is in both the HANDOFF Open PRs line and the Merged PRs block" % n)
+        errors.append("PR %d is in both the Open PRs line and the Merged PRs block" % n)
     for r in rows:
         if r["status"] == "done" and re.search(r"pending merge|\(open", r["prs"] + " " + r["status_cell"]):
             errors.append("%s is done but its status or PR cell says pending merge or open" % r["id"])
         for m in re.finditer(r"\b(\d{2,3})\b\s*\(open", r["prs"] + " " + r["pend"]):
             if int(m.group(1)) not in opened:
-                errors.append("%s cites PR %s as open but the HANDOFF Open PRs line does not list it" % (r["id"], m.group(1)))
+                errors.append("%s cites PR %s as open but the Open PRs line does not list it" % (r["id"], m.group(1)))
     return errors
 
 
@@ -166,76 +171,86 @@ def _real():
     return (ROOT / "docs" / "FEATURE_STATUS.md").read_text(encoding="ascii"), (ROOT / "HANDOFF.md").read_text(encoding="ascii")
 
 
-def test_feature_status_matches_its_tables():
-    text, handoff = _real()
-    assert check(text, handoff) == []
-
-
-def test_additions_line_matches_disk():
-    text, _ = _real()
-    assert check_additions(text, disk_additions()) == []
-
-
-def test_additions_check_fails_when_stale():
-    text, _ = _real()
-    rows, files, manifest = disk_additions()
-    for stale in (text.replace("Additions rows: %d;" % rows, "Additions rows: %d;" % (rows - 1), 1),
-                  text.replace("files: %d;" % files, "files: %d;" % (files + 1), 1),
-                  text.replace("manifest files: %d" % manifest, "manifest files: %d" % (manifest - 1), 1)):
-        assert stale != text and check_additions(stale, (rows, files, manifest))
-    assert check_additions("no line here", (rows, files, manifest))
-
-
-def test_check_fails_on_a_stale_table():
-    text, handoff = _real()
-    stale = text.replace("| done | ", "| done | 1", 1)  # corrupt the first summary count
-    assert any("status done" in e for e in check(stale, handoff))
-    no_block = "\n".join(l for l in text.split("\n") if not l.startswith("Merged PRs:"))
-    assert any("Merged PRs" in e for e in check(no_block, handoff))
-    assert any("not in the Merged PRs block" in e for e in check(text, handoff + "\n- PR 99999 merged\n"))
-    bad_row = text.replace("| M3-1 | Surface, term structure and skew builder | pending |", "| M3-1 | Surface, term structure and skew builder | done |", 1)
-    assert bad_row != text and check(bad_row, handoff)
-
-
-def test_check_fails_on_a_stale_pr_cell():
-    text, handoff = _real()
-    stale = text.replace("| P1-1 | Version bump 0.2.0a1 and sibling pins | done | P1 | 63, 66 |", "| P1-1 | Version bump 0.2.0a1 and sibling pins | done | P1 | 63, 66, 998 |", 1)
-    assert stale != text and any("998" in e for e in check(stale, handoff))
-
-
-def test_manifest_matches_directory():
-    assert check_manifest() == []
-
-
 NL = chr(10)
 OLDROW = "| P1-1 | Version bump 0.2.0a1 and sibling pins | done | P1 | 63, 66 |"
 
 
-def test_handoff_accepts_indented_and_numbered_lines():
-    text, handoff = _real()
-    for prefix in ("  - ", "1. ", "   2. "):
-        assert any("PR 998" in e for e in check(text, handoff + NL + prefix + "PR 998 merged" + NL))
+class FeatureStatusTests(unittest.TestCase):
+    """unittest.TestCase so that both pytest and `unittest discover` collect it."""
+
+    def test_feature_status_matches_its_tables(self):
+        text, handoff = _real()
+        self.assertEqual(check(text, handoff), [])
+
+    def test_check_fails_on_a_stale_table(self):
+        text, handoff = _real()
+        stale = text.replace("| done | ", "| done | 1", 1)  # corrupt the first summary count
+        self.assertTrue(any("status done" in e for e in check(stale, handoff)))
+        no_block = NL.join(l for l in text.split(NL) if not l.startswith("Merged PRs:"))
+        self.assertTrue(any("Merged PRs" in e for e in check(no_block, handoff)))
+        self.assertTrue(any("not in the Merged PRs block" in e for e in check(text, handoff + NL + "- PR 998 merged" + NL)))
+        bad_row = text.replace("| M3-1 | Surface, term structure and skew builder | pending |", "| M3-1 | Surface, term structure and skew builder | done |", 1)
+        self.assertNotEqual(bad_row, text)
+        self.assertTrue(check(bad_row, handoff))
+
+    def test_release_rows_use_the_split_releases(self):
+        text, handoff = _real()
+        lines, rows = parse(text)
+        self.assertEqual({r["release"] for r in rows} - set(RELEASES), set())
+        self.assertFalse(any(r["release"] in ("M3", "M4", "M5") for r in rows))
+
+    def test_check_fails_on_a_stale_pr_cell(self):
+        text, handoff = _real()
+        stale = text.replace(OLDROW, "| P1-1 | Version bump 0.2.0a1 and sibling pins | done | P1 | 63, 66, 998 |", 1)
+        self.assertNotEqual(stale, text)
+        self.assertTrue(any("998" in e for e in check(stale, handoff)))
+
+    def test_additions_line_matches_disk(self):
+        text, _ = _real()
+        self.assertEqual(check_additions(text, disk_additions()), [])
+
+    def test_additions_check_fails_when_stale(self):
+        text, _ = _real()
+        rows, files, manifest = disk_additions()
+        for stale in (text.replace("Additions rows: %d;" % rows, "Additions rows: %d;" % (rows - 1), 1),
+                      text.replace("files: %d;" % files, "files: %d;" % (files + 1), 1),
+                      text.replace("manifest files: %d" % manifest, "manifest files: %d" % (manifest - 1), 1)):
+            self.assertNotEqual(stale, text)
+            self.assertTrue(check_additions(stale, (rows, files, manifest)))
+        self.assertTrue(check_additions("no line here", (rows, files, manifest)))
+
+    def test_manifest_matches_directory(self):
+        self.assertEqual(check_manifest(), [])
+
+    def test_handoff_accepts_indented_and_numbered_lines(self):
+        text, handoff = _real()
+        for prefix in ("  - ", "1. ", "   2. "):
+            self.assertTrue(any("PR 998" in e for e in check(text, handoff + NL + prefix + "PR 998 merged" + NL)))
+
+    def test_open_and_merged_lists_must_not_overlap(self):
+        text, handoff = _real()
+        stale = NL.join("Open PRs: 79" if l.startswith("Open PRs:") else l for l in text.split(NL))
+        self.assertTrue(any("both" in e for e in check(stale, handoff)))
+
+    def test_open_pr_cell_needs_an_open_prs_line(self):
+        text, handoff = _real()
+        stale = text.replace(OLDROW, "| P1-1 | Version bump 0.2.0a1 and sibling pins | partial | P1 | 63, 66, 977 (open) |", 1)
+        self.assertNotEqual(stale, text)
+        self.assertTrue(any("977" in e for e in check(stale, handoff)))
+
+    def test_done_row_never_pending_merge_or_open(self):
+        text, handoff = _real()
+        stale = text.replace(OLDROW, "| P1-1 | Version bump 0.2.0a1 and sibling pins | done | P1 | 63, 66 (open) |", 1)
+        self.assertNotEqual(stale, text)
+        self.assertTrue(any("is done but" in e for e in check(stale, handoff)))
+        stale2 = text.replace("| P1-1 | Version bump 0.2.0a1 and sibling pins | done |", "| P1-1 | Version bump 0.2.0a1 and sibling pins | done (built, PR 80 pending merge) |", 1)
+        self.assertNotEqual(stale2, text)
+        self.assertTrue(any("is done but" in e for e in check(stale2, handoff)))
+
+    def test_stale_handoff_open_line_does_not_break_the_check(self):
+        text, handoff = _real()
+        self.assertEqual(check(text, handoff + NL + "- Open PRs: 86, 87" + NL + "- PR 977 is open and waiting" + NL), [])
 
 
-def test_open_and_merged_lists_must_not_overlap():
-    text, handoff = _real()
-    assert any("both" in e for e in check(text, handoff + NL + "- Open PRs: 79" + NL))
-
-
-def test_open_pr_cell_needs_an_open_prs_line():
-    text, handoff = _real()
-    stale = text.replace(OLDROW, "| P1-1 | Version bump 0.2.0a1 and sibling pins | partial | P1 | 63, 66, 977 (open) |", 1)
-    assert stale != text and any("977" in e for e in check(stale, handoff))
-
-
-def test_done_row_never_pending_merge_or_open():
-    text, handoff = _real()
-    stale = text.replace(OLDROW, "| P1-1 | Version bump 0.2.0a1 and sibling pins | done | P1 | 63, 66 (open) |", 1)
-    assert stale != text and any("is done but" in e for e in check(stale, handoff))
-    stale2 = text.replace("| P1-1 | Version bump 0.2.0a1 and sibling pins | done |", "| P1-1 | Version bump 0.2.0a1 and sibling pins | done (built, PR 80 pending merge) |", 1)
-    assert stale2 != text and any("is done but" in e for e in check(stale2, handoff))
-
-
-def test_handoff_open_pr_must_be_listed():
-    text, handoff = _real()
-    assert any("PR 977 as open" in e for e in check(text, handoff + NL + "- PR 977 is open and waiting" + NL))
+if __name__ == "__main__":
+    unittest.main()
