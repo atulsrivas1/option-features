@@ -40,6 +40,8 @@ Why first: docs/M1_CLOSE.md section 3 risk 3 and section 1: B6 for the full outp
 | Authorship | the independent Tester runs and signs; the Developer does not sign off its own run |
 | A miss | reported as a miss. A p95 over budget with hard met needs a PO ruling before release; a hard breach blocks. A budget is never edited to fit. A miss also schedules the already-planned Newton bracket seed (M1 close, "not built by design") for a PO ruling; it does not change any budget |
 
+Measured M2-G0 workload facts (Developer, PR 77): the trade stream is a developer-authored construct with a uniform 20 prints per contract (40,000 per size-M unit); the median 20 / p99 1,000 tail of the section 2 proposal is NOT modelled, and the windowing cost is mostly insensitive to it (one index build and two bisect queries per contract). Beside the IV figure: of 2,000 contracts 985 solve (261 invalid_quote, 744 american_itm, 10 price_out_of_bounds), so the IV time is the cost of 985 certified solves plus the gating of the rest.
+
 ## 4. Gates
 Pass = p95 within Budget (rates: p5 of the sample, i.e. the slowest 5 percent still meets it); Hard = fail even if the PO rules otherwise. Single worker unless stated. At least 30 repeats after one warm-up. Inputs built before the timer; compute and with-input-synthesis reported separately.
 | Gate | Workload | Metric | Budget | Hard | Rationale |
