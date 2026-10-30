@@ -21,6 +21,8 @@ Updated 2026-10-29 (M1 CLOSED, see docs/M1_CLOSE.md; P1 DONE, 0.2.0a1 on main, m
 
 ## M1 Stage 2 (PR 71): merged; independent Tester re-run done (details in DECISIONS.md). B6 IV part about 1.4 s p50 compute-only.
 
+- M2 (2026-10-29): docs/m2 merged (PR 75); PO-M2-AMB rulings (19 ambiguities) in docs PR on branch docs/m2-amb-rulings (not merged). Next: Tester fixtures, M2-G0 first task gate, then code.
+
 ## Next
 0. Independent freeze review of CANDIDATE13_FREEZE_RECORD: DONE (approve-with-conditions, applied); next coordinator freeze and merge. Then candidate14 (PO R27 rulings): lift exclusion of the 3 null-nondict rows, harness assertion for the extra-stream control row, re-issue filter, hashes, counts and release notes. PO to review: N5 rows flagged (proposed), assumption-2 confirmation, A>K disclosure, sorted-literal excluded_ids, nonexpected two-control rows as negative controls (the last three already PO-ruled; see DECISIONS.md).
 OWNER ITEMS first (parked until the owner returns):
