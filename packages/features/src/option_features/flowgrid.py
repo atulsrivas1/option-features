@@ -161,7 +161,7 @@ def _pack_q(values):
 
 
 def _expand(events, minutes, slot):
-    """Sparse (idx, vals) of the prefix sum of {grid index: [deltas]} for `slot`, zeros dropped."""
+    """Sparse (idx, vals) of the prefix sum of {grid index: [deltas]} for `slot`, zeros dropped (general path)."""
     idx, vals = array("H"), []
     cur = 0
     keys = sorted(events)
@@ -173,6 +173,43 @@ def _expand(events, minutes, slot):
             idx.extend(range(k, end))
             vals.extend([cur] * (end - k))
     return idx, _pack_q(vals)
+
+
+def _expand3(events, minutes):
+    """(idx, premium vals, size vals, count vals) for one contract: one pass, one shared idx array. Every quantity is
+    nonnegative, so a point is active exactly when the count is positive; premium or size can still be 0 on an active
+    point (zero price or size), which the general per-slot path handles."""
+    idx = array("H")
+    vp, vs, vc = array("q"), array("q"), array("q")
+    cp = cs = cc = 0
+    keys = sorted(events)
+    last = len(keys) - 1
+    try:
+        for n, k in enumerate(keys):
+            e = events[k]
+            cp += e[0]
+            cs += e[1]
+            cc += e[2]
+            end = keys[n + 1] if n < last else minutes
+            if cc and end > k:
+                if not (cp and cs):
+                    raise ArithmeticError
+                size = end - k
+                idx.extend(range(k, end))
+                if size == 1:
+                    vp.append(cp)
+                    vs.append(cs)
+                    vc.append(cc)
+                else:
+                    vp.extend([cp] * size)
+                    vs.extend([cs] * size)
+                    vc.extend([cc] * size)
+    except (ArithmeticError, OverflowError):
+        out = []
+        for slot in range(3):
+            out.append(_expand(events, minutes, slot))
+        return out[0][0], out[0][1], out[1][1], out[2][1], out[1][0], out[2][0]
+    return idx, vp, vs, vc, idx, idx
 
 
 def _expand_dense(diff, minutes):
@@ -294,8 +331,8 @@ def build_session_records(prints, contracts, session_id, open_ns, close_ns, minu
         for cid in sorted(ctot):
             tot = ctot[cid]
             for wi, w in enumerate(wins):
-                ev = cdiff[cid][wi]
-                for slot, metric in enumerate(("premium", "contracts", "prints")):
-                    idx, vals = _expand(ev, minutes, slot)
-                    records.append(GridRecord(cid, metric, w, session_id, minutes, idx, vals, tot[slot]))
+                ip, vp, vs, vc, is_, ic = _expand3(cdiff[cid][wi], minutes)
+                records.append(GridRecord(cid, "premium", w, session_id, minutes, ip, vp, tot[0]))
+                records.append(GridRecord(cid, "contracts", w, session_id, minutes, is_, vs, tot[1]))
+                records.append(GridRecord(cid, "prints", w, session_id, minutes, ic, vc, tot[2]))
     return SessionBuild(records, elig, nonstd, excl)
