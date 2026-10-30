@@ -663,8 +663,8 @@ def lane_rows():
     params["lane"] = "ETF_INDEX"
     rows.append(mk("M3A-LANE-002", "lane", ["lane"], ["R-73", "R-88"], [], "R-73; IO contract section 4 position 5",
                    inputs, params, "invalid_lane", "lane value outside {stock, etf_index}"))
-    rows.append(read_row(3, "etf_index", stock22, 20, cal[22][0], "insufficient_history", {"n": 0, "values": [], "sessions": []},
-                         "only stock sessions are stored; an etf_index read finds none", ["R-73", "R-89"]))
+    rows.append(read_row(3, "etf_index", stock22, 20, cal[22][0], "insufficient_history", {"n": 0, "values": None, "sessions": None},
+                         "only stock sessions are stored; an etf_index read finds none; unavailable read: lists are None (R-192)", ["R-73", "R-89", "R-192"]))
     rows.append(read_row(4, "stock", stock22 + etf22, 20, cal[22][0], None,
                          {"n": 22, "values": [r["total"] for r in stock22], "sessions": [r["session_id"] for r in stock22]},
                          "same name in both lanes: the stock read returns the 22 stock values only, oldest first",
@@ -675,10 +675,10 @@ def lane_rows():
     mixed = [{"lane": "stock" if j % 5 != 4 else "etf_index", "session_id": cal[j][0], "total": 2_000_000_000 + j,
               "complete": True} for j in range(25)]
     st = [r["total"] for r in mixed if r["lane"] == "stock"]
-    rows.append(read_row(6, "stock", mixed, 21, cal[25][0], "insufficient_history", {"n": len(st), "values": st, "sessions": [r["session_id"] for r in mixed if r["lane"] == "stock"]},
+    rows.append(read_row(6, "stock", mixed, 21, cal[25][0], "insufficient_history", {"n": len(st), "values": None, "sessions": None},
                          "25 stored sessions interleave two lanes, 20 are stock; min_sessions 21 is reached only if "
-                         "the lanes were pooled, so the stock read is insufficient_history with n 20",
-                         ["R-73", "R-51"]))
+                         "the lanes were pooled, so the stock read is insufficient_history with n 20; unavailable read: lists are None (R-192)",
+                         ["R-73", "R-51", "R-192"]))
     return rows
 
 

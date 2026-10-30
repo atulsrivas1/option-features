@@ -427,7 +427,7 @@ def lane_read(inp, par, M):
     rs = rs[-par["max_sessions"]:]
     vals = [r["total"] for r in rs]
     if len(vals) < par["min_sessions"]:
-        return {"status": "unavailable", "reason": "insufficient_history", "code": None, "n": len(vals), "values": vals, "sessions": [r["session_id"] for r in rs]}
+        return {"status": "unavailable", "reason": "insufficient_history", "code": None, "n": len(vals), "values": None, "sessions": None}  # R-192
     return {"status": "available", "reason": None, "code": None, "n": len(vals), "values": vals, "sessions": [r["session_id"] for r in rs]}
 
 

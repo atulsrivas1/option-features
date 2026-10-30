@@ -25,3 +25,6 @@ W08 181,692; R07 721 series; trailer_missing pair decoy now a `#TRAILER` line; 1
 - Open items X3, X5, X8, X12, X13, X14, perf P3/P5/P7: RULED R-163..R-171 (rows added where required; P3/P5/P7 are perf-doc changes not applied in this round). No `iv_form` default/echo rows beyond structural codes.
 - No convention_mismatch row for a skew-type view series beyond the 2 view rows; no row for a record lacking the field when request is forward beyond the request rows.
 - Scratch dirs out1, pq1, pf1, pf2, ../a4chk are outside the manifest.
+
+## R-192 amendment (2026-10-30)
+M3A-LANE-003 (n 0) and M3A-LANE-006 (n 20, min_sessions 21) asserted populated/empty `sessions`/`values` on an unavailable read; R-192 says an unavailable scalar_baseline / same_minute_column read has value {n, values: None, sessions: None}. Both rows now assert null lists (n, reason, status unchanged) and cite R-192 in r_numbers and derivation. Changed: gen_m3a_structural.py (lane_rows), m3a_ref.py (lane_read), m3a_cases_lane.json (exactly those two rows; structural and aux files byte-identical on regeneration), AUTHORING_NOTES.md, this file, MANIFEST.sha256. Selfcheck OK (208 rows agree); mutants: 48 effective, each caught by >= 2 rows, results file unchanged; check_gate_table.py OK. Independent oracle re-check of the amended rows still required.
