@@ -419,6 +419,15 @@ class TypeFirst(unittest.TestCase):
             _set_contract(r, 0, bid=v)
             self.assertEqual(_run(r), "malformed_type", v)
 
+    def test_style_type_only_r188(self):
+        """R-188 (amends R-187): a style that is None or not a string is malformed_type at position 10; an unknown
+        string is not a request error (the contract reason style_unknown applies downstream)."""
+        for v, code in ((5, "malformed_type"), (None, "malformed_type"), (True, "malformed_type"),
+                        ("bermudan", None), ("", None), ("European", None), ("american", None)):
+            r = _request("M3A-0")
+            _set_contract(r, 0, style=v)
+            self.assertEqual(_run(r), code, v)
+
     def test_strike_type_first_at_position_9(self):
         for v, code in (("100.12345678", None), ("1.00000000", None), (100, None), ("1.000000000", "malformed_type"),
                         (100.5, "malformed_type"), (Fraction(201, 2), "malformed_type"), ("-1", "bad_strike"),
