@@ -21,12 +21,13 @@ prefix sums), so a session never rescans its prints per grid point.
 """
 from fractions import Fraction
 
-from .m2prints import cov, frac, invalid, result, structural_code
+from .m2prints import cov, frac, invalid, is_int, result, structural_code
 from .flowgrid import NS
 
 GRID_NS = 60 * NS
 FIRST_AVAILABLE_INDEX = 15            # 900 s / 60 s
 GRID_S = 60
+MAX_GRID_POINTS = 24 * 60 + 1          # F12 from prints builds the grid of one session: a cutoff over 24 h after open is malformed
 
 
 def scan_episodes(p60, p900, upto, thr_num, thr_den, quiet_gap):
@@ -71,6 +72,23 @@ def _bad_params(nf, n_episodes, quiet_gap, grid_s):
     """True when a parameter is malformed (float or unparsable N, non-int or < 1 counts, grid other than 60 s)."""
     return (nf is None or type(quiet_gap) is not int or quiet_gap < 1 or type(n_episodes) is not int
             or n_episodes < 1 or type(grid_s) is not int)
+
+
+def _cols_ok(p60, p900, t_ns, open_ns):
+    """The supplied F1 columns hold ints or None only, and the times are ints (checked over the points to read)."""
+    if not is_int(t_ns) or not is_int(open_ns):
+        return False
+    try:
+        upto = (t_ns - open_ns) // GRID_NS
+        if upto < FIRST_AVAILABLE_INDEX:
+            return True
+        for col in (p60, p900):
+            for x in col[:upto + 1]:
+                if x is not None and type(x) is not int:
+                    return False
+    except Exception:
+        return False
+    return True
 
 
 class _Scan:
@@ -139,8 +157,8 @@ def f12_episodes(p60, p900, t_ns, open_ns, *, n=3, n_episodes=1, quiet_gap=1, gr
     """F12 from F1 grid columns: p60[k] and p900[k] are the premium sums at grid point k (None = missing)."""
     nf = frac(n)
     params = {"N": n if nf is None else nf, "grid_s": grid_s, "n_episodes": n_episodes, "quiet_gap": quiet_gap}
-    code = structural_code(None, calendar_ok=session_in_calendar, delayed=delayed,
-                           bad_param=_bad_params(nf, n_episodes, quiet_gap, grid_s),
+    code = structural_code(None, calendar_ok=session_in_calendar, delayed=delayed, lane=lane,
+                           bad_param=_bad_params(nf, n_episodes, quiet_gap, grid_s) or not _cols_ok(p60, p900, t_ns, open_ns),
                            bad_grid=type(grid_s) is int and grid_s != GRID_S)
     if code:
         return invalid("M2-11", code, series_id, session_id, t_ns, params, lane)
@@ -169,8 +187,9 @@ def f12_from_tape(tape, t_ns, open_ns, *, n=3, n_episodes=1, quiet_gap=1, grid_s
     [open, T] (the from-points form reports zeros; PO may rule one convention)."""
     nf = frac(n)
     params = {"N": n if nf is None else nf, "grid_s": grid_s, "n_episodes": n_episodes, "quiet_gap": quiet_gap}
-    code = structural_code(tape, calendar_ok=session_in_calendar, delayed=delayed,
-                           bad_param=_bad_params(nf, n_episodes, quiet_gap, grid_s),
+    code = structural_code(tape, calendar_ok=session_in_calendar, delayed=delayed, lane=lane, flt=flt,
+                           bad_param=(_bad_params(nf, n_episodes, quiet_gap, grid_s) or not is_int(t_ns)
+                                      or not is_int(open_ns) or (t_ns - open_ns) // GRID_NS >= MAX_GRID_POINTS),
                            bad_grid=type(grid_s) is int and grid_s != GRID_S)
     if code:
         return invalid("M2-11", code, series_id, session_id, t_ns, params, lane)
@@ -190,10 +209,14 @@ def f12_sweep(tape, cutoffs, open_ns, *, n=3, n_episodes=1, quiet_gap=1, grid_s=
     """F12 at many cutoffs of one session, append-only: the F1 grid columns are built once up to the last
     cutoff and one `_Scan` state advances across the cutoffs (ascending internally, results in input order), so
     nothing is rebuilt from open per cutoff. Equal to `f12_from_tape` at every cutoff (tested)."""
+    if not isinstance(cutoffs, (list, tuple)):
+        return []
     nf = frac(n)
     params = {"N": n if nf is None else nf, "grid_s": grid_s, "n_episodes": n_episodes, "quiet_gap": quiet_gap}
-    code = structural_code(tape, calendar_ok=session_in_calendar, delayed=delayed,
-                           bad_param=_bad_params(nf, n_episodes, quiet_gap, grid_s),
+    code = structural_code(tape, calendar_ok=session_in_calendar, delayed=delayed, lane=lane, flt=flt,
+                           bad_param=(_bad_params(nf, n_episodes, quiet_gap, grid_s) or not is_int(open_ns)
+                                      or not all(is_int(c) for c in cutoffs)
+                                      or any((c - open_ns) // GRID_NS >= MAX_GRID_POINTS for c in cutoffs)),
                            bad_grid=type(grid_s) is int and grid_s != GRID_S)
     if code:
         return [invalid("M2-11", code, series_id, session_id, t, params, lane) for t in cutoffs]

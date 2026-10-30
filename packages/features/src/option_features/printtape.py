@@ -17,11 +17,13 @@ Design (owner goal: performance)
 - Prefix arrays and per-threshold large-print lists are built lazily and cached on the (immutable after
   build) tape, so a family that does not need them never pays for them.
 
+TRUSTED INPUT: the `contracts` map (contract id to `(right, strike, expiry, lane)`) is trusted and validated by the adapter
+that builds it; a malformed record raises. Print data is never trusted: any object in any print field gets a code.
+
 Input rows are tuples `(contract_id, time_ns, price, size, multiplier, condition_excluded, seq[, side])`
 sorted by (time_ns, seq); `side` is ignored (AMB-2). `contracts` maps a contract id to
 `(right, strike_ticks, expiry, lane)` with right "C" or "P". Structural problems do not raise: the tape
-carries `error` (the first failing code in the ruled order: unordered_prints, negative_size_or_price,
-bad_multiplier) and the family functions answer `invalid_input` with that code.
+carries `error` (the code of `stream_code`, the per-position classification of item 15; no input raises) and the family functions answer `invalid_input` with that code.
 """
 from bisect import bisect_left, bisect_right
 from itertools import accumulate
@@ -174,87 +176,158 @@ def _register(cid, contracts, cidx, c_id, c_right, c_strike, c_expiry, c_lane, c
     return ci
 
 
+def stream_code(prints, contracts):
+    """The structural code of a print list under the ruled per-field contract (IO contract section 9, items 5, 13, 15),
+    or None; the same classification as `flowgrid.check_prints` (story A), but total: no exception escapes, whatever
+    the objects in the list (unhashable contract ids, NaN, bytes, nested objects, huge ints, objects whose hash,
+    comparison or arithmetic raises, short and non-sequence prints). Authoritative slow path: `build_tape` runs its
+    fused fast loop and calls this only when the fast loop saw anything unusual.
+
+    Positions, in order (a wrong-typed field reports `malformed_type` at the position where its value check would run;
+    within a position a value code beats `malformed_type`; the whole list is scanned): (1) ordering: unordered_prints
+    for a genuine adjacent out-of-order pair of prints whose time and seq are ints (bool excluded; a pair with a non-int
+    time or seq is not compared), else malformed_type for a wrong-typed time or seq; (2) negative_size_or_price: a
+    well-typed negative size, or a well-typed negative price on a print whose size is well-typed; else malformed_type for
+    a wrong-typed size; (3) bad_multiplier: an int <= 0, else malformed_type for a wrong-typed multiplier; (4)
+    unknown_contract: a hashable contract id absent from `contracts`; (5) malformed_type for the fields with no value
+    code (price not an int or a valid decimal text, condition_excluded other than a bool, 0 or 1, an unhashable contract
+    id, a print that is not a sequence of at least 7 items)."""
+    ord_val = ord_mal = neg_val = neg_mal = bad_val = bad_mal = unknown = other = False
+    pt = ps = None
+    prev_ok = False
+    try:
+        it = iter(prints)
+    except Exception:
+        return "malformed_type"
+    for p in it:
+        try:
+            cid, t, price, size, mult, excl, seq = p[0], p[1], p[2], p[3], p[4], p[5], p[6]
+        except Exception:
+            other = True
+            prev_ok = False
+            continue
+        if type(t) is int and type(seq) is int:
+            if prev_ok and (t < pt or (t == pt and seq < ps)):
+                ord_val = True
+            pt, ps, prev_ok = t, seq, True
+        else:
+            ord_mal = True
+            prev_ok = False
+        try:
+            ticks = price_ticks(price)
+        except Exception:
+            ticks = None
+            other = True
+        if type(size) is not int:
+            neg_mal = True
+        elif size < 0 or (ticks is not None and ticks < 0):
+            neg_val = True
+        if type(mult) is not int:
+            bad_mal = True
+        elif mult <= 0:
+            bad_val = True
+        if type(excl) is not bool and not (type(excl) is int and excl in (0, 1)):
+            other = True
+        if contracts is not None:
+            try:
+                if cid not in contracts:
+                    unknown = True
+            except Exception:
+                other = True
+    if ord_val:
+        return "unordered_prints"
+    if ord_mal:
+        return "malformed_type"
+    if neg_val:
+        return "negative_size_or_price"
+    if neg_mal:
+        return "malformed_type"
+    if bad_val:
+        return "bad_multiplier"
+    if bad_mal:
+        return "malformed_type"
+    if unknown:
+        return "unknown_contract"
+    if other:
+        return "malformed_type"
+    return None
+
+
 def build_tape(prints, contracts, validate="full"):
     """One pass over `prints`. validate "full" (default) checks order, sign and multiplier; "off" trusts a
-    stream already validated by the caller (undefined results if it is not sorted)."""
+    stream already validated by the caller (undefined results if it is not sorted).
+
+    Fast path: the fused loop below handles well-formed prints. Anything unusual (a wrong type, an order or sign
+    fault, an unknown or unhashable contract id, a short print, any exception) makes the loop note `suspect` and move
+    on; the error code is then `stream_code(prints, contracts)`, the one authoritative classification, so the code
+    never depends on the loop. No exception from a print field escapes; an exception that `stream_code` cannot
+    explain (a malformed contract table, not a print) is re-raised."""
     tape = PrintTape()
     cidx, c_id, c_right, c_strike, c_expiry, c_lane, c_group, app, groups = {}, [], [], [], [], [], [], [], {}
     rare = []
     rare_add = rare.append
-    unordered = negative = bad_mult = unknown = malformed = False
-    ord_mal = neg_mal = bad_mal = False          # wrong-typed time or seq, size, multiplier (item 15: reported at their slot)
-    viol, bad_key = [], set()      # positions of order violations; positions whose time or seq is wrong-typed
+    suspect = False
+    crashed = None
     pt, ps = -(1 << 127), 0
     full = validate != "off"
     get = cidx.get
     n = 0
-    for p in prints:
-        cid, t, price, size, mult, excl, seq = p[:7]
-        n += 1
-        neg_size_bad = size.__class__ is not int      # a wrong-typed size is malformed_type at its slot, a negative price does not count
-        if (t.__class__ is not int or size.__class__ is not int or mult.__class__ is not int
-                or seq.__class__ is not int or (excl.__class__ is not bool and (excl.__class__ is not int or excl not in (0, 1)))):
-            if t.__class__ is not int or seq.__class__ is not int:
-                ord_mal = True
-                bad_key.add(n)                    # an order violation next to it is undefined, not reported
-            if size.__class__ is not int:
-                neg_mal = True
-            if mult.__class__ is not int:
-                bad_mal = True
-            if excl.__class__ is not bool and (excl.__class__ is not int or excl not in (0, 1)):
-                malformed = True
-            if t.__class__ is not int:            # it gets a neutral stand-in so the remaining checks and precedence hold
-                t = pt if pt > -(1 << 100) else 0
-            if size.__class__ is not int:
-                size = 0
-            if mult.__class__ is not int:
-                mult = 100
-            if seq.__class__ is not int:
-                seq = ps
-            if excl.__class__ is not bool and (excl.__class__ is not int or excl not in (0, 1)):
-                excl = 0
-        if price.__class__ is not int:
-            try:
-                price = price_ticks(price)
-            except (ValueError, TypeError, ArithmeticError):
-                malformed = True
-                price = 0
-        if full:
-            if t < pt or (t == pt and seq < ps):
-                viol.append(n)
-            pt, ps = t, seq
-            if size < 0 or (price < 0 and not neg_size_bad):
-                negative = True
-            if mult <= 0:
-                bad_mult = True
+    if not isinstance(prints, (list, tuple)):
         try:
-            ci = get(cid)
-        except TypeError:                         # an unhashable contract id: malformed_type, no exception
-            malformed = True
-            continue
-        if ci is None:
-            if cid not in contracts:
-                unknown = True
+            prints = list(prints)
+        except Exception:
+            prints = []
+            suspect = True
+    try:
+        for p in prints:
+            n += 1
+            cid, t, price, size, mult, excl, seq = p[:7]
+            if (t.__class__ is not int or size.__class__ is not int or mult.__class__ is not int
+                    or seq.__class__ is not int
+                    or (excl.__class__ is not bool and (excl.__class__ is not int or excl not in (0, 1)))):
+                suspect = True
                 continue
-            ci = _register(cid, contracts, cidx, c_id, c_right, c_strike, c_expiry, c_lane, c_group, app, groups)
-        if excl:
-            rare_add((t, ci, K_EXCL))
-        elif mult != 100:
-            rare_add((t, ci, K_NONSTD))
-        else:
-            ta, pa, sa, ca = app[ci]
-            ta(t)
-            pa(price * size * 100)
-            sa(size)
-            ca(ci)
+            if price.__class__ is not int:
+                try:
+                    price = price_ticks(price)
+                except Exception:
+                    suspect = True
+                    continue
+            if full:
+                if t < pt or (t == pt and seq < ps) or size < 0 or price < 0 or mult <= 0:
+                    suspect = True
+                    continue
+                pt, ps = t, seq
+            ci = get(cid)
+            if ci is None:
+                if cid not in contracts:
+                    suspect = True
+                    continue
+                ci = _register(cid, contracts, cidx, c_id, c_right, c_strike, c_expiry, c_lane, c_group, app, groups)
+            if excl:
+                rare_add((t, ci, K_EXCL))
+            elif mult != 100:
+                rare_add((t, ci, K_NONSTD))
+            else:
+                ta, pa, sa, ca = app[ci]
+                ta(t)
+                pa(price * size * 100)
+                sa(size)
+                ca(ci)
+    except Exception as exc:                      # unhashable id, short or non-sequence print, odd objects
+        suspect = True
+        crashed = exc
+    error = None
+    if suspect:
+        error = stream_code(prints, contracts)
+        if error is None and crashed is not None:
+            raise crashed
+        if error is None:                         # cannot happen (every fast-path flag is a stream_code defect);
+            error = "malformed_type"              # fail closed rather than keep a tape that skipped prints
     for t, ci, kind in rare:
         g = c_group[ci]
         (g.nt if kind == K_NONSTD else g.et).append(t)
-    unordered = any(v not in bad_key and v - 1 not in bad_key for v in viol)
-    tape.error = ("unordered_prints" if unordered else "malformed_type" if ord_mal
-                  else "negative_size_or_price" if negative else "malformed_type" if neg_mal
-                  else "bad_multiplier" if bad_mult else "malformed_type" if bad_mal
-                  else "unknown_contract" if unknown else "malformed_type" if malformed else None)
+    tape.error = error
     tape.n_prints = n
     tape.n_eligible = n - len(rare)
     tape.groups = groups
