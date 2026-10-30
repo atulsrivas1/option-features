@@ -114,5 +114,5 @@ The history view a unit needs is passed read-only; a worker keeps the view it bu
 - A3 (RULED, Q5): gates are measured at contract level, N up to 6,000, with name-level aggregation as a derived output.
 - A4 (RULED as a number): trade counts per contract (median 20, p99 1,000) are a Tester-frozen fact, not a budget input.
 - A5 (RULED as a number): M2-B1 to B4 numbers (50 us, 25,000 records/s) assume pure CPython bisect on array-backed sorted lists; if the Developer proposes another structure the gate stays and the structure is the Developer's choice.
-- A6 (RULED as a number): 3.6 (time ratio for 3x size) and 12 (for 10x) are the P1-T1 style superlinear checks (1.2 x the size ratio).
+- A6 (RULED as a number; B2n and B3n ratio gate: Budget 3.6, Hard 4.0, statistic median of 30 paired ratios t(6,000)/t(2,000)): 3.6 (time ratio for 3x size) and 12 (for 10x) are the P1-T1 style superlinear checks (1.2 x the size ratio).
 
