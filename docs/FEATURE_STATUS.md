@@ -24,9 +24,9 @@ By status:
 
 Done and merged 40 (every done row is on main; PR 79 and PR 80 are merged). Partial rows are listed in the tables.
 
-Merged PRs: 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 101, 102
+Merged PRs: 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 107, 108
 
-Open PRs: 100
+Open PRs: 106
 
 Additions rows: 298; files: 10; manifest files: 31
 
@@ -54,7 +54,7 @@ By release (the release that delivers or is assigned the row; R25 and R26 are th
 | later | 0 | 0 | 4 | 0 | 4 |
 | all | 40 | 9 | 63 | 1 | 113 |
 
-Process ruling (owner approved, docs/decisions/2026-10-30-process-and-m3-m5-split.md): M3, M4 and M5 are split into M3a, M3b, M3c, M4a, M4b, M5a, M5b. The V3 plan names the original M3, M4 and M5 only; the split of V-rows and PO-rows across the sub-releases beyond what the ruling lists (V1, V3-V11 and the proposed V21 to M3a; V12-V15 to M3b; V16-V19, V20 aggregate and V22 to M3c) is marked proposed in the pending reasons.
+Process ruling (owner approved, docs/decisions/2026-10-30-process-and-m3-m5-split.md): M3, M4 and M5 are split into M3a, M3b, M3c, M4a, M4b, M5a, M5b. The V3 plan names the original M3, M4 and M5 only; the split of V-rows and PO-rows across the sub-releases beyond what the ruling lists (V1, V3-V11 and V21 to M3a; V12-V15 to M3b; V16-V19, V20 aggregate and V22 to M3c) is marked proposed in the pending reasons.
 
 ## 2. Release order (PO release plan V3, 2026-10-29) and what each pending release contains
 
@@ -66,7 +66,7 @@ Every release carries the label sentence verbatim, stays PRERELEASE (D7), makes 
 | P1 | done, PO accepted 2026-10-29 (PR 63, 0.2.0a1) | OC4/G1, G2 spread, F3 window end, F5/F6 single reference, F13-F16 touch policy, G5, naming map | R27 closed |
 | M1 | done, closed 2026-10-29 (docs/M1_CLOSE.md) | OC5, OC6, chain ATM IV, 30-day IV, American labels, solver Stages 0-2, opt-in runner | P1 accepted, design requests 1, 2, 7 (interim rulings used) |
 | M2 | in progress: stories A and B merged (PR 79, PR 80); Result type alignment merged (PR 88); F-row re-audit merged (PR 85); docs PR 89, 92, 94, 95 merged (print type, ordering and field rules); remaining M2 items: runner integration, performance follow-up, benchmark regeneration (PR 87 open); check_prints type-first merged (PR 93) | F1, F2a-d, F4, F7, F10, F20, F12, F17, F18, F19, history store; then re-audit every F row | M1 accepted; matrix and budgets (PR 75, 76, 81, 83), fixtures (PR 78, 82, 84), M2-G0 (PR 77) all merged |
-| M3a | pending | Surface, term structure and skew builder (V1, V3-V11 and the proposed V21) with history reuse from the M2 store for the percentile-of-history and change-since-prior-session rows (V1, V3, V4, V7, V9, V10) | M2 accepted and the M2 store merged (PR 80); docs/m3a (matrix, budgets, fixture requirements, I/O contract, 102-item ruling list) merged in PR 101, PO ruling pass and independent fixtures still pending; synthetic surface generator with known smile and term values |
+| M3a | pending | Surface, term structure and skew builder (V1, V3-V11 and V21, included by owner decision) with history reuse from the M2 store for the percentile-of-history and change-since-prior-session rows (V1, V3, V4, V7, V9, V10) | M2 accepted and the M2 store merged (PR 80); docs/m3a (matrix, budgets, fixture requirements, I/O contract, 102-item ruling list) merged in PR 101, PO ruling pass and independent fixtures still pending; synthetic surface generator with known smile and term values |
 | M3b | pending | Realized-volatility join, daily-bar based, without history reuse (V12-V15) | M3a accepted; own matrix; daily-bar generator |
 | M3c | pending | Frame builder without presets (V16-V19, V20 aggregate, V22; proposed assignments) | M3b accepted; own matrix |
 | M4a | pending | Open-interest outputs (PO9, PO12-PO14, PO17-PO19; proposed assignments) | M3c accepted; own matrix; chain generator with synthetic open interest |
@@ -133,17 +133,17 @@ Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry g
 
 | Id | Name | Status | Release | PRs | Evidence | Pending reasons |
 |---|---|---|---|---|---|---|
-| V1 | 30-day IV in the top X% of its own history | pending | M3a | - | - | Needs IV history (M2 store reuse) and a surface; M3a; history reuse from the M2 store (PR 80 merged) |
+| V1 | 30-day IV in the top X% of its own history | pending | M3a | - | - | Needs IV history (M2 store reuse) and a surface; M3a; history reuse from the M2 store (PR 80 merged); constant (zero-range) history percentile is unavailable, reason zero_range_history, a deliberate exception to M2 Q2 (owner decision 4, final); the scalar baseline allows partial history: missing days skipped, at least 20 prior sessions, a deliberate difference from the strict M2 rule (owner decision 5, final) |
 | V2 | ATM IV at least or at most X points | partial | M1 | 68, 70 | lib; independent review: yes | Chain ATM IV built (annual decimal; library module, not on the wire); no points unit or threshold form; request 11 ratification |
-| V3 | ATM IV in top X% of the same minute in earlier sessions | pending | M3a | - | - | M3a (history reuse); deliberate exception (R-81): the 30-day form only, so the target class after M3a is partial, not match |
-| V4 | IV change from the prior reading | pending | M3a | - | - | M3a; history reuse from the M2 store (PR 80 merged); deliberate exception (R-81): the 30-day form only, so the target class after M3a is partial, not match |
+| V3 | ATM IV in top X% of the same minute in earlier sessions | pending | M3a | - | - | M3a (history reuse); owner decision: both forms (atm and 30d) are implemented, so these are match candidates, pending until built (the R-81 30-day-only exception is withdrawn); design ratification of the interim rulings; constant (zero-range) history percentile is unavailable, reason zero_range_history, a deliberate exception to M2 Q2 (owner decision 4, final); the scalar baseline allows partial history: missing days skipped, at least 20 prior sessions, a deliberate difference from the strict M2 rule (owner decision 5, final) |
+| V4 | IV change from the prior reading | pending | M3a | - | - | M3a; history reuse from the M2 store (PR 80 merged); owner decision: both forms (atm and 30d) are implemented, so these are match candidates, pending until built (the R-81 30-day-only exception is withdrawn); design ratification of the interim rulings; the scalar baseline allows partial history: missing days skipped, at least 20 prior sessions, a deliberate difference from the strict M2 rule (owner decision 5, final) |
 | V5 | Longer tenor above or below shorter (term structure) | pending | M3a | - | - | M3a (term structure) |
 | V6 | Second expiry above or below the nearest | pending | M3a | - | - | M3a |
 | V7 | Term gap or slope change since prior session | pending | M3a | - | - | M3a; history reuse from the M2 store (PR 80 merged) |
-| V8 | 25-delta put-side over call-side volatility | pending | M3a | - | - | M3a (skew) |
-| V9 | 25-delta skew in top X% of own history | pending | M3a | - | - | M3a; history reuse from the M2 store (PR 80 merged) |
-| V10 | 25-delta skew change or sign change | pending | M3a | - | - | M3a; history reuse from the M2 store (PR 80 merged) |
-| V11 | Wings above or below the smile centre | pending | M3a | - | - | M3a (reuses the same two 25-delta points as V1 and V3; PO ruling 2026-10-30) |
+| V8 | 25-delta put-side over call-side volatility | pending | M3a | - | - | M3a (skew); delta_convention spot or forward, default spot, for the 25-delta outputs (owner decision 3, final) |
+| V9 | 25-delta skew in top X% of own history | pending | M3a | - | - | M3a; history reuse from the M2 store (PR 80 merged); delta_convention spot or forward, default spot, for the 25-delta outputs (owner decision 3, final); constant (zero-range) history percentile is unavailable, reason zero_range_history, a deliberate exception to M2 Q2 (owner decision 4, final); the scalar baseline allows partial history: missing days skipped, at least 20 prior sessions, a deliberate difference from the strict M2 rule (owner decision 5, final) |
+| V10 | 25-delta skew change or sign change | pending | M3a | - | - | M3a; history reuse from the M2 store (PR 80 merged); delta_convention spot or forward, default spot, for the 25-delta outputs (owner decision 3, final) |
+| V11 | Wings above or below the smile centre | pending | M3a | - | - | M3a (reuses the same two 25-delta points as V1 and V3; PO ruling 2026-10-30); delta_convention spot or forward, default spot, for the 25-delta outputs (owner decision 3, final) |
 | V12 | 30-day IV above or below 20-day realized | pending | M3b | - | - | M3b (realized-volatility join, daily bars) |
 | V13 | Implied divided by realized volatility | pending | M3b | - | - | M3b |
 | V14 | Implied-minus-realized gap in top X% of history | pending | M3b | - | - | M3b (252-session form needs the 52-week history generator) |
@@ -153,7 +153,7 @@ Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry g
 | V18 | Price move reached X% of the expected move | pending | M3c | - | - | Release not named in V3; proposed M3c |
 | V19 | Move since anchor against scale from prior 20 sessions | pending | M3c | - | - | Release not named in V3; proposed M3c |
 | V20 | Gamma, vega, theta activity unusual against baseline | partial | R25 | R25 release | wire; independent review: yes | Per-contract greeks exist (R25); activity-weighted aggregate and baseline pending; release not named in V3 (proposed M3c) |
-| V21 | Put-side over call-side distance from ATM, 25 delta | pending | M3a | - | - | Derived from V8; release not named in V3; proposed M3a |
+| V21 | Put-side over call-side distance from ATM, 25 delta | pending | M3a | - | - | Derived from V8; included in M3a by owner decision 2026-10-30 (V3 names no release); delta_convention spot or forward, default spot, for the 25-delta outputs (owner decision 3, final) |
 | V22 | 30-day IV 52-week range position | pending | M3c | - | - | M3c (52-week history generator) |
 
 ### Positioning (design rows PO1-PO19)
@@ -216,6 +216,10 @@ Dropped: R28a as a separate release (adapter work moves wholly into RQ). Entry g
 | RQ-6 | Open-interest statistics and daily bar sources wired (D8) | pending | RQ | - | - | RQ only |
 | RQ-7 | Synthetic-versus-recorded divergence review | pending | RQ | - | - | Any semantic surprise becomes a PO ruling |
 | DROP-1 | R28a as a separate adapter release | dropped | RQ | V3 plan | - | Adapter work moved wholly into RQ (PO release plan V3, 2026-10-29) |
+
+## 3b. CI status
+
+PR 105 (merged): GitHub Actions workflow .github/workflows/ci.yml on windows-2022, CPython 3.12 x64, hash-pinned python-flint and duckdb wheels, runs the unit suites contracts, features, p1, qualification, m1, m2 (963 tests, 2 skipped) and the named tracker test (tests/m2/test_feature_status.py, 12-test floor); a manual-only benchmark workflow (.github/workflows/benchmarks-manual.yml) exists and is not part of the pull-request checks. First runs green: https://github.com/atulsrivas1/option-features/actions/runs/41083403896 . No Linux job (the Linux wheel hash is not recorded), so Linux stays a process check, not claimed. CI proves the suites pass on synthetic fixtures on that platform only; it adds no recorded-data claim.
 
 ## 4. Accepted performance work (separate from the feature counts)
 
