@@ -114,4 +114,9 @@ The history view a unit needs is passed read-only; a worker keeps the view it bu
 - A3 (RULED, Q5): gates are measured at contract level, N up to 6,000, with name-level aggregation as a derived output.
 - A4 (RULED as a number): trade counts per contract (median 20, p99 1,000) are a Tester-frozen fact, not a budget input.
 - A5 (RULED as a number): M2-B1 to B4 numbers (50 us, 25,000 records/s) assume pure CPython bisect on array-backed sorted lists; if the Developer proposes another structure the gate stays and the structure is the Developer's choice.
-- A6 (RULED as a number): 3.6 (time ratio for 3x size) and 12 (for 10x) are the P1-T1 style superlinear checks (1.2 x the size ratio).
+- A6 (RULED as a number; for M2-B2n and M2-B3n superseded by section 9): 3.6 (time ratio for 3x size) and 12 (for 10x) are the P1-T1 style superlinear checks (1.2 x the size ratio).
+
+## 9. Rulings after stories A and B (ratified interim, pending design ratification where the design is silent)
+- M2-B2n and M2-B3n ratio gate: the statistic is the median over 30 repeats of the paired ratios t(6,000)/t(2,000) (each pair measured back to back); the hard limit is 4.0 (cache effects); the absolute times in the gate rows remain the gates.
+- M2-B15 definition: the print-pass ratio = sweep print-pass time / (78 x single-cutoff print-pass time), including the overlapping-cutoff case, gate 0.25 (hard 0.5), measured with and without the tape build; sparse F17 reads are informational; the reads of the 78 cutoffs are gated by M2-B15r only.
+- Runner memory rule: the store memory limit is enforced by the runner; a store above 512 MB is reported (see M2_IO_CONTRACT.md section 9, item 8).
