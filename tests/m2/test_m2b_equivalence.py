@@ -126,7 +126,8 @@ def run_case(rng):
         if to.error != tn.error or label.startswith("price"):
             assert not label.startswith("UNCLASSIFIED"), (to.error, tn.error, prints[:4])
             return 0
-    assert (to.n_prints, to.n_eligible) == (tn.n_prints, tn.n_eligible)
+    if to.error is None:
+        assert (to.n_prints, to.n_eligible) == (tn.n_prints, tn.n_eligible)
     pairs = []
     n_ = rng.choice(NS_PARAMS)
     w = rng.choice(WINDOWS)
@@ -188,17 +189,22 @@ def run_case(rng):
                     c_o, c_n = OE.f1_grid_columns(to, open_ns, up, flt, lane), E.f1_grid_columns(tn, open_ns, up, flt, lane)
                     assert c_o == c_n
     except ValueError as exc:
-        # both sides must raise the same ValueError for the same input (e.g. an unknown filter)
-        try:
-            if fam == 0:
-                M.f1_premium_surge(tn, T, open_ns, n=n_, flt=flt, **kw)
-            elif fam == 2:
-                M.f4_large_prints(tn, T, window_s=w, threshold_ticks=thr, n=n_, flt=flt, open_ns=open_ns, **kw)
-            else:
-                raise
-        except ValueError:
-            return 0
-        raise AssertionError("new side did not raise: %s" % exc)
+        # the old modules raised ValueError for an unknown filter; the total ones answer malformed_type instead
+        assert "filter must be one of" in str(exc), exc
+        r_n = (M.f1_premium_surge(tn, T, open_ns, n=n_, flt=flt, **kw) if fam == 0 else
+               M.f4_large_prints(tn, T, window_s=w, threshold_ticks=thr, n=n_, flt=flt, open_ns=open_ns, **kw)
+               if fam == 2 else None)
+        assert r_n is None or (r_n.status, r_n.code) == ("invalid_input", "malformed_type"), (fam, r_n)
+        DIVERGENT.append(("unknown filter (old raised ValueError, now malformed_type)", case_id[0], "flt=%r" % (flt,), "ValueError", "malformed_type"))
+        return 0
+    if flt == "bogus" and fam in (0, 1, 2, 3, 4, 6):
+        # an unknown filter: the old modules raised ValueError, or answered another structural code first; the total
+        # ones answer malformed_type at its slot (item 5, before the window and threshold codes): a recorded class
+        for _o, r_n in pairs:
+            assert r_n.status == "invalid_input" and r_n.code in ("malformed_type", "unordered_prints", "negative_size_or_price",
+                                                                  "bad_multiplier", "unknown_contract"), r_n
+        DIVERGENT.append(("unknown filter (old ValueError or a later code, now malformed_type)", case_id[0], "flt='bogus'", "-", "malformed_type"))
+        return 0
     for r_o, r_n in pairs:
         assert old_line(r_o) == new_line(r_n), (fam, old_line(r_o), new_line(r_n))
         assert (r_o["status"], r_o["code"], r_o["reason"]) == (r_n.status, r_n.code, r_n.reason)

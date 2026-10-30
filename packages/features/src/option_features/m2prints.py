@@ -28,6 +28,7 @@ from collections import Counter
 from fractions import Fraction
 
 from .flowgrid import NS
+from .printtape import FILTERS
 from .flowresult import ALLOWED_WINDOWS, Result, canonical_line, show, to_wire   # shared (story A); re-exported
 
 F17_WINDOW_S = 300
@@ -50,7 +51,7 @@ def frac(x):
     if k is str and _RATIONAL.fullmatch(x):
         try:
             return Fraction(x)
-        except ZeroDivisionError:
+        except (ZeroDivisionError, ValueError):
             return None
     return None
 
@@ -85,18 +86,19 @@ def invalid(output_id, code, series_id, session_id, t_ns, params, lane):
 
 
 def structural_code(tape, *, calendar_ok=True, window_s=None, fixed_window_s=None, threshold_missing=False,
-                    delayed=False, bad_param=False, bad_grid=False):
+                    delayed=False, bad_param=False, bad_grid=False, lane="stock", flt="all"):
     """First failing structural code in the ruled order, or None: tape errors (unordered_prints,
     negative_size_or_price, bad_multiplier, unknown_contract, malformed_type), malformed_type (a float, bool or
     unparsable parameter), grid_not_60s (F12), session_not_in_calendar, window_not_allowed (also a non-int window),
     threshold_required, delayed_feed_tag (the single list of PR 81 section 9)."""
     if tape is not None and tape.error:
         return tape.error
-    if bad_param:
+    if (bad_param or type(lane) is not str or type(delayed) is not bool or type(calendar_ok) is not bool
+            or type(flt) is not str or flt not in FILTERS):
         return "malformed_type"
     if bad_grid:
         return "grid_not_60s"
-    if not calendar_ok:
+    if calendar_ok is False:
         return "session_not_in_calendar"
     if window_s is not None:
         if type(window_s) is not int:
@@ -117,7 +119,7 @@ def structural_code(tape, *, calendar_ok=True, window_s=None, fixed_window_s=Non
 def _f1_prep(tape, n, flt, lane, delayed, series_id, session_id, session_in_calendar):
     nf = frac(n)
     params = {"N": n if nf is None else nf, "filter": flt}
-    code = structural_code(tape, calendar_ok=session_in_calendar, delayed=delayed, bad_param=nf is None)
+    code = structural_code(tape, calendar_ok=session_in_calendar, delayed=delayed, bad_param=nf is None, lane=lane, flt=flt)
     groups = None if code else tape.select(lane, flt)
     return nf, params, code, groups
 
@@ -142,6 +144,8 @@ def f1_premium_surge(tape, t_ns, open_ns, *, n=3, flt="all", lane="stock", delay
     fires at ratio >= N. Unavailable (insufficient_window) until 900 s after open; zero_denominator at P900 = 0.
     The 60 s window inside the 900 s window is deliberate."""
     nf, params, code, groups = _f1_prep(tape, n, flt, lane, delayed, series_id, session_id, session_in_calendar)
+    if not code and not (is_int(t_ns) and is_int(open_ns)):
+        code = "malformed_type"
     if code:
         return invalid("M2-1", code, series_id, session_id, t_ns, params, lane)
     return _f1_at(tape, groups, nf, params, t_ns, open_ns, flt, lane, series_id, session_id)
@@ -150,7 +154,11 @@ def f1_premium_surge(tape, t_ns, open_ns, *, n=3, flt="all", lane="stock", delay
 def f1_sweep(tape, cutoffs, open_ns, *, n=3, flt="all", lane="stock", delayed=False, series_id=None,
              session_id=None, session_in_calendar=True):
     """F1 at many cutoffs of one session from one tape (bisects only; no print is revisited)."""
+    if not isinstance(cutoffs, (list, tuple)):
+        return []
     nf, params, code, groups = _f1_prep(tape, n, flt, lane, delayed, series_id, session_id, session_in_calendar)
+    if not code and not (is_int(open_ns) and all(is_int(c) for c in cutoffs)):
+        code = "malformed_type"
     if code:
         return [invalid("M2-1", code, series_id, session_id, t, params, lane) for t in cutoffs]
     return [_f1_at(tape, groups, nf, params, t, open_ns, flt, lane, series_id, session_id) for t in cutoffs]
@@ -160,7 +168,7 @@ def f1_sweep(tape, cutoffs, open_ns, *, n=3, flt="all", lane="stock", delayed=Fa
 def _f4_prep(tape, window_s, threshold_ticks, n, flt, lane, series_id, session_id, session_in_calendar, open_ns):
     nf = frac(n)
     params = {"N": n if nf is None else nf, "threshold_ticks": threshold_ticks, "window_s": window_s}
-    code = structural_code(tape, calendar_ok=session_in_calendar, window_s=window_s,
+    code = structural_code(tape, calendar_ok=session_in_calendar, window_s=0 if window_s is None else window_s, lane=lane, flt=flt,
                            bad_param=nf is None or not is_int(threshold_ticks) or not is_int(open_ns))
     groups = None if code else tape.select(lane, flt)
     return nf, params, code, groups
@@ -186,6 +194,8 @@ def f4_large_prints(tape, t_ns, *, window_s=300, threshold_ticks=DEFAULT_THRESHO
     the window, side-agnostic (unknown side counts); fires at count >= N. An empty window is available, count 0."""
     nf, params, code, groups = _f4_prep(tape, window_s, threshold_ticks, n, flt, lane, series_id, session_id,
                                         session_in_calendar, open_ns)
+    if not code and not (is_int(t_ns) and is_int(open_ns)):
+        code = "malformed_type"
     if code:
         return invalid("M2-4", code, series_id, session_id, t_ns, params, lane)
     return _f4_at(tape, groups, nf, params, t_ns, window_s, threshold_ticks, series_id, session_id, lane, open_ns)
@@ -193,8 +203,12 @@ def f4_large_prints(tape, t_ns, *, window_s=300, threshold_ticks=DEFAULT_THRESHO
 
 def f4_sweep(tape, cutoffs, *, window_s=300, threshold_ticks=DEFAULT_THRESHOLD_TICKS, n=1, flt="all", lane="stock",
              delayed=False, series_id=None, session_id=None, session_in_calendar=True, open_ns=None):
+    if not isinstance(cutoffs, (list, tuple)):
+        return []
     nf, params, code, groups = _f4_prep(tape, window_s, threshold_ticks, n, flt, lane, series_id, session_id,
                                         session_in_calendar, open_ns)
+    if not code and not (is_int(open_ns) and all(is_int(c) for c in cutoffs)):
+        code = "malformed_type"
     if code:
         return [invalid("M2-4", code, series_id, session_id, t, params, lane) for t in cutoffs]
     return [_f4_at(tape, groups, nf, params, t, window_s, threshold_ticks, series_id, session_id, lane, open_ns)
@@ -204,8 +218,8 @@ def f4_sweep(tape, cutoffs, *, window_s=300, threshold_ticks=DEFAULT_THRESHOLD_T
 # ======================================================================================= F17 (M2-5)
 def _f17_prep(tape, window_s, threshold_ticks, flt, lane, session_in_calendar, open_ns):
     params = {"threshold_ticks": threshold_ticks, "window_s": F17_WINDOW_S}
-    code = structural_code(tape, calendar_ok=session_in_calendar, window_s=window_s, fixed_window_s=F17_WINDOW_S,
-                           bad_param=not is_int(threshold_ticks) or not is_int(open_ns))
+    code = structural_code(tape, calendar_ok=session_in_calendar, window_s=0 if window_s is None else window_s, fixed_window_s=F17_WINDOW_S,
+                           lane=lane, flt=flt, bad_param=not is_int(threshold_ticks) or not is_int(open_ns))
     groups = None if code else tape.select(lane, flt)
     return params, code, groups
 
@@ -229,7 +243,10 @@ def _f17_emit(tape, gset, ids, sums, cnts, rare, thr, params, t_ns, session_id, 
     out = []
     cidx, c_group = tape.cidx, tape.c_group
     for cid in ids:
-        ci = cidx.get(cid)
+        try:
+            ci = cidx.get(cid)
+        except TypeError:                       # an unhashable contract id has no prints
+            ci = None
         if ci is None or c_group[ci] not in gset:
             s = ne = nn = nx = 0
         else:
@@ -288,8 +305,12 @@ def f17_many(tape, t_ns, contract_ids=None, *, window_s=300, threshold_ticks=DEF
     """F17 for many contracts in ONE scan of the window's prints (per-contract sum of eligible premium over the
     fixed trailing [T - 300 s, T]; fires at sum >= threshold; a contract with no prints is available with 0).
     `contract_ids` defaults to the contracts seen on the tape in first-seen order."""
+    if contract_ids is not None and not isinstance(contract_ids, (list, tuple)):
+        return []
     ids = tape.c_id if contract_ids is None else contract_ids
     params, code, groups = _f17_prep(tape, window_s, threshold_ticks, flt, lane, session_in_calendar, open_ns)
+    if not code and not (is_int(t_ns) and is_int(open_ns)):
+        code = "malformed_type"
     if code:
         return [invalid("M2-5", code, cid, session_id, t_ns, params, lane) for cid in ids]
     start = start_of(t_ns, F17_WINDOW_S * NS, open_ns)
@@ -309,8 +330,14 @@ def f17_sweep(tape, cutoffs, contract_ids=None, *, window_s=300, threshold_ticks
               lane="stock", delayed=False, session_id=None, session_in_calendar=True, open_ns=None):
     """F17 at many cutoffs: one list of per-contract results per cutoff (input order). The per-contract sums
     are kept incrementally with two pointers per group, so each print is added once and removed once."""
+    if contract_ids is not None and not isinstance(contract_ids, (list, tuple)):
+        return []
+    if not isinstance(cutoffs, (list, tuple)):
+        return []
     ids = tape.c_id if contract_ids is None else contract_ids
     params, code, groups = _f17_prep(tape, window_s, threshold_ticks, flt, lane, session_in_calendar, open_ns)
+    if not code and not (is_int(open_ns) and all(is_int(c) for c in cutoffs)):
+        code = "malformed_type"
     if code:
         return [[invalid("M2-5", code, cid, session_id, t, params, lane) for cid in ids] for t in cutoffs]
     gset = set(groups)
@@ -327,7 +354,7 @@ def f17_columns(tape, t_ns, contract_ids=None, *, flt="all", lane="stock", open_
     ids = tape.c_id if contract_ids is None else contract_ids
     if tape.error:
         raise ValueError(tape.error)
-    if not is_int(open_ns):
+    if not is_int(open_ns) or not is_int(t_ns) or type(lane) is not str or type(flt) is not str or flt not in FILTERS:
         raise ValueError("malformed_type")
     groups = tape.select(lane, flt)
     gset = set(groups)
@@ -347,7 +374,8 @@ def f17_sweep_columns(tape, cutoffs, contract_ids=None, *, flt="all", lane="stoc
     ids = tape.c_id if contract_ids is None else contract_ids
     if tape.error:
         raise ValueError(tape.error)
-    if not is_int(open_ns):
+    if (not is_int(open_ns) or not all(is_int(c) for c in cutoffs) or type(lane) is not str
+            or type(flt) is not str or flt not in FILTERS):
         raise ValueError("malformed_type")
     groups = tape.select(lane, flt)
     gset = set(groups)
@@ -368,7 +396,8 @@ def f17_sweep_columns(tape, cutoffs, contract_ids=None, *, flt="all", lane="stoc
 def _f7_prep(tape, window_s, share_threshold, flt, lane, session_in_calendar, open_ns):
     th = frac(share_threshold)
     params = {"share_threshold": share_threshold if th is None else th, "window_s": window_s}
-    code = structural_code(tape, calendar_ok=session_in_calendar, window_s=window_s, bad_param=th is None or not is_int(open_ns))
+    code = structural_code(tape, calendar_ok=session_in_calendar, window_s=0 if window_s is None else window_s, lane=lane, flt=flt,
+                           bad_param=th is None or not is_int(open_ns))
     groups = None if code else tape.select(lane, flt)
     return th, params, code, groups
 
@@ -398,6 +427,8 @@ def f7_concentration(tape, t_ns, *, window_s=300, share_threshold="3/5", flt="al
     one expiry (summed over strikes and rights); fires when either share >= threshold (default 3/5). Ties: lowest
     strike, earliest expiry. Denominator is the total eligible premium (zero_denominator when 0)."""
     th, params, code, groups = _f7_prep(tape, window_s, share_threshold, flt, lane, session_in_calendar, open_ns)
+    if not code and not (is_int(t_ns) and is_int(open_ns)):
+        code = "malformed_type"
     if code:
         return invalid("M2-6", code, series_id, session_id, t_ns, params, lane)
     start = start_of(t_ns, window_s * NS, open_ns)
@@ -423,7 +454,11 @@ def f7_sweep(tape, cutoffs, *, window_s=300, share_threshold="3/5", flt="all", l
     """F7 at many cutoffs; the strike and expiry sums slide with two pointers per group (each print is added
     once and removed once), so overlapping windows are never rescanned. (A per-key prefix-sum index was tried and
     is slower: O(keys log n) per cutoff exceeds a window scan at these densities.)"""
+    if not isinstance(cutoffs, (list, tuple)):
+        return []
     th, params, code, groups = _f7_prep(tape, window_s, share_threshold, flt, lane, session_in_calendar, open_ns)
+    if not code and not (is_int(open_ns) and all(is_int(c) for c in cutoffs)):
+        code = "malformed_type"
     if code:
         return [invalid("M2-6", code, series_id, session_id, t, params, lane) for t in cutoffs]
     by_s, by_e = {}, {}
@@ -474,8 +509,8 @@ def _f18_prep(tape, window_s, at_least, at_most, lane, session_in_calendar, open
            or not is_int(open_ns))
     params = {"at_least": at_least if (bad and al is None) else al, "at_most": at_most if (bad and am is None) else am,
               "window_s": window_s}
-    code = structural_code(tape, calendar_ok=session_in_calendar, window_s=window_s,
-                           threshold_missing=at_least is None and at_most is None, bad_param=bad)
+    code = structural_code(tape, calendar_ok=session_in_calendar, window_s=0 if window_s is None else window_s,
+                           threshold_missing=at_least is None and at_most is None, bad_param=bad, lane=lane)
     groups = None if code else (tape.select(lane, "puts"), tape.select(lane, "calls"))
     return al, am, params, code, groups
 
@@ -507,6 +542,8 @@ def f18_put_share(tape, t_ns, *, window_s=300, at_least=None, at_most=None, lane
     available). Fires at share >= at_least or share <= at_most; neither set is invalid_input threshold_required.
     Side-agnostic; the calls/puts filter does not apply."""
     al, am, params, code, groups = _f18_prep(tape, window_s, at_least, at_most, lane, session_in_calendar, open_ns)
+    if not code and not (is_int(t_ns) and is_int(open_ns)):
+        code = "malformed_type"
     if code:
         return invalid("M2-9", code, series_id, session_id, t_ns, params, lane)
     return _f18_at(tape, groups, al, am, params, t_ns, window_s, series_id, session_id, lane, open_ns)
@@ -514,7 +551,11 @@ def f18_put_share(tape, t_ns, *, window_s=300, at_least=None, at_most=None, lane
 
 def f18_sweep(tape, cutoffs, *, window_s=300, at_least=None, at_most=None, lane="stock", delayed=False,
               series_id=None, session_id=None, session_in_calendar=True, open_ns=None):
+    if not isinstance(cutoffs, (list, tuple)):
+        return []
     al, am, params, code, groups = _f18_prep(tape, window_s, at_least, at_most, lane, session_in_calendar, open_ns)
+    if not code and not (is_int(open_ns) and all(is_int(c) for c in cutoffs)):
+        code = "malformed_type"
     if code:
         return [invalid("M2-9", code, series_id, session_id, t, params, lane) for t in cutoffs]
     return [_f18_at(tape, groups, al, am, params, t, window_s, series_id, session_id, lane, open_ns) for t in cutoffs]

@@ -69,20 +69,20 @@ MUTS = [
     ("skip_window_check", ["skip_window_check"], MP, [("        elif window_s not in ALLOWED_WINDOWS:", "        elif False:", 1)], ""),
     ("f17_window_any", ["skip_window_check"], MP, [("            if window_s != fixed_window_s:", "            if False:", 1)], ""),
     ("threshold_not_required", [], MP, [("threshold_missing=at_least is None and at_most is None", "threshold_missing=False", 1)], ""),
-    ("skip_unordered", ["skip_unordered"], PT, [("            if t < pt or (t == pt and seq < ps):", "            if False:", 1)], ""),
-    ("unordered_seq_ties_ignored", [], PT, [("(t == pt and seq < ps)", "False", 1)], "same time, lower seq"),
-    ("negative_price_allowed", [], PT, [("if size < 0 or price < 0:", "if size < 0:", 1)], ""),
-    ("negative_size_allowed", [], PT, [("if size < 0 or price < 0:", "if price < 0:", 1)], ""),
-    ("zero_multiplier_allowed", [], PT, [("if mult <= 0:", "if mult < 0:", 1)], ""),
+    ("skip_unordered", ["skip_unordered"], PT, [("        if ts_ok and prev_ok and (t < pt or (t == pt and seq < ps)):", "        if False:", 1)], ""),
+    ("unordered_seq_ties_ignored", [], PT, [("(t == pt and seq < ps)", "False", 2)], "same time, lower seq"),
+    ("negative_price_allowed", [], PT, [("if size_ok and (size < 0 or (ticks is not None and ticks < 0)):", "if size_ok and size < 0:", 1)], ""),
+    ("negative_size_allowed", [], PT, [("if size_ok and (size < 0 or (ticks is not None and ticks < 0)):", "if size_ok and ticks is not None and ticks < 0:", 1)], ""),
+    ("zero_multiplier_allowed", [], PT, [("if type(mult) is int and mult <= 0:", "if type(mult) is int and mult < 0:", 1)], ""),
     ("lane_ignored", ["lane_ignored"], PT,
      [("if ln == lane and r in rights)", "if r in rights)", 1)], ""),
     ("filter_ignored", [], PT, [("if ln == lane and r in rights)", "if ln == lane)", 1)], "calls/puts filter ignored"),
-    ("excluded_counted_eligible", ["cond_excl_counted"], PT, [("        if excl:\n            rare_add((t, ci, K_EXCL))", "        if False:\n            rare_add((t, ci, K_EXCL))", 1)], ""),
-    ("nonstandard_counted_eligible", ["nonstd_counted", "f7_denominator_all"], PT, [("        elif mult != 100:", "        elif False:", 1)], "also the F7 denominator mutant"),
+    ("excluded_counted_eligible", ["cond_excl_counted"], PT, [("            if excl:\n                rare_add((t, ci, K_EXCL))", "            if False:\n                rare_add((t, ci, K_EXCL))", 1)], ""),
+    ("nonstandard_counted_eligible", ["nonstd_counted", "f7_denominator_all"], PT, [("            elif mult != 100:", "            elif False:", 1)], "also the F7 denominator mutant"),
     ("both_flags_as_nonstandard", ["both_nonstd_first"], PT,
-     [("        if excl:\n            rare_add((t, ci, K_EXCL))", "        if excl and mult == 100:\n            rare_add((t, ci, K_EXCL))", 1)], ""),
+     [("            if excl:\n                rare_add((t, ci, K_EXCL))", "            if excl and mult == 100:\n                rare_add((t, ci, K_EXCL))", 1)], ""),
     ("both_flags_counted_twice", [], PT,
-     [("        if excl:\n            rare_add((t, ci, K_EXCL))", "        if excl:\n            rare_add((t, ci, K_EXCL))\n            if mult != 100:\n                rare_add((t, ci, K_NONSTD))", 1)], "AMB-14"),
+     [("            if excl:\n                rare_add((t, ci, K_EXCL))", "            if excl:\n                rare_add((t, ci, K_EXCL))\n                if mult != 100:\n                    rare_add((t, ci, K_NONSTD))", 1)], "AMB-14"),
     ("unknown_side_dropped", ["f4_side_known", "f18_unknown_dropped"], PT,
      [("        n += 1\n", "        n += 1\n        if len(p) > 7 and p[7] == \"unknown\":\n            continue\n", 1)], ""),
     ("nonstd_coverage_start_exclusive", [], PT,
@@ -128,13 +128,18 @@ MUTS = [
     ("f12_sweep_state_not_advanced", [], EP, [("        if upto + 1 > self.k:\n            self.k = upto + 1\n", "", 1)], "review: incremental F12"),
     ("large_cache_unbounded", [], PT, [("while len(cache) >= LARGE_CACHE_THRESHOLDS:", "while False:", 1)], "review: bounded cache"),
     ("price_digit_beyond_4th_accepted", [], FG, [('            if frac[TICK_DIGITS:].strip("0"):', "            if False:", 1)], "review: strict price text (shared parser)"),
-    ("unknown_contract_silent", [], PT, [("                unknown = True\n                continue", "                continue", 1)], "PR 79 ruling 5"),
-    ("malformed_price_silent", [], PT, [("                malformed = True\n                price = 0", "                price = 0", 1)], "PR 79 ruling 5"),
+    ("unknown_contract_silent", [], PT, [("                    unknown = True", "                    pass", 1)], "PR 79 ruling 5"),
+    ("malformed_price_silent", [], PT, [("            ticks = None\n            late = True", "            ticks = None", 1)], "PR 79 ruling 5"),
     ("f4_fire_floor_N", [], MP, [("count * nf.denominator >= nf.numerator", "count >= nf.numerator // nf.denominator", 1)], "fractional N floored"),
     ("f1_fire_floor_ratio", [], MP, [("fired = 15 * p60 * nf.denominator >= nf.numerator * p900", "fired = (15 * p60) // p900 >= nf.numerator // nf.denominator", 1)], "fractional ratio floored"),
     ("rational_text_loose", [], MP, [("    if k is str and _RATIONAL.fullmatch(x):", "    if k is str:", 1)], "text parameter grammar"),
-    ("open_not_required_f4", [], MP, [("bad_param=nf is None or not is_int(threshold_ticks) or not is_int(open_ns))", "bad_param=nf is None or not is_int(threshold_ticks))", 1)], "open_ns required"),
+    ("open_not_required_f4", [], MP, [("bad_param=nf is None or not is_int(threshold_ticks) or not is_int(open_ns))", "bad_param=nf is None or not is_int(threshold_ticks))", 1), ("    if not code and not (is_int(t_ns) and is_int(open_ns)):", "    if False:", 5)], "open_ns required"),
     ("before_open_not_empty", [], MP, [("    if open_ns is not None and t_ns < open_ns:\n        return t_ns + 1", "    if False:\n        return t_ns + 1", 1)], "cutoff before open"),
+    ("unhashable_id_unguarded", [], PT, [("            except Exception:\n                late = True\n    if unordered:", "            except Exception:\n                pass\n    if unordered:", 1)], "total tape"),
+    ("short_print_ignored", [], PT, [("        except Exception:\n            late = True\n            prev_ok = False\n            continue", "        except Exception:\n            prev_ok = False\n            continue", 1)], "total tape"),
+    ("fast_loop_crash_swallowed", [], PT, [("        if error is None and crashed is not None:\n            raise crashed\n", "", 1)], "total tape: only a malformed contract table re-raises"),
+    ("f12_huge_cutoff_unbounded", [], "option_features/episodes.py", [("or (t_ns - open_ns) // GRID_NS >= MAX_GRID_POINTS)", ")", 1)], "total F12 grid bound"),
+    ("lane_type_unchecked", [], MP, [("(bad_param or type(lane) is not str or type(delayed) is not bool", "(bad_param or type(delayed) is not bool", 1)], "total parameters"),
     ("f12_peak_not_exact", [], EP, [("pk_a, pk_b, pk_k = a, b, k", "pk_a, pk_b, pk_k = a, b, k if pk_k is None else pk_k", 2)], "peak time sticks to the first point"),
 ]
 
@@ -147,6 +152,7 @@ def fixture_tags():
 def run_tests(src_a, src_b, modules, timeout=240):
     env = dict(os.environ)
     env["M2B_SEEDS"] = "6"
+    env["M2B_TOTALITY_N"] = "3000"
     env["PYTHONPATH"] = os.pathsep.join([str(src_a), str(src_b)])
     env["PYTHONDONTWRITEBYTECODE"] = "1"
     env.pop("R25_INDEPENDENT_WIRE_FIXTURES", None)
@@ -184,7 +190,7 @@ def main(argv):
                 bad, rc = run_tests(src, contracts, modules)
                 mapped = set().union(*(fx[f] for f in fmuts)) if fmuts else set()
                 if not rows_only and not (bad and (not mapped or any(tags_of.get(b, set()) & mapped for b in bad))):
-                    bad2, rc = run_tests(src, contracts, ["test_m2b_properties", "test_m2b_review"])       # rows did not decide: properties
+                    bad2, rc = run_tests(src, contracts, ["test_m2b_properties", "test_m2b_review", "test_m2b_totality"])       # rows did not decide: properties
                     bad |= {"properties:" + b for b in bad2}
             except subprocess.TimeoutExpired:
                 bad, rc = {"<timeout>"}, 1
