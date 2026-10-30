@@ -396,13 +396,15 @@ def gate_b15_overlap(G, M, E, PT, repeats, report):
         mid = cuts[39]
         a1, _ = sample(lambda: one(PT.build_tape(prints, cons), mid), repeats)
         a78, _ = sample(lambda: sweep(PT.build_tape(prints, cons)), repeats)
-        q1, _ = sample(lambda: one(tape, mid), repeats)
+        # strict prebuilt ratio, agreed (Tester) method: 78 independent single calls on the prebuilt tape against
+        # one sweep call, medians of whole-call times
+        q1, _ = sample(lambda: [one(tape, T) for T in cuts], repeats)
         q78, _ = sample(lambda: sweep(tape), repeats)
         w = {"with_tape_build": {"ratio_p50": round(stats(a78)["p50_ns"] / (78 * stats(a1)["p50_ns"]), 4),
                                  "ratio_p95": round(stats(a78)["p95_ns"] / (78 * stats(a1)["p95_ns"]), 4)},
-             "prebuilt": {"ratio_p50": round(stats(q78)["p50_ns"] / (78 * stats(q1)["p50_ns"]), 4),
-                          "ratio_p95": round(stats(q78)["p95_ns"] / (78 * stats(q1)["p95_ns"]), 4)},
-             "single_query_p50_ns": stats(q1)["p50_ns"], "sweep_queries_p50_ns": stats(q78)["p50_ns"], "gated": gated}
+             "prebuilt": {"ratio_p50": round(stats(q78)["p50_ns"] / stats(q1)["p50_ns"], 4),
+                          "ratio_p95": round(stats(q78)["p95_ns"] / stats(q1)["p95_ns"], 4)},
+             "singles_78_p50_ns": stats(q1)["p50_ns"], "sweep_p50_ns": stats(q78)["p50_ns"], "gated": gated}
         worst = max(w["with_tape_build"]["ratio_p95"], w["prebuilt"]["ratio_p95"])
         w["verdict"] = (("PASS" if worst <= 0.25 else ("with tape build: %s; prebuilt: %s (budget 0.25, hard 0.5)" % (
             "PASS" if w["with_tape_build"]["ratio_p95"] <= 0.25 else "FAIL",
