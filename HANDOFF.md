@@ -20,7 +20,7 @@ Updated 2026-10-29 (M1 CLOSED, see docs/M1_CLOSE.md; P1 DONE, 0.2.0a1 on main, m
 
 ## M2 and the feature tracker (2026-10-30)
 - docs/FEATURE_STATUS.md is the single live tracker of every planned feature (status, release, PRs, evidence, pending reasons, counts, gates). RULE: every release PR updates it (docs/RELEASE_NOTE_TEMPLATE.md rule 7). Created by the M2 F-row re-audit docs PR (branch docs/feature-status, not merged).
-- M2: story B merged (PR 79, F1, F4, F7, F12, F17, F18); story A is PR 80 (store, grid, F2a-d, F10, F20, F19), open, rows read "built, PR 80 pending merge". docs/FLOW_NAMING_MAP.md carries the M2 rows. Next: PR 80 merge and Tester re-runs, align B to A Result type, runner integration, F7/F17 perf follow-up, M3 matrix.
+- M2: story B (PR 79) and story A (PR 80) merged, FEATURE_STATUS in main (PR 85); no row is pending merge; F2d stays partial (DR-M2-1). docs/FLOW_NAMING_MAP.md carries the M2 rows. Next: PR 80 merge and Tester re-runs, align B to A Result type, runner integration, F7/F17 perf follow-up, M3 matrix.
 
 ## Next
 0. Independent freeze review of CANDIDATE13_FREEZE_RECORD: DONE (approve-with-conditions, applied); next coordinator freeze and merge. Then candidate14 (PO R27 rulings): lift exclusion of the 3 null-nondict rows, harness assertion for the extra-stream control row, re-issue filter, hashes, counts and release notes. PO to review: N5 rows flagged (proposed), assumption-2 confirmation, A>K disclosure, sorted-literal excluded_ids, nonexpected two-control rows as negative controls (the last three already PO-ruled; see DECISIONS.md).
