@@ -116,3 +116,8 @@ The history view a unit needs is passed read-only; a worker keeps the view it bu
 - A5 (RULED as a number): M2-B1 to B4 numbers (50 us, 25,000 records/s) assume pure CPython bisect on array-backed sorted lists; if the Developer proposes another structure the gate stays and the structure is the Developer's choice.
 - A6 (RULED as a number; B2n and B3n ratio gate: Budget 3.6, Hard 4.0, statistic median of 30 paired ratios t(6,000)/t(2,000)): 3.6 (time ratio for 3x size) and 12 (for 10x) are the P1-T1 style superlinear checks (1.2 x the size ratio).
 
+
+## 9. Rulings after the story B and A measurements (RULED, pending design ratification where the design is silent)
+- M2-B15: the gate is the print-pass ratio with the tape build counted (met). The strict prebuilt-tape ratio is informational. Performance candidates named: F7 at 3x overlap and F17 sparse reads (a density-adaptive window strategy).
+- M2-B16: the store binary mmap snapshot is ratified as the worker-start transfer form (optional, alongside the canonical M2SNAP1 format). At N = 6,000 series the hard limits (15 s start, 1 GB per worker) are the gate; 5 s and 512 MB are gated at N = 2,000. Private bytes and shared mapped bytes are reported separately.
+- Next M2 task: the re-audit of every F row.
