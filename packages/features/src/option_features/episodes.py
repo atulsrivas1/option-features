@@ -70,7 +70,7 @@ def scan_episodes(p60, p900, upto, thr_num, thr_den, quiet_gap):
 def _bad_params(nf, n_episodes, quiet_gap, grid_s):
     """True when a parameter is malformed (float or unparsable N, non-int or < 1 counts, grid other than 60 s)."""
     return (nf is None or type(quiet_gap) is not int or quiet_gap < 1 or type(n_episodes) is not int
-            or n_episodes < 1 or grid_s != GRID_S)
+            or n_episodes < 1)
 
 
 class _Scan:
@@ -140,7 +140,8 @@ def f12_episodes(p60, p900, t_ns, open_ns, *, n=3, n_episodes=1, quiet_gap=1, gr
     nf = frac(n)
     params = {"N": n if nf is None else nf, "grid_s": grid_s, "n_episodes": n_episodes, "quiet_gap": quiet_gap}
     code = structural_code(None, calendar_ok=session_in_calendar, delayed=delayed,
-                           bad_param=_bad_params(nf, n_episodes, quiet_gap, grid_s))
+                           bad_param=_bad_params(nf, n_episodes, quiet_gap, grid_s),
+                           bad_grid=grid_s != GRID_S)
     if code:
         return invalid("M2-11", code, series_id, session_id, t_ns, params, lane)
     elapsed = t_ns - open_ns
@@ -169,7 +170,8 @@ def f12_from_tape(tape, t_ns, open_ns, *, n=3, n_episodes=1, quiet_gap=1, grid_s
     nf = frac(n)
     params = {"N": n if nf is None else nf, "grid_s": grid_s, "n_episodes": n_episodes, "quiet_gap": quiet_gap}
     code = structural_code(tape, calendar_ok=session_in_calendar, delayed=delayed,
-                           bad_param=_bad_params(nf, n_episodes, quiet_gap, grid_s))
+                           bad_param=_bad_params(nf, n_episodes, quiet_gap, grid_s),
+                           bad_grid=grid_s != GRID_S)
     if code:
         return invalid("M2-11", code, series_id, session_id, t_ns, params, lane)
     elapsed = t_ns - open_ns
@@ -191,7 +193,8 @@ def f12_sweep(tape, cutoffs, open_ns, *, n=3, n_episodes=1, quiet_gap=1, grid_s=
     nf = frac(n)
     params = {"N": n if nf is None else nf, "grid_s": grid_s, "n_episodes": n_episodes, "quiet_gap": quiet_gap}
     code = structural_code(tape, calendar_ok=session_in_calendar, delayed=delayed,
-                           bad_param=_bad_params(nf, n_episodes, quiet_gap, grid_s))
+                           bad_param=_bad_params(nf, n_episodes, quiet_gap, grid_s),
+                           bad_grid=grid_s != GRID_S)
     if code:
         return [invalid("M2-11", code, series_id, session_id, t, params, lane) for t in cutoffs]
     out = [None] * len(cutoffs)

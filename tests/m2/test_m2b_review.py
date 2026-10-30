@@ -26,9 +26,13 @@ class Strict(unittest.TestCase):
         for call in calls:
             r = call()
             self.assertEqual((r["status"], r["code"]), ("invalid_input", "malformed_type"))
-        for kw in ({"quiet_gap": 0}, {"n_episodes": 0}, {"grid_s": 30}, {"n": 1.5}, {"quiet_gap": True}):
+        for kw in ({"quiet_gap": 0}, {"n_episodes": 0}, {"n": 1.5}, {"quiet_gap": True}):
             r = E.f12_episodes([], [], T, OPEN, **kw)
             self.assertEqual((r["status"], r["code"]), ("invalid_input", "malformed_type"), kw)
+
+    def test_grid_not_60s(self):
+        r = E.f12_episodes([], [], OPEN + 1000 * NS, OPEN, grid_s=30)
+        self.assertEqual((r["status"], r["code"]), ("invalid_input", "grid_not_60s"))
 
     def test_non_int_window_is_window_not_allowed(self):
         tape = PT.build_tape([("A", OPEN + NS, "1.0000", 5, 100, 0, 0)], CONS)
@@ -62,7 +66,8 @@ class Strict(unittest.TestCase):
             self.assertEqual(PT.build_tape(prints, CONS).error, code, prints)
         tape = PT.build_tape([], CONS)
         T = OPEN + NS
-        self.assertEqual(M.f18_put_share(tape, T, window_s=45, at_least=1.5, delayed=True)["code"], "window_not_allowed")
+        self.assertEqual(M.f18_put_share(tape, T, window_s=45, at_least=1.5, delayed=True)["code"], "malformed_type")
+        self.assertEqual(M.f18_put_share(tape, T, window_s=45, at_least="1/2", delayed=True)["code"], "window_not_allowed")
         self.assertEqual(M.f18_put_share(tape, T, at_least=None, at_most=None, delayed=True)["code"], "threshold_required")
         self.assertEqual(M.f1_premium_surge(tape, T, OPEN, n=1.5, delayed=True)["code"], "malformed_type")
         self.assertEqual(M.f1_premium_surge(tape, T, OPEN, delayed=True, session_in_calendar=False)["code"], "session_not_in_calendar")

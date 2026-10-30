@@ -52,16 +52,30 @@ def _common(inp, prm):
 
 def run_row(row):
     """Library answer for one row, reshaped into the row's `expected` vocabulary."""
+    got = _run_row(row)
+    version = got.pop("version")
+    assert version == "0.2.0a1", version          # every result carries the package version
+    if "version" in row["expected"]:
+        got["version"] = version
+    return got
+
+
+def _run_row(row):
     from option_features import episodes as E, m2prints as M, printtape as PT
     inp, prm, out = row["inputs"], row["params"], row["output_id"]
     common = _common(inp, prm)
     T = inp["t_ns"]
+    if out == "M2-11" and "prints" in inp:
+        tape = PT.build_tape(_prints(inp), _contracts(inp))
+        return shape(E.f12_from_tape(tape, T, inp["session"]["open_ns"], n=prm.get("N", 3),
+                                     n_episodes=prm.get("n_episodes", 1), quiet_gap=prm.get("quiet_gap", 1),
+                                     flt=prm.get("filter", "all"), grid_s=prm.get("grid_s", 60), **common))
     if out == "M2-11":
         pts = inp["points"]
         p60 = [None if p is None else p[0] for p in pts]
         p900 = [None if p is None else p[1] for p in pts]
         res = E.f12_episodes(p60, p900, T, inp["session"]["open_ns"], n=prm.get("N", 3),
-                             n_episodes=prm.get("n_episodes", 1), quiet_gap=prm.get("quiet_gap", 1), **common)
+                             n_episodes=prm.get("n_episodes", 1), quiet_gap=prm.get("quiet_gap", 1), grid_s=prm.get("grid_s", 60), **common)
         return shape(res)
     tape = PT.build_tape(_prints(inp), _contracts(inp))
     if out == "M2-1":
@@ -69,17 +83,17 @@ def run_row(row):
                                  **common)
     elif out == "M2-4":
         res = M.f4_large_prints(tape, T, window_s=prm.get("window_s", 300),
-                                threshold_ticks=prm.get("threshold_ticks", 10 ** 9), n=prm.get("N", 1), **common)
+                                threshold_ticks=prm.get("threshold_ticks", 10 ** 9), n=prm.get("N", 1), open_ns=inp["session"].get("open_ns"), **common)
     elif out == "M2-5":
         common.pop("series_id")
         res = M.f17_window_premium(tape, T, inp["series_id"], window_s=prm.get("window_s", 300),
-                                   threshold_ticks=prm.get("threshold_ticks", 10 ** 9), **common)
+                                   threshold_ticks=prm.get("threshold_ticks", 10 ** 9), open_ns=inp["session"].get("open_ns"), **common)
     elif out == "M2-6":
         res = M.f7_concentration(tape, T, window_s=prm.get("window_s", 300),
-                                 share_threshold=prm.get("share_threshold", "3/5"), **common)
+                                 share_threshold=prm.get("share_threshold", "3/5"), open_ns=inp["session"].get("open_ns"), **common)
     else:
         res = M.f18_put_share(tape, T, window_s=prm.get("window_s", 300), at_least=prm.get("at_least"),
-                              at_most=prm.get("at_most"), **common)
+                              at_most=prm.get("at_most"), open_ns=inp["session"].get("open_ns"), **common)
     return shape(res)
 
 
@@ -89,8 +103,9 @@ def shape(res):
     e = {k: w[k] for k in ("status", "reason", "code", "value", "fired", "label", "coverage")}
     if w.get("ratio_reason"):
         e["ratio_reason"] = w["ratio_reason"]
+    e["version"] = w["version"]
     return e
 
 
-def canon(o):
+def canon(o, want=None):
     return json.dumps(o, sort_keys=True, separators=(",", ":"))

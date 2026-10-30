@@ -57,7 +57,8 @@ def is_int(x):
 
 
 def start_of(t_ns, width_ns, open_ns):
-    """Window start, clipped at session open when `open_ns` is given (prints before open are not counted)."""
+    """Window start, clipped at session open (prints before open are never counted); `open_ns` None only when the
+    caller has no session open (no clipping then)."""
     start = t_ns - width_ns
     return start if open_ns is None or start >= open_ns else open_ns
 
@@ -82,13 +83,17 @@ def invalid(output_id, code, series_id, session_id, t_ns, params, lane):
 
 
 def structural_code(tape, *, calendar_ok=True, window_s=None, fixed_window_s=None, threshold_missing=False,
-                    delayed=False, bad_param=False):
+                    delayed=False, bad_param=False, bad_grid=False):
     """First failing structural code in the ruled order, or None: tape errors (unordered_prints,
-    negative_size_or_price, bad_multiplier, unknown_contract, malformed_type), session_not_in_calendar,
-    window_not_allowed (also a non-int window), threshold_required, malformed_type (a float, bool or unparsable
-    parameter), delayed_feed_tag."""
+    negative_size_or_price, bad_multiplier, unknown_contract, malformed_type), malformed_type (a float, bool or
+    unparsable parameter), grid_not_60s (F12), session_not_in_calendar, window_not_allowed (also a non-int window),
+    threshold_required, delayed_feed_tag (the single list of PR 81 section 9)."""
     if tape is not None and tape.error:
         return tape.error
+    if bad_param:
+        return "malformed_type"
+    if bad_grid:
+        return "grid_not_60s"
     if not calendar_ok:
         return "session_not_in_calendar"
     if window_s is not None:
@@ -101,8 +106,6 @@ def structural_code(tape, *, calendar_ok=True, window_s=None, fixed_window_s=Non
             return "window_not_allowed"
     if threshold_missing:
         return "threshold_required"
-    if bad_param:
-        return "malformed_type"
     if delayed:
         return "delayed_feed_tag"
     return None
@@ -491,7 +494,7 @@ def _f18_at(tape, groups, al, am, params, t_ns, window_s, series_id, session_id,
     return result("M2-9", series_id, session_id, t_ns, "available", None, None,
                   {"put_volume": put, "call_volume": call, "put_share": Fraction(put, total),
                    "put_call_ratio": Fraction(put, call) if call else None}, fired, params, coverage, "put", lane,
-                  ratio_reason=None if call else "zero_denominator")
+                  **({} if call else {"ratio_reason": "zero_denominator"}))
 
 
 def f18_put_share(tape, t_ns, *, window_s=300, at_least=None, at_most=None, lane="stock", delayed=False,

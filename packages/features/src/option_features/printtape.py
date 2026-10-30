@@ -44,7 +44,7 @@ _DECIMAL = re.compile(r"-?(\d+(\.\d*)?|\.\d+)", re.ASCII)
 def ticks4(value):
     """Exact integer ticks of 10**-4 from a decimal string, int ticks, Decimal or Fraction. Rejects bool and
     float; a text price must be a plain decimal; trailing zeros beyond the 4th place are accepted (value-equal),
-    a non-zero digit beyond it is an error (ValueError)."""
+    a non-zero digit beyond it raises ValueError (malformed_type at the tape)."""
     kind = type(value)
     if kind is int:
         return value
@@ -54,7 +54,7 @@ def ticks4(value):
         whole, _, frac = value.partition(".")
         if len(frac) > TICK_DIGITS:
             if frac[TICK_DIGITS:].strip("0"):
-                raise ValueError("more than %d decimal places: %r" % (TICK_DIGITS, value))
+                raise ValueError("non-zero digit beyond the %dth decimal: %r" % (TICK_DIGITS, value))
             frac = frac[:TICK_DIGITS]
         if whole in ("", "-"):
             whole += "0"
@@ -222,7 +222,8 @@ def build_tape(prints, contracts, validate="full"):
     for p in prints:
         cid, t, price, size, mult, excl, seq = p[:7]
         n += 1
-        if t.__class__ is not int or size.__class__ is not int or mult.__class__ is not int:
+        if (t.__class__ is not int or size.__class__ is not int or mult.__class__ is not int
+                or seq.__class__ is not int or (excl.__class__ is not bool and excl not in (0, 1))):
             malformed = True                      # neutral stand-ins keep the other checks (and precedence) alive
             if t.__class__ is not int:
                 t = pt if pt > -(1 << 100) else 0
@@ -230,6 +231,10 @@ def build_tape(prints, contracts, validate="full"):
                 size = 0
             if mult.__class__ is not int:
                 mult = 100
+            if seq.__class__ is not int:
+                seq = ps
+            if excl.__class__ is not bool and excl not in (0, 1):
+                excl = 0
         if price.__class__ is not int:
             try:
                 price = ticks4(price)

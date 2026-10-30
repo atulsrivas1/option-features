@@ -68,11 +68,5 @@ Unit = underlying x session x cutoff (key `SYN1/03/045`); the unit reads an immu
 - F12 `peak_ratio` and `peak_ns` are taken over the available points of the session to date even with zero episodes (ties earliest: peak 1 at the earliest available point when all ratios are 1).
 - F2d `fired` is null in M2 (design request DR-M2-1, matrix section 11).
 
-## 8. Ruled with PR 79 (story B; interim pending design ratification where the design is silent)
-- F18 results carry a top-level `ratio_reason` after `version` ("zero_denominator" when call volume is 0, else null); it is the only output with an extra top-level key.
-- `version` is the package version string ("0.2.0a1").
-- New structural codes (invalid_input, after bad_multiplier in the precedence list): `unknown_contract` (a print whose contract id has no contract record) and `malformed_type` (a text price with more than 4 decimals or not a decimal). Neither raises; every print family answers invalid_input with the code. F12 grid points before open + 900 s are unavailable even if supplied; F12 coverage from prints counts the lane's prints in [open, T], from points it is zeros.
-- Precedence implemented for the print families (first failing code is reported): unordered_prints, negative_size_or_price, bad_multiplier, unknown_contract, malformed_type (a print field: non-int time, size or multiplier, or an invalid text price), session_not_in_calendar, window_not_allowed (also a non-int window), threshold_required, malformed_type (a parameter: float, bool or unparsable N, threshold, share or ticks; F12 non-int or < 1 quiet_gap and n_episodes, grid other than 60 s), delayed_feed_tag; then, as gates, insufficient_window, zero_denominator.
-- Text prices: a plain decimal (`-?(\d+(\.\d*)?|\.\d+)`, ASCII); trailing zeros beyond the 4th place are accepted (value-equal), a non-zero digit beyond it is malformed_type; bool and float prices are rejected.
-- Prints before session open are excluded from the F4, F7, F17 and F18 windows (the window is clipped at open) when the caller passes `open_ns`; F1 and F12 windows never reach before open once available. The row adapter does not pass `open_ns` (the fixture rows pin the unclipped result).
-
+## 8. Story B output rules (PR 79)
+See section 9 (single authoritative section) for: shapes, structural codes and precedence, price grammar, F18 `ratio_reason` and `version`, F12 coverage and early-grid rules, store I/O and runner rules. Nothing is restated here.
