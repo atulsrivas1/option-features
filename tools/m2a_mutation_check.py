@@ -102,7 +102,6 @@ MUTS = [
     ("f2c_per_second", "f2c_per_second", [(RK, "Fraction(x, mins) if metric", "Fraction(x, window_s) if metric")]),
     ("f20_median_default", "f20_median_default", [(RK, '    params = {"N": N, "K": K, "metric": metric, "consumer_default": consumer_default}', '    consumer_default = "median"\n    params = {"N": N, "K": K, "metric": metric, "consumer_default": consumer_default}')]),
     ("f10_mean_default", "f10_mean_default", [(RK, '    params = {"N": N, "K": K, "window_s": window_s, "consumer_default": consumer_default}', '    consumer_default = "mean"\n    params = {"N": N, "K": K, "window_s": window_s, "consumer_default": consumer_default}')]),
-    ("skip_unordered", "skip_unordered", [(GR, "if pt is not None and (t < pt or (t == pt and seq < ps)):", "if False:")]),
     ("float_ratio", "float_ratio", [(RK, "r = Fraction(x) / st\n", "r = Fraction(float(x) / float(st))\n")]),
     ("f19_zero_counted", "f19_zero_counted", [(RK, "ratios = [(p, c) for p, c in zip(pv.totals, cv.totals) if c > 0]", "ratios = [(p, c) if c > 0 else (0, 1) for p, c in zip(pv.totals, cv.totals)]")]),
     ("store_k_plus_1", "store_k_plus_1", [(ST, "if len(recs) > self.k:\n            del recs[next(iter(recs))]\n\n    def seal", "if len(recs) > self.k + 1:\n            del recs[next(iter(recs))]\n\n    def seal")]),
@@ -159,13 +158,22 @@ MUTS = [
     ("sparse_idx_not_in_text", "sparse canonical line omits grid_idx", [(ST, ',"grid_idx":[%s],"total"', ',"total"'),
                                                                         (ST, "_grid_text(rec, cache), _idx_text(rec, cache), rec.total,", "_grid_text(rec, cache), rec.total,")]),
     ("price_beyond_4_ok", "non-zero digit beyond the 4th decimal accepted", [(GR, "if frac[TICK_DIGITS:].strip(\"0\"):", "if False:")]),
-    ("unknown_contract_ignored", "unknown contract accepted", [(GR, "if contracts is not None and cid not in contracts:", "if False:")]),
-    ("bool_size_ok", "bool or float size accepted", [(GR, "or type(size) is not int or type(mult) is not int:", "or type(mult) is not int:")]),
+    ("unknown_contract_ignored", "unknown contract accepted", [(GR, "if cid not in contracts:", "if False:")]),
     ("excluded_flag_any_ok", "any condition_excluded value accepted", [(GR, "if type(excl) is not bool and not (type(excl) is int and excl in (0, 1)):", "if False:")]),
     ("params_not_validated", "float or bool X and N accepted", [(RK, "    return any(_rational(r) is None for r in rationals) or (K is not None and type(K) is not int)", "    return False")]),
     ("byteorder_ignored", "big-endian host not refused", [(ST, 'if sys.byteorder != "little":                # the arrays', "if False:                # the arrays")]),
     ("short_binary_unchecked", "buffer shorter than the header not refused", [(ST, "if len(mv) < _BIN_HEADER:", "if False:")]),
     ("short_file_unchecked", "file shorter than the header not refused", [(ST, "if os.path.getsize(os.fspath(path)) < _BIN_HEADER:", "if False:")]),
+    ("skip_unordered", "skip_unordered", [(GR, "if prev_ok and (t < pt or (t == pt and seq < ps)):", "if False:")]),
+    ("order_pair_state_stale", "a pair with a non-int time or seq is compared through the malformed print", [(GR, "            ord_mal = True\n            prev_ok = False", "            ord_mal = True")]),
+    ("size_type_unchecked", "a wrong-typed size is not malformed_type at its slot", [(GR, "        if type(size) is not int:\n            neg_mal = True\n        elif", "        if False:\n            neg_mal = True\n        elif")]),
+    ("size_type_not_first", "a negative price counts although the size is wrong-typed (example c)", [(GR, "        if type(size) is not int:\n            neg_mal = True\n        elif", "        if type(size) is not int:\n            neg_mal = True\n            if ticks is not None and ticks < 0:\n                neg_val = True\n        elif")]),
+    ("mult_type_unchecked", "a wrong-typed multiplier is not malformed_type at its slot", [(GR, "        if type(mult) is not int:\n            bad_mal = True", "        if False:\n            bad_mal = True")]),
+    ("unknown_before_multiplier_slot", "unknown_contract reported before the multiplier slot (example a)", [(GR, '    if bad_val:\n        return "bad_multiplier"\n    if bad_mal:\n        return "malformed_type"\n    if unknown:\n        return "unknown_contract"', '    if unknown:\n        return "unknown_contract"\n    if bad_val:\n        return "bad_multiplier"\n    if bad_mal:\n        return "malformed_type"')]),
+    ("malformed_before_unknown_for_price", "a wrong-typed price is reported before unknown_contract (example b)", [(GR, "        if ticks is None:\n            other = True", "        if ticks is None:\n            other = True\n            unknown = False\n            bad_mal = True")]),
+    ("typed_ordering_slot_swapped", "wrong-typed time or seq reported before a genuine out-of-order pair", [(GR, '    if ord_val:\n        return "unordered_prints"\n    if ord_mal:\n        return "malformed_type"', '    if ord_mal:\n        return "malformed_type"\n    if ord_val:\n        return "unordered_prints"')]),
+    ("negative_slot_swapped", "a wrong-typed size is reported after a negative size elsewhere is dropped", [(GR, '    if neg_val:\n        return "negative_size_or_price"\n    if neg_mal:\n        return "malformed_type"', '    if neg_mal:\n        return "malformed_type"\n    if neg_val:\n        return "negative_size_or_price"')]),
+    ("unhashable_id_raises", "an unhashable contract id raises", [(GR, "            except TypeError:                        # an unhashable contract id\n                other = True", "            except ZeroDivisionError:\n                other = True")]),
     ("fused_uses_wrong_volume", "fused path reads the wrong input", [(RK, '("contracts", volume), ("prints", count)):', '("contracts", count), ("prints", count)):')]),
     ("fused_f10_wrong_x", "fused F10 uses the wrong input", [(RK, "contracts_view.median(), contracts_view.mean(), N,", "contracts_view.median(), contracts_view.mean(), N,"),
                                                              (RK, "e = _finish_stats(\"M2-7\", series_id, sid, evaluation_ns, volume,", "e = _finish_stats(\"M2-7\", series_id, sid, evaluation_ns, count,")]),
@@ -181,7 +189,7 @@ MUTS = [
 
 def run_tests(src, which):
     env = dict(os.environ, PYTHONPATH=os.pathsep.join([str(src), str(ROOT / "packages" / "option-contracts" / "src")]),
-               M2A_DIFF_N="3000")
+               M2A_DIFF_N="3000", M2A_TAPE_N="0")
     r = subprocess.run([PY, "-B", "-m", "unittest", "discover", "-s", str(ROOT / "tests" / "m2"), "-p", which],
                        capture_output=True, text=True, env=env, cwd=ROOT)
     failed = sorted(set(re.findall(r"^(?:FAIL|ERROR): (?:test_row_)?(\w+)", r.stderr, re.M)))

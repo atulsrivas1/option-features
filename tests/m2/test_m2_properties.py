@@ -798,8 +798,8 @@ class Section9Rules(unittest.TestCase):
         # precedence: unordered, negative, bad multiplier, unknown contract, malformed type
         self.assertEqual(chk(self._p(t=9), self._p(t=5, price="-1.0000", mult=0, cid="ZZ")), "unordered_prints")
         self.assertEqual(chk(self._p(price="-1.0000", mult=0, cid="ZZ")), "negative_size_or_price")
-        self.assertEqual(chk(self._p(mult=0, cid="ZZ", size=1.5)), "bad_multiplier")
-        self.assertEqual(chk(self._p(cid="ZZ", size=1.5)), "unknown_contract")
+        self.assertEqual(chk(self._p(mult=0, cid="ZZ", size=1.5)), "malformed_type")      # item 15: a wrong-typed size reports at its slot, before bad_multiplier
+        self.assertEqual(chk(self._p(cid="ZZ", size=1.5)), "malformed_type")
         self.assertEqual(chk(self._p(size=1.5, price=1.5)), "malformed_type")
         self.assertEqual(flowgrid.price_ticks(".5"), 5000)
         self.assertEqual(flowgrid.price_ticks("1."), 10000)
@@ -809,6 +809,89 @@ class Section9Rules(unittest.TestCase):
         with self.assertRaises(lib()[3].M2StructuralError) as cm:
             flowgrid.window_totals([self._p(cid="ZZ")], contracts, 10, 60)
         self.assertEqual(cm.exception.code, "unknown_contract")
+
+    def test_unordered_compares_adjacent_pairs_of_int_time_and_seq_only(self):
+        flowgrid = lib()[0]
+        contracts = {"K0": flowgrid.Contract("C", 1, "2026-12-18", "stock", "N")}
+        chk = lambda ps: flowgrid.check_prints(ps, contracts)  # noqa: E731
+        seqs = lambda *vs: [self._p(seq=v) for v in vs]  # noqa: E731
+        times = lambda *vs: [self._p(t=v, seq=i) for i, v in enumerate(vs)]  # noqa: E731
+        self.assertEqual(chk(seqs(5, False, 2)), "malformed_type")           # the bool pair is not compared
+        self.assertEqual(chk(seqs(2, True)), "malformed_type")
+        self.assertEqual(chk(seqs(3, 1)), "unordered_prints")                # a genuine out-of-order pair
+        self.assertEqual(chk(seqs(3, 1, 1.5)), "unordered_prints")           # a float seq elsewhere does not hide it
+        self.assertEqual(chk(seqs(1.5, 3, 1)), "unordered_prints")
+        self.assertEqual(chk(seqs(1, 1.5, 0)), "malformed_type")             # (1, 1.5) and (1.5, 0) are not compared
+        self.assertEqual(chk(seqs(1, 2, "x", 0)), "malformed_type")
+        self.assertEqual(chk(times(5, 5.0, 3)), "malformed_type")
+        self.assertEqual(chk(times(9, 5, 7.5)), "unordered_prints")
+        self.assertEqual(chk(times(5, True, 2)), "malformed_type")
+        self.assertEqual(chk(times(9, 5, False)), "unordered_prints")
+        self.assertIsNone(chk(seqs(0, 1, 2)))
+        self.assertIsNone(chk(times(1, 1, 2)))
+        # a malformed size does not stop the order check of the same list
+        self.assertEqual(chk([self._p(seq=3, size="x"), self._p(seq=1)]), "unordered_prints")
+        # a list in which the only defect is a malformed field of one print, then an ordered pair
+        self.assertEqual(chk([self._p(seq=1, price=1.5), self._p(seq=2)]), "malformed_type")
+
+    def test_item_15_slots(self):
+        """IO contract section 9 item 15: type first per field, each wrong-typed field at its own slot of the precedence list."""
+        import decimal
+        flowgrid = lib()[0]
+        D = decimal.Decimal
+        contracts = {"K0": flowgrid.Contract("C", 1, "2026-12-18", "stock", "N")}
+        chk = lambda ps: flowgrid.check_prints(ps, contracts)  # noqa: E731
+        P = self._p
+        self.assertEqual(chk([P(mult=100.0, cid="ZZ")]), "malformed_type")           # (a) the multiplier slot precedes unknown_contract
+        self.assertEqual(chk([P(price=1.5, cid="ZZ")]), "unknown_contract")          # (b) price has no value code: its slot is after
+        self.assertEqual(chk([P(size=-3, cid="ZZ")]), "negative_size_or_price")
+        self.assertEqual(chk([P(size=1.5, price="-1.0000")]), "malformed_type")      # (c) size first
+        self.assertEqual(chk([P(size=5, price="-1.0000")]), "negative_size_or_price")
+        self.assertEqual(chk([P(size=-1, price=1.5)]), "negative_size_or_price")
+        self.assertEqual(chk([P(size=1.5, mult=0)]), "malformed_type")               # size slot precedes bad_multiplier
+        self.assertEqual(chk([P(mult=0, cid="ZZ", size=5, price=1.5)]), "bad_multiplier")
+        self.assertEqual(chk([P(price=1.5, mult=100.0, cid="ZZ")]), "malformed_type")
+        # the ordering slot: a genuine pair beats every wrong-typed field, a wrong-typed time or seq beats the later slots
+        self.assertEqual(chk([P(seq=3), P(seq=1, size=1.5)]), "unordered_prints")
+        self.assertEqual(chk([P(seq=3, mult=1.5), P(seq=1), P(seq=2.5)]), "unordered_prints")
+        self.assertEqual(chk([P(seq=1.5), P(seq=2, size=-1)]), "malformed_type")     # ordering slot before negative_size_or_price
+        self.assertEqual(chk([P(t=1.5, size=-1)]), "malformed_type")
+        self.assertEqual(chk([P(seq=None), P(seq=1, mult=0)]), "malformed_type")
+        self.assertEqual(chk([P(t=5, seq=9), P(t=3.0, seq=0), P(t=2, seq=0)]), "malformed_type")   # (5,3.0) and (3.0,2) not compared
+        # no exception on any input; unhashable ids and NaN decimals
+        for bad in ([1], {"a": 1}, (1, [2]), D("NaN"), b"x", None, 2.5):
+            self.assertIn(chk([P(cid=bad)]), ("malformed_type", "unknown_contract"), repr(bad))
+            self.assertEqual(chk([P(cid=bad, size=-1)]), "negative_size_or_price")
+        for field in ("price", "size", "mult", "t", "seq", "excl"):
+            for bad in (D("NaN"), D("sNaN"), float("nan"), float("inf"), "x", None, b"1", [1], {1: 2}, 1.5, True):
+                self.assertIn(chk([P(**{field: bad})]), ("malformed_type", None), (field, repr(bad)))
+
+    def test_additions_rows_print_codes(self):
+        """Every additions row with prints: the print-level code (or None for an available row) of check_prints equals the
+        row's expected code; tagged Decimal, Fraction and bytes prices are decoded by the fixtures' loader first."""
+        flowgrid = lib()[0]
+        import glob
+        m2_adapter._loader()
+        sys.path.insert(0, str(m2_adapter.ADD_DIR))
+        import m2add_load
+        print_codes = {"unordered_prints", "negative_size_or_price", "bad_multiplier", "unknown_contract", "malformed_type"}
+        seen = 0
+        for path in sorted(glob.glob(str(m2_adapter.ADD_DIR / "m2_cases_add_*.json"))):
+            _, rows = m2add_load.load_dataset(path)
+            for r in rows:
+                inp = r["inputs"]
+                if not inp.get("prints") or "contracts" not in inp or "param_malformed" in r["tags"]:
+                    continue
+                contracts = m2_adapter._contracts(inp)
+                prints = [tuple(q[:1]) + (inp["t_ns"] + q[1],) + tuple(q[2:]) if type(q[1]) is int else tuple(q) for q in inp["prints"]]
+                got = flowgrid.check_prints(prints, contracts)
+                exp = r["expected"]
+                if exp["code"] in print_codes:
+                    self.assertEqual(got, exp["code"], r["id"])
+                    seen += 1
+                elif exp["status"] == "available":
+                    self.assertIsNone(got, r["id"])
+        self.assertGreater(seen, 30)
 
     def test_window_clipped_at_open_when_given(self):
         flowgrid = lib()[0]
@@ -848,6 +931,84 @@ class Section9Rules(unittest.TestCase):
         self.assertEqual({r.code for r in flowrank.flow_pack(store, "S", sess, T, 60, 1, 1, 1, X=0.5)[:4]}, {"malformed_type"})
         r10 = flowrank.f10_baseline(store, "S", 12, sess, T, 60, N="3/2")
         self.assertEqual(r10.status, "available")
+
+
+class TapeAgreement(unittest.TestCase):
+    """Story B's tape and the shared validator must report the same code on every malformed class (PR 93 ruling: TYPE FIRST,
+    adjacent pairs of int time and seq only). Needs the aligned tape of PR 88 (merge PR 93 after it)."""
+
+    N = int(os.environ.get("M2A_TAPE_N", "200000"))
+
+    @staticmethod
+    def _pools():
+        import decimal
+        from fractions import Fraction as Fr
+        D = decimal.Decimal
+        times = [0, 1, 2, 3, 5, 5, 5, 7, 9, True, False, 1.0, 5.5, "x", None, D("5"), Fr(5), b"5", 2 ** 70]
+        seqs = [0, 1, 2, 3, 5, 5, 7, True, False, 1.5, "1", None, D("1"), Fr(1), b"1"]
+        prices = ["1.0000", "0.5", "1.", ".5", "-1.0000", "-0.0000", "1.00001", "+1", "1e3", "", None, 5000, -5000, 0, True, 1.5,
+                  D("1"), D("NaN"), Fr(1, 2), b"1", " 1", "1 "]
+        sizes = [0, 1, 5, 100, -1, -5, True, False, 1.5, -1.5, "5", None, D("5"), D("NaN"), Fr(5), b"5"]
+        mults = [100, 100, 100, 10, 1, 0, -100, True, 100.0, "100", None, D("100"), D("NaN"), Fr(100)]
+        excls = [0, 0, 0, 1, True, False, 2, -1, 1.0, "1", None, D("1")]
+        cids = ["K0", "K0", "K1", "ZZ", None, 7, [1], {"a": 1}, D("NaN")]
+        return times, seqs, prices, sizes, mults, excls, cids
+
+    def test_tape_and_check_prints_agree_over_random_lists(self):
+        if self.N == 0:
+            self.skipTest("M2A_TAPE_N=0 (mutation tool runs without the tape)")
+        flowgrid = lib()[0]
+        from option_features import printtape
+        contracts = {"K0": flowgrid.Contract("C", 1, "2026-12-18", "stock", "N"), "K1": flowgrid.Contract("P", 2, "2026-12-18", "stock", "N")}
+        pools = self._pools()
+        rng = random.Random(20261030)
+        mixed = {}
+        mismatches = []
+        for n in range(self.N):
+            # most lists draw mostly valid values with a few defects, so every class and every pair of classes is hit
+            ps = []
+            for i in range(rng.choice([0, 1, 2, 3, 3, 4, 6])):
+                fields = []
+                for k, pool in enumerate(pools):
+                    if rng.random() < 0.88:
+                        fields.append([pools[0][3 + i % 3], pools[1][3], pools[2][0], 5, 100, 0, "K0"][k] if k != 0 and k != 1
+                                      else (rng.choice([0, 1, 2, 3, 5, 7, 9]) if k == 0 else rng.choice([0, 1, 2, 3, 5, 7])))
+                    else:
+                        fields.append(rng.choice(pool))
+                t, seq, price, size, mult, excl, cid = fields
+                ps.append((cid, t, price, size, mult, excl, seq))
+            try:
+                got = flowgrid.check_prints(ps, contracts)
+            except Exception as exc:  # noqa: BLE001 (the ruling: nothing may escape)
+                self.fail("check_prints raised %r for %r" % (exc, ps))
+            try:
+                want = printtape.build_tape(ps, contracts).error
+            except Exception as exc:  # noqa: BLE001
+                try:
+                    want = printtape.build_tape(ps, {k: tuple(v)[:4] for k, v in contracts.items()}).error
+                except Exception as exc2:  # noqa: BLE001
+                    self.fail("tape raised %r for %r" % (exc2, ps))
+            mixed[got] = mixed.get(got, 0) + 1
+            if got != want:
+                mismatches.append((ps, got, want))
+        self.assertEqual(mismatches[:3], [], "%d of %d lists disagree" % (len(mismatches), self.N))
+        self.assertTrue({"unordered_prints", "negative_size_or_price", "bad_multiplier", "unknown_contract", "malformed_type", None} <= set(mixed), mixed)
+
+    def test_type_first_cases(self):
+        flowgrid = lib()[0]
+        import decimal
+        D = decimal.Decimal
+        contracts = {"K0": flowgrid.Contract("C", 1, "2026-12-18", "stock", "N")}
+        P = lambda **kw: Section9Rules._p(None, **kw)  # noqa: E731
+        chk = lambda ps: flowgrid.check_prints(ps, contracts)  # noqa: E731
+        self.assertEqual(chk([P(size=-1.5)]), "malformed_type")                  # float size: type first, not negative
+        self.assertEqual(chk([P(mult=0.0)]), "malformed_type")
+        self.assertEqual(chk([P(size="x"), P(seq=1, size=-1)]), "negative_size_or_price")   # the malformed print hides nothing
+        self.assertEqual(chk([P(size=None, seq=3), P(seq=1)]), "unordered_prints")
+        self.assertEqual(chk([P(price=D("NaN"), seq=3), P(seq=1)]), "unordered_prints")
+        self.assertEqual(chk([P(mult=None, seq=1), P(seq=2, mult=0)]), "bad_multiplier")
+        self.assertEqual(chk([P(price=D("-1"))]), "malformed_type")
+        self.assertEqual(chk([P(cid=["x"])]), "malformed_type")
 
 
 class NoFloat(unittest.TestCase):
