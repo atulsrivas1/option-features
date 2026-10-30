@@ -1,8 +1,9 @@
 """Adapter for S04 (tenors): maps TEN rows (author1, read only) onto option_features.tenors. Item-level checks
 only; S05 first-owns the whole TEN rows. No import of any author's reference code.
 
-Per-expiry inputs: ATM IV from the certified M1 IVChain on the row's chain; the expiry status and reason from the
-row's expected frame.expiries (coverage gates belong to S05, not S04).
+Per-expiry inputs (S05 follow-up): status, reason and ATM IV derived from the row's chain by the S05 coverage
+gates (R-103, R-104) through surfaceframe.expiry_records; nothing is taken from the row's expected frame.
+The whole TEN rows (frame status, reason, expiries, tenors) run in tests/m3a/test_surfaceframe.py (first owner S05).
 Label: mock-data qualification only: passed on independently authored synthetic fixtures and synthetic workloads, Windows x64, CPython 3.12
 """
 import json
@@ -10,6 +11,7 @@ from decimal import Decimal, ROUND_HALF_EVEN
 from pathlib import Path
 
 from option_features.chainiv import ChainContract, IVChain
+from option_features import surfaceframe as SF
 from option_features import tenors as T
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -33,15 +35,10 @@ def chain_of(row):
 
 
 def expiry_inputs(row):
-    atm = chain_of(row).atm_iv_all()
-    out = []
-    for d, e in sorted(row["expected"]["frame"]["expiries"].items(), key=lambda kv: int(kv[0])):
-        d = int(d)
-        if e["status"] == "available":
-            out.append((d, "available", None, atm[d].iv))
-        else:
-            out.append((d, "unavailable", e["reason"], None))
-    return out
+    ch = row["inputs"]["chain"]
+    contracts = [ChainContract(**c) for c in ch["contracts"]]
+    return [tuple(r) for r in SF.expiry_records(contracts, ch["spot"], ch["rate"], ch["dividend_yield"],
+                                                ch["cutoff_ns"], row["params"])]
 
 
 def run_row(row):
