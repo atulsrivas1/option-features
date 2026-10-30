@@ -5,7 +5,7 @@ mock-data qualification only: passed on independently authored synthetic fixture
 Status: authored, not run against any implementation. Every dataset carries provenance SYNTHETIC. Seed 20261029, Python 3.12 stdlib only.
 The merged files (parent folder, MANIFEST.sha256) are unchanged; this folder only adds files. Reuses m2common.py, m2_ref.py and m2_load.py read-only.
 
-## 1. Scope (250 rows, 9 files)
+## 1. Scope (298 rows, 10 files)
 - m2_cases_add_struct.json (60): unknown_contract 10 and malformed_type 10 (2 rows each for F1, F4, F7, F17, F18; bool price 3, float price 3, float size,
   float time 2, bool multiplier 2, over-precision text 3), precedence pairs 10 (2 rows each: unordered+negative, negative+bad_multiplier,
   bad_multiplier+unknown_contract, unknown_contract+malformed_type, malformed_type+window_not_allowed), F1 delayed with unknown contract 2, trailing-zero text
@@ -20,7 +20,7 @@ The merged files (parent folder, MANIFEST.sha256) are unchanged; this folder onl
   nonstandard, excluded-condition and both-flag prints with coverage counts, lane tag, sparse contract series (3 rows), ties.
 Rows follow the merged compact format (m2_load.py). Generators gen_m2add_<name>.py (seeded, LF, no absolute paths, --out relative) use m2add_oracle.py
 (oracle A', wraps the merged oracle A). Independent second implementation: m2add_ref.py (wraps m2_ref, own validators and grammar scan, bisect prefix sums,
-own grid builder). m2add_selfcheck.py recomputes all 250 rows (0 mismatches) and asserts the per-category minimums by tag; m2add_mutants.py runs 63 mutants,
+own grid builder). m2add_selfcheck.py recomputes all 298 rows (0 mismatches) and asserts the per-category minimums by tag; m2add_mutants.py runs 66 mutants,
 each caught by at least 2 mapped rows (m2add_mutation_results.txt).
 
 ## 2. PO rulings encoded (extend the merged contract)
@@ -40,7 +40,7 @@ minute lies in no grid value and counts in the session total only; a print exact
   The contract text says bool; if ints must be rejected the merged rows would change. For the PO.
 - AMB-A6 A float time equal to an integer (1.0) is malformed_type like any float.
 
-## 4. Mutation table (63 mutants; see m2add_mutation_results.txt)
+## 4. Mutation table (66 mutants; see m2add_mutation_results.txt)
 Structural: unknown_ignored, bool_price_ok, float_price_ok, over_precision_ok, trailing_zero_rejected, float_window_ok, float_size_ok, float_time_ok,
 bool_multiplier_ok, grammar_lenient, int_price_as_usd, int_price_rejected, flag_any_ok, seq_bool_ok; precedence: negative_before_unordered,
 multiplier_before_negative, malformed_before_unknown, window_before_malformed. Data: preopen_not_clipped, n_truncated, big_float, f12_p60_window900,
@@ -100,6 +100,18 @@ g_half_day_390, g_sparse_zero_wrong.
   typed and untyped with several pairs and no genuine fault (malformed_type), a malformed key first and a genuine pair later (unordered_prints), an apparent
   decrease across a skipped pair (malformed_type, the pair is not compared).
 - New mutants: pair_float_compared, stop_at_skipped.
+
+## 11. Round 8 (type first per field; m2_cases_add_typefirst.json, 47 rows)
+- Ruled: a wrong-typed field (float, Decimal, Fraction, bool, None, str, bytes, unhashable) reports malformed_type at the slot of the single precedence list where its value
+  check runs: time and seq at the ordering checks, size at negative_size_or_price, multiplier at bad_multiplier, contract id at unknown_contract; price type and
+  condition_excluded at the malformed_type slot after unknown_contract. No exception escapes; a malformed print does not hide another print's error.
+- Rows (F1/F4/F7/F17/F18): float size -1.5 and +1.5 (5), float multiplier 0.0 and 2.5 (5), negative Decimal size, multiplier, time (6), negative Fraction (6), str or None
+  size or multiplier next to a genuine out-of-order pair elsewhere (5, expected unordered_prints) and alone (2), Decimal NaN price or size (5), unhashable contract id list or
+  dict (5), cross-field cases (8): float multiplier + unknown contract and float size + bad multiplier (malformed_type), float price + unknown contract (unknown_contract),
+  float size + negative price (malformed_type: the size slot is checked before the price value; interim reading, the ruling does not order size and price inside the slot).
+- Re-check of every existing precedence-pair row under the per-field rule: no expected value changes (0 rows); bad_multiplier + unknown_contract and unknown_contract +
+  malformed_type (a price-type error) stand, as do all price-type multi-fault rows of add_types.
+- New mutants: types_last, contract_id_type_ignored, float_multiplier_ok.
 
 ## 5. Files read and independence
 Read: docs/m2 IO contract (merged, sections 6 and 7), fixture requirements, capability matrix (as earlier) and the PO rulings in the requests. Nothing under

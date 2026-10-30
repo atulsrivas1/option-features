@@ -22,13 +22,13 @@ def decode_value(v):
 def decode_row(row):
     if not row.get("requires_decoding"):
         return row
-    row["inputs"]["prints"] = [[p[0], p[1], decode_value(p[2])] + list(p[3:]) for p in row["inputs"]["prints"]]
+    row["inputs"]["prints"] = [[decode_value(x) for x in p] for p in row["inputs"]["prints"]]
     return row
 
 
 def assert_decoded(row):
     """raises AssertionError when a row flagged requires_decoding still carries a tagged object or has no decoded Python-typed price"""
-    prices = [p[2] for p in row["inputs"].get("prints", [])]
+    prices = [x for p in row["inputs"].get("prints", []) for x in p]
     if row.get("requires_decoding"):
         assert not any(isinstance(p, dict) and "py_type" in p for p in prices), row["id"] + ": tagged object not decoded"
         assert any(isinstance(p, tuple(PY_TYPES.values())) for p in prices), row["id"] + ": no decoded Decimal, Fraction or bytes price"
