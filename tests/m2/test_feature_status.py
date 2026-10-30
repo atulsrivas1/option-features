@@ -92,6 +92,12 @@ def check(text, handoff):
                 for n in re.findall(r"PR (\d+)", l):
                     if int(n) not in block:
                         errors.append("HANDOFF says PR %s merged but it is not in the Merged PRs block" % n)
+    for l in handoff.split(chr(10)):
+        if "Open PRs:" in l or not re.search(r"\bopen\b", l, re.I):
+            continue
+        for n in re.findall(r"PR (\d+)", l):
+            if int(n) not in block and int(n) not in opened:
+                errors.append("HANDOFF names PR %s as open but the Open PRs line does not list it" % n)
     for n in sorted(opened & block):
         errors.append("PR %d is in both the HANDOFF Open PRs line and the Merged PRs block" % n)
     for r in rows:
@@ -228,3 +234,8 @@ def test_done_row_never_pending_merge_or_open():
     assert stale != text and any("is done but" in e for e in check(stale, handoff))
     stale2 = text.replace("| P1-1 | Version bump 0.2.0a1 and sibling pins | done |", "| P1-1 | Version bump 0.2.0a1 and sibling pins | done (built, PR 80 pending merge) |", 1)
     assert stale2 != text and any("is done but" in e for e in check(stale2, handoff))
+
+
+def test_handoff_open_pr_must_be_listed():
+    text, handoff = _real()
+    assert any("PR 977 as open" in e for e in check(text, handoff + NL + "- PR 977 is open and waiting" + NL))
