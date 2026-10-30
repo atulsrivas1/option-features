@@ -67,3 +67,9 @@ Unit = underlying x session x cutoff (key `SYN1/03/045`); the unit reads an immu
 - A history lane differing from the request lane gives insufficient_history. session_not_in_calendar applies to the current session only.
 - F12 `peak_ratio` and `peak_ns` are taken over the available points of the session to date even with zero episodes (ties earliest: peak 1 at the earliest available point when all ratios are 1).
 - F2d `fired` is null in M2 (design request DR-M2-1, matrix section 11).
+
+## 8. Ruled with PR 79 (story B; interim pending design ratification where the design is silent)
+- F18 results carry a top-level `ratio_reason` after `version` ("zero_denominator" when call volume is 0, else null); it is the only output with an extra top-level key.
+- `version` is the package version string ("0.2.0a1").
+- New structural codes (invalid_input, after bad_multiplier in the precedence list): `unknown_contract` (a print whose contract id has no contract record) and `malformed_type` (a text price with more than 4 decimals or not a decimal). Neither raises; every print family answers invalid_input with the code. F12 grid points before open + 900 s are unavailable even if supplied; F12 coverage from prints counts the lane's prints in [open, T], from points it is zeros.
+

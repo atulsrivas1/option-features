@@ -197,7 +197,7 @@ def build_tape(prints, contracts, validate="full"):
     cidx, c_id, c_right, c_strike, c_expiry, c_lane, c_group, app, groups = {}, [], [], [], [], [], [], [], {}
     rare = []
     rare_add = rare.append
-    unordered = negative = bad_mult = False
+    unordered = negative = bad_mult = unknown = malformed = False
     pt, ps = -(1 << 127), 0
     full = validate != "off"
     get = cidx.get
@@ -206,7 +206,11 @@ def build_tape(prints, contracts, validate="full"):
         cid, t, price, size, mult, excl, seq = p[:7]
         n += 1
         if price.__class__ is not int:
-            price = ticks4(price)
+            try:
+                price = ticks4(price)
+            except (ValueError, TypeError, ArithmeticError):
+                malformed = True
+                price = 0
         if full:
             if t < pt or (t == pt and seq < ps):
                 unordered = True
@@ -217,6 +221,9 @@ def build_tape(prints, contracts, validate="full"):
                 bad_mult = True
         ci = get(cid)
         if ci is None:
+            if cid not in contracts:
+                unknown = True
+                continue
             ci = _register(cid, contracts, cidx, c_id, c_right, c_strike, c_expiry, c_lane, c_group, app, groups)
         if excl:
             rare_add((t, ci, K_EXCL))
@@ -232,7 +239,8 @@ def build_tape(prints, contracts, validate="full"):
         g = c_group[ci]
         (g.nt if kind == K_NONSTD else g.et).append(t)
     tape.error = ("unordered_prints" if unordered else "negative_size_or_price" if negative
-                  else "bad_multiplier" if bad_mult else None)
+                  else "bad_multiplier" if bad_mult
+                  else "unknown_contract" if unknown else "malformed_type" if malformed else None)
     tape.n_prints = n
     tape.n_eligible = n - len(rare)
     tape.groups = groups

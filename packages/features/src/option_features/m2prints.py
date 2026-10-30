@@ -29,7 +29,7 @@ from fractions import Fraction
 
 from .printtape import NS
 
-RESULT_VERSION = "m2"
+RESULT_VERSION = "0.2.0a1"
 ALLOWED_WINDOWS = (60, 300, 900, 1800, 3600)
 F17_WINDOW_S = 300
 DEFAULT_THRESHOLD_TICKS = 1_000_000_000      # 100,000 USD

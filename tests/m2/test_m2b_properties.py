@@ -394,8 +394,14 @@ class Units(unittest.TestCase):
         neg_mult = [("A", 10, "-1.0000", 5, 0, 0, 0)]
         self.assertEqual(PT.build_tape(neg_mult, cons).error, "negative_size_or_price")
         self.assertIsNone(PT.build_tape(both, cons, validate="off").error)
-        with self.assertRaises(KeyError):
-            PT.build_tape([("Z", 1, 1, 1, 100, 0, 0)], cons)
+        self.assertEqual(PT.build_tape([("Z", 1, 1, 1, 100, 0, 0)], cons).error, "unknown_contract")
+        self.assertEqual(PT.build_tape([("A", 1, "1.00001", 1, 100, 0, 0)], cons).error, "malformed_type")
+        self.assertEqual(PT.build_tape([("Z", 1, "x", 1, 100, 0, 0)], cons).error, "unknown_contract")
+        self.assertEqual(PT.build_tape([("A", 1, "1.0", 1, 0, 0, 0), ("Z", 2, 1, 1, 100, 0, 1)], cons).error, "bad_multiplier")
+        r = M.f4_large_prints(PT.build_tape([("Z", 1, 1, 1, 100, 0, 0)], cons), 5)
+        self.assertEqual((r["status"], r["code"], r["version"]), ("invalid_input", "unknown_contract", "0.2.0a1"))
+        r = M.f18_put_share(PT.build_tape([("A", 1, "1.00001", 1, 100, 0, 0)], cons), 5, at_least="1/2")
+        self.assertEqual((r["status"], r["code"]), ("invalid_input", "malformed_type"))
         with self.assertRaises(ValueError):
             PT.build_tape([], cons).select("stock", "bogus")
 
