@@ -86,7 +86,7 @@ def row_items(row):
 
 
 def row_convention(row):
-    params = row["inputs"].get("params") or {}
+    params = row.get("params") or row["inputs"].get("params") or {}
     return params.get("delta_convention", "spot")
 
 
