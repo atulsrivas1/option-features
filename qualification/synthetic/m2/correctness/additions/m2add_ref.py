@@ -78,6 +78,10 @@ def v_unordered(inp, prm, out):
     for i in range(len(ps) - 1):
         a, b = ps[i], ps[i + 1]
         gi = (lambda z: isinstance(z, int)) if MU("seq_bool_as_int") else good_int
+        if MU("pair_float_compared"):
+            gi = lambda z: isinstance(z, (int, float))
+        if MU("stop_at_skipped") and not all(good_int(z) for z in (a[1], a[6], b[1], b[6])):
+            return None
         if all(gi(z) for z in (a[1], a[6], b[1], b[6])) and (a[1] > b[1] or (a[1] == b[1] and a[6] > b[6])):
             return "unordered_prints"
 
