@@ -1,5 +1,6 @@
 # Handoff (keep under 60 lines; update after every merge)
 Updated 2026-10-29 (M1 CLOSED, see docs/M1_CLOSE.md; P1 DONE, 0.2.0a1 on main, merge 62a178c; candidate15 frozen, CANDIDATE15_FREEZE_RECORD.md: 2666 of 2668; R27 evidence recorded in RELEASE_NOTES section 16 (T8 draft, docs review and PO accept pending): harness v15.1 is the gate harness, label extended to candidate15 on Windows, Linux evidence on WSL2 is not a label; PRERELEASE). Read this, then STATUS.md, DECISIONS.md, the coordinator skill (.claude/skills/option-features-release-coordinator/SKILL.md).
+M2 runner integration is PARKED on branch m2/runner-integration (pushed, no PR): see DECISIONS.md last entry; resume = Tester re-run, then PR.
 
 ## PO release plan V3 (2026-10-29, authoritative; DECISIONS.md has the entries)
 - Main goal (owner): performance. Use cores, memory and caches fully to calculate faster without breaking correctness. B1-B12 are hard acceptance gates (synthetic-size stage until RQ; label "synthetic workload, relative engineering budget"). Developer designs for multi-core, vectorised/batched calculation, caching, minimal allocation; Tester authors independent perf, parallelism-determinism, batched-vs-single, cache and memory fixtures.
