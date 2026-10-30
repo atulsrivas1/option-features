@@ -1,10 +1,12 @@
 """M3a history reads (story S02): `scalar_baseline` and `same_minute_column` over the M2 store (option_features.flowstore).
 
-Pure and single-threaded; no I/O, no clocks; reads only: a read never changes a record and never builds a HistoryView,
-a sorted copy or a merged array (M3A-B8 duty, R-79). History is read through the M2 store only, no second copy (build
-plan 1.3); the selection (the complete records before `as_of`, with their session ids and value columns as tuples) is
-cached on the ring like the M2 views, at most 4 per ring, and dropped by any append, seal or eviction of that ring
-(correct by construction); a read then slices or indexes it.
+Pure and single-threaded; no I/O, no clocks; reads only: a read never changes a value and never builds a HistoryView,
+a sorted copy or a merged array (M3A-B8 duty, R-79), and keeps no per-call memo (R-193: derived read state counts as
+dropped on every call). It reads the ring's M3a layout (flowstore._Cols), kept in step with the ring at append, seal
+and eviction (built once on the first read of a loaded ring): session-ordered columns of ids, totals, complete flags,
+grid lengths and conventions, and one contiguous int64 block per minute series holding the grids themselves (no
+second copy; R-193 items 4 and 1). A read is a bisect for `as_of`, bounds arithmetic and slices; the minute column is
+one strided slice of the block.
 
 Series (R-89, R-153, R-159): series_id "<UNDERLYING>/<lane>/<metric>", window_s 0. Scalar series (atm_iv_close,
 iv30_close, skew25, skew25_fwd, term_30_91): empty grid, the value is the record `total` in 10^-8 units (R-48).
@@ -42,13 +44,12 @@ Memory formula helpers (budgets M3A-B8, rows M3A-H-046..049, 075): `grid_store_b
 """
 from bisect import bisect_left
 
-from .flowstore import _FULL_IDX, _sparse
+from .flowstore import _sparse
 from .m3a_validate import validate_view_read
 
 STORE_BUDGET_BYTES = 768 * 1024 * 1024       # M3A-B8 store budget (RULED), 805,306,368 B
 STORE_HARD_BYTES = 1024 * 1024 * 1024        # M3A-B8 hard limit per worker, 1,073,741,824 B
 CONVENTION_FREE = frozenset(("atm_iv", "atm_iv_close", "iv30", "iv30_close", "term_30_91"))   # R-159
-_CACHE = 4                                   # cached reads per ring (as the M2 view cache, flowstore._VIEW_CACHE)
 _SCALAR = object()                           # `minute` marker of the scalar form
 
 
@@ -88,99 +89,56 @@ def _checks(store, series_id, metric, window_s, as_of, min_sessions, max_session
         return "malformed_type"
 
 
-def _conv_code(metric, delta_convention, recs):
+def _conv_code(metric, delta_convention, convs):
     """Position 5, record scan (validate_view_read already checked the value and the metric's own convention):
     a selected record whose `delta_convention` (absent = "spot") differs from the request (R-160)."""
     if metric in CONVENTION_FREE:
         return None
     want = "spot" if delta_convention is _NOT_GIVEN else delta_convention
-    for r in recs:
-        if (r.conv or "spot") != want:
-            return "convention_mismatch"
-    return None
+    ok = {None, "spot"} if want == "spot" else {want}
+    return "convention_mismatch" if set(convs) - ok else None
 
 
-class _Base:
-    """The complete records of one ring strictly before one `as_of`, ascending, with columns built on first use.
-    Cached on the ring (cleared by any append, seal, eviction or drop_caches, as the M2 views), so the 78 cutoffs of
-    a session select once and each later read (another minute, another max_sessions) only slices or indexes.
-    Built to touch as few objects as possible (a cold read is memory-bound): session ids come from the ring keys
-    when every record is complete, and a grid is known to hold every point when its index array is the store's
-    shared full index (flowstore._full_idx), so no per-record length or minutes object is read."""
-    __slots__ = ("recs", "sids", "totals", "vals", "low", "full")
-
-    def __init__(self, recs, sids):
-        self.recs, self.sids = recs, sids
-        self.totals = self.vals = None
-        self.low = 0
-        self.full = False
-
-    def grid_columns(self):
-        recs = self.recs
-        vals = [r.vals for r in recs]
-        if not all(vals):           # a lazily loaded record (vals None; an empty array is also falsy): parse once
-            for r in recs:
-                if r.vals is None:
-                    _sparse(r)
-            vals = [r.vals for r in recs]
-        self.vals = tuple(vals)
-        shared = {id(a): len(a) for a in _FULL_IDX.values()}
-        ids = set(map(id, [r.idx for r in recs]))
-        self.full = ids.issubset(shared)
-        self.low = min([shared[i] for i in ids]) if self.full and ids else 0
-
-
-def _base(store, series_id, metric, window_s, lane, as_of):
+def _select(store, series_id, metric, window_s, lane, as_of, mx, minute):
+    """(record conventions, sessions, values) of the read, ascending, from the ring's M3a layout (flowstore._Cols):
+    bounds arithmetic and slices when the window is all complete (and, for a minute, every grid is in the block and
+    long enough); otherwise the window is selected index by index."""
     ring = store._rings.get((series_id, metric, window_s))
     if ring is None or ring.lane != lane:
-        return None
-    views = ring.views
-    key = ("m3a", as_of)
-    got = views.get(key)
-    if got is None:
-        recs = ring.recs
-        rl = list(recs.values())
-        cut = len(rl)
-        if rl and rl[-1].session_id >= as_of:                 # strictly before as_of: no look-ahead
-            cut = bisect_left(list(recs), as_of)              # ids ascend (the append order is checked)
-            rl = rl[:cut]
-        sel = [r for r in rl if r.complete]
-        if len(sel) == len(recs):
-            sids = tuple(recs)
-        else:
-            sids = tuple([r.session_id for r in sel])
-        got = _Base(tuple(sel), sids)
-        if len(views) >= _CACHE:
-            del views[next(iter(views))]
-        views[key] = got
-    return got
-
-
-def _select(store, series_id, metric, window_s, lane, as_of, max_sessions, minute):
-    """(records, sessions, values) of the read, ascending."""
-    b = _base(store, series_id, metric, window_s, lane, as_of)
-    if b is None:
         return (), (), ()
-    recs = b.recs
-    cut = len(recs) - max_sessions if len(recs) > max_sessions else 0
+    c = ring.m3a
+    if c is None:
+        c = store.m3a_cols(series_id, metric, window_s)
+    ids = c.ids
+    cut = bisect_left(ids, as_of)                    # strictly before as_of: no look-ahead
+    lo = cut - mx if cut > mx else 0
+    done = c.done
     if minute is _SCALAR:
-        if b.totals is None:
-            b.totals = tuple([r.total for r in recs])
-        return recs[cut:], b.sids[cut:], b.totals[cut:]
-    if b.vals is None:
-        b.grid_columns()
-    if b.full and minute < b.low:                             # every session has the minute: slice, then index
-        return recs[cut:], b.sids[cut:], tuple([v[minute] for v in b.vals[cut:]])
-    pick = [i for i, r in enumerate(recs) if r.minutes > minute]   # short grids are skipped (R-43, R-113)
-    if len(pick) > max_sessions:
-        pick = pick[len(pick) - max_sessions:]
-    sids = b.sids
-    return (tuple([recs[i] for i in pick]), tuple([sids[i] for i in pick]),
+        if False not in done[lo:cut]:
+            return c.conv[lo:cut], tuple(ids[lo:cut]), tuple(c.tot[lo:cut])
+        pick = [i for i in range(cut) if done[i]]
+        pick = pick[len(pick) - mx:] if len(pick) > mx else pick
+        tot, conv = c.tot, c.conv
+        return [conv[i] for i in pick], tuple([ids[i] for i in pick]), tuple([tot[i] for i in pick])
+    if (cut > lo and c.mv is not None and False not in done[lo:cut] and False not in c.inb[lo:cut]
+            and min(c.mins[lo:cut]) > minute):
+        col = c.mv[minute::c.stride].tolist()        # one strided pass over the block: row r = slot r
+        h = c.head
+        if h:
+            col = col[h:] + col[:h]                  # session order
+        return c.conv[lo:cut], tuple(ids[lo:cut]), tuple(col[lo:cut])
+    mins, recs = c.mins, c.recs
+    pick = [i for i in range(cut) if done[i] and mins[i] > minute]   # short grids are skipped (R-43, R-113)
+    pick = pick[len(pick) - mx:] if len(pick) > mx else pick
+    conv = c.conv
+    return ([conv[i] for i in pick], tuple([ids[i] for i in pick]),
             tuple([_probe(recs[i], minute) for i in pick]))
 
 
 def _probe(r, minute):
-    """Grid value at `minute` (< r.minutes) of a parsed record; an index without a stored point is the value 0."""
+    """Grid value at `minute` (< r.minutes) of one record; an index without a stored point is the value 0."""
+    if r.vals is None:
+        _sparse(r)
     idx = r.idx
     if len(idx) == r.minutes:
         return r.vals[minute]
@@ -198,8 +156,8 @@ def _read(store, series_id, metric, as_of, min_sessions, max_sessions, lane, del
     code = _checks(store, series_id, metric, window_s, as_of, min_sessions, max_sessions, x, minute, delta_convention)
     if code is not None:
         return _invalid(code)
-    recs, sessions, values = _select(store, series_id, metric, window_s, lane, as_of, max_sessions, minute)
-    code = _conv_code(metric, delta_convention, recs)
+    convs, sessions, values = _select(store, series_id, metric, window_s, lane, as_of, max_sessions, minute)
+    code = _conv_code(metric, delta_convention, convs)
     if code is not None:
         return _invalid(code)
     n = len(values)

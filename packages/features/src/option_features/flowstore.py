@@ -170,11 +170,83 @@ def _atomic_write(path, data):
             os.remove(tmp)
 
 
+class _Cols:
+    """M3a store layout of one ring (story S02, R-193): session-ordered columns kept in step with the ring at append,
+    seal and eviction, so an M3a read is bounds arithmetic plus slices, with no per-call loop over records.
+
+    ids, recs, tot (record totals), done (complete flags), mins (grid lengths), conv (delta_convention), inb (grid held
+    in the block) are lists in session order (oldest first). Minute grids that are dense, have no zero point, fit the
+    stride and int64 live in ONE contiguous int64 block of cap x stride values (cap = the ring k, stride = the longest
+    calendar session); a record's `vals` is then a read-only-by-convention memoryview of its row and its `idx` the shared
+    full index, so there is no second copy. Rows are used circularly: the row of session j is (head + j) % cap, so
+    the minute column of the whole ring is the strided slice block[minute::stride] rotated by head. A record evicted
+    from the ring gets a private copy of its row before the row is reused. Other grids keep their own arrays
+    (inb False) and are read record by record."""
+    __slots__ = ("ids", "recs", "tot", "done", "mins", "conv", "inb", "cap", "head", "stride", "block", "mv")
+
+    def __init__(self, cap, stride):
+        self.ids, self.recs, self.tot, self.done, self.mins, self.conv, self.inb = [], [], [], [], [], [], []
+        self.cap, self.head, self.stride = cap, 0, stride
+        self.block = self.mv = None
+
+    def push(self, rec):
+        if len(self.ids) >= self.cap:
+            self.evict()
+        inb = self._place(rec, (self.head + len(self.ids)) % self.cap)
+        self.ids.append(rec.session_id)
+        self.recs.append(rec)
+        self.tot.append(rec.total)
+        self.done.append(rec.complete)
+        self.mins.append(rec.minutes)
+        self.conv.append(rec.conv)
+        self.inb.append(inb)
+
+    def evict(self):
+        rec = self.recs[0]
+        if self.inb[0]:
+            rec.vals = array("q", rec.vals)          # detach: the row is reused next
+        for col in (self.ids, self.recs, self.tot, self.done, self.mins, self.conv, self.inb):
+            del col[0]
+        self.head = (self.head + 1) % self.cap
+
+    def seal(self, session_id):
+        i = bisect_left(self.ids, session_id)
+        if i < len(self.ids) and self.ids[i] == session_id:
+            self.done[i] = True
+
+    def _place(self, rec, row):
+        m = rec.minutes
+        if not m or m > self.stride or rec.sparse:
+            return False
+        if rec.idx is None:                          # loaded from text: parse straight into the block
+            if not rec.txt:
+                return False
+            vals = [int(t) for t in rec.txt.split(",")]
+            if len(vals) != m or 0 in vals:
+                _sparse(rec)
+                return False
+        else:
+            if len(rec.idx) != m:                    # zero points: sparse form, read record by record
+                return False
+            vals = rec.vals
+        if type(vals) is tuple or (len(vals) and (min(vals) < -(1 << 63) or max(vals) >= (1 << 63))):
+            return False
+        if self.block is None:
+            self.block = array("q", bytes(8 * self.cap * self.stride))
+            self.mv = memoryview(self.block)
+        off = row * self.stride
+        self.mv[off:off + m] = array("q", vals)
+        rec.vals = self.mv[off:off + m]
+        rec.idx = _full_idx(m)
+        rec.txt = rec.itxt = None
+        return True
+
+
 class _Ring:
-    __slots__ = ("lane", "recs", "views", "head")
+    __slots__ = ("lane", "recs", "views", "head", "m3a")
 
     def __init__(self, lane, head):
-        self.lane, self.recs, self.views, self.head = lane, {}, {}, head
+        self.lane, self.recs, self.views, self.head, self.m3a = lane, {}, {}, head, None
 
     def __getstate__(self):
         return (self.lane, self.recs, self.head)
@@ -182,6 +254,7 @@ class _Ring:
     def __setstate__(self, state):
         self.lane, self.recs, self.head = state
         self.views = {}
+        self.m3a = None
 
 
 class HistoryView:
@@ -323,6 +396,8 @@ class HistoryStore:
             raise ValueError("k must be in 1..%d for series %r" % (cap, series_id))
         self._series_k[series_id] = k
         for key, ring in self._rings.items():
+            if key[0] == series_id:
+                ring.m3a = None                       # rebuilt on the next M3a read with the new k
             if key[0] == series_id and len(ring.recs) > k:
                 self._chash = None
                 ring.views.clear()
@@ -374,7 +449,11 @@ class HistoryStore:
             vals = list(grid)
             if total is None:
                 total = sum(vals)
-        self._store(series_id, metric, window_s, _Rec(session_id, minutes, idx, narrow(vals), total, bool(complete),
+        if vals is grid and _is_m3a_series(series_id):
+            vals = list(grid)    # an M3a full grid goes to the ring block (int64) in _store: no narrowed copy first
+        else:
+            vals = narrow(vals)
+        self._store(series_id, metric, window_s, _Rec(session_id, minutes, idx, vals, total, bool(complete),
                                                       None, sparse, None, delta_convention), lane)
 
     def append_record(self, record, complete=True, lane="stock", _memo=None):
@@ -436,12 +515,40 @@ class HistoryStore:
         ring = self._rings.get(key)
         if ring is None:
             ring = self._rings[key] = _Ring(lane, _head(series_id, metric))
+            if _is_m3a_series(series_id):
+                ring.m3a = self._new_cols(series_id)
         recs = ring.recs
         recs[rec.session_id] = rec
         if ring.views:
             ring.views.clear()
         if len(recs) > self._series_k.get(series_id, self.k):
             del recs[next(iter(recs))]
+        if ring.m3a is not None:
+            ring.m3a.push(rec)
+        if type(rec.vals) is list:                # not placed in a block: the M2 narrowed form
+            rec.vals = narrow(rec.vals)
+
+    def _new_cols(self, series_id):
+        mins = self.calendar.minutes
+        return _Cols(self._series_k.get(series_id, self.k), max(mins) if mins else 0)
+
+    def m3a_cols(self, series_id, metric, window_s):
+        """The M3a layout of a ring (built once on the first read of a loaded ring, then kept in step), or None."""
+        ring = self._rings.get((series_id, metric, window_s))
+        if ring is None:
+            return None
+        if ring.m3a is None:
+            cols = self._new_cols(series_id)
+            for rec in ring.recs.values():
+                cols.push(rec)
+            ring.m3a = cols
+        return ring.m3a
+
+    def build_m3a_layout(self):
+        """Build the M3a layout of every M3a ring now (after a load or attach, before timed reads)."""
+        for (s, m, w) in list(self._rings):
+            if _is_m3a_series(s):
+                self.m3a_cols(s, m, w)
 
     def seal(self, series_id, metric, window_s, session_id):
         """Mark a stored record complete (and immutable). False when there is no such record."""
@@ -454,6 +561,8 @@ class HistoryStore:
             rec.sha = None
             self._chash = None
             ring.views.clear()
+            if ring.m3a is not None:
+                ring.m3a.seal(session_id)
         return True
 
     # ------------------------------------------------------------------ reads
@@ -844,6 +953,8 @@ class HistoryStore:
         seen = set()
         recs = nbytes = 0
         for ring in self._rings.values():
+            if ring.m3a is not None and ring.m3a.block is not None:
+                nbytes += sys.getsizeof(ring.m3a.block)
             for r in ring.recs.values():
                 recs += 1
                 nbytes += sys.getsizeof(r)

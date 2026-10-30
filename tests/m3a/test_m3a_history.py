@@ -348,9 +348,7 @@ class Reads(unittest.TestCase):
         MH.scalar_baseline(self.st, "A/stock/iv30_close", "iv30_close", self.cal.ids[260])
         MH.same_minute_column(self.st, "A/stock/iv30", "iv30", self.cal.ids[260], 3)
         for ring in self.st._rings.values():
-            for v in ring.views.values():
-                self.assertNotIsInstance(v, HistoryView)
-                self.assertIsInstance(v, MH._Base)
+            self.assertEqual(ring.views, {})          # no view, sorted copy or per-call memo (R-193)
 
     def test_cache_dropped_by_append_and_seal(self):
         cal, st = self.cal, self.st
