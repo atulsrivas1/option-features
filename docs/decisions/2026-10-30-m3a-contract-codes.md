@@ -14,3 +14,5 @@ R-139 covers a coverage-excluded expiry that brackets the tenor from one side; i
 
 ## 3. Units
 M3A_GATE_BUDGETS.md store budget wording '768 MB'/'1 GB' becomes '768 MiB'/'1 GiB' (the bytes were already read as binary: 805,306,368 B and 1,073,741,824 B). The author4 M3A_PERF_ACCEPTANCE.md B8 cells are updated in the same change; `check_gate_table.py` prints OK. The M2-B16 limit and decimal derived figures are unchanged.
+
+- Updated qualification/synthetic/m3a/author4/MANIFEST.sha256 line for M3A_PERF_ACCEPTANCE.md to its new SHA-256 (267c16c7...) after the PR edited that file.
