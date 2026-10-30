@@ -142,6 +142,7 @@ def main():
     ap.add_argument("--sessions", type=int, default=25)
     ap.add_argument("--contracts", type=int, default=2000)
     ap.add_argument("--json")
+    ap.add_argument("--no-gc-freeze", action="store_true", help="measure with the cyclic collector active over the stores")
     a = ap.parse_args()
     R = a.repeats
     budgets = budget_rows()
@@ -198,6 +199,11 @@ def main():
     st25 = build_store(k=a.sessions)
     stats = store.stats()
     ser = stats["series"]
+    import gc
+    gc.collect()
+    if not a.no_gc_freeze:
+        gc.freeze()      # long-lived store objects leave the collector's scan (a runner does this after loading a store)
+    out["gc_freeze"] = not a.no_gc_freeze
     # ---------------------------------------------------------------- reads
     series = sorted({r.series_id for r in sessions_records[0] if r.series_id in cons})[:]
     as_of = cal.ids[a.sessions]

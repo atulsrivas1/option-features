@@ -49,8 +49,8 @@ Gate precedence (PO-P1-02): no_quote, invalid_quote, crossed_market, locked_mark
 | Design id | Design meaning (short) | Repository id | Mode and parameters | Class | Since |
 |---|---|---|---|---|---|
 | F1 | 1-minute premium rate vs 15-minute | variants1 `directional` b64-rolling-BD1 | two horizons composed by the consumer | partial | R26 |
-| F2a, F2b | Premium or contracts in top X% of sessions | variants1 `baseline` | no percentile rank, no crossing form | partial | R26 |
-| F2c, F2d | Rate in top X%, average of F2a-c | none | | missing | |
+| F2a, F2b, F2c | Premium, contracts or print rate in top X% of the last 20 sessions | `option_features.flowrank.f2_rank` (metric `premium`, `contracts`, `prints`; history `flowstore.HistoryStore`, window values from `flowgrid.window_totals`) | intraday form: 60 s grid values of 20 complete prior sessions after the first W/60 points; end-of-day form: 20 session totals; `upper_share = count(history >= x)/n`, fires at <= X/100 (X 5), `rank_le` also returned; gates insufficient_history, session_not_complete, insufficient_window; delayed tag gives invalid_input delayed_feed_tag intraday; no crossing form | match (library modules only; not on the wire) | M2 |
+| F2d | Average of the F2a-c percentiles | `option_features.flowrank.f2d_combine` (`flow_pack` for one series) | percentile = 1 - upper_share, higher is more unusual, exact average, parts always shown, `fired` null (DR-M2-1), reason of the first unavailable part | match (library modules only; not on the wire) | M2 |
 | F3 | Premium in window ending now, calls/puts | `option_features.windows.window_premium`, `WindowIndex` | `window_end_ns` = evaluation time (explicit end, closed [end-W, end]); `window_end_ns=None` is the legacy last-print anchor; call/put split; multiplier != 100 excluded and counted | match (library modules only; not on the wire) | P1 |
 | F3 legacy | Rolling window ending at the last positive print | variants1 `directional` b64-rolling-BD1 | unchanged | (legacy mode) | R26 |
 | F4 (design: large prints) | N prints of $100k or more | variants1 `premium` rows | no count, no threshold (the repository family called F4 is "span") | partial | R26 |
@@ -60,7 +60,7 @@ Gate precedence (PO-P1-02): no_quote, invalid_quote, crossed_market, locked_mark
 | F7 | 60% in one strike or expiry | variants1 `directional` i64 per-strike/expiry totals | no share, no threshold | partial | R26 |
 | F8 | Share of universe premium | none | | missing | |
 | F9 | Repeated or multi-venue prints within a second | variants1 `parent_groups` | side-split lanes, exclusive first-unassigned windows (design wording to follow, request 7) | partial | R26 |
-| F10, F20 | Contracts or premium vs baseline | variants1 `baseline_consumer` (median), `baseline` mean | design baseline statistic open (request 9); R29 | partial | R26 |
+| F10, F20 | Contracts (window) or session total vs baseline | `option_features.flowrank.f10_baseline`, `f20_baseline` | both `median_ratio` and `mean_ratio` output; consumer default F10 median, F20 mean; median = mean of the two middle values; zero statistic gives zero_denominator for that ratio; fires at ratio >= N (2); legacy variants1 `baseline_consumer` and `baseline` unchanged | match (library modules only; not on the wire) | M2 |
 | F11, F12 | Price response, episodes | none | | missing | |
 | F13 | Call-ask plus put-bid premium | `option_features.quotes.sign_aggregate` -> `call_ask_plus_put_bid_premium` | `inside_spread="unknown"` (touch policy), epsilon, `max_quote_age_ns` 3 s; label "ask-side proxy" / "bid-side proxy" | match (library modules only; not on the wire) | P1 |
 | F14 | Put-ask plus call-bid premium | same -> `put_ask_plus_call_bid_premium` | as F13 | match (library modules only; not on the wire) | P1 |
@@ -71,7 +71,8 @@ Gate precedence (PO-P1-02): no_quote, invalid_quote, crossed_market, locked_mark
 | Tick fallback | Optional tick rule | none | later, optional | missing | |
 | Crossing form | Crossing form for F2a-c | none | engine concern | missing | |
 | F17 | One contract, 5 minutes, at least $X | variants1 `span_at_anchor` | anchors supplied | partial | R26 |
-| F18, F19 | Put share and put/call volume ratio | none | | missing | |
+| F18 | Put share of volume | none | | missing | |
+| F19 | Put/call volume ratio as percentile of 20 sessions | `option_features.flowrank.f19_percentile` | end of day only; prior sessions with zero call volume skipped, fewer than 20 usable gives insufficient_history; fires at upper_share <= X/100 (X 5) | match (library modules only; not on the wire) | M2 |
 
 ## Volatility, positioning, presets
 
