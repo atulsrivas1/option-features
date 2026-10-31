@@ -316,7 +316,7 @@ def point_output(output_id, contracts, spot, rate, dividend_yield, cutoff_ns, pa
     try:
         contracts = list(contracts)
         code = validate_request(output_id, contracts, spot, rate, dividend_yield, cutoff_ns, p, validate)
-    except (TypeError, ValueError, AttributeError):
+    except Exception:                           # caller data (a container whose iteration raises): never raise
         code = "malformed_type"
     oid = output_id if output_id in _COMPUTE else "M3A-4"
     if code is not None:
