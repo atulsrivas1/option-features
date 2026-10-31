@@ -21,6 +21,9 @@ Calls
                   UNROUNDED binary64 values behind the frame text, keyed like `frame`, None where the frame is null
                   (derived series difference these and round once, R-48, R-181);
                   floats["available"] (bool, R-197) is True exactly when the result status is "available"
+    stats["labels"] (S06): {days: {"atm": model label of the expiry's ATM legs or None, "put25_iv": [labels of the
+                  bracket strikes used], "call25_iv": [...]}}, so a point output can label only the expiries it uses
+                  (R-180) even when the frame as a whole is unavailable (labels [] on the result, R-105)
 
 Result (IO contract section 8, R-141, R-142): value null; frame = {"expiries": {days: {status, reason, forward,
 atm_iv, put25_iv: {status, reason, value}, call25_iv: {...}}}, "tenors": {tenor: {status, reason, iv, method,
@@ -350,6 +353,7 @@ def surface_frame(contracts, spot, rate, dividend_yield, cutoff_ns, params=None,
                   stats=None):
     if stats is not None:
         stats.pop("floats", None)            # a reused stats dict never keeps a previous call's floats (R-197)
+        stats.pop("labels", None)
     if params is not None and not isinstance(params, dict):
         return Result.invalid(OUTPUT_ID, "malformed_type", evaluation_ns=cutoff_ns)
     try:
@@ -380,16 +384,19 @@ def surface_frame(contracts, spot, rate, dividend_yield, cutoff_ns, params=None,
     labels = set()
     frame_exp = {}
     float_exp = {}
+    label_exp = {}
     side_fail = None
     with numerical_owner() as owner:
         for e in exps:
             fl = {"atm_iv": None, "put25_iv": None, "call25_iv": None}
             item = {"status": e.status, "reason": e.reason, "forward": round_text(e.fwd.value()),
                     "atm_iv": None, "put25_iv": None, "call25_iv": None}
+            lab = {"atm": None, "put25_iv": [], "call25_iv": []}
             if e.status == "available":
                 item["atm_iv"] = round_text(e.atm_iv)
                 fl["atm_iv"] = e.atm_iv
                 labels.add(e.atm_label)
+                lab["atm"] = e.atm_label
                 for right, key in _SIDES:
                     legs = e.legs[right]
                     pt = delta25_point([k for k, _ in legs], [s for _, s in legs], e.atm_strike, S, r_x, q_x, e.days,
@@ -400,6 +407,7 @@ def surface_frame(contracts, spot, rate, dividend_yield, cutoff_ns, params=None,
                         fl[key] = pt["value"]
                         for k in pt["strikes_used"]:
                             labels.add(e.labels[(k, right)])
+                            lab[key].append(e.labels[(k, right)])
                     else:
                         item[key] = _side("unavailable", pt["reason"], None)
                         if side_fail is None:
@@ -409,6 +417,7 @@ def surface_frame(contracts, spot, rate, dividend_yield, cutoff_ns, params=None,
                 item["call25_iv"] = _side("unavailable", e.reason, None)
             frame_exp[str(e.days)] = item
             float_exp[str(e.days)] = fl
+            label_exp[str(e.days)] = lab
     targets = sorted(set(p["tenors"]))
     ten = tenor_kernel(_records(exps), targets)
     frame_ten = {}
@@ -425,6 +434,7 @@ def surface_frame(contracts, spot, rate, dividend_yield, cutoff_ns, params=None,
     if stats is not None:
         stats["evaluations"] = evaluations
         stats["floats"] = {"expiries": float_exp, "tenors": float_ten}
+        stats["labels"] = label_exp
     coverage = {"listed_strikes": sum(len(e.listed) for e in exps),
                 "eligible_strikes": sum(len(e.eligible) for e in exps),
                 "per_expiry": {str(e.days): {"listed_strikes": len(e.listed), "eligible_strikes": len(e.eligible)}
