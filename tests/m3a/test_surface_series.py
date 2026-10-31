@@ -33,7 +33,12 @@ REPEATS = 30
 def floats_from_frame_inputs(expiries, tenors):
     """expiries {days: (atm, put, call)}, tenors {t: float|None} -> the S05 stats['floats'] shape."""
     return {"expiries": {str(d): {"atm_iv": a, "put25_iv": p, "call25_iv": c} for d, (a, p, c) in expiries.items()},
-            "tenors": {str(t): v for t, v in tenors.items()}}
+            "tenors": {str(t): v for t, v in tenors.items()}, "available": True}
+
+
+def forced(stats):
+    """Real S05 floats with the frame flag forced to True: for tests of the VALUES (the flag itself is tested apart)."""
+    return dict(stats["floats"], available=True)
 
 
 def exact_round(fr):
@@ -206,7 +211,7 @@ class EndToEnd(unittest.TestCase):
             res, stats = _frame(row["inputs"]["chain"], row["params"])
             if "floats" not in stats:
                 continue
-            fl = stats["floats"]
+            fl = forced(stats)
             sc = S.scalar_units(fl)
             avail = [(int(d), it) for d, it in res.frame["expiries"].items() if it["atm_iv"] is not None]
             if not avail:
@@ -233,7 +238,7 @@ class EndToEnd(unittest.TestCase):
 
     def test_minute_columns_from_real_frames(self):
         row = next(r for r in H.rows("author3", "m3a_cases_v8.json") if "chain" in r["inputs"])
-        frames = [_frame(row["inputs"]["chain"], row["params"])[1]["floats"] for _ in range(3)]
+        frames = [forced(_frame(row["inputs"]["chain"], row["params"])[1]) for _ in range(3)]
         atm, iv30 = zip(*(S.minute_values_from_floats(f) for f in frames))
         self.assertTrue(all(type(v) is float for v in atm))
         a = S.build_records("E2E", "stock", 1, frames[0], minute_floats=frames)
@@ -249,7 +254,7 @@ class EndToEnd(unittest.TestCase):
                     "strikes_used": [], "evaluations": 0}
         with mock.patch.object(SF, "delta25_point", fake):
             res, stats = _frame(row["inputs"]["chain"], row["params"])
-        return S.scalar_units(stats["floats"])
+        return S.scalar_units(forced(stats))
 
     def test_u010_through_real_frame(self):
         self.assertEqual(self._stubbed(0.3000000049, 0.1000000051)["skew25"], 20000000)
@@ -650,7 +655,7 @@ class RaisingCaller(unittest.TestCase):
     def test_minute_values(self):
         for bad in (Boom(), {"expiries": Boom(), "tenors": Boom()}, {"expiries": {"30": Boom()}, "tenors": Boom()}):
             self.assertEqual(S.minute_values_from_floats(bad), (None, None))
-        self.assertEqual(S.minute_values_from_floats({"expiries": {"30": {"atm_iv": 0.3}}, "tenors": Boom()}),
+        self.assertEqual(S.minute_values_from_floats({"expiries": {"30": {"atm_iv": 0.3}}, "tenors": Boom(), "available": True}),
                          (0.3, None))
 
     def test_build_records(self):
@@ -852,14 +857,27 @@ class FrameAvailable(unittest.TestCase):
         self.assertEqual(S.minute_values_from_floats(bad), (None, None))
         self.assertEqual(S.build_records("U", "stock", 1, bad, bad, minute_floats=[bad, bad]), [])
 
-    def test_flag_true_or_absent_is_available(self):
+    def test_only_true_is_available_fail_closed(self):
         good = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {30: 0.28, 91: 0.2})
-        for flag in (True, None, 1, "no"):                       # only the value False means unavailable
+        self.assertEqual(S.scalar_units(good)["skew25"], 25000000)
+        self.assertEqual(S.minute_values_from_floats(good), (0.3, 0.28))
+        for flag in ("absent", None, 0, 1, "no", "yes", "True", [], [True], 1.0, False):
             f = dict(good)
-            if flag is not None:
+            if flag == "absent":
+                del f["available"]
+            else:
                 f["available"] = flag
-            self.assertEqual(S.scalar_units(f)["skew25"], 25000000, flag)
-            self.assertEqual(S.minute_values_from_floats(f), (0.3, 0.28))
+            self.assertEqual(S.scalar_units(f, f), {}, flag)
+            self.assertEqual(S.minute_values_from_floats(f), (None, None), flag)
+            self.assertEqual(S.build_records("U", "stock", 1, f, f, minute_floats=[f, f]), [], flag)
+
+    def test_raising_get_in_the_availability_check_is_unavailable(self):
+        class Bad(dict):
+            def get(self, *a):
+                raise RuntimeError("boom")
+        f = Bad(floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {30: 0.28}))
+        self.assertEqual(S.scalar_units(f), {})
+        self.assertEqual(S.minute_values_from_floats(f), (None, None))
 
     def test_forward_frame_flag_is_separate(self):
         s = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {})
@@ -1223,6 +1241,117 @@ class MutationGaps(unittest.TestCase):
         close = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {})
         self.assertEqual([r[1] for r in S.build_records("U", "stock", 1, close, minute_floats=[])],
                          ["atm_iv_close", "skew25"])
+
+
+class FinalChecks(unittest.TestCase):
+    """Final round: hostile store exceptions, series_id strictness, input containers, tie-breaks, negative grids."""
+
+    def test_hostile_store_exception_keeps_the_committed_count(self):
+        class Evil(Exception):
+            @property
+            def code(self):
+                raise RuntimeError("no code")
+
+            def __str__(self):
+                raise RuntimeError("no text")
+
+        class Store:
+            def __init__(self):
+                self.n = 0
+
+            def append(self, *a, **k):
+                self.n += 1
+                if self.n == 3:
+                    raise Evil()
+        got = S.append_records(Store(), records_for(0, _dates(2)), "stock")
+        self.assertEqual(tuple(got), (2, "Evil"))
+        self.assertTrue(got.partial)
+
+        class Store0:
+            def append(self, *a, **k):
+                raise Evil()
+        self.assertEqual(tuple(S.append_records(Store0(), records_for(0, _dates(2)), "stock")), (0, "Evil"))
+
+    def test_series_id_strict(self):
+        for bad in ("", "a/b", None, 5, b"m", Str("m")):
+            self.assertIsNone(S.series_id("U", "stock", bad), bad)
+        self.assertIsNone(S.series_id("U", Str("stock"), "iv30"))
+        self.assertIsNone(S.series_id("U", None, "iv30"))
+        self.assertEqual(S.series_id("U", "stock", "iv30"), "U/stock/iv30")
+        close = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {})
+        self.assertEqual(S.build_records("U", Str("stock"), 1, close), [])
+        self.assertEqual(S.build_records("U", "", 1, close), [])
+        self.assertEqual(S.build_records("U", "st/ock", 1, close), [])
+
+    def test_empty_grid(self):
+        self.assertEqual(S.grid_units([]), [])
+        self.assertEqual(S.grid_units(()), [])
+        self.assertEqual(S.grid_units(iter([])), [])
+
+    def test_all_negative_grid_still_has_values(self):
+        close = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {})
+        recs = S.build_records("U", "stock", 1, close, minute_columns=([-0.3, -0.2, None], [None, None, -1e-9]))
+        self.assertEqual([r[1] for r in recs][:2], ["atm_iv", "atm_iv_close"])      # iv30: -1e-9 rounds to 0: no record
+        self.assertEqual(recs[0][4], [-30000000, -20000000, 0])
+        self.assertEqual(recs[0][5], -50000000)
+
+    def test_containers_for_minute_inputs(self):
+        close = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {30: 0.28})
+        f = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {30: 0.28})
+        a = S.build_records("U", "stock", 1, close, minute_floats=[f, None, f])
+        b = S.build_records("U", "stock", 1, close, minute_floats=(f, None, f))
+        self.assertEqual(a, b)
+        self.assertEqual(a[0][4], [30000000, 0, 30000000])
+        c = S.build_records("U", "stock", 1, close, minute_columns=([0.3, None], [0.28, None]))
+        d = S.build_records("U", "stock", 1, close, minute_columns=[[0.3, None], [0.28, None]])
+        self.assertEqual(c, d)
+        self.assertEqual(c[0][4], [30000000, 0])
+        self.assertEqual(S.build_records("U", "stock", 1, close, minute_columns=[[0.3]]), S.build_records("U", "stock", 1, close))
+
+    def test_get_raising_any_exception_on_an_expiry_item(self):
+        for exc in (RuntimeError, ZeroDivisionError, OSError):
+            class It(dict):
+                def get(self, *a):
+                    raise exc("x")
+            f = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {30: 0.28, 91: 0.2})
+            f["expiries"]["30"] = It(f["expiries"]["30"])
+            self.assertEqual(S.scalar_units(f), {"atm_iv_close": 30000000})
+
+    def test_nearest_expiry_tie_between_30_and_030(self):
+        a = {"atm_iv": 0.3, "put25_iv": 0.5, "call25_iv": 0.25}
+        b = {"atm_iv": 0.4, "put25_iv": 0.6, "call25_iv": 0.25}
+        f = {"expiries": {"30": a, "030": b}, "tenors": {}, "available": True}
+        self.assertEqual(S.scalar_units(f)["atm_iv_close"], 30000000)         # equal days: the first in order wins
+        f = {"expiries": {"030": b, "30": a}, "tenors": {}, "available": True}
+        self.assertEqual(S.scalar_units(f)["atm_iv_close"], 40000000)
+        f = {"expiries": {"031": a, "030": b}, "tenors": {}, "available": True}
+        self.assertEqual(S.scalar_units(f)["atm_iv_close"], 40000000)
+
+    def test_probe_skipped_when_the_last_stored_session_is_the_last_calendar_session(self):
+        # drift case 2 (decision item 9): the ring's last stored session is the last calendar session
+        d = _dates(3)
+        sid = "U/stock/atm_iv_close"
+        for strict in (True, False):
+            st = HistoryStore(Calendar([(x, 390) for x in d]), k=20, strict_calendar=strict)
+            st.append(sid, "atm_iv_close", 0, d[2], [], total=1, lane="etf_index")
+            same = (sid, "atm_iv_close", 0, d[2], [], 1)
+            before = (sid, "atm_iv_close", 0, d[1], [], 1)
+            self.assertEqual(S._validate(st, [same], "stock"), "duplicate_session")      # the store says lane_mismatch
+            self.assertEqual(S._validate(st, [before], "stock"), "out_of_order_append")
+            self.assertEqual(_single_code(st, same, "stock"), "lane_mismatch")
+            self.assertEqual(tuple(S.append_records(st, [same], "stock")), (0, "duplicate_session"))
+        # strict calendar: no later session exists, so a later record is rejected with nothing committed
+        st = HistoryStore(Calendar([(x, 390) for x in d]), k=20)
+        st.append(sid, "atm_iv_close", 0, d[2], [], total=1, lane="etf_index")
+        later = (sid, "atm_iv_close", 0, "2099-01-01", [], 1)
+        self.assertEqual(tuple(S.append_records(st, [later], "stock")), (0, "session_not_in_calendar"))
+        # non-strict calendar with a later session: the probe is skipped, the store raises after record 0 is committed
+        st = HistoryStore(Calendar([(x, 390) for x in d]), k=20, strict_calendar=False)
+        st.append(sid, "atm_iv_close", 0, d[2], [], total=1, lane="etf_index")
+        other = ("U/stock/iv30_close", "iv30_close", 0, "2099-01-01", [], 1)
+        got = S.append_records(st, [other, later], "stock")
+        self.assertEqual(tuple(got), (1, "lane_mismatch"))
+        self.assertTrue(got.partial)
 
 
 class W08(unittest.TestCase):
