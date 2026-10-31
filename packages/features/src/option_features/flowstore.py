@@ -76,7 +76,11 @@ def _full_idx(n):
 
 
 def _is_m3a_series(series_id):
-    metric = series_id.rsplit("/", 1)[-1] if isinstance(series_id, str) else None
+    """True for an M3a series id. A str subclass is refused (TypeError): it could lie to rsplit, ==, hash or str and
+    pass an M3a-named id off as an M2 one, bypassing the exact-integer rules."""
+    if type(series_id) is not str and isinstance(series_id, str):
+        raise TypeError("series_id must be an exact str")
+    metric = str.rsplit(series_id, "/", 1)[-1] if type(series_id) is str else None
     return metric is not None and (metric in M3A_METRICS or metric.endswith("_fwd"))
 
 
@@ -439,9 +443,9 @@ class HistoryStore:
         """Declare the retention k of one series id (every metric and window of that id), R-114: k in 1..252 for an M3a
         series (metric in M3A_METRICS or a skew-type `<metric>_fwd`), 1..60 (MAX_K) for any other (M2) series.
         Lowering k evicts the oldest records at once; raising it keeps what is stored. ValueError otherwise."""
+        cap = MAX_SERIES_K if _is_m3a_series(series_id) else MAX_K       # TypeError for a str subclass
         if type(k) is not int:
             raise ValueError("k must be an int")
-        cap = MAX_SERIES_K if _is_m3a_series(series_id) else MAX_K
         if not 1 <= k <= cap:
             raise ValueError("k must be in 1..%d for series %r" % (cap, series_id))
         self._series_k[series_id] = k
@@ -530,11 +534,12 @@ class HistoryStore:
         the arrays into private typed arrays (a caller cannot mutate stored data); an index or value array shared by
         several records of one `append_many` is copied and validated once and shared. On an M3a series the total and
         every value must be exact ints (checked after the structural checks, before any mutation)."""
+        m3a = _is_m3a_series(record.series_id)           # TypeError for a str subclass, before anything else
         idx = _own(record.idx, _memo)
         minutes = self._prepare(record.series_id, record.metric, record.window_s, record.session_id, lane, record.minutes,
                                 idx, True, _memo)
         vals = record.vals
-        if _is_m3a_series(record.series_id):
+        if m3a:
             vals = _m3a_values(vals, _memo)
             if type(record.total) is not int:
                 raise TypeError("M3a total must be an exact integer")
