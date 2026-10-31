@@ -6,12 +6,13 @@ unrounded binary64 values S05 exposes in `stats["floats"]` (R-189):
     {"expiries": {"<days>": {"atm_iv", "put25_iv", "call25_iv"}}, "tenors": {"<t>": float | None},
      "available": bool}
 `available` is the S05 frame status (True iff the frame result is "available", R-141). History is written only from an
-AVAILABLE frame (R-197): a frame with `"available": False` stores no scalar record and gives no value at its minute.
-The key is an S05 patch still to come; an input without it is read as available (compatibility), see the decision file.
+AVAILABLE frame (R-197), FAIL CLOSED: a record is stored only when floats.get("available") is True; a missing key or
+any other value stores no scalar record and gives no value at its minute. The key is the S05c patch (a prerequisite
+of S11), see the decision file.
 
 Calls
-    series_id(underlying, lane, metric)               -> "<UNDERLYING>/<lane>/<metric>", or None when `underlying` or
-        `lane` is empty, not exactly a str, or contains "/". `underlying` is the adapter symbol; it must not contain
+    series_id(underlying, lane, metric)               -> "<UNDERLYING>/<lane>/<metric>", or None when `underlying`,
+        `lane` or `metric` is empty, not exactly a str (a str subclass is refused), or contains "/". `underlying` is the adapter symbol; it must not contain
         "/"; the adapter normalises or rejects before S10 (build_records returns [] for such an underlying).
     scalar_units(floats, floats_fwd=None)             -> {metric: int} (10^-8 units); an unavailable metric is
         absent. atm_iv_close = ATM IV of the nearest eligible expiry (lowest days with a usable atm_iv);
@@ -29,7 +30,7 @@ Calls
         [], total the integer). `minute_floats` is a list of per-minute stats["floats"] (None for a missing
         minute). A series without a value gets no record (R-194): a minute series whose grid has no available entry
         (all None or unusable, a column that cannot be iterated, an empty column, or only values that round to 0) is
-        MISSING for that session like a scalar (R-51), not a record of zeros.
+        MISSING for that session like a scalar (R-51), not a record of zeros. Negative values count as values.
     declare_series(store, series_ids)                 -> set of the ids now at retention 252 or more (add_series is
         called only for ids not yet there; never lowers). append_records calls it itself unless told `declared`.
     append_records(store, records, lane="stock", declared=None) -> AppendResult (a (count, code) tuple with
@@ -84,7 +85,7 @@ def _prefix(underlying, lane):
 
 def series_id(underlying, lane, metric):
     pre = _prefix(underlying, lane)
-    if pre is None or type(metric) is not str:
+    if pre is None or type(metric) is not str or not metric or "/" in metric:
         return None
     return pre + metric
 
@@ -95,11 +96,12 @@ def _ok(x):
 
 
 def _avail(f):
-    """False only for a frame that says `"available": False` (R-197); anything else reads as available."""
+    """True only for a frame that says `"available": True` (R-197, fail closed): a missing key, any other value, or a
+    frame whose `get` raises is not available."""
     try:
-        return f.get("available") is not False
+        return f.get("available") is True
     except Exception:
-        return True
+        return False
 
 
 def _diff_units(a, b):
@@ -302,7 +304,7 @@ def grid_units(values):
 def minute_values_from_floats(f):
     """The minute value rule (R-191): one per-minute stats["floats"] -> (atm_iv, iv30). atm_iv is the ATM IV of the
     nearest eligible expiry (lowest days with a finite float atm_iv); iv30 is tenor "30". A missing or unusable
-    value is None, and so is every value of a frame that says `"available": False` (R-197). Never raises. S11 calls
+    value is None, and so is every value of a frame whose `available` is not True (R-197). Never raises. S11 calls
     this once per minute in its G0 loop and passes the two columns."""
     if not _avail(f):
         return None, None
@@ -336,9 +338,9 @@ def build_records(underlying, lane, session_id, close_floats, close_floats_fwd=N
         return []
     out = []
     cols = None
-    if type(minute_columns) is tuple and len(minute_columns) == 2:
+    if type(minute_columns) in _SEQ and len(minute_columns) == 2:
         cols = minute_columns                   # pre-extracted (atm_iv floats, iv30 floats), one per minute
-    elif type(minute_floats) is list and minute_floats:
+    elif type(minute_floats) in _SEQ and minute_floats:
         cols = _minute_pair(minute_floats)
     if cols is not None:
         for metric, col in (("atm_iv", cols[0]), ("iv30", cols[1])):
@@ -371,7 +373,10 @@ class AppendResult(tuple):
 
 def _code(e):
     """The code of a store error: its `code`, else its text, else the exception class name."""
-    return str(getattr(e, "code", None) or e) or type(e).__name__
+    try:
+        return str(getattr(e, "code", None) or e) or type(e).__name__
+    except Exception:                           # a hostile exception (its code or text raises) never escapes
+        return type(e).__name__
 
 
 def _validate(store, recs, lane):
