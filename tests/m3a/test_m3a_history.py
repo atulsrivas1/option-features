@@ -397,6 +397,66 @@ class Layout(unittest.TestCase):
         self.assertEqual(list(st.retained().values())[0], cal.ids[1:4])
         st.dump()
 
+    BAD_ELEMENTS = (1.5, Decimal("2"), Fraction(1, 3), None, True, False, "7", float("nan"), float("inf"), b"1", 2 + 0j)
+    BAD_TOTALS = (1.5, Decimal("2"), Fraction(7, 1), True, False, float("nan"), float("inf"), "7", b"7", 2 + 0j)
+
+    def _unchanged(self, st, cal, call, exc=(TypeError, ValueError), msg=None):
+        before = (st.dump(), self._read_all(st, cal), st.stats()["records"], dict(st.retained()))
+        with self.assertRaises(exc, msg=msg):
+            call()
+        self.assertEqual((st.dump(), self._read_all(st, cal), st.stats()["records"], dict(st.retained())), before, msg)
+
+    def test_F2_mixed_huge_int_and_bad_grids_rejected(self):
+        cal = _cal(10, 3)
+        st = HistoryStore(cal)
+        st.add_series("A/stock/iv30", 3)
+        st.append("A/stock/iv30", "iv30", 0, cal.ids[0], [1, 2, 3])
+        grids = ([1, 10 ** 30, Fraction(1, 3)], [10 ** 30, 1.5, 2], [10 ** 30, 10 ** 30, Fraction(5, 1)],
+                 [2 ** 63, 2 ** 64, Decimal("1")], [10 ** 30, None, 2], [10 ** 30, True, 2], [0, 10 ** 30, 1.5],
+                 [0, 0, Fraction(1, 3)], [1, 2, "7"])
+        for g in grids:
+            self._unchanged(st, cal, lambda g=g: st.append("A/stock/iv30", "iv30", 0, cal.ids[1], g), msg=g)
+        st.append("A/stock/iv30", "iv30", 0, cal.ids[1], [10 ** 30, 2, 3])        # a real huge int is still fine
+        st.dump()
+
+    def test_F2_bad_element_every_form(self):
+        cal = _cal(10, 4)
+        st = HistoryStore(cal)
+        st.add_series("A/stock/iv30", 3)
+        for bad in self.BAD_ELEMENTS:
+            for pos in (0, 3):
+                for rest in (5, 0, 10 ** 30):
+                    g = [rest] * 4
+                    g[pos] = bad
+                    self._unchanged(st, cal, lambda g=g: st.append("A/stock/iv30", "iv30", 0, cal.ids[0], g), msg=g)
+            self._unchanged(st, cal, lambda b=bad: st.append("A/stock/iv30", "iv30", 0, cal.ids[0], [b, 4],
+                                                             grid_idx=[0, 2]), msg=("sparse", bad))
+        self.assertEqual(len(st), 0)
+
+    def test_F2_bad_total_rejected(self):
+        cal = _cal(10, 3)
+        st = HistoryStore(cal)
+        st.add_series("A/stock/iv30", 3)
+        st.add_series("A/stock/skew25", 3)
+        st.append("A/stock/iv30", "iv30", 0, cal.ids[0], [1, 2, 3])
+        st.append("A/stock/skew25", "skew25", 0, cal.ids[0], [], total=5)
+        for bad in self.BAD_TOTALS:
+            self._unchanged(st, cal, lambda b=bad: st.append("A/stock/skew25", "skew25", 0, cal.ids[1], [], total=b),
+                            msg=bad)
+            self._unchanged(st, cal, lambda b=bad: st.append("A/stock/iv30", "iv30", 0, cal.ids[1], [1, 2, 3], total=b),
+                            msg=bad)
+        st.append("A/stock/skew25", "skew25", 0, cal.ids[1], [], total=-10 ** 30)    # any exact int is fine
+        st.append("A/stock/skew25", "skew25", 0, cal.ids[2], [], total=0)
+        st.dump()
+
+    def test_F2_m2_unchanged_by_the_checks(self):
+        cal = _cal(10, 3)
+        st = HistoryStore(cal)
+        st.append("P/stock/premium", "premium", 60, cal.ids[0], [1, 2, 3], total=6)
+        st.append("P/stock/premium", "premium", 60, cal.ids[1], [1, 10 ** 30, 3])
+        st.append("P/stock/premium", "premium", 60, cal.ids[2], [True, 2, 3])        # M2 narrow accepts bool: untouched
+        self.assertEqual(st.stats()["records"], 3)
+
     def test_m2_series_same_error_as_before(self):
         cal = _cal(10, 6)
         st = HistoryStore(cal)
@@ -475,7 +535,18 @@ class Layout(unittest.TestCase):
             for j, (sid, grid, comp) in enumerate(steps):
                 if j == fail_at:
                     bad = list(grid)
-                    bad[rng.randrange(len(bad))] = rng.choice([1.5, Decimal("3"), Fraction(1, 3)])
+                    if rng.random() < 0.3:
+                        with self.assertRaises(TypeError, msg=seed):
+                            a.append("A/stock/iv30", "iv30", 0, sid, grid, complete=comp,
+                                     total=rng.choice(self.BAD_TOTALS))
+                        continue
+                    for _ in range(rng.randint(1, 3)):
+                        bad[rng.randrange(len(bad))] = rng.choice(self.BAD_ELEMENTS[:3] + (None, "7", True))
+                    if rng.random() < 0.5:                       # mixed huge-int and bad-type grid
+                        bad[rng.randrange(len(bad))] = rng.choice([10 ** 30, -10 ** 30, 2 ** 64])
+                        bad[rng.randrange(len(bad))] = rng.choice([Fraction(1, 3), 1.5, Decimal("3")])
+                    if all(type(v) is int for v in bad):
+                        bad[0] = Fraction(1, 3)
                     with self.assertRaises(TypeError, msg=seed):
                         a.append("A/stock/iv30", "iv30", 0, sid, bad, complete=comp)
                     continue
