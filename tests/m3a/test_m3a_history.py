@@ -715,6 +715,20 @@ class Hardening3(unittest.TestCase):
             line = st.dump().decode().split("\n")[0]
             self.assertIn('"grid":[%s],' % old_text(range(5), vals, 5), line, vals)
 
+    def test_D5_beyond_64_bit_tuple_forms_round_trip(self):
+        for n in (1, 2, 3):
+            cal = Calendar([("S%03d" % i, n) for i in range(3)])
+            for series, metric, w in (("P/stock/premium", "premium", 60), (S, "atm_iv", 0)):
+                st = HistoryStore(cal)
+                if series == S:
+                    st.add_series(S, 5)
+                st.append(series, metric, w, "S000", [10 ** 30] * n)
+                line = st.dump().decode().split("
+")[0]
+                self.assertIn('"grid":[%s],' % ",".join(["1" + "0" * 30] * n), line)
+                back = HistoryStore.load(st.dump(), cal, series_k={S: 5} if series == S else None)
+                self.assertEqual(back.dump(), st.dump())
+
     def test_round3_injection_fuzz(self):
         for seed in range(300):
             rng = random.Random(seed)

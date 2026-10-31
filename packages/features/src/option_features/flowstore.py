@@ -121,7 +121,7 @@ def _grid_text(rec, cache=None):
         return text
     vals = vals if type(vals) is tuple else vals.tolist()
     if len(idx) == rec.minutes and (type(vals) is list or _INT_ONLY.issuperset(map(type, vals))):
-        return repr(vals)[1:-1].replace(" ", "")    # no zero point and exact ints: the values, one C call
+        return repr(vals if type(vals) is list else list(vals))[1:-1].replace(" ", "")    # no zero point and exact ints: the values, one C call
     tokens = ["0"] * rec.minutes
     for i, v in zip(idx if type(idx) is tuple else idx.tolist(), vals):
         tokens[i] = str(v)
