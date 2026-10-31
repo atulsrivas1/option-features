@@ -7,7 +7,8 @@ cap 60) counting every stored record, complete or not. M3a (story S02, R-52, R-1
 a per-series k up to 252 for the M3a series (M3A_METRICS and skew-type `skew*_fwd`); M2 series keep k <= 60. An M3a
 record may carry `delta_convention` (R-160), written in its canonical line only when given (no M2 line changes). A
 record is a sparse grid (ascending `array('H')` indexes of the nonzero points, `array('q')` values, or a plain
-list when a value exceeds 64 bits), the session total, a complete flag; zeros are implicit. Series are created lazily by the first append, so a contract without prints costs
+list when a value exceeds 64 bits), the session total, a complete flag; zeros are implicit. (M3a minute series,
+S02b: a dense grid keeps its zeros in place, full index plus values in the ring block; a stored 0 is a hole, R-195.) Series are created lazily by the first append, so a contract without prints costs
 nothing. Sealed records never change; completing an incomplete record (`seal`) is the only mutation.
 
 Reads go through `baseline()`: the K calendar sessions right before `as_of`, all stored and complete, same lane (no
@@ -245,8 +246,9 @@ class _Cols:
     calendar session); a record's `vals` is then a read-only-by-convention memoryview of its row and its `idx` the shared
     full index, so there is no second copy. Rows are used circularly: the row of session j is (head + j) % cap, so
     the minute column of the whole ring is the strided slice block[minute::stride] rotated by head. A record evicted
-    from the ring gets a private copy of its row before the row is reused. Other grids keep their own arrays
-    (inb False) and are read record by record."""
+    from the ring gets a private copy of its row before the row is reused. Zero-bearing dense grids are in the block
+    (S02b: a 0 is a hole, R-195; the read skips it). Only sparse-supplied grids, grids beyond int64 and grids longer than
+    the stride keep their own arrays (inb False) and are read record by record."""
     __slots__ = ("ids", "recs", "tot", "done", "mins", "conv", "inb", "cap", "head", "stride", "block", "mv")
 
     def __init__(self, cap, stride):
