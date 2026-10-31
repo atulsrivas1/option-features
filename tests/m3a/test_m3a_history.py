@@ -1076,6 +1076,176 @@ class Round5(unittest.TestCase):
         self.assertEqual(pickle.loads(pickle.dumps(m2)).dump(), m2.dump())
 
 
+
+class _BoomDict(dict):
+    """A views dict whose clear() raises KeyboardInterrupt (an injected failure after the commit point)."""
+    def clear(self):
+        raise KeyboardInterrupt("injected")
+
+
+class _BoomSid:
+    idx = array("H", [1])
+    metric, window_s, session_id, minutes, vals, total = "m", 0, "D001", 6, (1,), 1
+
+    @property
+    def series_id(self):
+        raise RuntimeError("series_id property")
+
+
+class _ShiftAttr:
+    """A record whose named attribute returns its first value once and the second value afterwards."""
+    def __init__(self, attr, first, second):
+        self._attr, self._first, self._second, self._n = attr, first, second, 0
+        self.series_id, self.metric, self.window_s = "A/stock/iv30", "iv30", 0
+        self.session_id, self.minutes, self.idx, self.vals, self.total = "S001", 16, array("H", [1]), (7,), 5
+        object.__setattr__(self, "_ready", True)
+
+    def __getattribute__(self, name):
+        if name == object.__getattribute__(self, "_attr") and object.__getattribute__(self, "__dict__").get("_ready"):
+            n = object.__getattribute__(self, "_n") + 1
+            object.__setattr__(self, "_n", n)
+            return object.__getattribute__(self, "_first" if n == 1 else "_second")
+        return object.__getattribute__(self, name)
+
+
+class _ShiftIdx(list):
+    calls = 0
+
+    def __iter__(self):
+        _ShiftIdx.calls += 1
+        return iter([1, 3] if _ShiftIdx.calls % 2 else [2, 4])
+
+
+class Round6(unittest.TestCase):
+    """Re-check of 3df0594: batch atomicity when the failure comes before the first M3a record, atomic add_series,
+    prescan that never raises, rollback on BaseException, and surviving mutants (N03 N04 N13 N18 N19 N21 N27 to N30)."""
+
+    def _m2rec(self, ses, sid="B/stock/other", total=3):
+        return GridRecord(sid, "m", 0, ses, 6, array("H", [0, 1]), (1, 2), total)
+
+    def _cal(self):
+        return Calendar([("D%03d" % i, 6) for i in range(10)])
+
+    def test_R1_failure_before_first_m3a_record_rolls_back(self):
+        cal = self._cal()
+        for batch in ([self._m2rec("D003"), self._m2rec("D002"),
+                       GridRecord("A/stock/iv30", "iv30", 0, "D004", 6, array("H", [0]), (1,), 1)],
+                      (self._m2rec("D001"), self._m2rec("D001"),
+                       GridRecord("A/stock/iv30", "iv30", 0, "D004", 6, array("H", [0]), (1,), 1))):
+            st, twin = HistoryStore(cal), HistoryStore(cal)
+            with self.assertRaises(M2StructuralError):
+                st.append_many(batch)
+            self.assertEqual((st.stats()["records"], st.dump()), (0, twin.dump()))
+
+    def test_R3_prescan_never_raises(self):
+        cal = self._cal()
+        st = HistoryStore(cal)
+        with self.assertRaises(RuntimeError):
+            st.append_many([self._m2rec("D000"), _BoomSid(), self._m2rec("D002")])
+        self.assertEqual(st.stats()["records"], 1)                      # as on main: the earlier record stays
+
+    def test_R2_add_series_is_atomic(self):
+        cal, a, b = Hardening3()._pair(k=5)
+        for sid in ("S001", "S002", "S003"):
+            for st in (a, b):
+                st.append(S, "atm_iv", 0, sid, [2] * 16)
+        MH.same_minute_column(a, S, "atm_iv", "S009", 1, min_sessions=1)
+        ring = a._rings[(S, "atm_iv", 0)]
+        ring.views = _BoomDict({("x", 1): object()})
+        with self.assertRaises(KeyboardInterrupt):
+            a.add_series(S, 2)
+        ring.views = {}
+        self.assertEqual(a.k_of(S), 5)
+        self.assertEqual(len(ring.recs), 4)
+        self.assertEqual(a.dump(), b.dump())
+        self.assertEqual(MH.same_minute_column(a, S, "atm_iv", "S009", 1, min_sessions=1).value,
+                         MH.same_minute_column(b, S, "atm_iv", "S009", 1, min_sessions=1).value)
+
+    def test_R4_store_and_seal_roll_back_after_the_commit_point(self):
+        cal, a, b = Hardening3()._pair(k=5)
+        ring = a._rings[(S, "atm_iv", 0)]
+        ring.views = _BoomDict({("x", 1): object()})
+        with self.assertRaises(KeyboardInterrupt):
+            a.append(S, "atm_iv", 0, "S001", [3] * 16)
+        ring.views = {}
+        self.assertEqual(a.dump(), b.dump())
+        for st in (a, b):
+            st.append(S, "atm_iv", 0, "S001", [3] * 16, complete=False)
+        ring.views = _BoomDict({("x", 1): object()})
+        with self.assertRaises(KeyboardInterrupt):
+            a.seal(S, "atm_iv", 0, "S001")
+        ring.views = {}
+        self.assertFalse(ring.recs["S001"].complete)
+        self.assertEqual(a.dump(), b.dump())
+
+    def test_N_base_exception_rolls_back_store_and_seal(self):
+        from option_features import flowstore as FS
+        cal, a, b = Hardening3()._pair(k=3)
+        MH.same_minute_column(a, S, "atm_iv", "S009", 1, min_sessions=1)
+        real_push, real_seal = FS._Cols.push, FS._Cols.seal
+        FS._Cols.push = lambda self, rec: (_ for _ in ()).throw(KeyboardInterrupt())
+        try:
+            with self.assertRaises(KeyboardInterrupt):
+                a.append(S, "atm_iv", 0, "S001", [3] * 16)
+        finally:
+            FS._Cols.push = real_push
+        self.assertEqual(a.dump(), b.dump())
+        for st in (a, b):
+            st.append(S, "atm_iv", 0, "S001", [3] * 16, complete=False)
+        MH.same_minute_column(a, S, "atm_iv", "S009", 1, min_sessions=1)
+        FS._Cols.seal = lambda self, sid: (_ for _ in ()).throw(KeyboardInterrupt())
+        try:
+            with self.assertRaises(KeyboardInterrupt):
+                a.seal(S, "atm_iv", 0, "S001")
+        finally:
+            FS._Cols.seal = real_seal
+        self.assertFalse(a._rings[(S, "atm_iv", 0)].recs["S001"].complete)
+        self.assertIsNone(a._rings[(S, "atm_iv", 0)].m3a)
+
+    def test_N19_trim_at_k_plus_one(self):
+        cal = Calendar([("D%03d" % i, 3) for i in range(10)])
+        for n, k, want in ((4, 3, 3), (3, 3, 3), (2, 3, 2)):
+            st = HistoryStore(cal)
+            for i in range(n):
+                st.append("P/stock/premium", "premium", 0, cal.ids[i], [i + 1] * 3)
+            st.add_series("P/stock/premium", k)
+            self.assertEqual(list(st.retained().values())[0], cal.ids[max(0, n - k):n])
+            self.assertEqual(len(list(st.retained().values())[0]), want)
+
+    def test_N21_per_ring_k_when_loading(self):
+        cal = Calendar([("D%03d" % i, 3) for i in range(10)])
+        st = HistoryStore(cal, k=10)
+        for i in range(6):
+            for sid in ("A/stock/p1", "B/stock/p2", "C/stock/p3"):
+                st.append(sid, "premium", 0, cal.ids[i], [i + 1] * 3)
+        ks = {"A/stock/p1": 2, "B/stock/p2": 4}
+        for back in (HistoryStore.load(st.dump(), cal, k=10, series_k=ks),
+                     HistoryStore.from_snapshot(st.snapshot(), cal, k=10, series_k=ks)):
+            got = {key[0]: len(v) for key, v in ((k_, list(r.recs)) for k_, r in back._rings.items())}
+            self.assertEqual(got, {"A/stock/p1": 2, "B/stock/p2": 4, "C/stock/p3": 6})
+
+    def test_N28_N29_N30_attributes_read_once(self):
+        cal = Calendar([("S%03d" % i, 16) for i in range(4)])
+        for attr, first, second in (("total", 5, Fraction(1, 3)), ("session_id", "S001", "S002"),
+                                    ("series_id", "A/stock/iv30", "x/stock/premium")):
+            st = HistoryStore(cal)
+            st.add_series("A/stock/iv30", 5)
+            st.append_record(_ShiftAttr(attr, first, second))
+            self.assertEqual(len(st._rings), 1, attr)
+            (key, ring), = st._rings.items()
+            (sid, rec), = ring.recs.items()
+            self.assertEqual((key[0], sid, rec.session_id, type(rec.total)), ("A/stock/iv30", "S001", "S001", int), attr)
+
+    def test_N27_grid_idx_copied_once(self):
+        cal = Calendar([("D%03d" % i, 16) for i in range(4)])
+        st = HistoryStore(cal)
+        st.add_series(S, 5)
+        _ShiftIdx.calls = 0
+        st.append(S, "atm_iv", 0, "D000", [5, 6], grid_idx=_ShiftIdx([1, 3]))
+        rec = st._rings[(S, "atm_iv", 0)].recs["D000"]
+        self.assertEqual((list(rec.idx), list(rec.vals)), ([1, 3], [5, 6]))
+
+
 class Memory(unittest.TestCase):
     def test_formula(self):
         self.assertEqual(MH.grid_store_bytes(2 * 103, 252, 390, 3),
