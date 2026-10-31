@@ -695,6 +695,130 @@ class FrameReuse(unittest.TestCase):
         self.assertGreater(done, 15)
 
 
+class RaisingSubclasses(unittest.TestCase):
+    """Caller containers and strings whose methods raise: point_output returns a result, never raises (code review)."""
+
+    def _chain(self):
+        row = ROWS[0]
+        ch = row["inputs"]["chain"]
+        return row, ch, contracts_of(ch["contracts"])
+
+    def test_contracts_that_raise(self):
+        row, ch, cs = self._chain()
+
+        class BL(list):
+            def __iter__(self):
+                raise RuntimeError("boom")
+
+            def __len__(self):
+                raise RuntimeError("boom")
+
+            def __getitem__(self, i):
+                raise RuntimeError("boom")
+
+        class BT(tuple):
+            def __iter__(self):
+                raise RuntimeError("boom")
+
+        for bad in (BL(cs), BT(cs), BL(), iter(cs) if False else 5):
+            for oid in OUTPUTS:
+                r = P.point_output(oid, bad, ch["spot"], ch["rate"], ch["dividend_yield"], ch["cutoff_ns"],
+                                   {"evaluation_ns": ch["cutoff_ns"], "at_least": "1"})
+                self.assertEqual((r.status, r.code), ("invalid_input", "malformed_type"), (type(bad), oid))
+
+    def test_params_that_raise(self):
+        row, ch, cs = self._chain()
+
+        class BD(dict):
+            def get(self, *a):
+                raise RuntimeError("boom")
+
+            def __getitem__(self, k):
+                raise RuntimeError("boom")
+
+            def items(self):
+                raise RuntimeError("boom")
+
+            def keys(self):
+                raise RuntimeError("boom")
+
+            def __iter__(self):
+                raise RuntimeError("boom")
+
+            def __contains__(self, k):
+                raise RuntimeError("boom")
+
+        for oid in OUTPUTS:
+            r = P.point_output(oid, cs, ch["spot"], ch["rate"], ch["dividend_yield"], ch["cutoff_ns"],
+                               BD(evaluation_ns=ch["cutoff_ns"]))
+            self.assertEqual((r.status, r.code), ("invalid_input", "malformed_type"), oid)
+
+    def test_strings_that_raise(self):
+        row, ch, cs = self._chain()
+
+        class BS(str):
+            def __eq__(self, o):
+                raise RuntimeError("boom")
+
+            def __hash__(self):
+                raise RuntimeError("boom")
+
+        r = P.point_output(BS("M3A-7"), cs, ch["spot"], ch["rate"], ch["dividend_yield"], ch["cutoff_ns"], {})
+        self.assertEqual((r.status, r.code), ("invalid_input", "malformed_type"))
+        for key in ("direction", "pair", "at_least", "delta_convention", "x", "at_most"):
+            for oid in OUTPUTS:
+                r = P.point_output(oid, cs, ch["spot"], ch["rate"], ch["dividend_yield"], ch["cutoff_ns"],
+                                   {"evaluation_ns": ch["cutoff_ns"], key: BS("up")})
+                self.assertIn(r.status, ("invalid_input", "unavailable", "available"), (key, oid))
+        res, floats, lab, _ = hand_frame({9: (0.18, 0.2, 0.2), 30: (0.22, 0.25, 0.19), 91: (0.23, 0.3, 0.2)})
+        for oid in OUTPUTS:
+            r = P.point_from_frame(oid, res, floats, {"direction": BS("up"), "at_least": BS("1")}, lab)
+            self.assertIn(r.status, ("invalid_input", "unavailable", "available"), oid)
+
+    def test_point_from_frame_with_raising_frames(self):
+        class BD(dict):
+            def __getitem__(self, k):
+                raise RuntimeError("boom")
+
+            def get(self, *a):
+                raise RuntimeError("boom")
+
+        res, floats, lab, _ = hand_frame({9: (0.18, 0.2, 0.2), 30: (0.22, 0.25, 0.19), 91: (0.23, 0.3, 0.2)})
+        res.frame = BD(res.frame)
+        for oid in OUTPUTS:
+            self.assertIn(P.point_from_frame(oid, res, BD(floats), {}, BD(lab)).status, ("invalid_input", "unavailable"))
+
+
+class ExactIntegerDifference(unittest.TestCase):
+    """The difference is exact integer arithmetic, not `round((a - b) * 1e10)`: each pair below has an exact difference
+    just off a half-unit tie that the float product lands on the other side of (code review: surviving mutant)."""
+
+    CASES = (
+        ("0x1.f2281d15bcd6fp-3", "0x1.72030f9a48244p-3", 625706723),
+        ("0x1.ee7a46d683d12p-1", "0x1.e77bcc90752cap-1", 136602603),
+        ("0x1.2ec82ad24353ep-3", "0x1.e18e3fb60d00fp-4", 302754265),
+        ("0x1.27d0aacc2a58cp+0", "0x1.12028c9935fb1p+0", 851763605),
+        ("0x1.c7f0e7c418017p-1", "0x1.ab6ce45e2ccc2p-1", 556946813),
+        ("0x1.895efd01f2ef7p-2", "0x1.713a6ec0f2b72p-2", 235769489),
+    )
+
+    def test_cases_are_what_they_claim(self):
+        for ah, bh, units in self.CASES:
+            a, b = float.fromhex(ah), float.fromhex(bh)
+            self.assertEqual(rhe((Fraction(a) - Fraction(b)) * 10 ** 10), units)
+            self.assertNotEqual(int(round((a - b) * 1e10)), units)           # the float shortcut is wrong here
+
+    def test_v5_v6_v21_use_the_exact_difference(self):
+        for ah, bh, units in self.CASES:
+            a, b = float.fromhex(ah), float.fromhex(bh)
+            r = point("M3A-4", {9: (b, None, None), 30: (a, None, None), 91: (a + 0.1, None, None)}, {})
+            self.assertEqual(r.value["pairs"]["9_30"]["spread_points"], units_str(units), ah)
+            r = point("M3A-5", {9: (b, None, None), 30: (a, None, None)}, {})
+            self.assertEqual(r.value["spread_points"], units_str(units), ah)
+            r = point("M3A-11", {30: (b, a, b - 0.01)}, {"at_least": "-1000"})
+            self.assertEqual(r.value["put_distance"], units_str(units), ah)
+
+
 # ================================================================================================ perf W05 (M3A-B4)
 def b4_inputs(n, rnd):
     """103 names' cached frames: 8 expiries bracketing 9, 30 and 91 days, every side available."""
