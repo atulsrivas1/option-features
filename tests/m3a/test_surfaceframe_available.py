@@ -58,7 +58,7 @@ def _run(row):
 
 def digest(res, stats):
     fl = {k: v for k, v in stats.get("floats", {}).items() if k != "available"}
-    blob = C.canonical_line(res) + "\n" + json.dumps(fl, sort_keys=True) + "\n" + repr(sorted(stats))
+    blob = C.canonical_line(res) + "\n" + json.dumps(fl, sort_keys=True) + "\n" + repr(sorted(k for k in stats if k != "labels"))
     return hashlib.sha256(blob.encode()).hexdigest()
 
 
