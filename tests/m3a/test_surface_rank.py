@@ -101,6 +101,7 @@ def check_row(tc, row, got):
         tc.assertEqual(got.params, e["params"], (row["id"], "params"))
     if "labels" in e:
         tc.assertEqual(got.labels, e["labels"], (row["id"], "labels"))
+    tc.assertIsNone(got.coverage, row["id"])               # no chain is read: nothing to cover
     if e["status"] != "available":                         # R-105: an unavailable or invalid result has no labels
         tc.assertEqual(got.labels, [], row["id"])
         tc.assertIsNone(got.value, row["id"])
@@ -394,7 +395,7 @@ class Structural(unittest.TestCase):
         for params in ("x", [1], 5, Boom(), {5: 6, "x": Boom()}):
             r = SR.rank_v1(self.st, "SYN1", self.sess, 1, 0.15, params)
             self.assertEqual((r.status, r.code), ("invalid_input", "malformed_type"), params)
-        for und in (None, 5, b"SYN1"):
+        for und in (None, 5, b"SYN1", "", "SY/N1"):
             r = SR.rank_v1(self.st, und, self.sess, 1, 0.15, {})
             self.assertEqual((r.status, r.code), ("invalid_input", "malformed_type"), und)
         for now in (None, "0.1", True, float("nan"), float("inf"), [1], Boom()):
@@ -519,6 +520,41 @@ class Semantics(unittest.TestCase):
             want = _round_half_even(Fraction(put) - Fraction(call))
             r = SR.rank_v9(st, "SYN1", s, 1, put, call, {})
             self.assertEqual(r.value["x"], _units_text(want), (put, call))
+
+    def test_skew_differs_from_float_subtraction_on_planted_ties(self):
+        """put - call in float arithmetic is rounded; the stored skew25 is the EXACT difference rounded once. Planted
+        so that the exact difference sits within 4e-18 of a 10^-8 tie: the two rules give different units."""
+        st, cal = _scalar_store([4_000_000] * 15 + [4_000_001] * 15, metric="skew25", conv="spot")
+        s = SessionInfo(cal.ids[31], None, None, None, True, "live")
+        rng = random.Random(11)
+        differing = 0
+        for _ in range(4000):
+            put = 0.25 + rng.random() * 0.25
+            k = rng.randrange(100_000, 30_000_000)
+            tie = Fraction(2 * k + 1, 2 * 10 ** 8)
+            call = float(Fraction(put) - tie)
+            want = _round_half_even(Fraction(put) - Fraction(call))
+            if round(Fraction(put - call) * 10 ** 8) != want:
+                differing += 1
+            r = SR.rank_v9(st, "SYN1", s, 1, put, call, {})
+            self.assertEqual(r.value["x"], _units_text(want), (put, call))
+        self.assertGreater(differing, 300)               # the planted cases do separate the two rules
+
+    def test_x_zero_forms(self):
+        st, cal = _scalar_store([10, 20, 30, 40] * 8)
+        s = _sess(cal, 33)
+        for x in (0, "0", Fraction(0), "0/7", Fraction(0, 3)):
+            r = SR.rank_v1(st, "SYN1", s, 1, 1e-6, {"x": x, "min_sessions": 5})
+            self.assertEqual(r.status, "available", x)
+            self.assertEqual((r.params["x"], r.fired), (0, True), x)         # above every value: upper_share 0
+            r = SR.rank_v1(st, "SYN1", s, 1, 3e-7, {"x": x, "min_sessions": 5})
+            self.assertFalse(r.fired, x)
+        for x in (100, "100", Fraction(100), "200/2", Fraction(1000, 10)):
+            r = SR.rank_v1(st, "SYN1", s, 1, 3e-7, {"x": x, "min_sessions": 5})
+            self.assertEqual((r.status, r.params["x"], r.fired), ("available", 100, True), x)
+        for x in ("101", Fraction(1001, 10), "-1/2", Fraction(-1, 3), "1001/10"):
+            r = SR.rank_v1(st, "SYN1", s, 1, 3e-7, {"x": x})
+            self.assertEqual((r.status, r.code), ("invalid_input", "threshold_out_of_range"), x)
 
     def test_canonical_bytes_are_stable(self):
         st, cal = _scalar_store([10 + (i * 7) % 13 for i in range(40)])
@@ -731,7 +767,7 @@ _POOLS = {
     "max_sessions": [None, 252, 30, 12, 5, 3, 1, 0, True, 2.5],
     "tail": [None, "top", "bottom", "middle", 5],
     "x": [None, 5, 0, 100, 101, -1, 1, 50, 10, 25, "5/2", "7", Fraction(5, 2), Fraction(33, 4), 5.0, True,
-          Decimal(5), "abc", "1/0", "-3", 3.3],
+          Decimal(5), "abc", "1/0", "-3", 3.3, "0", Fraction(0), "0/3", "200/2", Fraction(100), "1001/10", Fraction(-1, 4)],
     "iv_form": ["atm", "30d", "90d", "ATM", "", 5, None],
     "delta_convention": ["spot", "forward", "Forward", "", 7, None, True],
 }
@@ -747,7 +783,7 @@ def _pick(rng, name, hostile):
         if name == "min_sessions":
             return rng.choice((None, 1, 2, 3, 5, 10, 10, 20))
         good = [v for v in pool if v is not None and type(v) in (str, int, Fraction) and v is not True
-                and not (name == "x" and (v in (101, -1, "abc", "1/0", "-3") or type(v) is bool))
+                and not (name == "x" and (v in (101, -1, "abc", "1/0", "-3", "1001/10", Fraction(-1, 4)) or type(v) is bool))
                 and not (name in ("min_sessions", "max_sessions") and (v == 0 or v == -1 or v == "3"))
                 and not (name == "mode" and v in ("weekly", 5)) and not (name == "lane" and v in ("ETF", 3))
                 and not (name in ("iv_form", "delta_convention") and v in ("90d", "ATM", "", 5, "Forward", 7, True))
@@ -1224,6 +1260,8 @@ def bench_build(path):
     with open(path + ".meta.json", "w") as f:
         json.dump(meta, f)
     print(json.dumps({"built": path, "records": meta["records"], "rank_truth_sha256_ok": True}))
+    if os.environ.get("S08_BENCH_DIRECT") == "1":          # also time the store exactly as appended (no snapshot attach)
+        bench_run(path, direct_store=st)
 
 
 def bench_run(path, repeats=30, direct_store=None):
@@ -1234,6 +1272,11 @@ def bench_run(path, repeats=30, direct_store=None):
     cal = Calendar([("S%04d" % i, MINUTES) for i in range(252 + 4)])
     st = direct_store or HistoryStore.attach_binary(path, cal, expected_content_hash=meta["content_hash"])
     st.build_m3a_layout()
+    frozen = os.environ.get("S08_BENCH_FREEZE", "1") == "1"
+    if frozen:                                  # the runner rule (IO contract section 7): gc.freeze() after the store load
+        import gc
+        gc.collect()
+        gc.freeze()
     names = meta["names"]
     truth = {}
     for ln in meta["truth_lines"]:
@@ -1242,15 +1285,22 @@ def bench_run(path, repeats=30, direct_store=None):
     sess = SessionInfo(cal.ids[252], None, None, None, True, "live")
     today = {tuple([int(k.split("|")[0]), k.split("|")[1]]): v for k, v in meta["today"].items()}
 
+    NAMES = ["N%03d" % n for n in range(names)]
+    args = {"V1": [(NAMES[n], today[(n, "iv30_close")] / 1e8) for n in range(names)],
+            "V9": [(NAMES[n], today[(n, "skew25")] / 1e8) for n in range(names)],
+            "V3a": [(NAMES[n], today[(n, "atm_iv_min@195")] / 1e8) for n in range(names)],
+            "V3d": [(NAMES[n], today[(n, "iv30_min@195")] / 1e8) for n in range(names)]}
+    p_atm, p_30d = {"minute": MINUTE, "iv_form": "atm"}, {"minute": MINUTE, "iv_form": "30d"}
+
     def call(fam, n):
-        u = "N%03d" % n
+        u, v = args[fam][n]
         if fam == "V1":
-            return SR.rank_v1(st, u, sess, 1, today[(n, "iv30_close")] / 1e8, None)
+            return SR.rank_v1(st, u, sess, 1, v, None)
         if fam == "V9":
-            return SR.rank_v9(st, u, sess, 1, today[(n, "skew25")] / 1e8, 0.0, None)
+            return SR.rank_v9(st, u, sess, 1, v, 0.0, None)
         if fam == "V3a":
-            return SR.rank_v3(st, u, sess, 1, today[(n, "atm_iv_min@195")] / 1e8, {"minute": MINUTE, "iv_form": "atm"})
-        return SR.rank_v3(st, u, sess, 1, today[(n, "iv30_min@195")] / 1e8, {"minute": MINUTE, "iv_form": "30d"})
+            return SR.rank_v3(st, u, sess, 1, v, p_atm)
+        return SR.rank_v3(st, u, sess, 1, v, p_30d)
     tkey = {"V1": "iv30_close", "V9": "skew25", "V3a": "atm_iv_min@195", "V3d": "iv30_min@195"}
     probes = []
     real = MH._probe
@@ -1291,7 +1341,7 @@ def bench_run(path, repeats=30, direct_store=None):
     def q(xs, p):
         s = sorted(xs)
         return s[max(0, -(-len(s) * p // 100) - 1)]
-    out = {"repeats": repeats, "names": names, "wrong_results": wrong, "per_series_calls": len(per["V1"]),
+    out = {"gc_frozen": frozen, "repeats": repeats, "names": names, "wrong_results": wrong, "per_series_calls": len(per["V1"]),
            "probe_fallback_calls": len(probes), "records": st.stats()["records"], "note": skew_note,
            "per_call_us": {f: {"p50": q(per[f], 50) / 1e3, "p95": q(per[f], 95) / 1e3, "max": max(per[f]) / 1e3} for f in fams},
            "sweep_ms": {f: {"p50": q(wall[f], 50) / 1e6, "p95": q(wall[f], 95) / 1e6, "max": max(wall[f]) / 1e6} for f in fams}}

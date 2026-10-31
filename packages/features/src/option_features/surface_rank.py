@@ -54,11 +54,14 @@ min_sessions, minute, mode, x; V9 delta_convention, max_sessions, min_sessions, 
 carries no params. `labels` is the given model label(s) plus "delayed", sorted (R-132); unavailable and invalid results
 have labels [].
 
-Performance (M3A-B5, B5n): one read, one `sorted` of at most 252 ints and two bisects give the rank, the tie counts and
-the zero-range test; structural checks use exact-type tests on the hot path.
+Performance (M3A-B5, B5n): one read, then two C-level passes over at most 252 ints (`sum(map(operator.lt, values,
+repeat(x)))` for count(< x) and `values.count(x)` for the ties) give rank_le, ge and, in the rare constant case, the
+zero-range test (a third `count` only when every value lies on one side of x); a sort is about twice as slow on varying
+data (branch mispredictions). Structural checks use exact-type tests on the hot path; no per-call memo.
 """
-from bisect import bisect_left, bisect_right
+from itertools import repeat
 from math import gcd
+from operator import lt as _lt
 
 from .m3a_common import SURFACE_REASONS, Result, round_units, units_text
 from .m3a_history import same_minute_column, scalar_baseline
@@ -146,8 +149,8 @@ def _run(kind, store, underlying, session, ev, params, upstream, labels, cutoff_
             if lane not in _LANES:
                 code = "invalid_lane"
                 break
-            if type(underlying) is not str or type(sid) is not str:
-                code = _MT
+            if type(underlying) is not str or not underlying or "/" in underlying or type(sid) is not str:
+                code = _MT                          # the symbol must be a series-id part (as S10 `series_id`)
                 break
             cal = store.calendar
             pos = cal.position(sid)                 # view read position 1
@@ -292,12 +295,14 @@ def _run(kind, store, underlying, session, ev, params, upstream, labels, cutoff_
         return Result.unavailable(oid, series, sid, ev, "insufficient_history", params_out, None, lane)
     if mode == "close" and not complete:
         return Result.unavailable(oid, series, sid, ev, "session_not_complete", params_out, None, lane)
-    s = sorted(res.value["values"])
-    n = len(s)
-    if s[0] == s[-1]:
+    vals = res.value["values"]
+    n = len(vals)
+    below = sum(map(_lt, vals, repeat(xu)))         # count(history < x): one C-level pass, no sort
+    eq = vals.count(xu)
+    if eq == n or ((below == 0 or below == n) and eq == 0 and vals.count(vals[0]) == n):
         return Result.unavailable(oid, series, sid, ev, "zero_range_history", params_out, None, lane)
-    le = bisect_right(s, xu)
-    ge = n - bisect_left(s, xu)
+    le = below + eq
+    ge = n - below
     if type(xv) is int:
         xn, xd = xv, 1
     else:
