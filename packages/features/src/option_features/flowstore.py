@@ -27,9 +27,11 @@ from bisect import bisect_left, bisect_right
 from fractions import Fraction
 import hashlib
 import json
+import gc
 import os
 import re
 import sys
+from functools import wraps
 
 from .flowgrid import _pack_q, narrow
 from .flowresult import M2StructuralError
@@ -61,6 +63,7 @@ class _Rec:
 
 
 _FULL_IDX = {}
+_INT_ONLY = frozenset((int,))
 
 
 def _full_idx(n):
@@ -117,6 +120,8 @@ def _grid_text(rec, cache=None):
             cache[id(vals)] = (vals, text)
         return text
     vals = vals if type(vals) is tuple else vals.tolist()
+    if len(idx) == rec.minutes:                     # no zero point: every index present, so just the values
+        return repr(vals if type(vals) is list else list(vals))[1:-1].replace(" ", "")
     tokens = ["0"] * rec.minutes
     for i, v in zip(idx if type(idx) is tuple else idx.tolist(), vals):
         tokens[i] = str(v)
@@ -155,6 +160,22 @@ def _own(x, memo):
     if memo is not None:
         memo[id(x)] = (x, a)      # keeps the source alive so its id cannot be reused within the call
     return a
+
+
+def _nogc(fn):
+    """Run `fn` with the cyclic collector paused (restored on exit, even on error). Loads, attaches and dumps create or
+    visit hundreds of thousands of acyclic objects; the generation scans they trigger were the larger part of their
+    time. Nothing is changed but timing."""
+    @wraps(fn)
+    def run(*a, **kw):
+        was = gc.isenabled()
+        gc.disable()
+        try:
+            return fn(*a, **kw)
+        finally:
+            if was:
+                gc.enable()
+    return run
 
 
 def _atomic_write(path, data):
@@ -422,6 +443,13 @@ class HistoryStore:
         written in the canonical line only when given; any other value is ValueError (no append code, R-160)."""
         if delta_convention is not None and delta_convention not in CONVENTIONS:
             raise ValueError("delta_convention must be None, 'spot' or 'forward'")
+        if _is_m3a_series(series_id):
+            # M3a (IO contract: exact integers): every grid value and the total must be an exact int (not bool, float,
+            # Decimal, Fraction, str, None), checked BEFORE any mutation so a bad append changes nothing (all-or-nothing)
+            if not _INT_ONLY.issuperset(map(type, grid)):
+                raise TypeError("M3a grid values must be exact integers")
+            if total is not None and type(total) is not int:
+                raise TypeError("M3a total must be an exact integer")
         if grid_idx is None:
             idx = None
             minutes = len(grid)
@@ -647,6 +675,7 @@ class HistoryStore:
     def recompute_content_hash(self):
         return hashlib.sha256("\n".join(self.record_hashes()).encode("ascii")).hexdigest()
 
+    @_nogc
     def dump(self, trailer=True):
         """Canonical text as bytes: one line per record, LF, then (default) the trailer line
         `#END records=N content_sha256=<content_hash()>`."""
@@ -664,6 +693,7 @@ class HistoryStore:
         _atomic_write(os.fspath(path), self.dump())
 
     @classmethod
+    @_nogc
     def load(cls, source, calendar, k=20, strict_calendar=True, verify=True, lane="stock", series_k=None):
         """Store from canonical text: `os.PathLike` is a path; `str`, `bytes`, `bytearray`, `memoryview` are the content
         itself; empty content gives an empty store; other types raise TypeError. Non-empty content must end with the
@@ -869,6 +899,7 @@ class HistoryStore:
             raise
 
     @classmethod
+    @_nogc
     def _from_binary_view(cls, mv, buffer, calendar, k, strict_calendar, lane, verify):
         head = len(_BIN_MAGIC)
         if sys.byteorder != "little":                # the arrays are stored little-endian and mapped in place
