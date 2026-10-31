@@ -723,8 +723,7 @@ class Hardening3(unittest.TestCase):
                 if series == S:
                     st.add_series(S, 5)
                 st.append(series, metric, w, "S000", [10 ** 30] * n)
-                line = st.dump().decode().split("
-")[0]
+                line = st.dump().decode().split(chr(10))[0]
                 self.assertIn('"grid":[%s],' % ",".join(["1" + "0" * 30] * n), line)
                 back = HistoryStore.load(st.dump(), cal, series_k={S: 5} if series == S else None)
                 self.assertEqual(back.dump(), st.dump())
