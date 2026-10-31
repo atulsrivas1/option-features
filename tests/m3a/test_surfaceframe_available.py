@@ -171,6 +171,39 @@ class EndToEndSeries(unittest.TestCase):
             self.assertFalse(any(r[0].endswith("/skew25_fwd") for r in recs))
 
 
+class ReusedStats(unittest.TestCase):
+    def _pick(self, status):
+        for _, row in all_rows():
+            if run(row)[0].status == status:
+                return row
+
+    def _call(self, row, stats):
+        ch = row["inputs"]["chain"]
+        return SF.surface_frame(TF.contracts_of(ch["contracts"]), ch["spot"], ch["rate"], ch["dividend_yield"],
+                                ch["cutoff_ns"], row["params"], stats=stats)
+
+    def test_available_then_invalid_leaves_no_floats(self):
+        stats = {}
+        self.assertEqual(self._call(self._pick("available"), stats).status, "available")
+        self.assertIs(stats["floats"]["available"], True)
+        self.assertEqual(self._call(self._pick("invalid_input"), stats).status, "invalid_input")
+        self.assertNotIn("floats", stats)
+        self.assertEqual(S.build_records("E2E", "stock", 1, stats.get("floats", {})), [])
+
+    def test_available_then_unavailable_is_false(self):
+        stats = {}
+        self._call(self._pick("available"), stats)
+        self.assertEqual(self._call(self._pick("unavailable"), stats).status, "unavailable")
+        self.assertIs(stats["floats"]["available"], False)
+        self.assertEqual(S.build_records("E2E", "stock", 1, stats["floats"]), [])
+
+    def test_hostile_params_early_return_clears(self):
+        stats = {}
+        self._call(self._pick("available"), stats)
+        SF.surface_frame([], 1, 0, 0, 0, params="x", stats=stats)
+        self.assertNotIn("floats", stats)
+
+
 if __name__ == "__main__":
     unittest.main()
 

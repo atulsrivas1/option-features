@@ -348,6 +348,8 @@ def _side(status, reason, value):
 
 def surface_frame(contracts, spot, rate, dividend_yield, cutoff_ns, params=None, chain=None, contract_ivs=None,
                   stats=None):
+    if stats is not None:
+        stats.pop("floats", None)            # a reused stats dict never keeps a previous call's floats (R-197)
     if params is not None and not isinstance(params, dict):
         return Result.invalid(OUTPUT_ID, "malformed_type", evaluation_ns=cutoff_ns)
     try:
