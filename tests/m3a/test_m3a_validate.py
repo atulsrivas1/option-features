@@ -54,8 +54,8 @@ def _check_row(tc, row):
 def _make_author4(row):
     def t(self):
         if row["inputs"].get("entry") == "lane_read":
-            self.skipTest("%s: lane read runs through m3a_history.scalar_baseline (story S02, not merged); wired "
-                          "here once S02 is on main" % row["id"])
+            self.skipTest("%s: lane read runs through m3a_history.scalar_baseline (story S02, merged); wired "
+                          "here by the lane story" % row["id"])
         _check_row(self, row)
     return t
 
