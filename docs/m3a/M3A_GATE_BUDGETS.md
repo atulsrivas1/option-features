@@ -91,6 +91,7 @@ Original B2 to B5, B6, B7, P1-T1 and every M2 gate that exists on main are re-ru
 4. Stress inputs (maximum chain, deep wings, sparse chains, 252-session histories with planted ranks) come from the Tester generators, independent of developer code.
 5. Not measured: network, live latency, recorded chain sizes, adapter ingest, real-size history.
 6. Developer and Tester evidence are labelled apart; the Developer does not sign off its own proof; the report carries the label sentence verbatim; a docs reviewer greps it against docs/RELEASE_NOTE_TEMPLATE.md label rule 1.
+7. Unit-test performance asserts in tests/m3a are Developer smoke checks, not gates: best of up to 3 samples, stopping at the first pass, floors and budgets identical to section 5 and to the S02 per-call form of B5 (R-193: 25 us scalar_baseline, 75 us same_minute_column), nothing skipped. They catch regressions; they never count as gate evidence or as a Developer bench. Gate evidence is section 5 over at least 30 repeats after one warm-up, run by the Tester (BUILD_PLAN section 7).
 
 ## 9. Assumptions for PO ruling (all PROPOSED)
 - A1: the numbers are derived from the section 2 baseline; they are proposals, not measurements.
