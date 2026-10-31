@@ -450,8 +450,8 @@ class AppendRealStore(unittest.TestCase):
     """D1, D2, D4: append_records against the REAL S02 HistoryStore."""
 
     def fill(self, n, k=20):
-        dates = _dates(n + 1)
-        st = real_store(n + 1, k)
+        dates = _dates(n + 2)
+        st = real_store(n + 2, k)
         for i in range(n):
             self.assertEqual(S.append_records(st, records_for(i, dates), "stock"), (7, None))
         return st, dates
@@ -667,12 +667,10 @@ class RaisingCaller(unittest.TestCase):
 
 
 class GuardBand(unittest.TestCase):
-    """D3: the proof of the fast path's guard band (see grid_units). For |v| < 2^16, t = v * 10^8 (real) and the float
-    u = fl(fl(v * 1e8) + 0.5): each operation errs by at most 2^-53 relative (1e8 is exactly representable), so
-    |u - (t + 1/2)| <= (|t| + 1) * 2^-52. The band half-width is W = (|v|max * 1e8 + 1) * 2^-50, four times that. An
-    entry whose frac(u) is within W of 0 or 1 is rounded exactly; outside the band floor(u) = floor(t + 1/2) (no
-    integer lies between u and t + 1/2), which is round-half-up of t, and equals half-even because t + 1/2 is not an
-    integer there. Every tie (t + 1/2 integral) has frac(u) within the error of 0 or 1, hence inside the band."""
+    """D3: the proof of the fast path's guard band (see grid_units). For |v| < 2^16, t = v * 10^8 (real), W = _window,
+    c = 0.5 + W and u = fl(fl(v * 1e8) + c): each operation errs by at most 2^-53 relative (1e8 is exactly
+    representable), so |u - (t + c)| <= (|t| + 1) * 2^-52 <= W / 4. With d = u - floor(u) (exact), d >= 2W implies
+    floor(u) = floor(t + 1/2) and no tie; every tie has d = (c - 0.5) + error < 2W, so it takes the exact path."""
 
     def test_error_bound_random_and_adversarial(self):
         rnd = random.Random(5)
@@ -686,10 +684,12 @@ class GuardBand(unittest.TestCase):
         for v in xs:
             if abs(v) >= 2.0 ** 16:
                 continue
-            u = v * 1e8 + 0.5
-            err = abs(Fraction(u) - (Fraction(v) * 10 ** 8 + Fraction(1, 2)))
+            c = 0.5 + S._window(max(v, 0.0), min(v, 0.0))
+            u = v * 1e8 + c
+            err = abs(Fraction(u) - (Fraction(v) * 10 ** 8 + Fraction(c)))
             bound = (abs(Fraction(v)) * 10 ** 8 + 1) * Fraction(1, 2 ** 52)
             self.assertLessEqual(err, bound, v)
+            self.assertLessEqual(bound, Fraction(S._window(max(v, 0.0), min(v, 0.0))) / Fraction(399, 100), v)
             worst = max(worst, float(err / bound))
         self.assertLessEqual(worst, 1.0)
 
@@ -792,15 +792,17 @@ class W08(unittest.TestCase):
         self.assertGreaterEqual(p5, W08_FLOOR)
 
     def test_w08_informational_end_to_end(self):
-        """Not gated: build + append into a real HistoryStore (the append gate is S02's B6)."""
+        """Not gated: build + append into a real HistoryStore (the append gate is S02's B6): 103 names x 2 sessions."""
         names, cols, closes = self._workload()
-        k = len(names)
-        names, cols, closes = names[:20], cols[:20] + cols[k:k + 20], closes[:20] + closes[k:k + 20]
         dates = _dates(2)
-        st = HistoryStore(Calendar([(d, 390) for d in dates]), k=20)
-        n, dt = self._run(names, cols, closes, st, dates)
-        print("W08 informational, build + real HistoryStore append (%d records): %.0f records/s" % (n, n / dt))
-        self.assertEqual(n, 7 * 40)
+        rates = []
+        for _ in range(3):
+            st = HistoryStore(Calendar([(d, 390) for d in dates]), k=20)
+            n, dt = self._run(names, cols, closes, st, dates)
+            rates.append(n / dt)
+            self.assertEqual(len(st), 7 * 103)
+        print("W08 informational, build + real HistoryStore append, cold 2-session run (%d records, best of 3): %.0f records/s (median %.0f)"
+              % (n, max(rates), statistics.median(rates)))
 
 
 if __name__ == "__main__":
