@@ -17,7 +17,7 @@ Calls
     scalar_units(floats, floats_fwd=None)             -> {metric: int} (10^-8 units); an unavailable metric is
         absent. atm_iv_close = ATM IV of the nearest eligible expiry (lowest days with a usable atm_iv);
         skew25 = put25 - call25 of that expiry (spot-convention frame); skew25_fwd the same on `floats_fwd`;
-        iv30_close = tenor 30; term_30_91 = tenor 30 - tenor 91. A difference is the EXACT binary64 difference
+        iv30_close = tenor 30; term_30_91 = tenor 91 - tenor 30 (longer minus shorter, R-30, R-33; S10b). A difference is the EXACT binary64 difference
         rounded ONCE, half to even (integer arithmetic on as_integer_ratio, no Fraction); a single value is rounded once.
     grid_units(values)                                -> [int]: one entry per minute; None or an unusable value
         gives 0 (the M2 dense zero-fill convention; the store keeps non-zero entries only). In a minute series a
@@ -159,7 +159,7 @@ def _scalars(floats, out, fwd):
         if t30 is not None:
             out["iv30_close"] = round_units(t30)
             if t91 is not None:
-                out["term_30_91"] = _diff_units(t30, t91)
+                out["term_30_91"] = _diff_units(t91, t30)      # longer minus shorter (R-30, R-33)
 
 
 def scalar_units(floats, floats_fwd=None):
