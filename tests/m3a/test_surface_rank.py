@@ -556,6 +556,52 @@ class Semantics(unittest.TestCase):
             r = SR.rank_v1(st, "SYN1", s, 1, 3e-7, {"x": x})
             self.assertEqual((r.status, r.code), ("invalid_input", "threshold_out_of_range"), x)
 
+    def test_constant_and_near_constant_histories(self):
+        st, cal = _scalar_store([7_000_000] * 29 + [7_000_001])        # one value differs: not a zero range
+        s = _sess(cal, 31)
+        for now in (0.05, 0.07, 0.07000001, 0.09):
+            r = SR.rank_v1(st, "SYN1", s, 1, now, {})
+            self.assertEqual(r.status, "available", now)
+        st, cal = _scalar_store([7_000_001] + [7_000_000] * 29)
+        for now in (0.05, 0.07, 0.07000001, 0.09):
+            self.assertEqual(SR.rank_v1(st, "SYN1", _sess(cal, 31), 1, now, {}).status, "available", now)
+        st, cal = _scalar_store([7_000_000] * 30)
+        for now in (0.05, 0.07, 0.07000001, 0.09):
+            self.assertEqual(SR.rank_v1(st, "SYN1", _sess(cal, 31), 1, now, {}).reason, "zero_range_history", now)
+
+    def test_scalar_zero_current_value_is_ranked(self):
+        st, cal = _scalar_store([5, 6, 7] * 10)
+        r = SR.rank_v1(st, "SYN1", _sess(cal, 31), 1, 0.0, {})
+        self.assertEqual((r.status, r.value["x"], r.value["rank_le"]), ("available", "0.00000000", 0))
+
+    def test_lane_is_the_requested_lane(self):
+        cal = Calendar([("S%04d" % i, 390) for i in range(40)])
+        st = HistoryStore(cal, k=20)
+        for series, metric, conv in (("U/etf_index/skew25", "skew25", "spot"), ("U/etf_index/iv30_close", "iv30_close", None)):
+            st.add_series(series, 252)
+            for i in range(30):
+                st.append(series, metric, 0, cal.ids[i], [], total=5 + i % 7, lane="etf_index", delta_convention=conv)
+        s = _sess(cal, 31)
+        for fn, args in ((SR.rank_v1, (0.0000001 * 6,)), (SR.rank_v9, (0.2, 0.2 - 6e-8))):
+            r = fn(st, "U", s, 1, *args, {"lane": "etf_index"})
+            self.assertEqual((r.status, r.lane, r.value["n"]), ("available", "etf_index", 30), fn)
+            r = fn(st, "U", s, 1, *args, {})
+            self.assertEqual((r.status, r.reason, r.lane), ("unavailable", "insufficient_history", "stock"), fn)
+
+    def test_feed_delay_tag_forms(self):
+        st, cal = _scalar_store([10 + (i * 7) % 13 for i in range(40)])
+        for tag in ("x", 5, None, b"live"):
+            r = SR.rank_v1(st, "SYN1", SessionInfo(cal.ids[41], None, None, None, True, tag), 1, 0.15, {})
+            self.assertEqual((r.status, r.code), ("invalid_input", "malformed_type"), tag)
+        live = SessionInfo(cal.ids[41], None, None, None, True, "live")
+        delayed = SessionInfo(cal.ids[41], None, None, None, True, "delayed")
+        r = SR.rank_v1(st, "SYN1", live, 1, 0.15, {"feed_delay_tag": "delayed"})        # params override the session
+        self.assertEqual((r.status, r.code), ("invalid_input", "delayed_feed_tag"))
+        r = SR.rank_v1(st, "SYN1", delayed, 1, 0.15, {"feed_delay_tag": "live"})
+        self.assertEqual(r.status, "available")
+        r = SR.rank_v1(st, "SYN1", live, 1, 0.15, {"feed_delay_tag": "x"})
+        self.assertEqual((r.status, r.code), ("invalid_input", "malformed_type"))
+
     def test_canonical_bytes_are_stable(self):
         st, cal = _scalar_store([10 + (i * 7) % 13 for i in range(40)])
         s = _sess(cal, 41)

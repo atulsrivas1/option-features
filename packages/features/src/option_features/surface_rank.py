@@ -299,7 +299,7 @@ def _run(kind, store, underlying, session, ev, params, upstream, labels, cutoff_
     n = len(vals)
     below = sum(map(_lt, vals, repeat(xu)))         # count(history < x): one C-level pass, no sort
     eq = vals.count(xu)
-    if eq == n or ((below == 0 or below == n) and eq == 0 and vals.count(vals[0]) == n):
+    if eq == n or ((below == 0 or below == n) and vals.count(vals[0]) == n):
         return Result.unavailable(oid, series, sid, ev, "zero_range_history", params_out, None, lane)
     le = below + eq
     ge = n - below
