@@ -190,7 +190,8 @@ def owner_of(row_id):
 
 
 # ---- unit-test perf smoke checks (docs/m3a/M3A_GATE_BUDGETS.md section 8 rule 7) ---------------------------------
-# Floors and budgets, identical to GATE_BUDGETS section 5; the smoke `ok` predicates and the final asserts share them.
+# Floors and budgets, identical to GATE_BUDGETS section 5 and the S02 per-call form of B5 (R-193: 25 us
+# scalar_baseline, 75 us same_minute_column); the smoke `ok` predicates and the final asserts share them.
 APPEND_FLOOR = 25000            # M3A-B6 append, records/s
 WRITE_FLOOR = 25000             # M3A-B7 text and snapshot write, records/s
 READ_FLOOR = 50000              # M3A-B7 text read and attach, records/s

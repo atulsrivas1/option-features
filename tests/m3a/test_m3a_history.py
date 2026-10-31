@@ -1357,9 +1357,9 @@ class PerfStore(unittest.TestCase):
         sample.first = True
         spent, used = H.best_of(sample, min, lambda t: self.records / t >= H.APPEND_FLOOR)
         rate = self.records / spent
-        print("\nB6 append smoke check, best of 3 (used %d): %d records (103 names x 7 series x 252 sessions): "
+        print("\nB6 append smoke check, best of %d (used %d): %d records (103 names x 7 series x 252 sessions): "
               "%.3f s, %.0f records/s (budget >= 25,000 records/s, hard 5,000; %s; unit smoke, not a Developer bench)"
-              % (used, self.records, spent, rate, LABEL))
+              % (H.SMOKE_TRIES, used, self.records, spent, rate, LABEL))
         self.assertEqual(self.store.stats()["records"], self.records)
         self.assertGreaterEqual(rate, H.APPEND_FLOOR)
 
@@ -1376,7 +1376,7 @@ class PerfStore(unittest.TestCase):
     def test_W10_peak_rss_and_store(self):
         if self.peak1 is None:
             self.skipTest("Windows process counters only")
-        _, peak = _private_bytes()          # after the B6 build and the W09 smoke round trip(s), by name order
+        _, peak = _private_bytes()          # after the B6 build (and B6 retry builds) and the W09 smoke round trip(s)
         print("\nW10 peak working set of the test process %.1f MiB (budget <= 2 GB, hard 4 GB); store private bytes "
               "%.1f MiB (budget <= 768 MiB, hard 1 GiB; %s)" % (peak / 2 ** 20, (self.priv1 - self.priv0) / 2 ** 20,
                                                                 LABEL))
@@ -1424,9 +1424,9 @@ class PerfStore(unittest.TestCase):
             floors = (H.WRITE_FLOOR, H.READ_FLOOR, H.WRITE_FLOOR, H.READ_FLOOR)
             return all(n / x >= f for x, f in zip(t, floors))
         (w_txt, r_txt, w_bin, r_bin), used = H.best_of(self._round_trip, lambda a, b: tuple(map(min, a, b)), ok)
-        print("\nW09 smoke check, best of 3 (used %d; per-metric best across samples): round trip %d records: canonical LF text write %.0f rec/s, read %.0f rec/s; mmap snapshot write "
+        print("\nW09 smoke check, best of %d (used %d; per-metric best across samples): round trip %d records: canonical LF text write %.0f rec/s, read %.0f rec/s; mmap snapshot write "
               "%.0f rec/s, attach %.0f rec/s; content hash identical (budget write >= 25,000, read >= 50,000 "
-              "records/s, hard 5,000 / 10,000; %s)" % (used, n, n / w_txt, n / r_txt, n / w_bin, n / r_bin, LABEL))
+              "records/s, hard 5,000 / 10,000; %s)" % (H.SMOKE_TRIES, used, n, n / w_txt, n / r_txt, n / w_bin, n / r_bin, LABEL))
         for w, r in ((w_txt, r_txt), (w_bin, r_bin)):
             self.assertGreaterEqual(n / w, H.WRITE_FLOOR)
             self.assertGreaterEqual(n / r, H.READ_FLOOR)
@@ -1463,10 +1463,10 @@ class PerfStore(unittest.TestCase):
         def merge(a, b):
             return {k: min(a[k], b[k], key=lambda t: t[2]) for k in a}
         res, used = H.best_of(sample, merge, lambda r: all(v[2] <= v[4] for v in r.values()))
-        print("\nB5 read share per call, smoke check best of 3 (used %d; per-row best across samples) (R-193: cache dropped every call, 30 x 103 calls after warm-up; "
-              "synthetic workload, relative engineering budget):" % used)
+        print("\nB5 read share per call, smoke check best of %d (used %d; per-row best across samples) (R-193: cache dropped every call, 30 x 103 calls after warm-up; "
+              "synthetic workload, relative engineering budget):" % (H.SMOKE_TRIES, used))
         for label, (p5, p50, p95, mx, b) in res.items():
-            print("  %-30s p5 %6.1f us p50 %6.1f us p95 %6.1f us max %7.1f us (budget <= %d us p95)"
+            print("  %-30s fastest-5%% %6.1f us p50 %6.1f us p95 %6.1f us max %7.1f us (budget <= %d us p95)"
                   % (label, p5 * 1e6, p50 * 1e6, p95 * 1e6, mx * 1e6, b * 1e6))
         for label, (p5, p50, p95, mx, b) in res.items():
             self.assertLessEqual(p95, b, label)
@@ -1506,8 +1506,8 @@ class PerfStore(unittest.TestCase):
                        and o["same_minute_column", m][1] <= H.B5_MINUTE_SERIES_S for m in ("cold", "sweep", "warm"))
         out, used = H.best_of(sample, merge, ok)
         lines = ["  %-18s %-5s p50 %6.1f us p95 %6.1f us" % (k[0], k[1], v[0] * 1e6, v[1] * 1e6) for k, v in out.items()]
-        print("\nB5 read share per series, smoke check best of 3 (used %d) (V1/V9 budget <= 50 us, V3 budget <= 150 us per series, whole request; "
-              "%s):\n%s" % (used, LABEL, "\n".join(lines)))
+        print("\nB5 read share per series, smoke check best of %d (used %d) (V1/V9 budget <= 50 us, V3 budget <= 150 us per series, whole request; "
+              "%s):\n%s" % (H.SMOKE_TRIES, used, LABEL, "\n".join(lines)))
         for mode in ("cold", "sweep", "warm"):
             self.assertLessEqual(out["scalar_baseline", mode][1], H.B5_SCALAR_SERIES_S, mode)
             self.assertLessEqual(out["same_minute_column", mode][1], H.B5_MINUTE_SERIES_S, mode)
