@@ -83,7 +83,7 @@ build -> code review (fresh agent, not the author) -> architecture review (Archi
 
 ## 7. Tester re-run plan
 1. Per story PR: an independent Tester (not an author of that fixture set where avoidable, never the Developer) checks out the PR head, runs `sha256sum -c MANIFEST.sha256` in each set, runs `.github/run_suite.ps1 m3a` and all existing suites (contracts, features, m1, m2, p1) and records a results table: rows passed per file, skips with owner story, M1/M2 output hashes unchanged (tools/m2b_output_hash.py).
-2. Per story with a gate: the Tester runs the story's bench (S02 B6/B7/B8, S03 B1/B2/B12 per convention, S04 B3, S06/S07 B4, S08 B5/B5n) at least 30 repeats after one warm-up, budgets printed verbatim with "synthetic workload, relative engineering budget". Developer and Tester evidence labelled apart.
+2. Per story with a gate: the Tester runs the story's bench (S02 B6/B7/B8, S03 B1/B2/B12 per convention, S04 B3, S06/S07 B4, S08 B5/B5n) at least 30 repeats after one warm-up, budgets printed verbatim with "synthetic workload, relative engineering budget". Developer and Tester evidence labelled apart. Passing a unit smoke check does not replace the bench.
 3. Differential (fixture requirements section 4): at least 20,000 randomized cases each for 25-delta interpolation, tenor interpolation, rank forms and sign change, expected from the Tester's own reference; run at S03, S04, S08 and S07 acceptance; zero differences.
 4. Release run after S11: M3A-G0 first (machine frozen and written before the first repeat, one worker gated, 2/4/N informational), then B1 to B13 and the regression set (B2 to B7, P1-T1, every M2 gate) on the same build; D, E, C, R, S, K rows of author4; B10 run by the Tester (not developer-only as in M1, M1_CLOSE risk 4).
 

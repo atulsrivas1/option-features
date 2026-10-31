@@ -187,3 +187,31 @@ def owner_of(row_id):
                     o = owners_of(set_name, fn, row_id)
                     return o[0] if o else None
     return None
+
+
+# ---- unit-test perf smoke checks (docs/m3a/M3A_GATE_BUDGETS.md section 8 rule 7) ---------------------------------
+# Floors and budgets, identical to GATE_BUDGETS section 5; the smoke `ok` predicates and the final asserts share them.
+APPEND_FLOOR = 25000            # M3A-B6 append, records/s
+WRITE_FLOOR = 25000             # M3A-B7 text and snapshot write, records/s
+READ_FLOOR = 50000              # M3A-B7 text read and attach, records/s
+B5_SCALAR_CALL_S = 25e-6        # scalar_baseline p95 per call (R-193 form)
+B5_MINUTE_CALL_S = 75e-6        # same_minute_column p95 per call (R-193 form)
+B5_SCALAR_SERIES_S = 50e-6      # scalar read per series, whole request
+B5_MINUTE_SERIES_S = 150e-6     # same_minute_column per series, whole request
+SMOKE_TRIES = 3
+
+
+def best_of(sample, merge, ok, tries=SMOKE_TRIES):
+    """Unit-test perf SMOKE check, not a gate (GATE_BUDGETS section 8 rule 7): take up to `tries` samples, `merge`
+    them (keep the better value per metric or row; the asserted values may come from different samples), and stop at
+    the first merged result that satisfies `ok`. Returns (best, used). Floors and budgets are never changed here.
+    Gate evidence is GATE_BUDGETS section 5 (p95; rates: the slowest 5 percent still meets it) over at least 30
+    repeats after one warm-up, run by the Tester."""
+    best, used = None, 0
+    for _ in range(tries):
+        got = sample()
+        used += 1
+        best = got if best is None else merge(best, got)
+        if ok(best):
+            break
+    return best, used
