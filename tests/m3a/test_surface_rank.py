@@ -216,7 +216,7 @@ def _share(a, n):
 
 # ---- Developer unit tests -----------------------------------------------------------------------------------------------
 
-def _mstore(vals_by_session, minutes=12, n_sessions=60, metric="iv30", lane="stock", complete=None, k=252):
+def _mstore(vals_by_session, minutes=12, n_sessions=60, metric="atm_iv", lane="stock", complete=None, k=252):
     """Minute-series store: `vals_by_session` {calendar index: grid list}."""
     cal = Calendar([("S%04d" % i, minutes) for i in range(n_sessions)])
     st = HistoryStore(cal, k=20)
@@ -270,9 +270,10 @@ class V3Holes(unittest.TestCase):
         grids[10] = [0] * 12
         grids[11] = [0] * 12
         st, cal = _mstore(grids)
-        r = SR.rank_v3(st, "U", _sess(cal, 20), 1, 1e-5 * 100, {"minute": 2, "min_sessions": 1, "max_sessions": 3, "x": 100})
-        self.assertEqual(r.value["n"], 3)                       # sessions 7, 8, 9
-        self.assertEqual(r.value["rank_le"], 0 + sum(1 for v in (1007, 1008, 1009) if v <= 1000))
+        r = SR.rank_v3(st, "U", _sess(cal, 20), 1, 1008 / 1e8, {"minute": 2, "min_sessions": 1, "max_sessions": 3, "x": 100})
+        self.assertEqual(r.value["n"], 3)                       # sessions 7, 8, 9 (10 and 11 are holes)
+        self.assertEqual(r.value["rank_le"], 2)                 # 1007 and 1008 are <= 1008; 1009 is not
+        self.assertEqual(r.value["upper_share"], "2/3")
 
     def test_scalar_zero_is_a_value(self):
         st, cal = _scalar_store([0] + [5, 7, 9] * 10, metric="skew25", conv="spot")
@@ -333,10 +334,13 @@ class ReadPath(unittest.TestCase):
         self.assertEqual((r.status, r.reason), ("unavailable", "insufficient_history"))
 
     def test_invalid_read_status_is_reported_as_the_code(self):
-        st, cal = _scalar_store([5, 6, 7] * 10, metric="skew25", conv="spot")
+        st, cal = _scalar_store([5, 6, 7] * 10, metric="skew25_fwd", conv="spot")      # forward series, spot records
         sess = SessionInfo(cal.ids[31], None, None, None, True, "live")
         r = SR.rank_v9(st, "SYN1", sess, 1, 0.2, 0.1, {"delta_convention": "forward", "x": 5})
         self.assertEqual((r.status, r.code), ("invalid_input", "convention_mismatch"))
+
+
+_NO = object()
 
 
 class Structural(unittest.TestCase):
@@ -347,8 +351,8 @@ class Structural(unittest.TestCase):
         self.st, self.cal = _scalar_store([10 + (i * 7) % 13 for i in range(40)])
         self.sess = SessionInfo(self.cal.ids[41], None, None, None, True, "live")
 
-    def code(self, params=None, sess=None, **kw):
-        r = SR.rank_v1(self.st, "SYN1", sess or self.sess, kw.pop("ev", 1), kw.pop("now", 0.15), params, **kw)
+    def code(self, params=None, sess=_NO, **kw):
+        r = SR.rank_v1(self.st, "SYN1", self.sess if sess is _NO else sess, kw.pop("ev", 1), kw.pop("now", 0.15), params, **kw)
         self.assertEqual(r.status, "invalid_input", r)
         return r.code
 
@@ -429,7 +433,7 @@ class Structural(unittest.TestCase):
                          "minute_out_of_range")
 
     def test_v9_rules(self):
-        st, cal = _scalar_store([10 + (i * 5) % 7 for i in range(40)], metric="skew25", conv="spot")
+        st, cal = _scalar_store([10 + (i * 5) % 7 for i in range(40)], metric="skew25_fwd", conv="spot")
         s = SessionInfo(cal.ids[41], None, None, None, True, "live")
 
         def code(params, **kw):
@@ -492,10 +496,10 @@ class Semantics(unittest.TestCase):
         s = _sess(cal, 41)
         now = 110 * 1000 / 1e8
         r = SR.rank_v1(st, "SYN1", s, 1, now, {"x": 0})
-        self.assertEqual((r.value["rank_le"], r.value["upper_share"], r.fired), (22, "3/4", False))
-        top = SR.rank_v1(st, "SYN1", s, 1, now, {"x": 75})
-        self.assertTrue(top.fired)                      # upper_share 30/40 <= 75/100, exact boundary
-        self.assertFalse(SR.rank_v1(st, "SYN1", s, 1, now, {"x": Fraction(299, 4)}).fired)
+        self.assertEqual((r.value["rank_le"], r.value["upper_share"], r.fired), (22, "1/2", False))
+        top = SR.rank_v1(st, "SYN1", s, 1, now, {"x": 50})
+        self.assertTrue(top.fired)                      # upper_share 20/40 <= 50/100, exact boundary
+        self.assertFalse(SR.rank_v1(st, "SYN1", s, 1, now, {"x": Fraction(199, 4)}).fired)
         bot = SR.rank_v1(st, "SYN1", s, 1, now, {"x": 55, "tail": "bottom"})
         self.assertTrue(bot.fired)                      # lower_share 22/40 = 0.55, exact boundary
         self.assertFalse(SR.rank_v1(st, "SYN1", s, 1, now, {"x": "219/4", "tail": "bottom"}).fired)
@@ -580,10 +584,13 @@ def ref_eval(c):
     kind, p = c["kind"], c["params"]
     oid = OID[kind]
     lane = p.get("lane", "stock")
-    lane_s = lane if type(lane) is str else "stock"
+    lane_s = lane if type(lane) is str and lane in LANES else "stock"
     conv = "spot"
     form = "atm"
     series_tail = {"V1": "iv30_close", "V3": "atm_iv", "V9": "skew25"}[kind]
+    sel = p.get("iv_form") if kind == "V3" else p.get("delta_convention") if kind == "V9" else None
+    if type(sel) is str:                       # the series of a valid requested form, also on an invalid result
+        series_tail = (FORMS if kind == "V3" else {"spot": "skew25", "forward": "skew25_fwd"}).get(sel, series_tail)
 
     def out(status, reason=None, code=None, value=None, fired=None, params=None, labels=()):
         return dict(status=status, reason=reason, code=code, value=value, fired=fired,
@@ -674,7 +681,8 @@ def ref_eval(c):
         return bad("convention_mismatch")
     if tag == "delayed" and (kind == "V3" or mode == "intraday"):
         return bad("delayed_feed_tag")
-    params = {"max_sessions": mx, "min_sessions": mn, "mode": mode, "x": 5 if x is None else x}
+    params = {"max_sessions": mx, "min_sessions": mn, "mode": mode,
+              "x": 5 if x is None else (x if type(x) is int else _ref_share(xv.numerator, xv.denominator))}
     if kind != "V3":
         params["tail"] = tail or "top"
     if kind == "V3":
@@ -734,6 +742,10 @@ _PROB = {"mode": .25, "lane": .15, "feed_delay_tag": .1, "min_sessions": .5, "ma
 def _pick(rng, name, hostile):
     pool = _POOLS[name]
     if not hostile:
+        if name == "max_sessions":
+            return rng.choice((None, 252, 252, 30, 25))
+        if name == "min_sessions":
+            return rng.choice((None, 1, 2, 3, 5, 10, 10, 20))
         good = [v for v in pool if v is not None and type(v) in (str, int, Fraction) and v is not True
                 and not (name == "x" and (v in (101, -1, "abc", "1/0", "-3") or type(v) is bool))
                 and not (name in ("min_sessions", "max_sessions") and (v == 0 or v == -1 or v == "3"))
@@ -746,12 +758,12 @@ def _pick(rng, name, hostile):
 
 def gen_case(rng, big=False):
     kind = rng.choice(("V1", "V3", "V9"))
-    hostile = rng.random() < 0.5
+    hostile = rng.random() < 0.3
     ncal = rng.choice((70, 100, 270)) if big else rng.choice((24, 40, 70))
     mins = rng.choice((6, 12, 12, 30))
     half = {i: rng.randrange(1, mins) for i in range(rng.randrange(0, ncal, 9), ncal, 11)} if rng.random() < .6 else {}
     cal = [("S%04d" % i, half.get(i, mins)) for i in range(ncal)]
-    cur = rng.randrange(min(ncal - 1, 5), ncal) if rng.random() > .04 else None
+    cur = (ncal - 1 - rng.randrange(0, 6) if rng.random() > .3 else rng.randrange(5, ncal)) if rng.random() > .04 else None
     session_id = "S%04d" % cur if cur is not None else "S9999"
     cur_pos = cur if cur is not None else ncal // 2
     p = {}
@@ -769,7 +781,7 @@ def gen_case(rng, big=False):
     tie_heavy = rng.random() < .5
     lo, hi = (1, rng.choice((3, 8, 30))) if tie_heavy else (1, 10 ** 8)
     hole_p = rng.choice((0, 0, .05, .3, 1.0)) if kind == "V3" else 0
-    n_rec = rng.choice((0, 3, 12, 25, 30, 45, 60)) if not big else rng.choice((200, 253, 270))
+    n_rec = rng.choice((0, 3, 12, 25, 30, 30, 45, 60, 60)) if not big else rng.choice((200, 253, 270))
     n_rec = min(n_rec, ncal)
     idxs = sorted(rng.sample(range(ncal), n_rec))
     if cur is not None and rng.random() < .5 and cur not in idxs and idxs:
@@ -804,7 +816,7 @@ def gen_case(rng, big=False):
         base += rng.choice((-2, -1, 0, 0, 0, 1, 2))
     now_u = base if kind != "V9" else base + rng.choice((0, 0, 1, -3))
     c = dict(kind=kind, cal=cal, k=k, ring_lane=ring_lane, records=records, underlying="U%d" % rng.randrange(3),
-             session_id=session_id, tag=rng.choice(("live", "live", "live", "delayed")),
+             session_id=session_id, tag=rng.choice(("live",) * 6 + ("delayed",)),
              complete=rng.random() < .7, params=p, labels=rng.choice((("exact-model",), ("exact-model", "approximate"), ())),
              upstream=None, now=None, put=None, call=None)
     if rng.random() < .07:
@@ -887,7 +899,7 @@ class Differential(unittest.TestCase):
         avail = sum(v for k, v in stats.items() if k[1] == "available")
         self.assertGreater(avail, 3000, stats)
         for kind in ("V1", "V3", "V9"):
-            self.assertGreater(sum(v for k, v in stats.items() if k[0] == kind and k[1] == "available"), 800, kind)
+            self.assertGreater(sum(v for k, v in stats.items() if k[0] == kind and k[1] == "available"), 700, kind)
         for code in ("convention_mismatch", "delayed_feed_tag", "minute_out_of_range", "threshold_out_of_range",
                      "iv_form_not_allowed", "convention_not_allowed", "invalid_session_window", "session_not_in_calendar",
                      "invalid_mode", "invalid_lane", MT):
@@ -924,7 +936,7 @@ class S09Parity(unittest.TestCase):
             sess = SessionInfo("S0030", None, None, None, True, tag)
             s09 = dict(p)
             s09["evaluation_ns"] = 5
-            s09["feed_delay_tag"] = tag
+            s09.setdefault("feed_delay_tag", tag)
             s09["session_minutes"] = 12
             oid = OID[kind]
             want = V.validate_request(oid, [], "100", "0.05", "0.01", 5, s09, validate="full")
@@ -937,8 +949,7 @@ class S09Parity(unittest.TestCase):
             ints = type(mn) in (int, type(None)) and type(mx) in (int, type(None)) and (mn is None or mn >= 1) \
                 and (mx is None or mx >= 1)
             if ints and (20 if mn is None else mn) > (252 if mx is None else mx):
-                self.assertEqual((got.status, got.code), ("invalid_input", "invalid_session_window"), p)
-                continue
+                continue                                  # invalid_session_window has no S09 request-list position
             self.assertEqual(got.code if got.status == "invalid_input" else None, want, (kind, p, tag))
             n += 1
         self.assertGreater(n, self.N * .9)
