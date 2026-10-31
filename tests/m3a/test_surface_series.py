@@ -93,7 +93,7 @@ class Scalars(unittest.TestCase):
         v = S.scalar_units(f)
         self.assertEqual(v["atm_iv_close"], 21000000)                  # nearest = 14 days
         self.assertEqual(v["skew25"], 10000000)
-        self.assertEqual(v["term_30_91"], 5000000)
+        self.assertEqual(v["term_30_91"], -5000000)            # iv91 - iv30 (R-30, R-33)
 
     def test_nearest_eligible_skips_unavailable(self):
         f = floats_from_frame_inputs({7: (None, None, None), 30: (0.3, 0.5, 0.25)}, {})
@@ -123,7 +123,7 @@ class Scalars(unittest.TestCase):
         v = S.scalar_units(s, w)
         self.assertEqual(v["atm_iv_close"], 30000000)
         self.assertEqual(v["iv30_close"], 28000000)
-        self.assertEqual(v["term_30_91"], 8000000)
+        self.assertEqual(v["term_30_91"], -8000000)
         self.assertEqual(v["skew25_fwd"], 20000000)
         self.assertEqual(S.scalar_units(None, w), {"skew25_fwd": 20000000})
 
@@ -138,7 +138,7 @@ class Scalars(unittest.TestCase):
             v = S.scalar_units(f)
             want = exact_round(Fraction(p) - Fraction(c))
             self.assertEqual(v["skew25"], want)
-            self.assertEqual(v["term_30_91"], want)
+            self.assertEqual(v["term_30_91"], exact_round(Fraction(c) - Fraction(p)))   # iv91 - iv30
 
     def test_hostile_never_raises(self):
         bad = [None, {}, [], 5, "x", {"expiries": 3, "tenors": 4}, {"expiries": {"x": 1}, "tenors": {"30": "a"}},
@@ -230,7 +230,7 @@ class EndToEnd(unittest.TestCase):
             if t30 and t30["iv"] is not None:
                 self.assertEqual(sc["iv30_close"], _units(t30["iv"]), row["id"])
                 if t91 and t91["iv"] is not None:
-                    want = exact_round(Fraction(fl["tenors"]["30"]) - Fraction(fl["tenors"]["91"]))
+                    want = exact_round(Fraction(fl["tenors"]["91"]) - Fraction(fl["tenors"]["30"]))
                     self.assertEqual(sc["term_30_91"], want, row["id"])
             recs = S.build_records("E2E", "stock", 1, fl)
             self.assertTrue(all(r[0].startswith("E2E/stock/") for r in recs), row["id"])
@@ -367,6 +367,58 @@ class Differential(unittest.TestCase):
         self.assertGreater(len(xs), 100)
         self._check(xs, 17)
         self._check(xs, 390)
+
+
+class TermDifferential(unittest.TestCase):
+    """S10b: term_30_91 over at least 20,000 cases against an own Fraction reference of iv91 - iv30 (sign, ties,
+    half-even, once-rounded from the unrounded floats), through scalar_units."""
+
+    def test_term_sign_and_rounding_vs_fraction(self):
+        rnd = random.Random(20261031)
+        xs = diff_values(rnd, 24000)
+        pairs = [(xs[i], xs[i + 1]) for i in range(0, len(xs) - 1, 2)]
+        for _ in range(8000):                               # exact ties at 2^-k grids, both orders
+            a, b = rnd.randrange(0, 2 ** 13) / 2 ** 12, rnd.randrange(0, 2 ** 13) / 2 ** 12
+            pairs.append((a, b))
+        for _ in range(4000):                               # near-equal pairs: the difference is tiny, sign matters
+            a = rnd.uniform(0.05, 1.5)
+            pairs.append((a, a + rnd.choice((-1, 1)) * rnd.randrange(0, 40) * 2.0 ** -27))
+        pairs = [(a, b) for a, b in pairs if a == a and b == b and abs(a) < 1e6 and abs(b) < 1e6]
+        self.assertGreaterEqual(len(pairs), 20000)
+        for t30, t91 in pairs:
+            f = floats_from_frame_inputs({}, {30: t30, 91: t91})
+            got = S.scalar_units(f).get("term_30_91")
+            self.assertEqual(got, exact_round(Fraction(t91) - Fraction(t30)), (t30, t91))
+
+
+class TermSignContract(unittest.TestCase):
+    """S10b: term_30_91 = iv91 - iv30 (longer minus shorter, R-30, R-33). Contract test against every V7 fixture
+    chain (author3 m3a_cases_v7.json): the value S10 builds from the real S05 frame equals the fixture's expected
+    `now` (the gap S07 computes from the same chain) within the fixture's own iv tolerance, sign included. S07
+    (surface_change.py) is not on main yet; the S07 PR adds the symmetric check against this stored value."""
+
+    def test_v7_chains_term_equals_fixture_now(self):
+        checked = 0
+        for row in H.rows("author3", "m3a_cases_v7.json"):
+            val = row["expected"].get("value")
+            if row["expected"]["status"] != "available" or not isinstance(val, dict) or "now" not in val:
+                continue
+            res, stats = _frame(row["inputs"]["chain"], row["params"])
+            stored = S.scalar_units(forced(stats))["term_30_91"]
+            now = _units(val["now"])
+            tol = _units(row["expected"]["tol"]["iv"])
+            self.assertLessEqual(abs(stored - now), tol, row["id"])
+            self.assertEqual(stored > 0, now > 0, row["id"])           # the sign cannot flip inside the tolerance
+            checked += 1
+        self.assertGreaterEqual(checked, 20)
+
+    def test_a1_prior_and_now_share_a_sign_convention(self):
+        row = next(r for r in H.rows("author3", "m3a_cases_v7.json") if r["id"] == "V7-A1")
+        res, stats = _frame(row["inputs"]["chain"], row["params"])
+        self.assertGreater(S.scalar_units(forced(stats))["term_30_91"], 0)     # now +0.02 (prior stored -0.01)
+
+    def test_docstring_states_the_direction(self):
+        self.assertIn("tenor 91 - tenor 30", S.__doc__)
 
 
 class Records(unittest.TestCase):
