@@ -69,7 +69,7 @@ _FITS_Q = frozenset("bBhHiIlq")
 
 
 def _full_idx(n):
-    """Shared index array 0..n-1 for dense grids without a zero point (the M3a minute series): one copy per grid
+    """Shared index array 0..n-1 for dense M3a minute grids (zeros are holes, R-195, and stay in the grid): one copy per grid
     length instead of one per record (the store never mutates a stored array)."""
     a = _FULL_IDX.get(n)
     if a is None:
@@ -240,7 +240,7 @@ class _Cols:
     seal and eviction, so an M3a read is bounds arithmetic plus slices, with no per-call loop over records.
 
     ids, recs, tot (record totals), done (complete flags), mins (grid lengths), conv (delta_convention), inb (grid held
-    in the block) are lists in session order (oldest first). Minute grids that are dense, have no zero point, fit the
+    in the block) are lists in session order (oldest first). Minute grids that are dense (a stored 0 is a hole, R-195, and stays in place), fit the
     stride and int64 live in ONE contiguous int64 block of cap x stride values (cap = the ring k, stride = the longest
     calendar session); a record's `vals` is then a read-only-by-convention memoryview of its row and its `idx` the shared
     full index, so there is no second copy. Rows are used circularly: the row of session j is (head + j) % cap, so
@@ -287,11 +287,11 @@ class _Cols:
             if not rec.txt:
                 return False
             vals = [int(t) for t in rec.txt.split(",")]
-            if len(vals) != m or 0 in vals:
+            if len(vals) != m:
                 _sparse(rec)
                 return False
         else:
-            if len(rec.idx) != m:                    # zero points: sparse form, read record by record
+            if len(rec.idx) != m:                    # sparse form (supplied sparse or a pre-S02b snapshot): read record by record
                 return False
             vals = rec.vals
         q = isinstance(vals, array) and vals.typecode == "q"
@@ -538,8 +538,8 @@ class HistoryStore:
             if total is not None and type(total) is not int:
                 raise TypeError("M3a total must be an exact integer")
         if not sparse:
-            if m3a and minutes and minutes <= 65536 and 0 not in grid:
-                idx = _full_idx(minutes)       # no zero point: every index, one shared array (same content)
+            if m3a and minutes and minutes <= 65536:
+                idx = _full_idx(minutes)       # every index, one shared array; a 0 is a hole (R-195), kept in place
                 vals = grid
             else:
                 idx = array("H")

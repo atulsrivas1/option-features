@@ -10,14 +10,16 @@ one strided slice of the block.
 
 Series (R-89, R-153, R-159): series_id "<UNDERLYING>/<lane>/<metric>", window_s 0. Scalar series (atm_iv_close,
 iv30_close, skew25, skew25_fwd, term_30_91): empty grid, the value is the record `total` in 10^-8 units (R-48).
-Minute series (atm_iv, iv30): dense grid on the session grid, the value at a minute index is the grid entry (an
-implicit zero is the value 0). Retention per series via `HistoryStore.add_series(series_id, k)`, k up to 252 (R-114).
+Minute series (atm_iv, iv30): dense grid on the session grid, the value at a minute index is the grid entry. A stored 0
+in a minute series is a hole, "no value at that minute" (R-195, S02b): the zero stays in the block, and a minute read
+skips it (the session is not in `sessions`, n counts the non-zero points only); a scalar 0 is a real value. Retention per series via `HistoryStore.add_series(series_id, k)`, k up to 252 (R-114).
 
 Selection (both forms): the stored, complete records of the series strictly before `as_of`, same lane (a series of
 another lane is not read: insufficient_history, R-112); missing and incomplete days are skipped, n counts the sessions
-used (R-51, owner decision 5); the LAST `max_sessions` available sessions are used (R-110); `same_minute_column` also
+used (R-51, owner decision 5); the LAST `max_sessions` available sessions are used (R-110; for a minute read a
+session with a zero at the minute is not available, so the window reaches back past it); `same_minute_column` also
 skips a session whose grid is shorter than minute + 1 (no zero-padding, R-43, R-113). n < min_sessions is unavailable
-insufficient_history (the value then carries only n).
+insufficient_history (the value then carries only n); an all-zero column has n = 0 and so the same status.
 
 View-read structural codes (IO contract section 4, PR 112), first failing code reported. Positions 1 to 4 and the
 value part of 5 are the shared S09 rule `m3a_validate.validate_view_read` (R-190: one rule for request and view read):
@@ -43,6 +45,7 @@ reason (insufficient_history or None), code (structural or None), value:
 Memory formula helpers (budgets M3A-B8, rows M3A-H-046..049, 075): `grid_store_bytes`, `scalar_store_bytes`.
 """
 from bisect import bisect_left
+from itertools import compress
 
 from .flowstore import _sparse
 from .m3a_validate import validate_view_read
@@ -122,19 +125,40 @@ def _select(store, series_id, metric, window_s, lane, as_of, mx, minute):
         pick = pick[len(pick) - mx:] if len(pick) > mx else pick
         tot, conv = c.tot, c.conv
         return [conv[i] for i in pick], tuple([ids[i] for i in pick]), tuple([tot[i] for i in pick])
-    if (cut > lo and c.mv is not None and False not in done[lo:cut] and False not in c.inb[lo:cut]
-            and min(c.mins[lo:cut]) > minute):
-        col = c.mv[minute::c.stride].tolist()        # one strided pass over the block: row r = slot r
-        h = c.head
-        if h:
-            col = col[h:] + col[:h]                  # session order
-        return c.conv[lo:cut], tuple(ids[lo:cut]), tuple(col[lo:cut])
-    mins, recs = c.mins, c.recs
-    pick = [i for i in range(cut) if done[i] and mins[i] > minute]   # short grids are skipped (R-43, R-113)
-    pick = pick[len(pick) - mx:] if len(pick) > mx else pick
-    conv = c.conv
-    return ([conv[i] for i in pick], tuple([ids[i] for i in pick]),
-            tuple([_probe(recs[i], minute) for i in pick]))
+    if cut > lo and c.mv is not None:
+        mins, inb = c.mins, c.inb
+        if False not in done[lo:cut] and False not in inb[lo:cut] and min(mins[lo:cut]) > minute:
+            col = c.mv[minute::c.stride].tolist()    # one strided pass over the block: row r = slot r
+            h = c.head
+            if h:
+                col = col[h:] + col[:h]              # session order
+            win = col[lo:cut]
+            vals = tuple(filter(None, win))          # zeros are holes (R-195)
+            if len(vals) == len(win):
+                return c.conv[lo:cut], tuple(ids[lo:cut]), vals
+            # holes: the window is the last `mx` NON-ZERO points, so it may reach back past lo
+            if lo == 0 or (False not in done[:lo] and False not in inb[:lo] and min(mins[:lo]) > minute):
+                if lo:
+                    win = col[:cut]
+                    vals = tuple(filter(None, win))
+                kept = tuple(compress(ids, win))
+                conv = () if metric in CONVENTION_FREE else list(compress(c.conv, win))
+                if len(vals) > mx:
+                    return conv[-mx:], kept[-mx:], vals[-mx:]
+                return conv, kept, vals
+    mins, recs, conv = c.mins, c.recs, c.conv
+    pick, vals = [], []
+    i = cut                                          # newest first, until `mx` non-zero values (holes are skipped)
+    while i > 0 and len(pick) < mx:
+        i -= 1
+        if done[i] and mins[i] > minute:             # short grids are skipped (R-43, R-113)
+            v = _probe(recs[i], minute)
+            if v:
+                pick.append(i)
+                vals.append(v)
+    pick.reverse()
+    vals.reverse()
+    return [conv[i] for i in pick], tuple([ids[i] for i in pick]), tuple(vals)
 
 
 def _probe(r, minute):

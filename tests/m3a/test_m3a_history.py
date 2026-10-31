@@ -225,13 +225,16 @@ class Reads(unittest.TestCase):
         self.assertEqual(list(r.value["values"]), [254, 256, 257, 258, 259])
         self.assertEqual(r.value["n"], 5)
 
-    def test_minute_zero_is_a_value(self):
+    def test_minute_zero_is_a_hole(self):
+        """R-195 (S02b): a stored 0 in a minute series is "no value": skipped, not counted (see test_m3a_history_holes)."""
         cal, st = self.cal, self.st
         st.add_series("Z/stock/iv30", 252)
         for i in range(21):
             st.append("Z/stock/iv30", "iv30", 0, cal.ids[i], [0] * 5 + [7] * 3)
         r = MH.same_minute_column(st, "Z/stock/iv30", "iv30", cal.ids[21], 2)
-        self.assertEqual((r.status, list(r.value["values"])), ("available", [0] * 21))
+        self.assertEqual((r.status, r.reason, r.value["n"]), ("unavailable", "insufficient_history", 0))
+        r = MH.same_minute_column(st, "Z/stock/iv30", "iv30", cal.ids[21], 6)
+        self.assertEqual((r.status, list(r.value["values"])), ("available", [7] * 21))
         r = MH.same_minute_column(st, "Z/stock/iv30", "iv30", cal.ids[21], 9)   # every grid is 8 long: skipped
         self.assertEqual((r.status, r.reason, r.value["n"]), ("unavailable", "insufficient_history", 0))
 
