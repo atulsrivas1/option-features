@@ -584,12 +584,12 @@ class AppendRealStore(unittest.TestCase):
         self.assertEqual(st.content_hash(), before)
 
     def _lane_trap(self, j):
-        """A real store whose series j holds a record of another lane: not visible through the public read API, so the
-        store (not the pre-validation) raises lane_mismatch at record j."""
+        """A real store whose series j holds an INCOMPLETE record of another lane: the ring lane is only visible through
+        a view of a complete record, so the store (not the pre-validation) raises lane_mismatch at record j."""
         dates = _dates(4)
         batch = records_for(2, dates)
         st = real_store(4)
-        st.append(batch[j][0], batch[j][1], 0, dates[0], [], total=1, lane="etf_index")
+        st.append(batch[j][0], batch[j][1], 0, dates[0], [], total=1, lane="etf_index", complete=False)
         return st, dates, batch
 
     def test_d4_store_error_mid_batch_reports_committed_count(self):
@@ -689,6 +689,22 @@ class GuardBand(unittest.TestCase):
             self.assertLessEqual(bound, Fraction(S._window(max(v, 0.0), min(v, 0.0))) / Fraction(399, 100), v)
             worst = max(worst, float(err / bound))
         self.assertLessEqual(worst, 1.0)
+
+    def test_constant_window_bound_and_range_edges(self):
+        rnd = random.Random(12)
+        xs = [rnd.uniform(-15.0, 15.0) for _ in range(3000)] + [(k + 0.5) / 1e8 for k in rnd.sample(range(1500000000), 500)]
+        xs += [14.999999999, -14.999999999, 15.0, -15.0, 15.000000001, 16.0, 2.0 ** 16 - 1e-6, 1e9]
+        for v in xs:
+            if abs(v) >= 15.0:
+                continue
+            u = v * 1e8 + S._C0
+            self.assertLessEqual(abs(Fraction(u) - (Fraction(v) * 10 ** 8 + Fraction(S._C0))),
+                                 Fraction(S._W0) / Fraction(399, 100), v)
+        self.assertEqual(S._LIM0, 2 * S._W0)
+        self.assertEqual(S._W0, (1.6e9 + 1.0) * 2.0 ** -50)
+        col = xs + [None] * 5
+        self.assertEqual(S.grid_units(col), [exact_round(Fraction(x)) for x in xs] + [0] * 5)
+        self.assertEqual(S.grid_units(xs), [exact_round(Fraction(x)) for x in xs])
 
     def test_window_is_four_times_the_bound(self):
         self.assertEqual(S._window(0.0, 0.0), 2.0 ** -50)
@@ -1125,12 +1141,13 @@ class MutationGaps(unittest.TestCase):
     def test_lane_check_on_a_fresh_store(self):
         st = real_store(2)
         d = _dates(2)
-        for sid, ok in (("U/stock/m", True), ("U/etf_index/m", False), ("A/B/etf_index/m", False), ("A/B/stock/m", True),
-                        ("m", True), ("U/m", True), ("U/stock", True), ("U/stock/etf_index", False)):
-            got = S.append_records(st, [(sid, "atm_iv_close", 0, d[0], [], 1)], "stock")
+        m = "atm_iv_close"
+        for sid, ok in (("U/stock/" + m, True), ("U/etf_index/" + m, False), ("A/B/etf_index/" + m, False),
+                        ("A/B/stock/" + m, True), ("U/" + m, True), ("U/stock/skew25", True), ("U/etf_index/skew25", False)):
+            got = S.append_records(st, [(sid, m, 0, d[0], [], 1)], "stock")
             self.assertEqual(got[1], None if ok else "lane_mismatch", sid)
         for lane in (None, 5, b"stock", ["stock"]):
-            self.assertEqual(S.append_records(st, [("U/stock/m2", "m2", 0, d[0], [], 1)], lane)[1], "malformed_type")
+            self.assertEqual(S.append_records(st, [("U/stock/atm_iv", "atm_iv", 0, d[0], [], 1)], lane)[1], "malformed_type")
 
     def test_lane_check_with_three_or_more_ids(self):
         st = real_store(2)
