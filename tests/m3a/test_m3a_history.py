@@ -20,10 +20,12 @@ import time
 import unittest
 from decimal import Decimal
 from fractions import Fraction
+from enum import IntEnum
+from array import array
 
 import m3a_harness as H
 from option_features import m3a_history as MH
-from option_features.flowgrid import Calendar
+from option_features.flowgrid import Calendar, GridRecord
 from option_features.flowresult import M2StructuralError
 from option_features.flowstore import MAX_K, HistoryStore, HistoryView
 
@@ -557,6 +559,199 @@ class Layout(unittest.TestCase):
                         st.seal("A/stock/iv30", "iv30", 0, sid)
             self.assertEqual(a.dump(), b.dump(), seed)
             self.assertEqual(self._read_all(a, cal), self._read_all(b, cal), seed)
+
+
+
+class _E(IntEnum):
+    ONE = 1
+
+
+class _I(int):
+    pass
+
+
+class _NpInt64(int):
+    """Stand-in for numpy.int64 (an int-like that is not an exact int)."""
+
+
+class _Shifty(list):
+    """A list subclass whose iteration changes shape between calls (check passes, use differs)."""
+    calls = 0
+
+    def __iter__(self):
+        _Shifty.calls += 1
+        return iter([1] * len(self) if _Shifty.calls % 2 else [Fraction(1, 3)] * len(self))
+
+
+def _bad_scalars():
+    return [True, False, 1.5, Decimal("2"), Fraction(1, 3), "7", b"7", None, 2 + 0j, float("nan"), float("inf"),
+            _E.ONE, _I(3), _NpInt64(3)]
+
+
+S = "A/stock/atm_iv"
+
+
+class Hardening3(unittest.TestCase):
+    """Round 3 (D1 to D5): every M3a append form is all-or-nothing against a twin store that never saw the call; M2
+    structural codes come before type errors; the dense-grid text writer is byte-identical for every accepted value."""
+
+    def _pair(self, k=3, minutes=16, n=12):
+        cal = Calendar([("S%03d" % i, minutes) for i in range(n)])
+        a, b = HistoryStore(cal), HistoryStore(cal)
+        for st in (a, b):
+            st.add_series(S, k)
+            st.add_series("A/stock/skew25", k)
+            st.append(S, "atm_iv", 0, "S000", list(range(1, minutes + 1)))
+            st.append("A/stock/skew25", "skew25", 0, "S000", [], total=5)
+        return cal, a, b
+
+    def _state(self, st, cal):
+        reads = [Layout._read_all(None, st, cal, S, "atm_iv"),
+                 [MH.scalar_baseline(st, "A/stock/skew25", "skew25", s, min_sessions=1) for s in cal.ids]]
+        return (st.dump(), st.content_hash(), st.binary_snapshot(), st.stats()["records"], st.retained(), reads)
+
+    def _same_after_failure(self, a, b, cal, call, exc=(TypeError, ValueError), msg=None):
+        with self.assertRaises(exc, msg=msg):
+            call()
+        self.assertEqual(self._state(a, cal), self._state(b, cal), msg)
+        for st in (a, b):                                    # later appends behave the same
+            st.append(S, "atm_iv", 0, "S001", list(range(2, 18)))
+            st.append("A/stock/skew25", "skew25", 0, "S001", [], total=6)
+        self.assertEqual(self._state(a, cal), self._state(b, cal), msg)
+
+    def test_D1_D3_non_list_grids_rejected(self):
+        for bad in (bytes(range(1, 17)), bytes(range(1, 9)), bytearray(range(1, 9)), memoryview(bytes(range(1, 9))),
+                    array("q", range(1, 17)), array("B", range(1, 17)), (x for x in range(1, 17)), range(1, 17),
+                    {1: 1}, "1234", _Shifty([1] * 16)):
+            cal, a, b = self._pair()
+            self._same_after_failure(a, b, cal, lambda bad=bad: a.append(S, "atm_iv", 0, "S001", bad),
+                                     msg=repr(bad)[:40])
+
+    def test_D3_copy_once_list_and_tuple_still_work(self):
+        cal, a, b = self._pair()
+        g = list(range(1, 17))
+        a.append(S, "atm_iv", 0, "S001", tuple(g))
+        b.append(S, "atm_iv", 0, "S001", g)
+        g[0] = 99                                            # caller mutation after the call changes nothing
+        self.assertEqual(a.dump(), b.dump())
+
+    def test_D3_total_snapshot_from_the_copy(self):
+        cal, a, b = self._pair()
+        self._same_after_failure(a, b, cal, lambda: a.append(S, "atm_iv", 0, "S001", _Shifty([1] * 16)))
+
+    def test_D2_append_record_bad_inputs(self):
+        for bad_vals in ((Fraction(1, 3), 10 ** 30), (True, 2), (1.5, 2), (Decimal("1"), 2), ("1", 2), (None, 2),
+                         (2 + 0j, 2), (_E.ONE, 2), (_I(3), 2), (_NpInt64(3), 2), [Fraction(1, 3), 2],
+                         array("d", [1.0, 2.0]), array("f", [1.0, 2.0]), memoryview(array("d", [1.0, 2.0])),
+                         b"\x01\x02", bytearray(b"\x01\x02"), (x for x in (1, 2))):
+            cal, a, b = self._pair()
+            rec = GridRecord(S, "atm_iv", 0, "S001", 16, array("H", [1, 3]), bad_vals, 5)
+            self._same_after_failure(a, b, cal, lambda rec=rec: a.append_record(rec), msg=repr(bad_vals)[:40])
+
+    def test_D2_append_record_bad_totals(self):
+        for bad in _bad_scalars():
+            cal, a, b = self._pair()
+            rec = GridRecord(S, "atm_iv", 0, "S001", 16, array("H", [1, 3]), (4, 5), bad)
+            self._same_after_failure(a, b, cal, lambda rec=rec: a.append_record(rec), msg=repr(bad))
+
+    def test_D2_append_record_good_still_works(self):
+        cal, a, b = self._pair()
+        a.append_record(GridRecord(S, "atm_iv", 0, "S001", 16, array("H", [1, 3]), array("q", [4, 5]), 9))
+        b.append_record(GridRecord(S, "atm_iv", 0, "S001", 16, array("H", [1, 3]), (4, 10 ** 30), 9))
+        self.assertEqual(a.stats()["records"], b.stats()["records"])
+        b.dump()
+
+    def test_D2_append_many_all_or_nothing(self):
+        def good(sid):
+            return GridRecord(S, "atm_iv", 0, sid, 16, array("H", [1, 3]), (4, 5), 9)
+        bads = [GridRecord(S, "atm_iv", 0, "S004", 16, array("H", [1, 3]), (Fraction(1, 3), 5), 9),
+                GridRecord(S, "atm_iv", 0, "S004", 16, array("H", [1, 3]), (4, 5), float("nan")),
+                GridRecord(S, "atm_iv", 0, "S002", 16, array("H", [1, 3]), (4, 5), 9)]       # duplicate / order
+        for bad in bads:
+            cal, a, b = self._pair(k=2)
+            batch = [good("S001"), good("S002"), good("S003"), bad]
+            self._same_after_failure(a, b, cal, lambda batch=batch: a.append_many(batch))
+        cal, a, b = self._pair(k=2)                         # a new ring created inside the failed batch disappears
+        batch = [GridRecord("B/stock/iv30", "iv30", 0, "S001", 16, array("H", [1]), (4,), 4),
+                 GridRecord("B/stock/iv30", "iv30", 0, "S002", 16, array("H", [1]), (Fraction(1, 2),), 4)]
+        self._same_after_failure(a, b, cal, lambda: a.append_many(batch))
+
+    def test_D4_structural_before_type(self):
+        cal = Calendar([("S%03d" % i, 16) for i in range(6)])
+        for bad_grid, bad_total in (([Fraction(1, 3)] * 16, None), ([1] * 16, 1.5), (b"\x01" * 16, None),
+                                    ([True] * 16, None)):
+            def fresh():
+                st = HistoryStore(cal)
+                st.add_series(S, 3)
+                st.append(S, "atm_iv", 0, "S002", [1] * 16)
+                return st
+            cases = (("duplicate_session", "S002", 16), ("out_of_order_append", "S001", 16),
+                     ("session_not_in_calendar", "NOPE", 16), ("record_length_mismatch", "S003", 17))
+            for code, sid, ln in cases:
+                grid = bad_grid if ln == 16 else list(bad_grid) + [bad_grid[0]]
+                st = fresh()
+                with self.assertRaises(M2StructuralError, msg=code) as cm:
+                    st.append(S, "atm_iv", 0, sid, grid, total=bad_total)
+                self.assertEqual(cm.exception.code, code)
+        st = fresh()                                        # and with append_record
+        rec = GridRecord(S, "atm_iv", 0, "S002", 16, array("H", [1]), (Fraction(1, 3),), 5)
+        with self.assertRaises(M2StructuralError) as cm:
+            st.append_record(rec)
+        self.assertEqual(cm.exception.code, "duplicate_session")
+
+    def test_D5_dense_text_identical_to_old_writer(self):
+        def old_text(idx, vals, minutes):                   # the previous per-point writer
+            tokens = ["0"] * minutes
+            for i, v in zip(idx, vals):
+                tokens[i] = str(v)
+            return ",".join(tokens)
+        cal = Calendar([("S%03d" % i, 5) for i in range(6)])
+        cases = ([Fraction(1, 3), 10 ** 30, 2, 3, 4], [Decimal("1.50"), 10 ** 30, 2, 3, 4], [_E.ONE, 10 ** 30, 2, 3, 4],
+                 [10 ** 30, -10 ** 30, 2 ** 64, 7, 8], [True, 10 ** 30, 2, 3, 4], [1, 2, 3, 4, 5])
+        for sid, vals in zip(cal.ids, cases):
+            st = HistoryStore(cal)
+            st.append("P/stock/premium", "premium", 60, sid, vals)
+            line = st.dump().decode().split("\n")[0]
+            self.assertIn('"grid":[%s],' % old_text(range(5), vals, 5), line, vals)
+
+    def test_round3_injection_fuzz(self):
+        for seed in range(300):
+            rng = random.Random(seed)
+            cal, a, b = self._pair(k=rng.choice([2, 3, 252]), n=20)
+            for i in range(1, 12):
+                sid = "S%03d" % i
+                good = [rng.randint(1, 9) for _ in range(16)]
+                if rng.random() < 0.4:
+                    kind = rng.randrange(6)
+                    bad_scalar = rng.choice(_bad_scalars())
+                    if kind == 0:
+                        grid = rng.choice([bytes(good), bytearray(good), memoryview(bytes(good)), array("q", good)])
+                        call = lambda g=grid: a.append(S, "atm_iv", 0, sid, g)
+                    elif kind == 1:
+                        call = lambda: a.append(S, "atm_iv", 0, sid, _Shifty([1] * 16))
+                    elif kind == 2:
+                        g = list(good)
+                        g[rng.randrange(16)] = bad_scalar if bad_scalar is not None else 1.5
+                        g[rng.randrange(16)] = 10 ** 30
+                        call = lambda g=g: a.append(S, "atm_iv", 0, sid, g)
+                    elif kind == 3:
+                        if bad_scalar is None:
+                            continue
+                        call = lambda t=bad_scalar: a.append("A/stock/skew25", "skew25", 0, sid, [], total=t)
+                    elif kind == 4:
+                        rec = GridRecord(S, "atm_iv", 0, sid, 16, array("H", [1, 3]),
+                                         (rng.choice(_bad_scalars()[:9]), 5), 5)
+                        call = lambda r=rec: a.append_record(r)
+                    else:
+                        ok = GridRecord(S, "atm_iv", 0, sid, 16, array("H", [1, 3]), (4, 5), 9)
+                        rec = GridRecord(S, "atm_iv", 0, "S%03d" % (i + 1), 16, array("H", [1]), (Fraction(1, 3),), 5)
+                        call = lambda r=(ok, rec): a.append_many(r)
+                    with self.assertRaises((TypeError, ValueError), msg=(seed, kind)):
+                        call()
+                    self.assertEqual(self._state(a, cal), self._state(b, cal), (seed, kind))
+                for st in (a, b):
+                    st.append(S, "atm_iv", 0, sid, good)
+                self.assertEqual(a.dump(), b.dump(), seed)
 
 
 class Memory(unittest.TestCase):
