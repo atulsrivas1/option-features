@@ -805,6 +805,277 @@ class StrSubclassIds(unittest.TestCase):
             self.assertEqual(st.dump(), HistoryStore(cal).dump())
 
 
+
+class _StrSub(str):
+    pass
+
+
+class _EqTrue:
+    def __eq__(self, o):
+        return True
+
+    def __hash__(self):
+        return 1
+
+
+class _StrLie(str):
+    def __str__(self):
+        return 'spot","content_sha256":"x'
+
+
+class _Flip:
+    """A record whose series_id changes on every read."""
+    def __init__(self, names):
+        self._names, self._n = names, 0
+
+    @property
+    def series_id(self):
+        self._n += 1
+        return self._names[0] if self._n == 1 else self._names[1]
+
+    metric, window_s, session_id, minutes = "iv30_close", 0, "S001", 16
+    idx = array("H", [1])
+    vals = (Fraction(1, 3),)
+    total = 5
+
+
+class _LyingIdx(list):
+    def __len__(self):
+        return 3
+
+
+class _BoomHash(str):
+    def __hash__(self):
+        raise RuntimeError("boom")
+
+
+class Round5(unittest.TestCase):
+    """Review round 5: M2 batch/append semantics identical to main, delta_convention type, atomic _store / seal /
+    add_series, attributes read once, no empty rings, grid_idx copy, reads never raise, skew-type _fwd only, gc and
+    pickling rules."""
+
+    def _m2(self):
+        cal = Calendar([("D%03d" % i, 6) for i in range(10)])
+        return cal, HistoryStore(cal)
+
+    def _rec(self, ses, sid="B/stock/other"):
+        return GridRecord(sid, "m", 0, ses, 6, array("H", [0, 1]), (1, 2), 3)
+
+    # CODE 1
+    def test_C1_m2_batches_keep_main_semantics(self):
+        def gen():
+            yield self._rec("D000")
+            yield self._rec("D001")
+            raise RuntimeError("mid")
+        for label, make in (("gen", lambda: gen()),
+                            ("object", lambda: [self._rec("D000"), self._rec("D001"), object(), self._rec("D003")]),
+                            ("none", lambda: [self._rec("D000"), self._rec("D001"), None])):
+            cal, st = self._m2()
+            with self.assertRaises((RuntimeError, AttributeError), msg=label) as cm:
+                st.append_many(make())
+            self.assertEqual(st.stats()["records"], 2, label)
+            if label == "object":
+                self.assertIn("idx", str(cm.exception))
+            if label == "gen":
+                self.assertIsInstance(cm.exception, RuntimeError)
+
+    def test_C1_m3a_batches_stay_all_or_nothing_for_generators_too(self):
+        cal, a, b = Hardening3()._pair(k=3)
+
+        def gen():
+            yield GridRecord(S, "atm_iv", 0, "S001", 16, array("H", [1]), (4,), 4)
+            yield GridRecord(S, "atm_iv", 0, "S002", 16, array("H", [1]), (Fraction(1, 3),), 4)
+        with self.assertRaises(TypeError):
+            a.append_many(gen())
+        self.assertEqual(a.dump(), b.dump())
+
+    # CODE 2
+    def test_C2_m2_dense_truthiness_path(self):
+        for bad in (None, ""):
+            cal, st = self._m2()
+            st.append("B/stock/other", "m", 0, "D000", [bad, 1, 2, 3, 4, 5], total=15)
+            self.assertEqual(st.stats()["records"], 1)
+
+    # CODE 3
+    def test_C3_delta_convention_exact_str(self):
+        cal = Calendar([("D%03d" % i, 3) for i in range(4)])
+        for series, metric in (("U/stock/skew25_fwd", "skew25_fwd"), ("P/stock/premium", "premium")):
+            for bad in (_StrSub("spot"), _EqTrue(), _StrLie("spot"), b"spot", ["spot"]):
+                st = HistoryStore(cal)
+                if series.startswith("U"):
+                    st.add_series(series, 100)
+                with self.assertRaises((TypeError, ValueError), msg=(series, bad)):
+                    st.append(series, metric, 0, "D000", [1, 2, 3], delta_convention=bad)
+                self.assertEqual(st.stats()["records"], 0)
+
+    # CODE 4
+    def test_C4_push_failure_leaves_nothing(self):
+        from option_features import flowstore as FS
+        cal, a, b = Hardening3()._pair(k=3)
+        MH.same_minute_column(a, S, "atm_iv", "S005", 1, min_sessions=1)             # layout built
+        real = FS._Cols.push
+
+        def boom(self, rec):
+            raise MemoryError("block")
+        FS._Cols.push = boom
+        try:
+            with self.assertRaises(MemoryError):
+                a.append(S, "atm_iv", 0, "S001", [3] * 16)
+            ring = a._rings[(S, "atm_iv", 0)]
+            self.assertIsNone(ring.m3a)                                              # M25
+            with self.assertRaises(MemoryError):                                     # a brand-new ring leaves no trace
+                a.append("B/stock/iv30", "iv30", 0, "S001", [3] * 16)
+            self.assertNotIn(("B/stock/iv30", "iv30", 0), a._rings)
+        finally:
+            FS._Cols.push = real
+        self.assertEqual(a.dump(), b.dump())
+        self.assertEqual(MH.same_minute_column(a, S, "atm_iv", "S005", 1, min_sessions=1).value,
+                         MH.same_minute_column(b, S, "atm_iv", "S005", 1, min_sessions=1).value)
+
+    def test_C4_eviction_then_push_failure_restores_the_evicted_record(self):
+        from option_features import flowstore as FS
+        cal, a, b = Hardening3()._pair(k=2)
+        a.append(S, "atm_iv", 0, "S001", [2] * 16)
+        b.append(S, "atm_iv", 0, "S001", [2] * 16)
+        MH.same_minute_column(a, S, "atm_iv", "S005", 1, min_sessions=1)
+        real = FS._Cols.push
+        FS._Cols.push = lambda self, rec: (_ for _ in ()).throw(MemoryError("x"))
+        try:
+            with self.assertRaises(MemoryError):
+                a.append(S, "atm_iv", 0, "S002", [9] * 16)
+        finally:
+            FS._Cols.push = real
+        self.assertEqual(a.dump(), b.dump())
+        self.assertEqual(list(a.retained().values())[0], list(b.retained().values())[0])
+
+    def test_C4_seal_failure(self):
+        from option_features import flowstore as FS
+        cal, a, b = Hardening3()._pair(k=3)
+        for st in (a, b):
+            st.append(S, "atm_iv", 0, "S001", [2] * 16, complete=False)
+        MH.same_minute_column(a, S, "atm_iv", "S005", 1, min_sessions=1)
+        real = FS._Cols.seal
+        FS._Cols.seal = lambda self, sid: (_ for _ in ()).throw(MemoryError("x"))
+        try:
+            with self.assertRaises(MemoryError):
+                a.seal(S, "atm_iv", 0, "S001")
+        finally:
+            FS._Cols.seal = real
+        self.assertIsNone(a._rings[(S, "atm_iv", 0)].m3a)
+        self.assertEqual(a.dump(), b.dump())
+        self.assertEqual(a.seal(S, "atm_iv", 0, "S001"), True)
+
+    # CODE 5
+    def test_C5_attributes_read_once(self):
+        for names in (("x/stock/premium", "U/stock/iv30_close"), ("U/stock/iv30_close", "x/stock/premium")):
+            cal, st = self._m2()
+            st = HistoryStore(Calendar([("S%03d" % i, 16) for i in range(4)]))
+            try:
+                st.append_record(_Flip(names))
+            except (TypeError, ValueError):
+                pass
+            for key, ring in st._rings.items():
+                if key[0] == "U/stock/iv30_close":
+                    for r in ring.recs.values():
+                        self.assertTrue(all(type(v) is int for v in r.vals), names)
+
+    # CODE 6
+    def test_C6_no_empty_ring_on_failure(self):
+        cal = Calendar([("D%03d" % i, 3) for i in range(4)])
+        for strict in (True, False):
+            st = HistoryStore(cal, strict_calendar=strict)
+            with self.assertRaises(Exception):
+                st.append("P/stock/premium", "premium", 0, _BoomHash("D000"), [1, 2, 3])
+            self.assertEqual(len(st._rings), 0)
+
+    # CODE 7
+    def test_C7_grid_idx_copied_once(self):
+        cal = Calendar([("D%03d" % i, 16) for i in range(4)])
+        st = HistoryStore(cal)
+        st.add_series(S, 5)
+        try:
+            st.append(S, "atm_iv", 0, "D000", [1, 2], grid_idx=_LyingIdx([1, 3]))
+        except (TypeError, ValueError):
+            pass
+        for ring in st._rings.values():
+            for r in ring.recs.values():
+                self.assertEqual(len(r.idx), len(r.vals))
+
+    # CODE 8
+    def test_C8_reads_never_raise_on_unhashable_convention(self):
+        cal, st = self._m2()
+        st.append("B/stock/premium", "premium", 0, "D000", [1, 2, 3, 4, 5, 6])
+        for bad in ([], {}, set()):
+            r = MH.scalar_baseline(st, "B/stock/premium", "premium", "D005", min_sessions=1, delta_convention=bad)
+            self.assertEqual((r.status, r.code), ("invalid_input", "malformed_type"))
+
+    # CODE 9 / M02
+    def test_C9_only_skew_type_fwd_is_m3a(self):
+        cal = Calendar([("D%03d" % i, 3) for i in range(4)])
+        st = HistoryStore(cal)
+        with self.assertRaises(ValueError):
+            st.add_series("X/stock/foo_fwd", 100)
+        st.add_series("X/stock/skew30_fwd", 100)
+        with self.assertRaises(TypeError):
+            st.append("X/stock/skew30_fwd", "skew30_fwd", 0, "D000", [Fraction(1, 3)] * 3)
+
+    # M64
+    def test_M64_lowering_k_clears_cached_views(self):
+        cal = Calendar([("D%03d" % i, 3) for i in range(30)])
+        st = HistoryStore(cal)
+        for i in range(8):
+            st.append("P/stock/premium", "premium", 0, cal.ids[i], [i + 1] * 3)
+        v1 = st.baseline("P/stock/premium", "premium", 0, cal.ids[8], k=5)
+        self.assertEqual(v1.sessions, tuple(cal.ids[3:8]))
+        st.add_series("P/stock/premium", 3)
+        v2 = st.baseline("P/stock/premium", "premium", 0, cal.ids[8], k=5)
+        self.assertIsNone(v2)                                    # only 3 stored sessions remain
+
+    # M53
+    def test_M53_minute_none_is_malformed(self):
+        cal, a, b = Hardening3()._pair()
+        r = MH.same_minute_column(a, S, "atm_iv", "S005", None, min_sessions=1)
+        self.assertEqual((r.status, r.code), ("invalid_input", "malformed_type"))
+
+    # M05 / M06
+    def test_M05_M06_gc_state_restored(self):
+        import gc as _gc
+        cal, a, b = Hardening3()._pair()
+        data = a.dump()
+        snap = a.snapshot()
+        with tempfile.TemporaryDirectory() as d:
+            p = os.path.join(d, "x.bin")
+            a.binary_snapshot_to(p)
+            ops = (lambda: a.dump(), lambda: HistoryStore.load(data, cal, series_k={S: 3, "A/stock/skew25": 3}),
+                   lambda: HistoryStore.from_snapshot(snap, cal),
+                   lambda: HistoryStore.attach_binary(p, cal).close_mapping(),
+                   lambda: HistoryStore.load(b"junk\n#END records=1 content_sha256=" + b"0" * 64 + b"\n", cal))
+            for enabled in (True, False):
+                try:
+                    for op in ops:
+                        (_gc.enable if enabled else _gc.disable)()
+                        try:
+                            op()
+                        except (ValueError, M2StructuralError):
+                            pass
+                        self.assertEqual(_gc.isenabled(), enabled)
+                finally:
+                    _gc.enable()
+
+    # ARCH 4
+    def test_A4_pickle_refused_with_a_clear_message(self):
+        import pickle
+        cal, a, b = Hardening3()._pair()
+        loaded = HistoryStore.load(a.dump(), cal, series_k={S: 3, "A/stock/skew25": 3})   # no read yet, no layout
+        for st in (a, loaded):
+            with self.assertRaises(TypeError) as cm:
+                pickle.dumps(st)
+            self.assertIn("binary_snapshot", str(cm.exception))
+        c2, m2 = self._m2()
+        m2.append("B/stock/other", "m", 0, "D000", [1, 2, 3, 4, 5, 6])
+        self.assertEqual(pickle.loads(pickle.dumps(m2)).dump(), m2.dump())
+
+
 class Memory(unittest.TestCase):
     def test_formula(self):
         self.assertEqual(MH.grid_store_bytes(2 * 103, 252, 390, 3),
