@@ -95,6 +95,8 @@ def _conv_code(metric, delta_convention, convs):
     if metric in CONVENTION_FREE:
         return None
     want = "spot" if delta_convention is _NOT_GIVEN else delta_convention
+    if want is not None and type(want) is not str:
+        return "malformed_type"                      # a read never raises (an unhashable value would)
     ok = {None, "spot"} if want == "spot" else {want}
     return "convention_mismatch" if set(convs) - ok else None
 

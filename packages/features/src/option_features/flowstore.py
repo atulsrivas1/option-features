@@ -4,10 +4,10 @@ Pure and single-threaded; exact integers only (`Fraction` appears in view statis
 
 Key = (series_id, metric, window_s); one ring per key, append-only in session order, retention `k` (default 20, hard
 cap 60) counting every stored record, complete or not. M3a (story S02, R-52, R-114): `add_series(series_id, k)` declares
-a per-series k up to 252 for the M3a series (M3A_METRICS and skew-type `<metric>_fwd`); M2 series keep k <= 60. An M3a
-record may carry `delta_convention` (R-160), written in its canonical line only when given (no M2 line changes). A record is a sparse grid (ascending `array('H')` indexes of
-the nonzero points, `array('q')` values, or a plain list when a value exceeds 64 bits), the session total, a
-complete flag; zeros are implicit. Series are created lazily by the first append, so a contract without prints costs
+a per-series k up to 252 for the M3a series (M3A_METRICS and skew-type `skew*_fwd`); M2 series keep k <= 60. An M3a
+record may carry `delta_convention` (R-160), written in its canonical line only when given (no M2 line changes). A
+record is a sparse grid (ascending `array('H')` indexes of the nonzero points, `array('q')` values, or a plain
+list when a value exceeds 64 bits), the session total, a complete flag; zeros are implicit. Series are created lazily by the first append, so a contract without prints costs
 nothing. Sealed records never change; completing an incomplete record (`seal`) is the only mutation.
 
 Reads go through `baseline()`: the K calendar sessions right before `as_of`, all stored and complete, same lane (no
@@ -22,15 +22,15 @@ session_id) order, keys `series_id, metric, session_id, window_s, grid, total, c
 content_sha256 = SHA-256 of the line without that field followed by LF. `load` reads the same bytes back, verifies each
 hash from the raw bytes and parses a grid lazily on first use.
 """
-from array import array
-from bisect import bisect_left, bisect_right
-from fractions import Fraction
+import gc
 import hashlib
 import json
-import gc
 import os
 import re
 import sys
+from array import array
+from bisect import bisect_left, bisect_right
+from fractions import Fraction
 from functools import wraps
 
 from .flowgrid import _pack_q, narrow
@@ -64,6 +64,7 @@ class _Rec:
 
 _FULL_IDX = {}
 _INT_ONLY = frozenset((int,))
+_FITS_Q = frozenset("bBhHiIlq")      # array formats whose every value fits int64
 
 
 def _full_idx(n):
@@ -81,7 +82,7 @@ def _is_m3a_series(series_id):
     if type(series_id) is not str and isinstance(series_id, str):
         raise TypeError("series_id must be an exact str")
     metric = str.rsplit(series_id, "/", 1)[-1] if type(series_id) is str else None
-    return metric is not None and (metric in M3A_METRICS or metric.endswith("_fwd"))
+    return metric is not None and (metric in M3A_METRICS or (metric.startswith("skew") and metric.endswith("_fwd")))
 
 
 def _sparse(rec):
@@ -125,7 +126,8 @@ def _grid_text(rec, cache=None):
         return text
     vals = vals if type(vals) is tuple else vals.tolist()
     if len(idx) == rec.minutes and (type(vals) is list or _INT_ONLY.issuperset(map(type, vals))):
-        return repr(vals if type(vals) is list else list(vals))[1:-1].replace(" ", "")    # no zero point and exact ints: the values, one C call
+        # no zero point and exact ints: the values, one C call
+        return repr(vals if type(vals) is list else list(vals))[1:-1].replace(" ", "")
     tokens = ["0"] * rec.minutes
     for i, v in zip(idx if type(idx) is tuple else idx.tolist(), vals):
         tokens[i] = str(v)
@@ -173,6 +175,12 @@ def _m3a_values(x, memo):
     if memo is not None:
         memo[("m3a", id(x))] = (x, out)
     return out
+
+
+def _m3a_record(r):
+    """True when a batch element names an M3a series (never raises: anything odd is left to append_record)."""
+    sid = getattr(r, "series_id", None)
+    return type(sid) is str and _is_m3a_series(sid)
 
 
 def _own(x, memo):
@@ -283,7 +291,10 @@ class _Cols:
                 return False
             vals = rec.vals
         q = isinstance(vals, array) and vals.typecode == "q"
-        if type(vals) is tuple or (not q and len(vals) and (min(vals) < -(1 << 63) or max(vals) >= (1 << 63))):
+        fmt = vals.typecode if isinstance(vals, array) else getattr(vals, "format", None)
+        if type(vals) is tuple:
+            return False
+        if fmt not in _FITS_Q and len(vals) and (min(vals) < -(1 << 63) or max(vals) >= (1 << 63)):
             return False
         if self.block is None:
             self.block = array("q", bytes(8 * self.cap * self.stride))
@@ -428,6 +439,17 @@ def _rec_sha(series_id, metric, window_s, rec, body=None):
 
 
 class HistoryStore:
+    def __getstate__(self):
+        # an M3a ring's layout holds memoryviews of its block, and the layout is built lazily: refuse by series, not by
+        # state, so a store that pickles today does not fail only after its first read
+        if any(_is_m3a_series(k[0]) for k in self._rings):
+            raise TypeError("a store with M3a series cannot be pickled; transfer it with binary_snapshot() / "
+                            "attach_binary() (mmap) or dump() / load()")
+        return self.__dict__
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
     def __init__(self, calendar, k=20, strict_calendar=True):
         if not 1 <= k <= MAX_K:
             raise ValueError("k must be in 1..%d" % MAX_K)
@@ -448,16 +470,15 @@ class HistoryStore:
             raise ValueError("k must be an int")
         if not 1 <= k <= cap:
             raise ValueError("k must be in 1..%d for series %r" % (cap, series_id))
+        rings = [r for key, r in self._rings.items() if key[0] == series_id]
+        trimmed = [(r, dict(list(r.recs.items())[len(r.recs) - k:])) for r in rings if len(r.recs) > k]  # pure
         self._series_k[series_id] = k
-        for key, ring in self._rings.items():
-            if key[0] == series_id:
-                ring.m3a = None                       # rebuilt on the next M3a read with the new k
-            if key[0] == series_id and len(ring.recs) > k:
-                self._chash = None
-                ring.views.clear()
-                recs = ring.recs
-                for sid in list(recs)[:len(recs) - k]:
-                    del recs[sid]
+        for r in rings:
+            r.m3a = None                              # rebuilt on the next M3a read with the new k
+        for r, kept in trimmed:
+            r.recs = kept
+            r.views.clear()
+            self._chash = None
 
     def k_of(self, series_id):
         """Retention of a series id: its add_series k, else the store k."""
@@ -473,7 +494,7 @@ class HistoryStore:
         the series), out_of_order_append (earlier). The store keeps its own typed copy.
         `delta_convention` (M3a, R-160): None (no field, read as "spot") or "spot" / "forward", stored as given and
         written in the canonical line only when given; any other value is ValueError (no append code, R-160)."""
-        if delta_convention is not None and delta_convention not in CONVENTIONS:
+        if delta_convention is not None and (type(delta_convention) is not str or delta_convention not in CONVENTIONS):
             raise ValueError("delta_convention must be None, 'spot' or 'forward'")
         m3a = _is_m3a_series(series_id)
         if m3a:
@@ -482,6 +503,8 @@ class HistoryStore:
             g = list(grid) if type(grid) in (list, tuple) else None
             if g is not None:
                 grid = g
+            if grid_idx is not None:
+                grid_idx = tuple(grid_idx)             # one read: length, bounds and the stored copy agree
         if grid_idx is None:
             idx = None
             minutes = len(grid)
@@ -499,7 +522,7 @@ class HistoryStore:
             if total is not None and type(total) is not int:
                 raise TypeError("M3a total must be an exact integer")
         if not sparse:
-            if minutes and minutes <= 65536 and 0 not in grid:
+            if m3a and minutes and minutes <= 65536 and 0 not in grid:
                 idx = _full_idx(minutes)       # no zero point: every index, one shared array (same content)
                 vals = grid
             else:
@@ -533,48 +556,54 @@ class HistoryStore:
         """Append a prebuilt sparse `GridRecord` (see flowgrid.build_session_records), same checks. The store copies
         the arrays into private typed arrays (a caller cannot mutate stored data); an index or value array shared by
         several records of one `append_many` is copied and validated once and shared. On an M3a series the total and
-        every value must be exact ints (checked after the structural checks, before any mutation)."""
-        m3a = _is_m3a_series(record.series_id)           # TypeError for a str subclass, before anything else
+        every value must be exact ints (checked after the structural checks, before any mutation). Each attribute of
+        the record is read once."""
         idx = _own(record.idx, _memo)
-        minutes = self._prepare(record.series_id, record.metric, record.window_s, record.session_id, lane, record.minutes,
-                                idx, True, _memo)
-        vals = record.vals
+        series_id, metric, window_s = record.series_id, record.metric, record.window_s
+        session_id, rec_minutes = record.session_id, record.minutes
+        m3a = _is_m3a_series(series_id)                  # TypeError for a str subclass
+        minutes = self._prepare(series_id, metric, window_s, session_id, lane, rec_minutes, idx, True, _memo)
+        vals, total = record.vals, record.total
         if m3a:
             vals = _m3a_values(vals, _memo)
-            if type(record.total) is not int:
+            if type(total) is not int:
                 raise TypeError("M3a total must be an exact integer")
-        self._store(record.series_id, record.metric, record.window_s,
-                    _Rec(record.session_id, minutes, idx, _own(vals, _memo), record.total, bool(complete),
-                         None, True), lane)
+        self._store(series_id, metric, window_s,
+                    _Rec(session_id, minutes, idx, _own(vals, _memo), total, bool(complete), None, True), lane)
 
     def append_many(self, records, complete=True, lane="stock"):
-        """Append records in order, sharing validated arrays. A batch that touches an M3a series is all-or-nothing: any
-        error restores every ring it touched (a ring created by the batch is removed); other batches are unchanged."""
-        records = list(records)
+        """Append records in order, sharing validated arrays. A batch that contains an M3a series is all-or-nothing: on
+        any error every ring it touched is restored (a ring the batch created is removed). A batch with no M3a series
+        is the plain loop (records before a failing one stay), exactly as before M3a."""
         memo = {}
-        if not any(_is_m3a_series(r.series_id) for r in records):
+        if isinstance(records, (list, tuple)) and not any(_m3a_record(r) for r in records):
             for r in records:
                 self.append_record(r, complete, lane, memo)
             return
-        saved, chash = {}, self._chash
+        saved, seen_m3a = {}, False
         try:
             for r in records:
-                key = (r.series_id, r.metric, r.window_s)
+                seen_m3a = seen_m3a or _m3a_record(r)
+                key = (getattr(r, "series_id", None), getattr(r, "metric", None), getattr(r, "window_s", None))
                 if key not in saved:
-                    ring = self._rings.get(key)
+                    try:
+                        ring = self._rings.get(key)
+                    except TypeError:
+                        ring = None
                     saved[key] = None if ring is None else (ring, dict(ring.recs))
                 self.append_record(r, complete, lane, memo)
         except BaseException:
-            for key, got in saved.items():
-                if got is None:
-                    self._rings.pop(key, None)
-                else:
-                    ring, recs = got
-                    ring.recs = recs
-                    ring.views.clear()
-                    ring.m3a = None               # rebuilt from ring.recs on the next M3a read
-                    self._rings[key] = ring
-            self._chash = None
+            if seen_m3a:
+                for key, got in saved.items():
+                    if got is None:
+                        self._rings.pop(key, None)
+                    else:
+                        ring, recs = got
+                        ring.recs = recs
+                        ring.views.clear()
+                        ring.m3a = None               # rebuilt from ring.recs on the next M3a read
+                        self._rings[key] = ring
+                self._chash = None
             raise
 
     def _prepare(self, series_id, metric, window_s, session_id, lane, minutes, idx, sparse, memo):
@@ -615,25 +644,39 @@ class HistoryStore:
         return minutes
 
     def _store(self, series_id, metric, window_s, rec, lane):
-        self._chash = None
+        """Insert a record. All-or-nothing: on any failure the ring holds exactly its previous records, the layout is
+        dropped (rebuilt lazily from the records), and a ring created by this call is not left behind."""
         key = (series_id, metric, window_s)
+        sid = rec.session_id
+        hash(sid)                                       # fail before any state is touched
         ring = self._rings.get(key)
-        if ring is None:
-            ring = self._rings[key] = _Ring(lane, _head(series_id, metric))
+        new = ring is None
+        if new:
+            ring = _Ring(lane, _head(series_id, metric))
             if _is_m3a_series(series_id):
                 ring.m3a = self._new_cols(series_id)
         recs = ring.recs
-        recs[rec.session_id] = rec
-        if ring.views:
-            ring.views.clear()
-        if len(recs) > self._series_k.get(series_id, self.k):
-            del recs[next(iter(recs))]
-        if ring.m3a is not None:
-            try:
+        evicted = None
+        try:
+            recs[sid] = rec
+            if len(recs) > self._series_k.get(series_id, self.k):
+                first = next(iter(recs))
+                evicted = (first, recs.pop(first))
+            if ring.m3a is not None:
                 ring.m3a.push(rec)
-            except BaseException:
-                ring.m3a = None                   # never half-updated: rebuilt from ring.recs on the next read
-                raise
+        except BaseException:
+            recs.pop(sid, None)
+            if evicted is not None:
+                ring.recs = {evicted[0]: evicted[1], **recs}
+            ring.m3a = None                             # never half-updated: rebuilt from ring.recs on the next read
+            ring.views.clear()
+            self._chash = None
+            raise
+        self._chash = None
+        if new:
+            self._rings[key] = ring
+        elif ring.views:
+            ring.views.clear()
 
     def _new_cols(self, series_id):
         mins = self.calendar.minutes
@@ -664,12 +707,17 @@ class HistoryStore:
         if rec is None:
             return False
         if not rec.complete:
-            rec.complete = True
-            rec.sha = None
+            try:
+                if ring.m3a is not None:
+                    ring.m3a.seal(session_id)
+                rec.complete = True
+                rec.sha = None
+            except BaseException:
+                rec.complete = False
+                ring.m3a = None                       # rebuilt from ring.recs on the next read
+                raise
             self._chash = None
             ring.views.clear()
-            if ring.m3a is not None:
-                ring.m3a.seal(session_id)
         return True
 
     # ------------------------------------------------------------------ reads
@@ -816,6 +864,7 @@ class HistoryStore:
         calendar = self.calendar
         strict = self.strict_calendar
         prev_key = None
+        kget, dk, kk = self._series_k.get, self.k, 0
         shas = []
         lane_of = (lambda s: lane.get(s, "stock")) if isinstance(lane, dict) else (lambda s: lane)
         for ln in rows:
@@ -855,6 +904,8 @@ class HistoryStore:
                 ring = self._rings[key] = _Ring(lane_of(series_id), _head(series_id, metric))
             elif next(reversed(ring.recs)) >= sid:
                 raise M2StructuralError("duplicate_session" if next(reversed(ring.recs)) == sid else "out_of_order_append")
+            if key != prev_key:
+                kk = kget(series_id, dk)
             prev_key = key
             if g0 >= 0:
                 txt, itxt = ln[m.end():g0], ln[g0 + 14:g1]
@@ -868,7 +919,7 @@ class HistoryStore:
                     raise M2StructuralError("record_length_mismatch")
             rec.sha = claimed
             ring.recs[sid] = rec
-            if len(ring.recs) > self._series_k.get(series_id, self.k):
+            if len(ring.recs) > kk:
                 del ring.recs[next(iter(ring.recs))]
             shas.append(claimed)
         return shas
@@ -886,6 +937,7 @@ class HistoryStore:
         _atomic_write(os.fspath(path), self.snapshot())
 
     @classmethod
+    @_nogc
     def from_snapshot(cls, buffer, calendar, k=20, strict_calendar=True, lane="stock", verify=True, series_k=None):
         """Store from a `snapshot()` buffer (bytes, mmap, shared memory, memoryview). Structural errors with closed codes,
         in this order: `snapshot_bad_magic`, `snapshot_length_mismatch` (including truncation), `snapshot_hash_mismatch`.
