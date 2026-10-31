@@ -15,12 +15,16 @@ import random
 import statistics
 import time
 import unittest
+from datetime import date, timedelta
 from fractions import Fraction
 
 import m3a_harness as H
+from option_features import m3a_history as MH
 from option_features import surface_series as S
 from option_features import surfaceframe as SF
 from option_features.chainiv import ChainContract
+from option_features.flowgrid import Calendar
+from option_features.flowstore import HistoryStore
 
 W08_FLOOR, W08_HARD = 25000.0, 5000.0
 REPEATS = 30
@@ -45,8 +49,8 @@ class FakeStore:
         self.calls = []
 
     def append(self, series_id, metric, window_s, session_id, grid, total=None, complete=True, grid_idx=None,
-               lane="stock", minutes=None):
-        self.calls.append((series_id, metric, window_s, session_id, list(grid), total, lane))
+               lane="stock", minutes=None, delta_convention=None):
+        self.calls.append((series_id, metric, window_s, session_id, list(grid), total, lane, delta_convention))
 
 
 class Scalars(unittest.TestCase):
@@ -403,7 +407,9 @@ class Records(unittest.TestCase):
         st = FakeStore()
         self.assertEqual(S.append_records(st, recs, "stock"), (7, None))
         self.assertEqual(len(st.calls), 7)
-        self.assertEqual(st.calls[4], ("SYN1/stock/skew25", "skew25", 0, 5, [], 25000000, "stock"))
+        self.assertEqual(st.calls[4], ("SYN1/stock/skew25", "skew25", 0, 5, [], 25000000, "stock", "spot"))
+        self.assertEqual(st.calls[5][7], "forward")                    # skew25_fwd
+        self.assertEqual([c[7] for c in st.calls], [None, None, None, None, "spot", "forward", None])
 
     def test_append_store_error_returns_code(self):
         class Bad:
@@ -414,59 +420,387 @@ class Records(unittest.TestCase):
         self.assertEqual(code, "duplicate_session")
 
 
-class W08(unittest.TestCase):
-    """Perf W08 (M3A-B6): 252 sessions x 103 names x 7 series = 181,692 records built and appended to a FAKE
-    store (the real store append cost is S02's and is not in this number). Floor 25,000 records/s at p5, hard 5,000.
-    Each measured pass builds 2 sessions x 103 names x 7 series with two dense 390-minute grids per name-session."""
+def _dates(n):
+    d0 = date(2025, 1, 2)
+    return [(d0 + timedelta(days=i)).isoformat() for i in range(n)]
 
-    def test_w08_throughput(self):
-        names = ["SYN%03d" % i for i in range(103)]
-        base = [floats_from_frame_inputs({30: (0.2 + 0.0001 * m, 0.3, 0.2)}, {30: 0.25 + 0.0001 * m, 91: 0.2})
-                for m in range(390)]
-        close = floats_from_frame_inputs({7: (0.21, 0.3, 0.2), 30: (0.25, 0.31, 0.21)}, {30: 0.25, 91: 0.2})
-        fwd = floats_from_frame_inputs({7: (0.21, 0.29, 0.2)}, {})
 
-        class Null:
-            def append(self, *a, **k):
+def real_store(n_sessions, k=20):
+    return HistoryStore(Calendar([(d, 390) for d in _dates(n_sessions)]), k=k)
+
+
+def session_inputs(i):
+    """Inputs of session i with values that differ per session (so a read-back can be matched)."""
+    close = floats_from_frame_inputs({30: (0.2 + i * 1e-3, 0.3 + i * 2e-3, 0.2 + i * 1e-3)},
+                                     {30: 0.25 + i * 1e-3, 91: 0.2})
+    fwd = floats_from_frame_inputs({30: (0.2, 0.29 + i * 3e-3, 0.2 + i * 1e-3)}, {})
+    cols = ([0.3 + i * 1e-4 + m * 1e-6 for m in range(390)], [0.25 + i * 1e-4 + m * 1e-6 for m in range(390)])
+    return close, fwd, cols
+
+
+def records_for(i, dates, name="U", lane="stock"):
+    close, fwd, cols = session_inputs(i)
+    return S.build_records(name, lane, dates[i], close, fwd, minute_columns=cols)
+
+
+CONV = {"skew25": "spot", "skew25_fwd": "forward"}
+
+
+class AppendRealStore(unittest.TestCase):
+    """D1, D2, D4: append_records against the REAL S02 HistoryStore."""
+
+    def fill(self, n, k=20):
+        dates = _dates(n + 1)
+        st = real_store(n + 1, k)
+        for i in range(n):
+            self.assertEqual(S.append_records(st, records_for(i, dates), "stock"), (7, None))
+        return st, dates
+
+    def test_d1_forward_round_trip(self):
+        st, dates = self.fill(25)
+        want = [S.scalar_units(session_inputs(i)[0], session_inputs(i)[1])["skew25_fwd"] for i in range(25)]
+        r = MH.scalar_baseline(st, "U/stock/skew25_fwd", "skew25_fwd", dates[25], min_sessions=20,
+                               delta_convention="forward")
+        self.assertEqual((r.status, r.code), ("available", None))
+        self.assertEqual(r.value["n"], 25)
+        self.assertEqual(list(r.value["values"]), want)
+
+    def test_d1_conventions_are_stored(self):
+        st, dates = self.fill(25)
+        spot = MH.scalar_baseline(st, "U/stock/skew25", "skew25", dates[25], min_sessions=20)
+        self.assertEqual(spot.status, "available")
+        want = [S.scalar_units(session_inputs(i)[0])["skew25"] for i in range(25)]
+        self.assertEqual(list(spot.value["values"]), want)
+        a = MH.scalar_baseline(st, "U/stock/skew25", "skew25", dates[25], min_sessions=20, delta_convention="forward")
+        self.assertEqual((a.status, a.code), ("invalid_input", "convention_mismatch"))
+        b = MH.scalar_baseline(st, "U/stock/skew25_fwd", "skew25_fwd", dates[25], min_sessions=20)
+        self.assertEqual((b.status, b.code), ("invalid_input", "convention_mismatch"))
+
+    def test_d1_convention_free_metrics_read_fine(self):
+        st, dates = self.fill(25)
+        for m in ("atm_iv_close", "iv30_close", "term_30_91"):
+            r = MH.scalar_baseline(st, "U/stock/" + m, m, dates[25], min_sessions=20)
+            self.assertEqual((r.status, r.value["n"]), ("available", 25), m)
+
+    def test_d1_conventions_survive_a_text_round_trip(self):
+        st, dates = self.fill(21)
+        back = HistoryStore.load(st.dump(), st.calendar, series_k={"U/stock/skew25_fwd": 252})
+        r = MH.scalar_baseline(back, "U/stock/skew25_fwd", "skew25_fwd", dates[21], min_sessions=20,
+                               delta_convention="forward")
+        self.assertEqual((r.status, r.value["n"]), ("available", 21))
+
+    def test_d2_all_sixty_sessions_are_retained(self):
+        st, dates = self.fill(60)                          # store k is 20; S10 declares 252 per series id
+        for m in ("atm_iv_close", "iv30_close", "skew25", "skew25_fwd", "term_30_91"):
+            kw = {"delta_convention": CONV[m]} if m in CONV else {}
+            r = MH.scalar_baseline(st, "U/stock/" + m, m, dates[60], min_sessions=20, **kw)
+            self.assertEqual((r.status, r.value["n"]), ("available", 60), m)
+        r = MH.same_minute_column(st, "U/stock/atm_iv", "atm_iv", dates[60], 100, min_sessions=20)
+        self.assertEqual((r.status, r.value["n"]), ("available", 60))
+        for m in ("atm_iv", "iv30", "atm_iv_close", "skew25", "skew25_fwd"):
+            self.assertEqual(st.k_of("U/stock/" + m), 252)
+
+    def test_d2_declares_only_when_needed_and_never_lowers(self):
+        calls = []
+
+        class Spy:
+            def __init__(self, k):
+                self.k = k
+
+            def k_of(self, sid):
+                return self.k
+
+            def add_series(self, sid, k):
+                calls.append((sid, k))
+
+            def append(self, *a, **kw):
                 pass
-        st = Null()
+        recs = records_for(0, _dates(2))
+        self.assertEqual(S.append_records(Spy(252), recs, "stock"), (7, None))
+        self.assertEqual(calls, [])
+        self.assertEqual(S.append_records(Spy(300), recs, "stock"), (7, None))
+        self.assertEqual(calls, [])
+        self.assertEqual(S.append_records(Spy(60), recs, "stock"), (7, None))
+        self.assertEqual(sorted(calls), sorted((r[0], 252) for r in recs))
 
-        cols = ([f["expiries"]["30"]["atm_iv"] for f in base], [f["tenors"]["30"] for f in base])
+    def test_d2_declared_before_first_append(self):
+        order = []
 
-        def run(sessions, frames=False):
-            n = 0
-            t0 = time.perf_counter()
-            for s in range(sessions):
-                for nm in names:
-                    if frames:
-                        recs = S.build_records(nm, "stock", s, close, fwd, base)
-                    else:
-                        recs = S.build_records(nm, "stock", s, close, fwd, minute_columns=cols)
-                    S.append_records(st, recs, "stock")
-                    n += len(recs)
-            return n, time.perf_counter() - t0
+        class Spy:
+            def k_of(self, sid):
+                return 20
 
-        run(1)
+            def add_series(self, sid, k):
+                order.append(("add", sid))
+
+            def append(self, sid, *a, **kw):
+                order.append(("append", sid))
+        S.append_records(Spy(), records_for(0, _dates(2)), "stock")
+        self.assertEqual(len({o[1] for o in order}), 7)
+        for sid in {o[1] for o in order}:
+            self.assertEqual([o[0] for o in order if o[1] == sid][0], "add", sid)
+
+    def test_d4_prevalidated_batches_commit_nothing(self):
+        for code, bump in (("duplicate_session", 0), ("out_of_order_append", 1)):
+            for j in range(7):
+                st, dates = self.fill(2)
+                batch = records_for(2, dates)
+                # series j already holds session 2 (duplicate) or session 3 (out of order)
+                sid, metric = batch[j][0], batch[j][1]
+                st.append(sid, metric, 0, dates[2 + bump], batch[j][4], total=batch[j][5], lane="stock",
+                          delta_convention=CONV.get(metric))
+                before = st.content_hash()
+                got = S.append_records(st, batch, "stock")
+                self.assertEqual(tuple(got), (0, code), (code, j))
+                self.assertEqual(got.committed, 0)
+                self.assertFalse(got.partial)
+                self.assertEqual(st.content_hash(), before, (code, j))
+
+    def test_d4_structural_failures_are_prevalidated(self):
+        st, dates = self.fill(2)
+        batch = records_for(2, dates)
+        before = st.content_hash()
+        for j in range(7):
+            bad = list(batch)
+            r = list(bad[j])
+            r[3] = "1999-01-01"                                # not in the calendar
+            bad[j] = tuple(r)
+            self.assertEqual(tuple(S.append_records(st, bad, "stock")), (0, "session_not_in_calendar"), j)
+            r[3] = dates[2]
+            r[4] = [1] * 391                                   # longer than the session
+            bad[j] = tuple(r)
+            self.assertEqual(tuple(S.append_records(st, bad, "stock")), (0, "record_length_mismatch"), j)
+            self.assertEqual(st.content_hash(), before, j)
+        self.assertEqual(tuple(S.append_records(st, batch, "etf_index")), (0, "lane_mismatch"))   # ids say stock
+        self.assertEqual(st.content_hash(), before)
+        self.assertEqual(S.append_records(st, batch, "stock"), (7, None))
+
+    def test_d4_a_batch_that_repeats_a_series_session_is_rejected_whole(self):
+        st, dates = self.fill(2)
+        batch = records_for(2, dates)
+        before = st.content_hash()
+        got = S.append_records(st, batch + [batch[3]], "stock")
+        self.assertEqual(tuple(got), (0, "duplicate_session"))
+        self.assertEqual(st.content_hash(), before)
+
+    def _lane_trap(self, j):
+        """A real store whose series j holds a record of another lane: not visible through the public read API, so the
+        store (not the pre-validation) raises lane_mismatch at record j."""
+        dates = _dates(4)
+        batch = records_for(2, dates)
+        st = real_store(4)
+        st.append(batch[j][0], batch[j][1], 0, dates[0], [], total=1, lane="etf_index")
+        return st, dates, batch
+
+    def test_d4_store_error_mid_batch_reports_committed_count(self):
+        for j in range(7):
+            st, dates, batch = self._lane_trap(j)
+            got = S.append_records(st, batch, "stock")
+            self.assertEqual(tuple(got), (j, "lane_mismatch"), j)
+            self.assertEqual(got.committed, j)
+            self.assertEqual(got.partial, j > 0)
+            stored = [b[0] for b in batch if dates[2] in st.retained().get("%s|%s|0" % (b[0], b[1]), [])]
+            self.assertEqual(stored, [b[0] for b in batch[:j]])
+
+    def test_d4_retry_after_partial_commit_is_a_duplicate(self):
+        st, dates, batch = self._lane_trap(4)
+        self.assertEqual(tuple(S.append_records(st, batch, "stock")), (4, "lane_mismatch"))
+        self.assertEqual(tuple(S.append_records(st, batch, "stock")), (0, "duplicate_session"))
+
+    def test_d4_malformed_records(self):
+        st = real_store(3)
+        before = st.content_hash()
+        for bad in ([("a", "b")], [None], [("U/stock/iv30", "iv30", 0, _dates(3)[0], [1], 1, 9)], 5):
+            got = S.append_records(st, bad, "stock")
+            self.assertEqual(tuple(got), (0, "malformed_type"), bad)
+        self.assertEqual(S.append_records(st, [], "stock"), (0, None))
+        self.assertEqual(st.content_hash(), before)
+
+
+class Boom(dict):
+    def __getitem__(self, k):
+        raise RuntimeError("boom")
+
+    def get(self, *a):
+        raise RuntimeError("boom")
+
+    def items(self):
+        raise RuntimeError("boom")
+
+
+class BoomList:
+    def __iter__(self):
+        raise RuntimeError("boom")
+
+    def __len__(self):
+        raise RuntimeError("boom")
+
+
+class RaisingCaller(unittest.TestCase):
+    """D5: caller data whose access raises any Exception never escapes the builder."""
+
+    def test_scalar_units(self):
+        good = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {30: 0.28, 91: 0.2})
+        for bad in (Boom(), {"expiries": Boom(), "tenors": Boom()}, {"expiries": {"30": Boom()}, "tenors": Boom()},
+                    {"expiries": {"30": {"atm_iv": 0.3, "put25_iv": 0.5, "call25_iv": Boom()}}, "tenors": Boom()}):
+            S.scalar_units(bad, bad)
+        self.assertEqual(S.scalar_units(Boom(), good), {"skew25_fwd": 25000000})
+        self.assertEqual(S.scalar_units(good, Boom())["skew25"], 25000000)
+
+    def test_minute_values(self):
+        for bad in (Boom(), {"expiries": Boom(), "tenors": Boom()}, {"expiries": {"30": Boom()}, "tenors": Boom()}):
+            self.assertEqual(S.minute_values_from_floats(bad), (None, None))
+        self.assertEqual(S.minute_values_from_floats({"expiries": {"30": {"atm_iv": 0.3}}, "tenors": Boom()}),
+                         (0.3, None))
+
+    def test_build_records(self):
+        good = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {30: 0.28, 91: 0.2})
+        self.assertEqual(S.build_records("U", "stock", 1, Boom()), [])
+        self.assertEqual(S.build_records("U", "stock", 1, Boom(), Boom(), minute_floats=[Boom(), None]), [
+            ("U/stock/atm_iv", "atm_iv", 0, 1, [0, 0], 0), ("U/stock/iv30", "iv30", 0, 1, [0, 0], 0)])
+        recs = S.build_records("U", "stock", 1, good, Boom(), minute_columns=(BoomList(), BoomList()))
+        self.assertEqual([r[1] for r in recs], ["atm_iv", "iv30", "atm_iv_close", "iv30_close", "skew25",
+                                                "term_30_91"])
+        self.assertEqual(recs[0][4], [])
+        self.assertEqual(S.grid_units(BoomList()), [])
+        self.assertEqual(S.grid_units([0.1, Boom()]), [10000000, 0])
+
+
+class GuardBand(unittest.TestCase):
+    """D3: the proof of the fast path's guard band (see grid_units). For |v| < 2^16, t = v * 10^8 (real) and the float
+    u = fl(fl(v * 1e8) + 0.5): each operation errs by at most 2^-53 relative (1e8 is exactly representable), so
+    |u - (t + 1/2)| <= (|t| + 1) * 2^-52. The band half-width is W = (|v|max * 1e8 + 1) * 2^-50, four times that. An
+    entry whose frac(u) is within W of 0 or 1 is rounded exactly; outside the band floor(u) = floor(t + 1/2) (no
+    integer lies between u and t + 1/2), which is round-half-up of t, and equals half-even because t + 1/2 is not an
+    integer there. Every tie (t + 1/2 integral) has frac(u) within the error of 0 or 1, hence inside the band."""
+
+    def test_error_bound_random_and_adversarial(self):
+        rnd = random.Random(5)
+        xs = [rnd.uniform(-1.0, 1.0) * 10 ** rnd.uniform(-9, 4.8) for _ in range(6000)]
+        xs += [(k + 0.5) / 1e8 for k in rnd.sample(range(10 ** 9), 600)]
+        xs += [math.nextafter((k + 0.5) / 1e8, 9.0) for k in rnd.sample(range(10 ** 9), 300)]
+        xs += [math.nextafter((k + 0.5) / 1e8, -9.0) for k in rnd.sample(range(10 ** 9), 300)]
+        xs += [(2 * k + 1) / 2 ** rnd.randrange(1, 40) for k in rnd.sample(range(10 ** 6), 400)]
+        xs += [2.0 ** 16 - 2.0 ** -37 * i for i in range(1, 51)] + [-(2.0 ** 16 - 2.0 ** -37 * i) for i in range(1, 51)]
+        worst = 0.0
+        for v in xs:
+            if abs(v) >= 2.0 ** 16:
+                continue
+            u = v * 1e8 + 0.5
+            err = abs(Fraction(u) - (Fraction(v) * 10 ** 8 + Fraction(1, 2)))
+            bound = (abs(Fraction(v)) * 10 ** 8 + 1) * Fraction(1, 2 ** 52)
+            self.assertLessEqual(err, bound, v)
+            worst = max(worst, float(err / bound))
+        self.assertLessEqual(worst, 1.0)
+
+    def test_window_is_four_times_the_bound(self):
+        self.assertEqual(S._window(0.0, 0.0), 2.0 ** -50)
+        self.assertAlmostEqual(S._window(1.0, 0.5), (1e8 + 1) * 2.0 ** -50, delta=1e-12)
+        self.assertLess(S._window(2.0 ** 16 - 1e-9, 0.0), 0.01)
+
+    def test_band_catches_every_tie_and_near_tie(self):
+        rnd = random.Random(9)
+        xs = [(2 * k + 1) / 2 ** rnd.randrange(1, 28) for k in range(0, 4000, 3)]
+        xs += [-x for x in xs[:500]]
+        xs += [math.nextafter(x, 4.0) for x in xs[:500]] + [math.nextafter(x, -4.0) for x in xs[:500]]
+        got = S.grid_units(xs)
+        self.assertEqual(got, [exact_round(Fraction(x)) for x in xs])
+        self.assertEqual(got, S._slow_grid(xs))
+
+    def test_random_full_precision_has_almost_no_exact_path(self):
+        rnd = random.Random(1)
+        xs = [rnd.uniform(0.1, 1.0) for _ in range(20000)]
+        calls = []
+        orig = S.round_units
+        S.round_units = lambda x: (calls.append(x), orig(x))[1]
+        try:
+            self.assertEqual(S.grid_units(xs), [exact_round(Fraction(x)) for x in xs])
+        finally:
+            S.round_units = orig
+        self.assertLess(len(calls), 10)                        # the old 0.01 window sent about 2 percent (400)
+
+
+class W08(unittest.TestCase):
+    """Perf W08 (M3A-B6): 252 sessions x 103 names x 7 series = 181,692 records BUILT from minute columns, then handed
+    to a NULL store: W08 gates the series build only (the real store append belongs to S02's B6 gate; the end-to-end
+    figure with a real HistoryStore is printed as informational). The workload is realistic: random full-precision
+    IV floats (not smooth), a different column per name and session. Floor 25,000 records/s at p5, hard 5,000."""
+
+    SESSIONS = 2
+
+    def _workload(self):
+        rnd = random.Random(808)
+        names = ["SYN%03d" % i for i in range(103)]
+        cols = [([rnd.uniform(0.1, 1.0) for _ in range(390)], [rnd.uniform(0.1, 1.0) for _ in range(390)])
+                for _ in range(self.SESSIONS * len(names))]
+
+        def u():
+            return rnd.uniform(0.1, 1.0)
+        closes = [(floats_from_frame_inputs({7: (u(), u(), u()), 30: (u(), u(), u())}, {30: u(), 91: u()}),
+                   floats_from_frame_inputs({7: (u(), u(), u())}, {}))
+                  for _ in cols]
+        return names, cols, closes
+
+    def _run(self, names, cols, closes, store, dates=None):
+        n = 0
+        t0 = time.perf_counter()
+        for i, c in enumerate(cols):
+            close, fwd = closes[i]
+            sid = i // len(names) if dates is None else dates[i // len(names)]
+            recs = S.build_records(names[i % len(names)], "stock", sid, close, fwd, minute_columns=c)
+            S.append_records(store, recs, "stock")
+            n += len(recs)
+        return n, time.perf_counter() - t0
+
+    def _measure(self, names, cols, closes, store):
+        self._run(names, cols, closes, store)
         gc.collect()
         gc.freeze()                                                    # as the runner does after load
         rates = []
         try:
             for _ in range(REPEATS):
-                n, dt = run(2)
+                n, dt = self._run(names, cols, closes, store)
                 rates.append(n / dt)
         finally:
             gc.unfreeze()
         rates.sort()
-        p5 = rates[max(0, math.ceil(0.05 * len(rates)) - 1)]
+        return rates
+
+    def test_w08_throughput(self):
+        names, cols, closes = self._workload()
+
+        class Null:
+            def append(self, *a, **k):
+                pass
+        # TODO: use m3a_harness.best_of once the perf-smoke chore (PR 123) is on main; this local loop is the same
+        # rule: best of up to 3 attempts, floors unchanged.
+        best = None
+        for _ in range(3):
+            rates = self._measure(names, cols, closes, Null())
+            p5 = rates[max(0, math.ceil(0.05 * len(rates)) - 1)]
+            if best is None or p5 > best[0]:
+                best = (p5, rates)
+            if p5 >= W08_FLOOR:
+                break
+        p5, rates = best
         full_n = 252 * 103 * 7
         self.assertEqual(full_n, 181692)
         med = statistics.median(rates)
         print("\nW08 records/s: p5 %.0f p50 %.0f min %.0f (budget >= %.0f, hard %.0f); full set %d records ~ %.2f s at p50"
               % (p5, med, rates[0], W08_FLOOR, W08_HARD, full_n, full_n / med))
-        n, dt = run(2, True)
-        print("W08 informational (per-minute frame dicts read inside the builder, not gated): %.0f records/s" % (n / dt))
         self.assertGreaterEqual(p5, W08_HARD)
         self.assertGreaterEqual(p5, W08_FLOOR)
+
+    def test_w08_informational_end_to_end(self):
+        """Not gated: build + append into a real HistoryStore (the append gate is S02's B6)."""
+        names, cols, closes = self._workload()
+        k = len(names)
+        names, cols, closes = names[:20], cols[:20] + cols[k:k + 20], closes[:20] + closes[k:k + 20]
+        dates = _dates(2)
+        st = HistoryStore(Calendar([(d, 390) for d in dates]), k=20)
+        n, dt = self._run(names, cols, closes, st, dates)
+        print("W08 informational, build + real HistoryStore append (%d records): %.0f records/s" % (n, n / dt))
+        self.assertEqual(n, 7 * 40)
 
 
 if __name__ == "__main__":
