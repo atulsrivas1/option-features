@@ -92,39 +92,48 @@ def _checks(store, series_id, metric, window_s, as_of, min_sessions, max_session
         return "malformed_type"
 
 
-def _conv_code(metric, delta_convention, convs):
-    """Position 5, record scan (validate_view_read already checked the value and the metric's own convention):
-    a selected record whose `delta_convention` (absent = "spot") differs from the request (R-160)."""
+def _conv_ok(metric, delta_convention):
+    """(code, ok) of position 5's record part (validate_view_read already checked the value and the metric's own
+    convention): ok = the record conventions (absent = None = "spot") that match the request (R-160), None for a
+    convention-free metric (no record check); code is malformed_type for a non-str request (a read never raises)."""
     if metric in CONVENTION_FREE:
-        return None
+        return None, None
     want = "spot" if delta_convention is _NOT_GIVEN else delta_convention
     if want is not None and type(want) is not str:
-        return "malformed_type"                      # a read never raises (an unhashable value would)
-    ok = {None, "spot"} if want == "spot" else {want}
-    return "convention_mismatch" if set(convs) - ok else None
+        return "malformed_type", None
+    return None, ({None, "spot"} if want == "spot" else {want})
 
 
-def _select(store, series_id, metric, window_s, lane, as_of, mx, minute):
+def _conv_code(ok, convs):
+    """Position 5, record part: a selected record whose `delta_convention` is not in `ok` (S02d: `convs` is () when the
+    whole ring already conforms to `ok`, so the scan is skipped)."""
+    return "convention_mismatch" if ok is not None and set(convs) - ok else None
+
+
+def _select(store, series_id, metric, window_s, lane, as_of, mx, minute, ok=None):
     """(record conventions, sessions, values) of the read, ascending, from the ring's M3a layout (flowstore._Cols):
     bounds arithmetic and slices when the window is all complete (and, for a minute, every grid is in the block and
-    long enough); otherwise the window is selected index by index."""
+    long enough); otherwise the window is selected index by index. `ok` is the set of record conventions that cannot
+    mismatch (None = no convention check): when every convention of the whole ring (the O(1) summary `c.cc`) is in
+    it, no selected record can mismatch and the conventions are returned as () without a scan (S02d)."""
     ring = store._rings.get((series_id, metric, window_s))
     if ring is None or ring.lane != lane:
         return (), (), ()
     c = ring.m3a
     if c is None:
         c = store.m3a_cols(series_id, metric, window_s)
+    conv_free = metric in CONVENTION_FREE or ok is None or not (c.cc.keys() - ok)
     ids = c.ids
     cut = bisect_left(ids, as_of)                    # strictly before as_of: no look-ahead
     lo = cut - mx if cut > mx else 0
     done = c.done
     if minute is _SCALAR:
         if False not in done[lo:cut]:
-            return (() if metric in CONVENTION_FREE else c.conv[lo:cut]), tuple(ids[lo:cut]), tuple(c.tot[lo:cut])
+            return (() if conv_free else c.conv[lo:cut]), tuple(ids[lo:cut]), tuple(c.tot[lo:cut])
         pick = [i for i in range(cut) if done[i]]
         pick = pick[len(pick) - mx:] if len(pick) > mx else pick
         tot, conv = c.tot, c.conv
-        return [conv[i] for i in pick], tuple([ids[i] for i in pick]), tuple([tot[i] for i in pick])
+        return ([] if conv_free else [conv[i] for i in pick]), tuple([ids[i] for i in pick]), tuple([tot[i] for i in pick])
     if cut > lo and c.mv is not None:
         mins, inb = c.mins, c.inb
         if False not in done[lo:cut] and False not in inb[lo:cut] and min(mins[lo:cut]) > minute:
@@ -135,14 +144,14 @@ def _select(store, series_id, metric, window_s, lane, as_of, mx, minute):
             win = col[lo:cut]
             vals = tuple(filter(None, win))          # zeros are holes (R-195)
             if len(vals) == len(win):
-                return c.conv[lo:cut], tuple(ids[lo:cut]), vals
+                return (() if conv_free else c.conv[lo:cut]), tuple(ids[lo:cut]), vals
             # holes: the window is the last `mx` NON-ZERO points, so it may reach back past lo
             if lo == 0 or (False not in done[:lo] and False not in inb[:lo] and min(mins[:lo]) > minute):
                 if lo:
                     win = col[:cut]
                     vals = tuple(filter(None, win))
                 kept = tuple(compress(ids, win))
-                conv = () if metric in CONVENTION_FREE else list(compress(c.conv, win))
+                conv = () if conv_free else list(compress(c.conv, win))
                 if len(vals) > mx:
                     return conv[-mx:], kept[-mx:], vals[-mx:]
                 return conv, kept, vals
@@ -158,7 +167,7 @@ def _select(store, series_id, metric, window_s, lane, as_of, mx, minute):
                 vals.append(v)
     pick.reverse()
     vals.reverse()
-    return [conv[i] for i in pick], tuple([ids[i] for i in pick]), tuple(vals)
+    return ([] if conv_free else [conv[i] for i in pick]), tuple([ids[i] for i in pick]), tuple(vals)
 
 
 def _probe(r, minute):
@@ -182,8 +191,11 @@ def _read(store, series_id, metric, as_of, min_sessions, max_sessions, lane, del
     code = _checks(store, series_id, metric, window_s, as_of, min_sessions, max_sessions, x, minute, delta_convention)
     if code is not None:
         return _invalid(code)
-    convs, sessions, values = _select(store, series_id, metric, window_s, lane, as_of, max_sessions, minute)
-    code = _conv_code(metric, delta_convention, convs)
+    code, ok = _conv_ok(metric, delta_convention)
+    if code is not None:
+        return _invalid(code)
+    convs, sessions, values = _select(store, series_id, metric, window_s, lane, as_of, max_sessions, minute, ok)
+    code = _conv_code(ok, convs)
     if code is not None:
         return _invalid(code)
     n = len(values)

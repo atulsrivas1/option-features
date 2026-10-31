@@ -249,12 +249,13 @@ class _Cols:
     from the ring gets a private copy of its row before the row is reused. Zero-bearing dense grids are in the block
     (S02b: a 0 is a hole, R-195; the read skips it). Only sparse-supplied grids, grids beyond int64 and grids longer than
     the stride keep their own arrays (inb False) and are read record by record."""
-    __slots__ = ("ids", "recs", "tot", "done", "mins", "conv", "inb", "cap", "head", "stride", "block", "mv")
+    __slots__ = ("ids", "recs", "tot", "done", "mins", "conv", "inb", "cap", "head", "stride", "block", "mv", "cc")
 
     def __init__(self, cap, stride):
         self.ids, self.recs, self.tot, self.done, self.mins, self.conv, self.inb = [], [], [], [], [], [], []
         self.cap, self.head, self.stride = cap, 0, stride
         self.block = self.mv = None
+        self.cc = {}                                 # convention -> count of the ring's records (S02d: O(1) summary)
 
     def push(self, rec):
         if len(self.ids) >= self.cap:
@@ -267,11 +268,19 @@ class _Cols:
         self.mins.append(rec.minutes)
         self.conv.append(rec.conv)
         self.inb.append(inb)
+        cc = self.cc
+        cc[rec.conv] = cc.get(rec.conv, 0) + 1
 
     def evict(self):
         rec = self.recs[0]
         if self.inb[0]:
             rec.vals = array("q", rec.vals)          # detach: the row is reused next
+        cv = self.conv[0]
+        cc = self.cc
+        if cc[cv] > 1:
+            cc[cv] -= 1
+        else:
+            del cc[cv]
         for col in (self.ids, self.recs, self.tot, self.done, self.mins, self.conv, self.inb):
             del col[0]
         self.head = (self.head + 1) % self.cap
