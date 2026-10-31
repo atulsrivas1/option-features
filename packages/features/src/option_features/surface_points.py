@@ -15,7 +15,8 @@ Calls
     point_from_frame(output_id, frame, floats, params=None, labels=None) -> Result
         The O(1) step the runner calls once per output on a frame it already has: `frame` is the M3A-0 Result of
         `surface_frame`, `floats` its `stats["floats"]`, `labels` its `stats["labels"]` (the per-expiry model labels,
-        so only the expiries an output uses are labelled, R-180), `params` the validated request. Nothing is solved
+        so only the expiries an output uses are labelled, R-180), `params` the validated request (a caller that skipped S09 gets `invalid_direction`, `threshold_required`, or
+        `malformed_type` for a threshold that is not a number or decimal text). Nothing is solved
         or scanned.
     The frame must have been built with the tenors the output reads: V5 [9, 30, 91], V11 and V21 [30]; V6 and V8 read
     only the per-expiry items (use tenors [] to skip the tenor step).
@@ -143,8 +144,8 @@ def _atm_labels(lab, days):
     out = []
     for d in days:
         item = lab.get(str(d))
-        if item is not None and item["atm"] is not None:
-            out.append(item["atm"])
+        if item is not None and item.get("label") is not None:
+            out.append(item["label"])
     return out
 
 
@@ -153,7 +154,7 @@ def _side_labels(lab, tenor_result, key):
     for d in tenor_result.expiries_used or ():
         item = lab.get(str(d))
         if item is not None:
-            out.extend(item[key])
+            out.extend(item.get(key) or ())
     return out
 
 
@@ -208,7 +209,7 @@ def _v8(frame, floats, p, lab):
         return call.reason, None
     pts = _diff_points(put.iv, call.iv)
     return None, ({"put25_iv": round_text(put.iv), "call25_iv": round_text(call.iv), "skew_points": units_text(pts),
-                   "tenor": 30}, pts, "pts", _side_labels(lab, put, "put25_iv") + _side_labels(lab, call, "call25_iv"))
+                   "tenor": 30}, pts, "pts", _side_labels(lab, put, "put25_labels") + _side_labels(lab, call, "call25_labels"))
 
 
 def _atm30(frame, floats):
@@ -235,7 +236,7 @@ def _v11(frame, floats, p, lab):
     pts = _frac_units(mid - fa, 100)
     return None, ({"wings_mid": units_text(_frac_units(mid)), "atm_iv": round_text(atm),
                    "curvature_points": units_text(pts)}, pts, "pts",
-                  _atm_labels(lab, used) + _side_labels(lab, put, "put25_iv") + _side_labels(lab, call, "call25_iv"))
+                  _atm_labels(lab, used) + _side_labels(lab, put, "put25_labels") + _side_labels(lab, call, "call25_labels"))
 
 
 def _v21(frame, floats, p, lab):
@@ -262,7 +263,7 @@ def _v21(frame, floats, p, lab):
     ratio = _round_div(num * _UNITS, den)
     return None, ({"put_distance": units_text(pd), "call_distance": units_text(cd), "ratio": units_text(ratio)},
                   ratio, "ratio",
-                  _atm_labels(lab, used) + _side_labels(lab, put, "put25_iv") + _side_labels(lab, call, "call25_iv"))
+                  _atm_labels(lab, used) + _side_labels(lab, put, "put25_labels") + _side_labels(lab, call, "call25_labels"))
 
 
 _COMPUTE = {"M3A-4": _v5, "M3A-5": _v6, "M3A-7": _v8, "M3A-10": _v11, "M3A-11": _v21}

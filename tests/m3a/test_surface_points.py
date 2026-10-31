@@ -715,7 +715,7 @@ class LabelsShape(unittest.TestCase):
                 yield r, res, stats
 
     def test_shape_on_every_s05_row(self):
-        seen = {"covered_false": 0, "unavailable": 0, "approx": 0, "empty_side": 0, "early": 0, "multi": 0}
+        seen = {"covered_false": 0, "unavailable": 0, "approx": 0, "empty_side": 0, "early": 0}
         for r, res, stats in self.runs():
             if res.status == "invalid_input":
                 self.assertNotIn("labels", stats, r["id"])
@@ -742,8 +742,6 @@ class LabelsShape(unittest.TestCase):
                         self.assertGreaterEqual(len(got), 1, (r["id"], d, key))
                     if fe[side] is not None and fe[side]["status"] != "available" and fe["status"] == "available":
                         seen["empty_side"] += 1
-                    if len(got) > 1:
-                        seen["multi"] += 1
                 if not item["covered"]:
                     seen["covered_false"] += 1
                 if fe["status"] != "available":

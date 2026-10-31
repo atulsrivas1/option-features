@@ -21,9 +21,12 @@ Calls
                   UNROUNDED binary64 values behind the frame text, keyed like `frame`, None where the frame is null
                   (derived series difference these and round once, R-48, R-181);
                   floats["available"] (bool, R-197) is True exactly when the result status is "available"
-    stats["labels"] (S06): {days: {"atm": model label of the expiry's ATM legs or None, "put25_iv": [labels of the
-                  bracket strikes used], "call25_iv": [...]}}, so a point output can label only the expiries it uses
-                  (R-180) even when the frame as a whole is unavailable (labels [] on the result, R-105)
+    stats["labels"] (S05d, read by S06 and S07), top level beside "floats", never inside it: {str(days): {"label": model
+                  label of the expiry's ATM legs, None unless the expiry is available; "put25_labels", "call25_labels":
+                  sorted distinct labels of the bracket strikes actually used, [] when that side is unavailable;
+                  "covered": False only when the expiry's reason is low_surface_coverage}}, one entry per listed
+                  expiry, so an output can label only the expiries it uses (R-180) even when the frame as a whole is
+                  unavailable (labels [] on the result, R-105). Absent on an early or invalid return; cleared on entry
 
 Result (IO contract section 8, R-141, R-142): value null; frame = {"expiries": {days: {status, reason, forward,
 atm_iv, put25_iv: {status, reason, value}, call25_iv: {...}}}, "tenors": {tenor: {status, reason, iv, method,
@@ -391,12 +394,12 @@ def surface_frame(contracts, spot, rate, dividend_yield, cutoff_ns, params=None,
             fl = {"atm_iv": None, "put25_iv": None, "call25_iv": None}
             item = {"status": e.status, "reason": e.reason, "forward": round_text(e.fwd.value()),
                     "atm_iv": None, "put25_iv": None, "call25_iv": None}
-            lab = {"atm": None, "put25_iv": [], "call25_iv": []}
+            lab = {"label": None, "put25_labels": [], "call25_labels": [], "covered": e.reason != "low_surface_coverage"}
             if e.status == "available":
                 item["atm_iv"] = round_text(e.atm_iv)
                 fl["atm_iv"] = e.atm_iv
                 labels.add(e.atm_label)
-                lab["atm"] = e.atm_label
+                lab["label"] = e.atm_label
                 for right, key in _SIDES:
                     legs = e.legs[right]
                     pt = delta25_point([k for k, _ in legs], [s for _, s in legs], e.atm_strike, S, r_x, q_x, e.days,
@@ -405,9 +408,9 @@ def surface_frame(contracts, spot, rate, dividend_yield, cutoff_ns, params=None,
                     if pt["status"] == "available":
                         item[key] = _side("available", None, round_text(pt["value"]))
                         fl[key] = pt["value"]
-                        for k in pt["strikes_used"]:
-                            labels.add(e.labels[(k, right)])
-                            lab[key].append(e.labels[(k, right)])
+                        used = sorted({e.labels[(k, right)] for k in pt["strikes_used"]})
+                        labels.update(used)
+                        lab[right + "25_labels"] = used
                     else:
                         item[key] = _side("unavailable", pt["reason"], None)
                         if side_fail is None:
