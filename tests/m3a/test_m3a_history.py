@@ -768,6 +768,43 @@ class Hardening3(unittest.TestCase):
                 self.assertEqual(a.dump(), b.dump(), seed)
 
 
+class _Lie(str):
+    rsplit = lambda self, *a, **k: ["x", "premium"]
+
+
+class _Eq(str):
+    __eq__ = lambda self, o: False
+    __hash__ = lambda self: 1
+
+
+class _Str(str):
+    __str__ = lambda self: "x/premium"
+    __hash__ = lambda self: hash("x/premium")
+
+
+class StrSubclassIds(unittest.TestCase):
+    """Last round: a str subclass series id cannot masquerade as an M2 id; TypeError before any mutation."""
+
+    def test_every_entry_point_rejects(self):
+        cal = Calendar([("d%02d" % i, 4) for i in range(5)])
+        for cls in (_Lie, _Eq, _Str):
+            sid = cls("U/stock/iv30_close")
+            rec = GridRecord(sid, "iv30_close", 0, "d00", 0, array("H"), array("B"), Fraction(1, 3))
+            calls = (lambda: HistoryStore(cal).append(sid, "iv30_close", 0, "d00", [], total=Fraction(1, 3)),
+                     lambda: HistoryStore(cal).append(sid, "iv30_close", 0, "d00", [Fraction(1, 3)] * 4),
+                     lambda: HistoryStore(cal).append_record(rec),
+                     lambda: HistoryStore(cal).append_many([rec]),
+                     lambda: HistoryStore(cal).add_series(sid, 100))
+            for call in calls:
+                with self.assertRaises(TypeError, msg=cls.__name__):
+                    call()
+            st = HistoryStore(cal)
+            with self.assertRaises(TypeError):
+                st.append_many([GridRecord("U/stock/iv30", "iv30", 0, "d00", 0, array("H"), array("B"), 3), rec])
+            self.assertEqual((len(st), st.stats()["records"]), (0, 0))
+            self.assertEqual(st.dump(), HistoryStore(cal).dump())
+
+
 class Memory(unittest.TestCase):
     def test_formula(self):
         self.assertEqual(MH.grid_store_bytes(2 * 103, 252, 390, 3),
