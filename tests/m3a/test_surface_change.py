@@ -283,14 +283,20 @@ class V4Units(unittest.TestCase):
         ex = [{"d": 10, "atm": 0.2, "label": "approximate: European model on an American-style contract"},
               {"d": 30, "atm": 0.28, "label": "exact-model"}]
         fr, fl = mk_frame(ex, {30: 0.28})
-        self.assertEqual(v4(fr, fl, {}).labels, ["approximate: European model on an American-style contract"])
-        self.assertEqual(v4(fr, fl, {"iv_form": "30d"}).labels, ["approximate: European model on an American-style contract", "exact-model"])
-        self.assertEqual(v4(fr, fl, {"feed_delay_tag": "delayed", "mode": "close"}).labels,
+        prior = {"prior": {"kind": "frame", "value": "0.2", "time_ns": 5}}
+        self.assertEqual(v4(fr, fl, prior).labels, ["approximate: European model on an American-style contract"])
+        self.assertEqual(v4(fr, fl, {**prior, "iv_form": "30d"}).labels, ["exact-model"])      # the 30d expiry only
+        fr2, fl2 = mk_frame([{"d": 20, "atm": 0.2, "label": "approximate: European model on an American-style contract"},
+                             {"d": 45, "atm": 0.28, "label": "exact-model"}], {30: 0.23})
+        self.assertEqual(v4(fr2, fl2, {**prior, "iv_form": "30d"}).labels,
+                         ["approximate: European model on an American-style contract", "exact-model"])   # both bracket
+        self.assertEqual(v4(fr, fl, {**prior, "feed_delay_tag": "delayed", "mode": "close"}).labels,
                          ["approximate: European model on an American-style contract", "delayed"])
+        self.assertEqual(v4(fr, fl, {}).labels, [])                              # unavailable: no labels (R-105)
 
     def test_labels_fall_back_to_frame_labels_without_expiry_labels(self):
         fr, fl = mk_frame([{"d": 10, "atm": 0.2}])
-        self.assertEqual(v4(fr, fl, {}).labels, ["exact-model"])
+        self.assertEqual(v4(fr, fl, {"prior": {"kind": "frame", "value": "0.2", "time_ns": 5}}).labels, ["exact-model"])
 
     def test_structural_codes_and_order(self):
         p = {"prior": {"kind": "frame", "value": "0.2", "time_ns": 1000}}
@@ -301,6 +307,8 @@ class V4Units(unittest.TestCase):
         self.assertEqual(v4(self.fr, self.fl, {"direction": None}).code, "malformed_type")
         self.assertEqual(v4(self.fr, self.fl, {"at_least": 1.5}).code, "malformed_type")
         self.assertEqual(v4(self.fr, self.fl, {"x": 1.5, "direction": "either"}).code, "malformed_type")
+        self.assertEqual(v4(self.fr, self.fl, {"x": 1.5, "direction": "up"}).code, "malformed_type")   # typed even if unused
+        self.assertEqual(v4(self.fr, self.fl, {"x": "101", "direction": "either"}).status, "unavailable")  # no 0..100 range
         self.assertEqual(v4(self.fr, self.fl, {"prior_sessions": 0}).code, "malformed_type")
         self.assertEqual(v4(self.fr, self.fl, {"prior": {"kind": "year", "value": "0.2", "time_ns": 5}}).code,
                          "malformed_type")
@@ -691,11 +699,13 @@ def _expect_unavailable(reason, params):
 
 class Differential(unittest.TestCase):
     """>= 20,000 random cases in total; every difference fails. Seeded (reproducible)."""
-    N_V4, N_V7, N_V10 = 8000, 6000, 6000
+    N_V4, N_V7, N_V10 = 10000, 7000, 7000
+    RAN = {}
 
     def test_v4_random_cases(self):
         rng = random.Random(20261031)
-        reasons = ("no_atm_strike", "low_surface_coverage", "style_unknown", "no_bracketing_expiry", "price_out_of_bounds")
+        ran = 0
+        reasons = ("no_atm_strike", "low_surface_coverage", "sigma_cap", "no_bracketing_expiry", "price_out_of_bounds")
         for case in range(self.N_V4):
             form = rng.choice(("atm", "30d", None))
             n_exp = rng.randrange(1, 5)
@@ -793,9 +803,12 @@ class Differential(unittest.TestCase):
                 labels = sorted(set(lab) | ({"delayed"} if delayed else set()))
                 want = ("available", None, None, value, fired, labels, echo)
             _same(self, res, want, (case, params))
+            ran += 1
+        Differential.RAN["v4"] = ran
 
     def test_v7_random_cases(self):
         rng = random.Random(20261032)
+        ran = 0
         for case in range(self.N_V7):
             t30, t91 = _rand_float(rng), _rand_float(rng)
             reasons = ("no_bracketing_expiry", "low_surface_coverage", "no_atm_strike")
@@ -851,10 +864,13 @@ class Differential(unittest.TestCase):
                     labels = sorted({"exact-model", "approximate: European model on an American-style contract"} | ({"delayed"} if delayed else set()))
                     want = ("available", None, None, value, ref_fire(dname, Fraction(change, UNITS), thr), labels, echo)
             _same(self, res, want, (case, params, stored))
+            ran += 1
+        Differential.RAN["v7"] = ran
 
     def test_v10_random_cases(self):
         rng = random.Random(20261033)
-        reasons = ("no_atm_strike", "low_surface_coverage", "style_unknown")
+        ran = 0
+        reasons = ("no_atm_strike", "low_surface_coverage", "sigma_cap")
         for case in range(self.N_V10):
             n_exp = rng.randrange(1, 5)
             days = sorted(rng.sample([5, 9, 14, 20, 30, 30, 45, 60, 91, 120], n_exp))
@@ -966,6 +982,14 @@ class Differential(unittest.TestCase):
                         labs.add(labels_of(dd))
                     want = ("available", None, None, value, fired, sorted(labs), echo)
             _same(self, res, want, (case, params, stored))
+            ran += 1
+        Differential.RAN["v10"] = ran
+
+    def test_zz_at_least_20000_cases_ran(self):
+        self.test_v4_random_cases() if "v4" not in self.RAN else None
+        self.test_v7_random_cases() if "v7" not in self.RAN else None
+        self.test_v10_random_cases() if "v10" not in self.RAN else None
+        self.assertGreaterEqual(sum(self.RAN.values()), 20000, self.RAN)
 
 
 def _store_conv_visible(stored, sconv, dc):
