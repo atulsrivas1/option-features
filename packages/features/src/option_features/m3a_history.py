@@ -115,7 +115,7 @@ def _select(store, series_id, metric, window_s, lane, as_of, mx, minute):
     done = c.done
     if minute is _SCALAR:
         if False not in done[lo:cut]:
-            return c.conv[lo:cut], tuple(ids[lo:cut]), tuple(c.tot[lo:cut])
+            return (() if metric in CONVENTION_FREE else c.conv[lo:cut]), tuple(ids[lo:cut]), tuple(c.tot[lo:cut])
         pick = [i for i in range(cut) if done[i]]
         pick = pick[len(pick) - mx:] if len(pick) > mx else pick
         tot, conv = c.tot, c.conv

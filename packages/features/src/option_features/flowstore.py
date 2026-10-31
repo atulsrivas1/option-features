@@ -120,8 +120,8 @@ def _grid_text(rec, cache=None):
             cache[id(vals)] = (vals, text)
         return text
     vals = vals if type(vals) is tuple else vals.tolist()
-    if len(idx) == rec.minutes:                     # no zero point: every index present, so just the values
-        return repr(vals if type(vals) is list else list(vals))[1:-1].replace(" ", "")
+    if len(idx) == rec.minutes and (type(vals) is list or _INT_ONLY.issuperset(map(type, vals))):
+        return repr(vals)[1:-1].replace(" ", "")    # no zero point and exact ints: the values, one C call
     tokens = ["0"] * rec.minutes
     for i, v in zip(idx if type(idx) is tuple else idx.tolist(), vals):
         tokens[i] = str(v)
@@ -141,6 +141,34 @@ def _idx_text(rec, cache=None):
     if cache is not None:
         cache[id(idx)] = (idx, text)
     return text
+
+
+_INT_CODES = frozenset("bBhHiIlLqQ")
+
+
+def _m3a_values(x, memo):
+    """Validated private form of the values of an M3a record: an integer-typed array / memoryview is taken as is; a list
+    or tuple is copied ONCE to a tuple and every element must be an exact int; anything else is a TypeError. One source
+    object shared by several records of an append_many is validated once."""
+    got = memo.get(("m3a", id(x))) if memo is not None else None
+    if got is not None:
+        return got[1]
+    if isinstance(x, array):
+        ok = x.typecode in _INT_CODES
+        out = x
+    elif isinstance(x, memoryview):
+        ok = x.format in _INT_CODES and x.ndim == 1
+        out = x
+    elif type(x) in (list, tuple):
+        out = tuple(x)
+        ok = _INT_ONLY.issuperset(map(type, out))
+    else:
+        ok = False
+    if not ok:
+        raise TypeError("M3a values must be exact integers")
+    if memo is not None:
+        memo[("m3a", id(x))] = (x, out)
+    return out
 
 
 def _own(x, memo):
@@ -443,13 +471,13 @@ class HistoryStore:
         written in the canonical line only when given; any other value is ValueError (no append code, R-160)."""
         if delta_convention is not None and delta_convention not in CONVENTIONS:
             raise ValueError("delta_convention must be None, 'spot' or 'forward'")
-        if _is_m3a_series(series_id):
-            # M3a (IO contract: exact integers): every grid value and the total must be an exact int (not bool, float,
-            # Decimal, Fraction, str, None), checked BEFORE any mutation so a bad append changes nothing (all-or-nothing)
-            if not _INT_ONLY.issuperset(map(type, grid)):
-                raise TypeError("M3a grid values must be exact integers")
-            if total is not None and type(total) is not int:
-                raise TypeError("M3a total must be an exact integer")
+        m3a = _is_m3a_series(series_id)
+        if m3a:
+            # M3a: the grid is read ONCE into a private list (exactly a list or tuple is accepted; everything else is a
+            # TypeError after the structural checks); the check and every later use see that copy only
+            g = list(grid) if type(grid) in (list, tuple) else None
+            if g is not None:
+                grid = g
         if grid_idx is None:
             idx = None
             minutes = len(grid)
@@ -459,6 +487,13 @@ class HistoryStore:
                 raise ValueError("grid and grid_idx differ in length")
         sparse = grid_idx is not None
         minutes = self._prepare(series_id, metric, window_s, session_id, lane, minutes, idx, sparse, None)
+        if m3a:                                # exact integers only (IO contract), checked before any mutation
+            if g is None:
+                raise TypeError("M3a grid must be a list or tuple of exact integers")
+            if not _INT_ONLY.issuperset(map(type, grid)):
+                raise TypeError("M3a grid values must be exact integers")
+            if total is not None and type(total) is not int:
+                raise TypeError("M3a total must be an exact integer")
         if not sparse:
             if minutes and minutes <= 65536 and 0 not in grid:
                 idx = _full_idx(minutes)       # no zero point: every index, one shared array (same content)
@@ -478,7 +513,7 @@ class HistoryStore:
             vals = list(grid)
             if total is None:
                 total = sum(vals)
-        if vals is grid and _is_m3a_series(series_id):
+        if vals is grid and m3a:
             # an M3a full grid goes to the ring block: convert to int64 HERE, before any mutation, so a bad element
             # raises (TypeError, as narrow does on M2) and the append changes nothing (all-or-nothing)
             try:
@@ -493,18 +528,49 @@ class HistoryStore:
     def append_record(self, record, complete=True, lane="stock", _memo=None):
         """Append a prebuilt sparse `GridRecord` (see flowgrid.build_session_records), same checks. The store copies
         the arrays into private typed arrays (a caller cannot mutate stored data); an index or value array shared by
-        several records of one `append_many` is copied and validated once and shared."""
+        several records of one `append_many` is copied and validated once and shared. On an M3a series the total and
+        every value must be exact ints (checked after the structural checks, before any mutation)."""
         idx = _own(record.idx, _memo)
         minutes = self._prepare(record.series_id, record.metric, record.window_s, record.session_id, lane, record.minutes,
                                 idx, True, _memo)
+        vals = record.vals
+        if _is_m3a_series(record.series_id):
+            vals = _m3a_values(vals, _memo)
+            if type(record.total) is not int:
+                raise TypeError("M3a total must be an exact integer")
         self._store(record.series_id, record.metric, record.window_s,
-                    _Rec(record.session_id, minutes, idx, _own(record.vals, _memo), record.total, bool(complete),
+                    _Rec(record.session_id, minutes, idx, _own(vals, _memo), record.total, bool(complete),
                          None, True), lane)
 
     def append_many(self, records, complete=True, lane="stock"):
+        """Append records in order, sharing validated arrays. A batch that touches an M3a series is all-or-nothing: any
+        error restores every ring it touched (a ring created by the batch is removed); other batches are unchanged."""
+        records = list(records)
         memo = {}
-        for r in records:
-            self.append_record(r, complete, lane, memo)
+        if not any(_is_m3a_series(r.series_id) for r in records):
+            for r in records:
+                self.append_record(r, complete, lane, memo)
+            return
+        saved, chash = {}, self._chash
+        try:
+            for r in records:
+                key = (r.series_id, r.metric, r.window_s)
+                if key not in saved:
+                    ring = self._rings.get(key)
+                    saved[key] = None if ring is None else (ring, dict(ring.recs))
+                self.append_record(r, complete, lane, memo)
+        except BaseException:
+            for key, got in saved.items():
+                if got is None:
+                    self._rings.pop(key, None)
+                else:
+                    ring, recs = got
+                    ring.recs = recs
+                    ring.views.clear()
+                    ring.m3a = None               # rebuilt from ring.recs on the next M3a read
+                    self._rings[key] = ring
+            self._chash = None
+            raise
 
     def _prepare(self, series_id, metric, window_s, session_id, lane, minutes, idx, sparse, memo):
         """The append checks in the RULED order; returns the grid length (`minutes`) to store."""

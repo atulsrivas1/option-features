@@ -607,7 +607,8 @@ class Hardening3(unittest.TestCase):
 
     def _state(self, st, cal):
         reads = [Layout._read_all(None, st, cal, S, "atm_iv"),
-                 [MH.scalar_baseline(st, "A/stock/skew25", "skew25", s, min_sessions=1) for s in cal.ids]]
+                 [(r.status, r.code, r.value) for r in (MH.scalar_baseline(st, "A/stock/skew25", "skew25", s, min_sessions=1)
+                                                  for s in cal.ids)]]
         return (st.dump(), st.content_hash(), st.binary_snapshot(), st.stats()["records"], st.retained(), reads)
 
     def _same_after_failure(self, a, b, cal, call, exc=(TypeError, ValueError), msg=None):
@@ -731,8 +732,8 @@ class Hardening3(unittest.TestCase):
                         call = lambda: a.append(S, "atm_iv", 0, sid, _Shifty([1] * 16))
                     elif kind == 2:
                         g = list(good)
-                        g[rng.randrange(16)] = bad_scalar if bad_scalar is not None else 1.5
-                        g[rng.randrange(16)] = 10 ** 30
+                        g[0] = bad_scalar if bad_scalar is not None else 1.5
+                        g[rng.randrange(1, 16)] = 10 ** 30
                         call = lambda g=g: a.append(S, "atm_iv", 0, sid, g)
                     elif kind == 3:
                         if bad_scalar is None:
