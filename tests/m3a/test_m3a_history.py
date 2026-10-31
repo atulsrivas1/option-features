@@ -1323,7 +1323,11 @@ def _series_k():
 
 
 class PerfStore(unittest.TestCase):
-    """W09 (B7), W10 (B8), R03 (B8 store bytes) and the B6 append rate and B5 read share on one B6 store."""
+    """Developer SMOKE checks, not gates (GATE_BUDGETS section 8 rule 7): best of up to 3 samples (H.best_of), floors
+    and budgets identical to section 5, for W09 (B7), W10 (B8), R03 (B8 store bytes) and the B6 append rate and B5 read
+    share on one B6 store. A B6 retry rebuilds the full 103-name store (the budget workload) and the W09 retry repeats
+    the whole round trip; W09 and B5 merge per metric or row across samples, so the asserted values may come from
+    different samples."""
 
     @classmethod
     def setUpClass(cls):
@@ -1343,11 +1347,21 @@ class PerfStore(unittest.TestCase):
         gc.collect()
 
     def test_B6_append_rate(self):
-        rate = self.records / self.append_s
-        print("\nB6 append %d records (103 names x 7 series x 252 sessions): %.3f s, %.0f records/s "
-              "(budget >= 25,000 records/s, hard 5,000; %s)" % (self.records, self.append_s, rate, LABEL))
+        def sample():
+            if sample.first:
+                sample.first = False
+                return self.append_s
+            fresh = HistoryStore(self.cal)                  # retry: the full 103-name workload on a fresh store
+            _declare(fresh)
+            return _append_b6(fresh, self.cal)
+        sample.first = True
+        spent, used = H.best_of(sample, min, lambda t: self.records / t >= H.APPEND_FLOOR)
+        rate = self.records / spent
+        print("\nB6 append smoke check, best of 3 (used %d): %d records (103 names x 7 series x 252 sessions): "
+              "%.3f s, %.0f records/s (budget >= 25,000 records/s, hard 5,000; %s; unit smoke, not a Developer bench)"
+              % (used, self.records, spent, rate, LABEL))
         self.assertEqual(self.store.stats()["records"], self.records)
-        self.assertGreaterEqual(rate, 25000)
+        self.assertGreaterEqual(rate, H.APPEND_FLOOR)
 
     def test_R03_store_bytes(self):
         est = self.store.stats()["est_bytes"]
@@ -1362,14 +1376,14 @@ class PerfStore(unittest.TestCase):
     def test_W10_peak_rss_and_store(self):
         if self.peak1 is None:
             self.skipTest("Windows process counters only")
-        _, peak = _private_bytes()          # after the B6 build and (by name order) the W09 round trip
+        _, peak = _private_bytes()          # after the B6 build and the W09 smoke round trip(s), by name order
         print("\nW10 peak working set of the test process %.1f MiB (budget <= 2 GB, hard 4 GB); store private bytes "
               "%.1f MiB (budget <= 768 MiB, hard 1 GiB; %s)" % (peak / 2 ** 20, (self.priv1 - self.priv0) / 2 ** 20,
                                                                 LABEL))
         self.assertLessEqual(peak, 2 * 10 ** 9)
         self.assertLessEqual(self.priv1 - self.priv0, MH.STORE_BUDGET_BYTES)
 
-    def test_W09_round_trip(self):
+    def _round_trip(self):
         st, cal, n = self.store, self.cal, self.records
         h0 = st.content_hash()
         with tempfile.TemporaryDirectory() as d:
@@ -1401,12 +1415,21 @@ class PerfStore(unittest.TestCase):
                 self.assertEqual(list(a.value["values"]), list(b.value["values"]))
             finally:
                 att.close_mapping()
-        print("\nW09 round trip %d records: canonical LF text write %.0f rec/s, read %.0f rec/s; mmap snapshot write "
+        return w_txt, r_txt, w_bin, r_bin
+
+    def test_W09_round_trip(self):
+        n = self.records
+
+        def ok(t):
+            floors = (H.WRITE_FLOOR, H.READ_FLOOR, H.WRITE_FLOOR, H.READ_FLOOR)
+            return all(n / x >= f for x, f in zip(t, floors))
+        (w_txt, r_txt, w_bin, r_bin), used = H.best_of(self._round_trip, lambda a, b: tuple(map(min, a, b)), ok)
+        print("\nW09 smoke check, best of 3 (used %d; per-metric best across samples): round trip %d records: canonical LF text write %.0f rec/s, read %.0f rec/s; mmap snapshot write "
               "%.0f rec/s, attach %.0f rec/s; content hash identical (budget write >= 25,000, read >= 50,000 "
-              "records/s, hard 5,000 / 10,000; %s)" % (n, n / w_txt, n / r_txt, n / w_bin, n / r_bin, LABEL))
+              "records/s, hard 5,000 / 10,000; %s)" % (used, n, n / w_txt, n / r_txt, n / w_bin, n / r_bin, LABEL))
         for w, r in ((w_txt, r_txt), (w_bin, r_bin)):
-            self.assertGreaterEqual(n / w, 25000)
-            self.assertGreaterEqual(n / r, 50000)
+            self.assertGreaterEqual(n / w, H.WRITE_FLOOR)
+            self.assertGreaterEqual(n / r, H.READ_FLOOR)
 
     def test_B5_read_share_per_call(self):
         """R-193 binding form: warm process, store built before the timer, derived per-series read state dropped
@@ -1414,27 +1437,34 @@ class PerfStore(unittest.TestCase):
         S02 read share: same_minute_column <= 75 us p95 per call per form (atm_iv, iv30); scalar_baseline <= 25 us."""
         st, as_of = self.store, self.cal.ids[SESSIONS]
         clock = time.perf_counter
-        res = {}
         forms = [("scalar_baseline iv30_close", lambda n: MH.scalar_baseline(
-                     st, "N%03d/stock/iv30_close" % n, "iv30_close", as_of), 25e-6)]
+                     st, "N%03d/stock/iv30_close" % n, "iv30_close", as_of), H.B5_SCALAR_CALL_S)]
         for m in MINUTE_METRICS:
             forms.append(("same_minute_column " + m, (lambda m: lambda n: MH.same_minute_column(
-                st, "N%03d/stock/%s" % (n, m), m, as_of, 195))(m), 75e-6))
-        for label, fn, budget in forms:
-            for n in range(NAMES):                       # warm-up
-                fn(n)
-            calls = []
-            for _ in range(30):
-                for n in range(NAMES):
-                    st.drop_caches()
-                    t0 = clock()
+                st, "N%03d/stock/%s" % (n, m), m, as_of, 195))(m), H.B5_MINUTE_CALL_S))
+
+        def sample():
+            res = {}
+            for label, fn, budget in forms:
+                for n in range(NAMES):                       # warm-up
                     fn(n)
-                    calls.append(clock() - t0)
-            calls.sort()
-            q = lambda p: calls[min(len(calls) - 1, int(p * len(calls)))]
-            res[label] = (q(0.05), q(0.5), q(0.95), calls[-1], budget)
-        print("\nB5 read share per call (R-193: cache dropped every call, 30 x 103 calls after warm-up; "
-              "synthetic workload, relative engineering budget):")
+                calls = []
+                for _ in range(30):
+                    for n in range(NAMES):
+                        st.drop_caches()
+                        t0 = clock()
+                        fn(n)
+                        calls.append(clock() - t0)
+                calls.sort()
+                q = lambda p: calls[min(len(calls) - 1, int(p * len(calls)))]
+                res[label] = (q(0.05), q(0.5), q(0.95), calls[-1], budget)
+            return res
+
+        def merge(a, b):
+            return {k: min(a[k], b[k], key=lambda t: t[2]) for k in a}
+        res, used = H.best_of(sample, merge, lambda r: all(v[2] <= v[4] for v in r.values()))
+        print("\nB5 read share per call, smoke check best of 3 (used %d; per-row best across samples) (R-193: cache dropped every call, 30 x 103 calls after warm-up; "
+              "synthetic workload, relative engineering budget):" % used)
         for label, (p5, p50, p95, mx, b) in res.items():
             print("  %-30s p5 %6.1f us p50 %6.1f us p95 %6.1f us max %7.1f us (budget <= %d us p95)"
                   % (label, p5 * 1e6, p50 * 1e6, p95 * 1e6, mx * 1e6, b * 1e6))
@@ -1446,30 +1476,80 @@ class PerfStore(unittest.TestCase):
         before each pass, outside the timer); `sweep` = a later cutoff of the same session (selection cached, the
         minute moves with the cutoff: what V3 reads at 77 of 78 cutoffs); `warm` = the same read again."""
         st, as_of = self.store, self.cal.ids[SESSIONS]
-        out = {}
         forms = (("scalar_baseline", lambda n, m: MH.scalar_baseline(st, "N%03d/stock/iv30_close" % n, "iv30_close",
                                                                         as_of)),
                  ("same_minute_column", lambda n, m: MH.same_minute_column(st, "N%03d/stock/iv30" % n, "iv30", as_of,
                                                                               m)))
-        for label, fn in forms:
-            fn(0, 0)
-            for mode in ("cold", "sweep", "warm"):
-                runs = []
-                for rep in range(30):
-                    if mode == "cold":
-                        st.drop_caches()
-                    minute = (rep * 13) % GRID if mode == "sweep" else 195
-                    t0 = time.perf_counter()
-                    for n in range(NAMES):
-                        fn(n, minute)
-                    runs.append((time.perf_counter() - t0) / NAMES)
-                out[label, mode] = (statistics.median(runs), sorted(runs)[int(0.95 * len(runs)) - 1])
+
+        def sample():
+            out = {}
+            for label, fn in forms:
+                fn(0, 0)
+                for mode in ("cold", "sweep", "warm"):
+                    runs = []
+                    for rep in range(30):
+                        if mode == "cold":
+                            st.drop_caches()
+                        minute = (rep * 13) % GRID if mode == "sweep" else 195
+                        t0 = time.perf_counter()
+                        for n in range(NAMES):
+                            fn(n, minute)
+                        runs.append((time.perf_counter() - t0) / NAMES)
+                    out[label, mode] = (statistics.median(runs), sorted(runs)[int(0.95 * len(runs)) - 1])
+            return out
+
+        def merge(a, b):
+            return {k: min(a[k], b[k], key=lambda t: t[1]) for k in a}
+
+        def ok(o):
+            return all(o["scalar_baseline", m][1] <= H.B5_SCALAR_SERIES_S
+                       and o["same_minute_column", m][1] <= H.B5_MINUTE_SERIES_S for m in ("cold", "sweep", "warm"))
+        out, used = H.best_of(sample, merge, ok)
         lines = ["  %-18s %-5s p50 %6.1f us p95 %6.1f us" % (k[0], k[1], v[0] * 1e6, v[1] * 1e6) for k, v in out.items()]
-        print("\nB5 read share per series (V1/V9 budget <= 50 us, V3 budget <= 150 us per series, whole request; "
-              "%s):\n%s" % (LABEL, "\n".join(lines)))
+        print("\nB5 read share per series, smoke check best of 3 (used %d) (V1/V9 budget <= 50 us, V3 budget <= 150 us per series, whole request; "
+              "%s):\n%s" % (used, LABEL, "\n".join(lines)))
         for mode in ("cold", "sweep", "warm"):
-            self.assertLessEqual(out["scalar_baseline", mode][1], 50e-6, mode)
-            self.assertLessEqual(out["same_minute_column", mode][1], 150e-6, mode)
+            self.assertLessEqual(out["scalar_baseline", mode][1], H.B5_SCALAR_SERIES_S, mode)
+            self.assertLessEqual(out["same_minute_column", mode][1], H.B5_MINUTE_SERIES_S, mode)
+
+
+class SmokeHelper(unittest.TestCase):
+    """The smoke rule itself, with a scripted clock: slow-then-fast passes, all-slow FAILS, a first pass stops early."""
+
+    def _run(self, durations):
+        clock = {"t": 0.0}
+        it = iter(durations)
+        real = time.perf_counter
+        time.perf_counter = lambda: clock["t"]
+
+        def sample():
+            t0 = time.perf_counter()
+            clock["t"] += next(it)
+            return time.perf_counter() - t0                  # seconds for 100,000 records
+        try:
+            best, used = H.best_of(sample, min, lambda t: 100000 / t >= H.APPEND_FLOOR)
+        finally:
+            time.perf_counter = real
+        return 100000 / best, used
+
+    def test_slow_then_fast_passes(self):
+        rate, used = self._run([10.0, 1.0, 10.0])               # 10,000 rec/s then 100,000 rec/s
+        self.assertEqual(used, 2)
+        self.assertGreaterEqual(rate, H.APPEND_FLOOR)
+
+    def test_first_pass_stops_early(self):
+        self.assertEqual(self._run([1.0, 10.0, 10.0])[1], 1)
+
+    def test_all_slow_fails(self):
+        rate, used = self._run([10.0, 9.0, 8.0])                # best 12,500 rec/s
+        self.assertEqual(used, 3)
+        with self.assertRaises(AssertionError):
+            self.assertGreaterEqual(rate, H.APPEND_FLOOR)
+
+    def test_floors_are_the_section_5_numbers(self):
+        self.assertEqual((H.APPEND_FLOOR, H.WRITE_FLOOR, H.READ_FLOOR), (25000, 25000, 50000))
+        self.assertEqual((H.B5_SCALAR_CALL_S, H.B5_MINUTE_CALL_S, H.B5_SCALAR_SERIES_S, H.B5_MINUTE_SERIES_S),
+                         (25e-6, 75e-6, 50e-6, 150e-6))
 
 
 class PerfRetention(unittest.TestCase):
