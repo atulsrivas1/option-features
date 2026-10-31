@@ -1352,6 +1352,12 @@ def bench_run(path, repeats=30, direct_store=None):
     real = MH._probe
     MH._probe = lambda r, m: (probes.append(1), real(r, m))[1]
     wrong = 0
+    zero_points = grids = 0
+    for n in range(names):                    # fixture density: no zero point in any retained minute grid (untimed)
+        for m in ("iv30", "atm_iv"):
+            c = st.m3a_cols("N%03d/stock/%s" % (n, m), m, 0)
+            grids += len(c.ids)
+            zero_points += c.mv.tolist().count(0) if c.mv is not None else -10 ** 9
     try:
         for fam in tkey:
             for n in range(names):
@@ -1365,8 +1371,9 @@ def bench_run(path, repeats=30, direct_store=None):
                     if fam != "V3a" and fam != "V3d":
                         ok = ok and Fraction(str(r.value["lower_share"])) == Fraction(t["lower_share"])
                 wrong += 0 if ok else 1
-    finally:
+    except BaseException:
         MH._probe = real
+        raise
     fams = ("V1", "V9", "V3a", "V3d")
     skew_note = "V9 now = today skew25 (put - 0.0)"
     for fam in fams:                       # warm-up pass
@@ -1387,7 +1394,9 @@ def bench_run(path, repeats=30, direct_store=None):
     def q(xs, p):
         s = sorted(xs)
         return s[max(0, -(-len(s) * p // 100) - 1)]
+    MH._probe = real
     out = {"gc_frozen": frozen, "repeats": repeats, "names": names, "wrong_results": wrong, "per_series_calls": len(per["V1"]),
+           "minute_grids": grids, "grid_zero_points": zero_points, "grid_density": 1 - zero_points / (grids * MINUTES),
            "probe_fallback_calls": len(probes), "records": st.stats()["records"], "note": skew_note,
            "per_call_us": {f: {"p50": q(per[f], 50) / 1e3, "p95": q(per[f], 95) / 1e3, "max": max(per[f]) / 1e3} for f in fams},
            "sweep_ms": {f: {"p50": q(wall[f], 50) / 1e6, "p95": q(wall[f], 95) / 1e6, "max": max(wall[f]) / 1e6} for f in fams}}
