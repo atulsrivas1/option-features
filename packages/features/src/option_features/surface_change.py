@@ -71,7 +71,6 @@ for _i, _slot in enumerate(REQUEST_LIST):
 _DECIMAL = re.compile(r"-?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)\Z", re.ASCII).match
 _NAME = {"up": "at_least", "down": "at_most", "either": "x"}
 _DEFAULT = {OUTPUT_V4: ("up", 10), OUTPUT_V7: ("either", 2), OUTPUT_V10: ("either", 2)}
-_APPROX_FALLBACK = None
 _MT = "malformed_type"
 _PCT_SCALE = 10 ** 6                      # ratio units (10^-8) to percent: percent = units / 10^6
 
@@ -182,7 +181,7 @@ def _reading_units(rec, want_kind=None):
     if rec.__class__ is not dict:
         raise _Bad()
     kind = rec.get("kind")
-    if kind != "frame" and kind != "session":
+    if kind.__class__ is not str or (kind != "frame" and kind != "session"):
         raise _Bad()
     v = rec.get("value")
     t = v.__class__
@@ -229,6 +228,21 @@ def _labels(frame, floats, days, delayed):
         out.append(lab)
     if delayed:
         out.append("delayed")
+    return out
+
+
+def _cov(frame):
+    """A copy of the frame coverage (the result never aliases the frame's dicts)."""
+    c = frame.coverage
+    if c.__class__ is not dict:
+        return c
+    out = dict(c)
+    pe = c.get("per_expiry")
+    if pe.__class__ is dict:
+        out["per_expiry"] = {k: dict(v) if v.__class__ is dict else v for k, v in pe.items()}
+    cr = c.get("contract_reasons")
+    if cr.__class__ is dict:
+        out["contract_reasons"] = dict(cr)
     return out
 
 
@@ -281,23 +295,23 @@ def _iv_change(frame, floats, cutoff_ns, p):
     sid = None
     if _eligible_none(frame):
         return Result.unavailable(oid, sid, None, cutoff_ns, "no_eligible_contract", params=echo,
-                                  coverage=frame.coverage, lane=lane)
+                                  coverage=_cov(frame), lane=lane)
     now, used, why = _v4_now(frame, floats, form)
     if why is not None:
-        return Result.unavailable(oid, sid, None, cutoff_ns, why, params=echo, coverage=frame.coverage, lane=lane)
+        return Result.unavailable(oid, sid, None, cutoff_ns, why, params=echo, coverage=_cov(frame), lane=lane)
     u_now = _units(now)
     if rec is None:
         return Result.unavailable(oid, sid, None, cutoff_ns, "no_prior_reading", params=echo,
-                                  coverage=frame.coverage, lane=lane)
+                                  coverage=_cov(frame), lane=lane)
     if u_prior == 0:
         return Result.unavailable(oid, sid, None, cutoff_ns, "zero_denominator", params=echo,
-                                  coverage=frame.coverage, lane=lane)
+                                  coverage=_cov(frame), lane=lane)
     change = u_now - u_prior
     ratio = _rdiv(change * UNITS, u_prior)
     value = {"iv_form": form, "now": units_text(u_now), "prior": units_text(u_prior),
              "change_points": units_text(change * 100), "change_ratio": units_text(ratio), "prior_kind": kind}
     fired = _fires(direction, ratio, thr * _PCT_SCALE)
-    return Result.available(oid, sid, None, cutoff_ns, value, fired, echo, frame.coverage,
+    return Result.available(oid, sid, None, cutoff_ns, value, fired, echo, _cov(frame),
                             _labels(frame, floats, used, delayed), lane)
 
 
@@ -355,7 +369,7 @@ def _gap_change(frame, floats, cutoff_ns, p, store, series_id, session_id):
     code, reason, values, sessions = _read_priors(store, series_id, session_id, n, lane, None)
     if code is not None:
         return Result.invalid(oid, code, sid, session_id, cutoff_ns, None, lane)
-    cov = frame.coverage
+    cov = _cov(frame)
     if _eligible_none(frame):
         reason = "no_eligible_contract"
     else:
@@ -429,7 +443,7 @@ def _skew_change(frame, floats, cutoff_ns, p, store, series_id, session_id):
             reason = "no_prior_reading"
         else:
             u_prior = _reading_units(rec)[1]
-    cov = frame.coverage
+    cov = _cov(frame)
     used = ()
     if _eligible_none(frame):
         upstream = "no_eligible_contract"
@@ -470,23 +484,20 @@ def _guard(oid, frame, floats, cutoff_ns, params, store, series_id, session_id, 
     lane = "stock"
     try:
         if frame.__class__ is not Result:
-            return Result.invalid(oid, _MT, sid, None, ev, None, lane)
+            return Result.invalid(oid, _MT, sid, session_id if session_id.__class__ is str else None, ev, None, lane)
         code = _structural(oid, cutoff_ns, params, frame)
         if p is not None and p.get("lane").__class__ is str:
             lane = p["lane"]
         if code is not None:
             return Result.invalid(oid, code, sid, session_id if session_id.__class__ is str else None, ev, None, lane)
         if p is None or floats.__class__ is not dict or frame.frame.__class__ is not dict:
-            return Result.invalid(oid, _MT, sid, None, ev, None, lane)
-        x = p.get("x")
-        if x is not None:
-            _level(x)
+            return Result.invalid(oid, _MT, sid, session_id if session_id.__class__ is str else None, ev, None, lane)
         return run(frame, floats, cutoff_ns, p) if store is _NO_STORE else run(frame, floats, cutoff_ns, p, store,
                                                                               series_id, session_id)
     except _Bad as exc:
-        return Result.invalid(oid, exc.code, sid, None, ev, None, lane)
+        return Result.invalid(oid, exc.code, sid, session_id if session_id.__class__ is str else None, ev, None, lane)
     except Exception:
-        return Result.invalid(oid, _MT, sid, None, ev, None, lane)
+        return Result.invalid(oid, _MT, sid, session_id if session_id.__class__ is str else None, ev, None, lane)
 
 
 _NO_STORE = object()

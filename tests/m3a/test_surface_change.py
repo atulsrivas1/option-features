@@ -307,7 +307,7 @@ class V4Units(unittest.TestCase):
         self.assertEqual(v4(self.fr, self.fl, {"direction": None}).code, "malformed_type")
         self.assertEqual(v4(self.fr, self.fl, {"at_least": 1.5}).code, "malformed_type")
         self.assertEqual(v4(self.fr, self.fl, {"x": 1.5, "direction": "either"}).code, "malformed_type")
-        self.assertEqual(v4(self.fr, self.fl, {"x": 1.5, "direction": "up"}).code, "malformed_type")   # typed even if unused
+        self.assertEqual(v4(self.fr, self.fl, {"x": 1.5, "direction": "up"}).status, "unavailable")     # x read only for either
         self.assertEqual(v4(self.fr, self.fl, {"x": "101", "direction": "either"}).status, "unavailable")  # no 0..100 range
         self.assertEqual(v4(self.fr, self.fl, {"prior_sessions": 0}).code, "malformed_type")
         self.assertEqual(v4(self.fr, self.fl, {"prior": {"kind": "year", "value": "0.2", "time_ns": 5}}).code,
@@ -336,6 +336,53 @@ class V4Units(unittest.TestCase):
         self.assertEqual(v4(self.fr, self.fl, self.base).params["at_least"], "10")      # default threshold echoed
         self.assertEqual(r.coverage["contract_reasons"], {"stale_quote": 2})
         self.assertEqual(r.evaluation_ns, 1000)
+
+    def test_prior_fraction_and_float_rounding_exact(self):
+        # V10 with now = 0 (put == call): change_points = -prior_units x 100 in 10^-8 units, so a prior that rounds to
+        # 0 is still visible (V4 would say zero_denominator)
+        fr, fl = mk_frame([{"d": 30, "atm": 0.2, "put": 0.2, "call": 0.2, "label": "exact-model"}], {30: 0.2})
+
+        def units(v):
+            r = SC.skew_change(fr, fl, 1000, {"prior": {"kind": "frame", "value": v, "time_ns": 5}}, None,
+                               "XYZ/stock/skew25", None)
+            self.assertEqual(r.status, "available", v)
+            return -int(Fraction(r.value["change_points"]) * UNITS) // 100
+        self.assertEqual(units(Fraction(1, 3)), 33333333)
+        self.assertEqual(units(Fraction(2, 3)), 66666667)                      # int() truncation would give ...666
+        self.assertEqual(units(Fraction(-2, 3)), -66666667)
+        self.assertEqual(units(Fraction(1, 200000000)), 0)                     # tie 0.5 units -> even 0
+        self.assertEqual(units(Fraction(3, 200000000)), 2)                     # tie 1.5 -> even 2
+        self.assertEqual(units(Fraction(5, 200000000)), 2)                     # tie 2.5 -> even 2
+        # a float is its exact binary value: 5e-09 is a hair above the tie (its repr text would be the tie itself)
+        self.assertEqual(units(5.0000000000000001e-9), 1)
+        self.assertEqual(units(4.9999999999999996e-9), 0)
+        for v in (1.5e-8, 2.5e-8, 0.123456785, 0.3, 1e-9, 7.5e-9):
+            want = _hr(Fraction(v) * UNITS)                                    # the reference of the differential
+            self.assertEqual(units(v), want, v)
+
+    def test_subclass_kind_and_series_id(self):
+        class K(str):
+            pass
+        r = v4(self.fr, self.fl, {"prior": {"kind": K("frame"), "value": "0.2", "time_ns": 5}})
+        self.assertEqual((r.status, r.code), ("invalid_input", "malformed_type"))
+        r = v4(self.fr, self.fl, self.base)
+        self.assertIsNone(r.series_id)                                         # V4 reads no series
+        self.assertIsNot(r.coverage, self.fr.coverage)                         # a copy, not the frame's dict
+        self.assertIsNot(r.coverage["contract_reasons"], self.fr.coverage["contract_reasons"])
+        r.coverage["contract_reasons"]["x"] = 1
+        self.assertNotIn("x", self.fr.coverage["contract_reasons"])
+
+    def test_invalid_keeps_session_id(self):
+        st, asof = store_with([1])
+        r = SC.gap_change(self.fr_v7(), None, 1000, {}, st, "XYZ/stock/term_30_91", asof)
+        self.assertEqual((r.status, r.session_id), ("invalid_input", asof))
+        r = SC.gap_change(self.fr_v7(), {"tenors": {}}, 1000, {}, object(), "XYZ/stock/term_30_91", asof)   # exception path
+        self.assertEqual((r.status, r.code, r.session_id), ("invalid_input", "malformed_type", asof))
+        r = SC.gap_change(self.fr_v7(), {}, 1000, {"prior_sessions": 0}, st, "XYZ/stock/term_30_91", asof)  # structural
+        self.assertEqual((r.code, r.session_id), ("malformed_type", asof))
+
+    def fr_v7(self):
+        return mk_frame([{"d": 30, "atm": 0.22}], {30: 0.22, 91: 0.24})[0]
 
     def test_reading_value_forms(self):
         for val, want in (("0.2", "0.20000000"), (Fraction(1, 5), "0.20000000"), (0, None), (0.25, "0.25000000")):
