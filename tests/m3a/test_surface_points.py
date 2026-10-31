@@ -168,18 +168,18 @@ def synth_frame(rnd, tenor_targets, force_ok=False, eligible=None):
     exps = []
     for d in days:
         e = {"days": d, "status": "available", "reason": None, "atm": None, "put": None, "call": None,
-             "lab": {"atm": None, "put25_iv": [], "call25_iv": []}}
+             "lab": {"label": None, "put25_labels": [], "call25_labels": [], "covered": True}}
         if force_ok or rnd.random() < 0.8:
             atm = rnd.uniform(0.05, 1.2) if rnd.random() < 0.97 else rnd.choice((0.0, 0.2, 0.5))
             e["atm"] = atm
-            e["lab"]["atm"] = rnd.choice((EXACT, EXACT, APPROX))
+            e["lab"]["label"] = rnd.choice((EXACT, EXACT, APPROX))
             for side, key in (("put", "put25_iv"), ("call", "call25_iv")):
                 if force_ok or rnd.random() < 0.85:
                     iv = max(0.0, atm + rnd.uniform(-0.08, 0.2))
                     if rnd.random() < 0.05:
                         iv = atm                                        # distance exactly 0
                     e[side] = ("available", None, iv)
-                    e["lab"][key] = [rnd.choice((EXACT, EXACT, APPROX)) for _ in range(rnd.choice((1, 2)))]
+                    e["lab"][key[:-3] + "_labels"] = sorted({rnd.choice((EXACT, EXACT, APPROX)) for _ in range(rnd.choice((1, 2)))})
                 else:
                     e[side] = ("unavailable", rnd.choice(("no_delta_bracket", "no_delta_bracket") + SOLVER), None)
         else:
@@ -256,10 +256,10 @@ def ref_point(oid, exps, eligible, labels, params):
     used_labels = []
 
     def atm_l(days):
-        return [lab[d]["atm"] for d in days if lab[d]["atm"] is not None]
+        return [lab[d]["label"] for d in days if lab[d]["label"] is not None]
 
     def side_l(used, key):
-        return [x for d in used or () for x in lab[d][key]]
+        return [x for d in used or () for x in lab[d][key[:-3] + "_labels"]]
     kind = "pts"
     if oid == "M3A-4":
         shown = {}
@@ -409,8 +409,9 @@ def hand_frame(expiries, tenor_targets=(9, 30, 91), eligible=10, delayed=False, 
                                                                          else "no_atm_strike", None),
              "call": ("available", None, call) if call is not None else ("unavailable", "no_delta_bracket" if atm is not None
                                                                            else "no_atm_strike", None),
-             "lab": (labels or {}).get(d, {"atm": EXACT if atm is not None else None, "put25_iv": [EXACT] if put else [],
-                                           "call25_iv": [EXACT] if call else []})}
+             "lab": (labels or {}).get(d, {"label": EXACT if atm is not None else None,
+                                           "put25_labels": [EXACT] if put else [],
+                                           "call25_labels": [EXACT] if call else [], "covered": True})}
         exps.append(e)
         frame_exp[str(d)] = {"status": e["status"], "reason": e["reason"], "forward": "1.00000000",
                              "atm_iv": None if atm is None else C.round_text(atm),
@@ -586,14 +587,14 @@ class Precedence(unittest.TestCase):
 
 class Labels(unittest.TestCase):
     def test_only_used_expiries_are_labelled(self):
-        lab = {7: {"atm": EXACT, "put25_iv": [EXACT], "call25_iv": [EXACT]},
-               14: {"atm": EXACT, "put25_iv": [EXACT], "call25_iv": [EXACT]},
-               21: {"atm": APPROX, "put25_iv": [APPROX], "call25_iv": [APPROX]}}
+        lab = {7: {"label": EXACT, "put25_labels": [EXACT], "call25_labels": [EXACT], "covered": True},
+               14: {"label": EXACT, "put25_labels": [EXACT], "call25_labels": [EXACT], "covered": True},
+               21: {"label": APPROX, "put25_labels": [APPROX], "call25_labels": [APPROX], "covered": True}}
         exp = {7: (0.2, 0.25, 0.19), 14: (0.22, 0.27, 0.2), 21: (0.24, 0.3, 0.2)}
         r = point("M3A-5", exp, {}, labels=lab)
         self.assertEqual(r.labels, [EXACT])                          # 21 days is neither nearest nor second
         exp[7] = (None, None, None)
-        lab[7] = {"atm": None, "put25_iv": [], "call25_iv": []}
+        lab[7] = {"label": None, "put25_labels": [], "call25_labels": [], "covered": True}
         r = point("M3A-5", exp, {}, labels=lab)
         self.assertEqual(r.labels, [APPROX, EXACT])
 
@@ -693,6 +694,81 @@ class FrameReuse(unittest.TestCase):
             self.assertEqual(C.canonical_line(plain), C.canonical_line(cached), row["id"])
             done += 1
         self.assertGreater(done, 15)
+
+
+class LabelsShape(unittest.TestCase):
+    """The S05 `stats["labels"]` shape S06 and S07 read (architecture review): top-level, beside and not inside
+    `floats`; {str(days): {"label", "put25_labels", "call25_labels", "covered"}}, one entry per listed expiry."""
+
+    FILES = ("m3a_cases_surface.json", "m3a_cases_coverage.json", "m3a_cases_american.json",
+             "m3a_cases_delta25.json", "m3a_cases_tenors.json")
+
+    def runs(self):
+        for fn in self.FILES:
+            for r in H.rows("author1", fn):
+                if H.owners_of("author1", fn, r["id"]) != ["S05"]:
+                    continue
+                ch = r["inputs"]["chain"]
+                stats = {}
+                res = SF.surface_frame(contracts_of(ch["contracts"]), ch["spot"], ch["rate"], ch["dividend_yield"],
+                                       ch["cutoff_ns"], r["params"], stats=stats)
+                yield r, res, stats
+
+    def test_shape_on_every_s05_row(self):
+        seen = {"covered_false": 0, "unavailable": 0, "approx": 0, "empty_side": 0, "early": 0, "multi": 0}
+        for r, res, stats in self.runs():
+            if res.status == "invalid_input":
+                self.assertNotIn("labels", stats, r["id"])
+                self.assertNotIn("floats", stats, r["id"])
+                seen["early"] += 1
+                continue
+            lab = stats["labels"]
+            self.assertNotIn("labels", stats["floats"], r["id"])
+            self.assertEqual(sorted(lab), sorted(res.frame["expiries"]), r["id"])
+            for d, item in lab.items():
+                fe = res.frame["expiries"][d]
+                self.assertEqual(sorted(item), ["call25_labels", "covered", "label", "put25_labels"], (r["id"], d))
+                self.assertIs(type(item["covered"]), bool)
+                self.assertEqual(item["covered"], fe["reason"] != "low_surface_coverage", (r["id"], d))
+                self.assertEqual(item["label"] is None, fe["status"] != "available", (r["id"], d))
+                if item["label"] is not None:
+                    self.assertIn(item["label"], (EXACT, APPROX), (r["id"], d))
+                for side, key in (("put25_iv", "put25_labels"), ("call25_iv", "call25_labels")):
+                    got = item[key]
+                    self.assertEqual(got, sorted(set(got)), (r["id"], d, key))
+                    if fe[side] is None or fe[side]["status"] != "available":
+                        self.assertEqual(got, [], (r["id"], d, key))
+                    else:
+                        self.assertGreaterEqual(len(got), 1, (r["id"], d, key))
+                    if fe[side] is not None and fe[side]["status"] != "available" and fe["status"] == "available":
+                        seen["empty_side"] += 1
+                    if len(got) > 1:
+                        seen["multi"] += 1
+                if not item["covered"]:
+                    seen["covered_false"] += 1
+                if fe["status"] != "available":
+                    seen["unavailable"] += 1
+                if item["label"] == APPROX:
+                    seen["approx"] += 1
+        for k, v in seen.items():
+            self.assertGreater(v, 0, k)
+
+    def test_cleared_on_entry_and_absent_on_invalid(self):
+        r, res, stats = next(x for x in self.runs() if x[1].status == "available")
+        self.assertIn("labels", stats)
+        ch = r["inputs"]["chain"]
+        res2 = SF.surface_frame(contracts_of(ch["contracts"]), "0", ch["rate"], ch["dividend_yield"], ch["cutoff_ns"],
+                                r["params"], stats=stats)
+        self.assertEqual(res2.status, "invalid_input")
+        self.assertNotIn("labels", stats)
+        self.assertNotIn("floats", stats)
+
+    def test_tolerated_missing_entries(self):
+        res, floats, lab, _ = hand_frame({9: (0.18, 0.2, 0.2), 30: (0.22, 0.25, 0.19), 91: (0.23, 0.3, 0.2)})
+        for oid in OUTPUTS:
+            for bad in (None, {}, {"9": None}, {"30": {}}, {"30": {"label": None}}):
+                r = P.point_from_frame(oid, res, floats, {"at_least": "1"}, bad)
+                self.assertEqual(r.status, "available", oid)
 
 
 class RaisingSubclasses(unittest.TestCase):
