@@ -656,12 +656,9 @@ class RaisingCaller(unittest.TestCase):
     def test_build_records(self):
         good = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {30: 0.28, 91: 0.2})
         self.assertEqual(S.build_records("U", "stock", 1, Boom()), [])
-        self.assertEqual(S.build_records("U", "stock", 1, Boom(), Boom(), minute_floats=[Boom(), None]), [
-            ("U/stock/atm_iv", "atm_iv", 0, 1, [0, 0], 0), ("U/stock/iv30", "iv30", 0, 1, [0, 0], 0)])
+        self.assertEqual(S.build_records("U", "stock", 1, Boom(), Boom(), minute_floats=[Boom(), None]), [])
         recs = S.build_records("U", "stock", 1, good, Boom(), minute_columns=(BoomList(), BoomList()))
-        self.assertEqual([r[1] for r in recs], ["atm_iv", "iv30", "atm_iv_close", "iv30_close", "skew25",
-                                                "term_30_91"])
-        self.assertEqual(recs[0][4], [])
+        self.assertEqual([r[1] for r in recs], ["atm_iv_close", "iv30_close", "skew25", "term_30_91"])
         self.assertEqual(S.grid_units(BoomList()), [])
         self.assertEqual(S.grid_units([0.1, Boom()]), [10000000, 0])
 
@@ -720,19 +717,537 @@ class GuardBand(unittest.TestCase):
         self.assertLess(len(calls), 10)                        # the old 0.01 window sent about 2 percent (400)
 
 
+class MixedGrid(unittest.TestCase):
+    """A: a grid with unusable entries takes the masked fast path and equals `_slow_grid` bit for bit."""
+
+    def _column(self, rnd, n, rate):
+        hostile = [None, True, False, 1, 0, 3, "0.3", b"x", float("nan"), float("inf"), float("-inf"), 2 ** 70, -0.0,
+                   [], 1e300, -1e300]
+        return [rnd.choice(hostile) if rnd.random() < rate else rnd.uniform(0.05, 1.5) for _ in range(n)]
+
+    def test_identical_to_slow_grid(self):
+        rnd = random.Random(21)
+        for rate in (0.0, 0.01, 0.05, 0.3, 1.0):
+            for _ in range(150):
+                col = self._column(rnd, rnd.choice((1, 2, 17, 390, 391)), rate)
+                got = S.grid_units(col)
+                self.assertEqual(repr(got), repr(S._slow_grid(col)), (rate, col[:5]))
+
+    def test_masked_values_do_not_set_the_range(self):
+        # a huge value that is unusable (int, nan, inf) must not push the usable ones off the fast path, and a huge
+        # usable float must still be exact
+        col = [0.25, None, 0.75, float("inf"), 10 ** 30, True]
+        self.assertEqual(S.grid_units(col), [25000000, 0, 75000000, 0, 0, 0])
+        col = [0.25, None, 123456789.12345679, 0.5]
+        self.assertEqual(S.grid_units(col), [25000000, 0, 12345678912345679, 50000000])
+
+    def test_fully_unavailable_and_ties(self):
+        self.assertEqual(S.grid_units([None] * 390), [0] * 390)
+        self.assertEqual(S.grid_units([float("nan")] * 5), [0] * 5)
+        xs = [0.248046875 - 0.25390625, None, 1 / 512, None, 0.5]
+        self.assertEqual(S.grid_units(xs), [-585938, 0, 195312, 0, 50000000])
+
+    def test_near_ties_among_unusable(self):
+        rnd = random.Random(4)
+        xs = []
+        for k in rnd.sample(range(10 ** 8), 800):
+            xs.append((k + 0.5) / 1e8)
+            xs.append(None if rnd.random() < 0.3 else math.nextafter((k + 0.5) / 1e8, 9.0))
+        self.assertEqual(S.grid_units(xs), S._slow_grid(xs))
+
+    def test_cost_with_unavailable_minutes_is_close_to_all_float(self):
+        rnd = random.Random(5)
+        clean = [rnd.uniform(0.1, 1.0) for _ in range(390)]
+        holey = list(clean)
+        for i in rnd.sample(range(390), 12):                 # about 3 percent
+            holey[i] = None
+
+        def time_of(col):
+            best = float("inf")
+            for _ in range(7):
+                t0 = time.perf_counter()
+                for _ in range(300):
+                    S.grid_units(col)
+                best = min(best, time.perf_counter() - t0)
+            return best
+
+        def sample():
+            return time_of(holey) / time_of(clean)
+        ratio, used = H.best_of(sample, min, lambda r: r <= 1.5)
+        print("\nS10 grid cost, 3 percent None vs all float: %.2fx (the whole-grid exact path was about 4.5x)" % ratio)
+        self.assertLessEqual(ratio, 2.0)                      # generous: smoke check, not a gate
+
+
+class MinuteSeriesMissing(unittest.TestCase):
+    """C (R-194): a minute series with no available entry in the session gets no record. D (R-195): a stored 0 is 'no
+    value at that minute'."""
+
+    def setUp(self):
+        self.close = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {30: 0.28, 91: 0.2})
+
+    def metrics(self, **kw):
+        return [r[1] for r in S.build_records("U", "stock", 1, self.close, **kw)]
+
+    def test_all_none_columns(self):
+        self.assertEqual(self.metrics(minute_columns=([None] * 390, [None] * 390)),
+                         ["atm_iv_close", "iv30_close", "skew25", "term_30_91"])
+        self.assertEqual(self.metrics(minute_columns=([None, 0.3], [None] * 2)),
+                         ["atm_iv", "atm_iv_close", "iv30_close", "skew25", "term_30_91"])
+
+    def test_unusable_and_empty_and_non_iterable_columns(self):
+        for bad in (BoomList(), None, 5, [], (), [float("nan"), True, "x"], [0.0, -0.0]):
+            self.assertEqual(self.metrics(minute_columns=(bad, bad)),
+                             ["atm_iv_close", "iv30_close", "skew25", "term_30_91"], bad)
+
+    def test_frames_that_are_all_missing(self):
+        self.assertEqual(self.metrics(minute_floats=[None, None, {}]),
+                         ["atm_iv_close", "iv30_close", "skew25", "term_30_91"])
+
+    def test_one_available_minute_keeps_the_record(self):
+        recs = S.build_records("U", "stock", 1, self.close, minute_columns=([None, None, 0.3], [None, 0.25, None]))
+        self.assertEqual(recs[0][4], [0, 0, 30000000])
+        self.assertEqual(recs[1][4], [0, 25000000, 0])
+        self.assertEqual((recs[0][5], recs[1][5]), (30000000, 25000000))
+
+    def test_sub_half_unit_is_stored_as_zero(self):
+        for v in (4e-9, 4.9e-9, 1e-12, 5e-324, -4e-9):
+            self.assertEqual(S.grid_units([v, 0.3]), [0, 30000000], v)
+        self.assertEqual(S.grid_units([6e-9]), [1])
+        recs = S.build_records("U", "stock", 1, self.close, minute_columns=([4e-9, 0.3], [4e-9, 3e-9]))
+        self.assertEqual([r[1] for r in recs][:2], ["atm_iv", "atm_iv_close"])      # iv30: only zeros, no record
+        self.assertEqual(recs[0][4], [0, 30000000])
+
+
+def flagged(res, stats):
+    """The S05 floats with the frame status, as the S05 patch will expose it (`available`, R-197)."""
+    fl = dict(stats["floats"])
+    fl["available"] = res.status == "available"
+    return fl
+
+
+class FrameAvailable(unittest.TestCase):
+    """E (R-197): history is written only from an available frame (R-141)."""
+
+    def test_unavailable_flag_stores_nothing(self):
+        bad = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {30: 0.28, 91: 0.2})
+        bad["available"] = False
+        self.assertEqual(S.scalar_units(bad), {})
+        self.assertEqual(S.scalar_units(bad, bad), {})
+        self.assertEqual(S.minute_values_from_floats(bad), (None, None))
+        self.assertEqual(S.build_records("U", "stock", 1, bad, bad, minute_floats=[bad, bad]), [])
+
+    def test_flag_true_or_absent_is_available(self):
+        good = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {30: 0.28, 91: 0.2})
+        for flag in (True, None, 1, "no"):                       # only the value False means unavailable
+            f = dict(good)
+            if flag is not None:
+                f["available"] = flag
+            self.assertEqual(S.scalar_units(f)["skew25"], 25000000, flag)
+            self.assertEqual(S.minute_values_from_floats(f), (0.3, 0.28))
+
+    def test_forward_frame_flag_is_separate(self):
+        s = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {})
+        w = floats_from_frame_inputs({30: (0.3, 0.45, 0.25)}, {})
+        w["available"] = False
+        self.assertEqual(S.scalar_units(s, w), {"atm_iv_close": 30000000, "skew25": 25000000})
+        s["available"] = False
+        w["available"] = True
+        self.assertEqual(S.scalar_units(s, w), {"skew25_fwd": 20000000})
+
+    def test_unavailable_minute_is_zero_in_the_grids(self):
+        a = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {30: 0.28})
+        b = dict(a)
+        b["available"] = False
+        recs = S.build_records("U", "stock", 1, a, minute_floats=[a, b, a])
+        self.assertEqual(recs[0][4], [30000000, 0, 30000000])
+        self.assertEqual(recs[1][4], [28000000, 0, 28000000])
+
+    def test_real_s05_frames(self):
+        avail = unavail = 0
+        for row in _sample_rows():
+            res, stats = _frame(row["inputs"]["chain"], row["params"])
+            if "floats" not in stats:
+                continue
+            fl = flagged(res, stats)
+            recs = S.build_records("E2E", "stock", 1, fl, fl, minute_floats=[fl, fl])
+            if res.status == "available":
+                avail += 1
+                self.assertIn("atm_iv_close", [r[1] for r in recs], row["id"])
+            else:
+                unavail += 1
+                self.assertEqual(recs, [], row["id"])
+                self.assertEqual(S.minute_values_from_floats(fl), (None, None))
+        self.assertGreater(avail, 0)
+        self.assertGreater(unavail, 0)
+
+
+def _single_code(st, rec, lane):
+    try:
+        st.append(rec[0], rec[1], rec[2], rec[3], rec[4], total=rec[5], lane=lane,
+                  delta_convention=S._CONV.get(rec[1]))
+    except Exception as e:
+        return getattr(e, "code", None) or "malformed_type"
+    return None
+
+
+class TestValidateDrift(unittest.TestCase):
+    """G: S10's `_validate` mirrors HistoryStore.append; for every category (and for the precedence when several
+    apply) the code of ONE real append equals the code `_validate` gives for the same record on an identical store."""
+
+    SID = "U/stock/atm_iv_close"
+
+    def make(self, prior=None, lane_of_prior="stock"):
+        dates = _dates(5)
+        st = real_store(5)
+        if prior is not None:
+            st.append(self.SID, "atm_iv_close", 0, dates[prior], [], total=7, lane=lane_of_prior)
+        return st, dates
+
+    def check(self, label, rec_of, prior=None, lane_of_prior="stock", lane="stock", want="*"):
+        a, dates = self.make(prior, lane_of_prior)
+        b, _ = self.make(prior, lane_of_prior)
+        rec = rec_of(dates)
+        store_code = _single_code(a, rec, lane)
+        ours = S._validate(b, [rec], lane)
+        self.assertEqual(ours, store_code, label)
+        if want != "*":
+            self.assertEqual(store_code, want, label)
+
+    def rec(self, session_i, grid=(), total=1, sid=None):
+        return lambda d: (sid or self.SID, "atm_iv_close", 0, d[session_i] if session_i is not None else "1999-01-01",
+                          list(grid), total)
+
+    def test_each_category(self):
+        self.check("ok", self.rec(1), prior=0, want=None)
+        self.check("ok fresh", self.rec(1), want=None)
+        self.check("malformed grid element", self.rec(1, [0.5]), want="malformed_type")
+        self.check("malformed grid bool", self.rec(1, [True]), want="malformed_type")
+        self.check("malformed grid type", self.rec(1, "abc"), want="malformed_type")
+        self.check("malformed total", self.rec(1, [], 1.5), want="malformed_type")
+        self.check("lane mismatch", self.rec(1), prior=0, lane_of_prior="etf_index", want="lane_mismatch")
+        self.check("not in calendar", self.rec(None), want="session_not_in_calendar")
+        self.check("too long", self.rec(1, [1] * 391), want="record_length_mismatch")
+        self.check("duplicate", self.rec(1), prior=1, want="duplicate_session")
+        self.check("out of order", self.rec(1), prior=2, want="out_of_order_append")
+
+    def test_precedence_when_several_apply(self):
+        self.check("lane > calendar", self.rec(None), prior=0, lane_of_prior="etf_index", want="lane_mismatch")
+        self.check("lane > duplicate", self.rec(0), prior=0, lane_of_prior="etf_index", want="lane_mismatch")
+        self.check("calendar > length", self.rec(None, [1] * 400), want="session_not_in_calendar")
+        self.check("length > duplicate", self.rec(1, [1] * 391), prior=1, want="record_length_mismatch")
+        self.check("duplicate > type", self.rec(1, [0.5]), prior=1, want="duplicate_session")
+        self.check("order > type", self.rec(1, [], 1.5), prior=2, want="out_of_order_append")
+        self.check("length > type", self.rec(1, [0.5] * 391), want="record_length_mismatch")
+
+    def test_other_lane_and_scalar_metrics(self):
+        for lane in ("stock", "etf_index"):
+            a = real_store(5)
+            b = real_store(5)
+            sid = "U/%s/skew25_fwd" % lane
+            d = _dates(5)
+            for st in (a, b):
+                st.append(sid, "skew25_fwd", 0, d[0], [], total=3, lane=lane, delta_convention="forward")
+            rec = (sid, "skew25_fwd", 0, d[0], [], 3)
+            self.assertEqual(_single_code(a, rec, lane), "duplicate_session")
+            self.assertEqual(S._validate(b, [rec], lane), "duplicate_session")
+
+
+class SeriesHelpers(unittest.TestCase):
+    def test_declare_series(self):
+        st = real_store(3)
+        ids = ["U/stock/atm_iv", "U/stock/skew25", "U/stock/atm_iv"]
+        self.assertEqual(S.declare_series(st, ids), {"U/stock/atm_iv", "U/stock/skew25"})
+        self.assertEqual(st.k_of("U/stock/atm_iv"), 252)
+        calls = []
+        orig = st.add_series
+        st.add_series = lambda s, k: (calls.append(s), orig(s, k))
+        self.assertEqual(S.declare_series(st, ids), {"U/stock/atm_iv", "U/stock/skew25"})
+        self.assertEqual(calls, [])                           # already at 252: not declared again
+        self.assertEqual(S.declare_series(object(), ids), set())
+
+    def test_declared_set_skips_the_k_of_loop(self):
+        d = _dates(3)
+        recs = records_for(0, d)
+
+        class Spy:
+            def __init__(self):
+                self.k_calls, self.added = 0, []
+
+            def k_of(self, sid):
+                self.k_calls += 1
+                return 20
+
+            def add_series(self, sid, k):
+                self.added.append(sid)
+
+            def append(self, *a, **k):
+                pass
+        st = Spy()
+        ids = {r[0] for r in recs}
+        self.assertEqual(S.append_records(st, recs, "stock", declared=ids), (7, None))
+        self.assertEqual((st.k_calls, st.added), (0, []))
+        self.assertEqual(S.append_records(st, recs, "stock", declared={recs[0][0]}), (7, None))
+        self.assertEqual(len(st.added), 6)
+        self.assertEqual(S.append_records(st, recs, "stock"), (7, None))      # works without it
+
+    def test_layout_is_a_cache(self):
+        dates = _dates(6)
+        a, b = real_store(6), real_store(6)
+        for i in range(4):
+            recs = records_for(i, dates)
+            self.assertEqual(S.append_records(a, recs, "stock"), (7, None))
+            for r in recs:
+                b.add_series(r[0], 252)
+                b.append(r[0], r[1], r[2], r[3], r[4], total=r[5], lane="stock", delta_convention=S._CONV.get(r[1]))
+        self.assertEqual(a.content_hash(), b.content_hash())
+        a.build_m3a_layout()
+        self.assertEqual(a.content_hash(), b.content_hash())
+        for m, conv in (("atm_iv_close", None), ("skew25_fwd", "forward"), ("skew25", None)):
+            kw = {} if conv is None else {"delta_convention": conv}
+            ra = MH.scalar_baseline(a, "U/stock/" + m, m, dates[4], min_sessions=1, **kw)
+            rb = MH.scalar_baseline(b, "U/stock/" + m, m, dates[4], min_sessions=1, **kw)
+            self.assertEqual((ra.status, ra.code, ra.value), (rb.status, rb.code, rb.value))
+        ra = MH.same_minute_column(a, "U/stock/atm_iv", "atm_iv", dates[4], 7, min_sessions=1)
+        rb = MH.same_minute_column(b, "U/stock/atm_iv", "atm_iv", dates[4], 7, min_sessions=1)
+        self.assertEqual((ra.status, ra.value), (rb.status, rb.value))
+
+
+class Hygiene(unittest.TestCase):
+    """H and I."""
+
+    def test_series_id_rejects_bad_underlying(self):
+        for bad in ("", "A/B", "/", None, 5, b"A", Str("A")):
+            self.assertIsNone(S.series_id(bad, "stock", "iv30"), bad)
+            self.assertEqual(S.build_records(bad, "stock", 1, floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {})), [])
+        self.assertIsNone(S.series_id("A", "", "iv30"))
+        self.assertIsNone(S.series_id("A", "st/ock", "iv30"))
+        self.assertEqual(S.series_id("A.B-1", "etf_index", "iv30"), "A.B-1/etf_index/iv30")
+
+    def test_fma_and_x87_self_check(self):
+        # v * 1e8 + c is TWO roundings. Each pair below was found where a single rounding (FMA) or an extended-precision
+        # intermediate (x87) gives a different float; the expected values are hard-coded.
+        for v_hex, c_hex, want_hex in FMA_CASES:
+            v, c, want = float.fromhex(v_hex), float.fromhex(c_hex), float.fromhex(want_hex)
+            self.assertEqual(v * 1e8 + c, want, v_hex)
+            exact = Fraction(v) * 10 ** 8 + Fraction(c)
+            self.assertNotEqual(want, float(exact), v_hex)        # the two-rounding result is not the fused one
+        self.assertTrue(FMA_CASES)
+
+    def test_append_result_pickles_and_copies(self):
+        import copy
+        import pickle
+        for r in (S.AppendResult(7, None), S.AppendResult(3, "lane_mismatch")):
+            for back in (pickle.loads(pickle.dumps(r)), copy.copy(r), copy.deepcopy(r)):
+                self.assertIs(type(back), S.AppendResult)
+                self.assertEqual(tuple(back), tuple(r))
+                self.assertEqual((back.committed, back.code, back.partial), (r.committed, r.code, r.partial))
+
+    def test_empty_message_uses_the_class_name(self):
+        class Bad:
+            def append(self, *a, **k):
+                raise ValueError()
+        self.assertEqual(tuple(S.append_records(Bad(), records_for(0, _dates(2)))), (0, "ValueError"))
+
+        class Bad2:
+            def append(self, *a, **k):
+                raise KeyError("duplicate_session")
+        self.assertEqual(S.append_records(Bad2(), records_for(0, _dates(2)))[1], "'duplicate_session'")
+
+    def test_grid_element_types_and_ring_lane_are_prevalidated(self):
+        st = real_store(4)
+        d = _dates(4)
+        batch = records_for(0, d)
+        j = 3
+        r = list(batch[0])
+        r[4] = [1, 2, True]                                  # bool element: the store rejects it
+        before = st.content_hash()
+        got = S.append_records(st, [batch[2], batch[3], tuple(r)], "stock")
+        self.assertEqual(tuple(got), (0, "malformed_type"))
+        self.assertEqual(st.content_hash(), before)
+        # ring lane: series j holds a record of another lane (a previous session), the batch is for the next session
+        st2 = real_store(4)
+        nxt = records_for(1, d)
+        st2.append(nxt[j][0], nxt[j][1], 0, d[0], [], total=1, lane="etf_index")
+        got = S.append_records(st2, nxt, "stock")
+        self.assertEqual(tuple(got), (0, "lane_mismatch"))
+        self.assertFalse(got.partial)
+        self.assertEqual(sum(1 for b in nxt if st2.has(b[0], b[1], 0)), 1)
+
+
+class Str(str):
+    pass
+
+
+FMA_CASES = [
+    ("0x1.1b01e0bc4e88ep-4", "0x1.00000034b6d7ep-1", "0x1.a5b6bd1a11561p+22"),
+    ("0x1.7b3e9f8e743f2p-1", "0x1.000002351e582p-1", "0x1.1a8f2bf0bad64p+26"),
+    ("0x1.f285b043fb713p-2", "0x1.000001736d91dp-1", "0x1.736d91909c939p+25"),
+    ("0x1.84fc28969e65fp-4", "0x1.0000004874408p-1", "0x1.21d100ed1d3f2p+23"),
+]
+
+
+class MutationGaps(unittest.TestCase):
+    """J: cases that pin the behaviour mutation testing found unpinned."""
+
+    def test_nan_in_a_float_grid(self):
+        self.assertEqual(S.grid_units([float("nan"), 0.1]), [0, 10000000])
+        self.assertEqual(S.grid_units([0.1, float("inf")]), [10000000, 0])
+
+    def test_floats_ints_and_bools(self):
+        self.assertEqual(S.grid_units([0.1, 1, True, 0.25, False, 2]), [10000000, 0, 0, 25000000, 0, 0])
+
+    def test_term_and_skew_need_both_sides(self):
+        f = floats_from_frame_inputs({30: (0.3, 0.5, None)}, {30: 0.28})
+        self.assertEqual(S.scalar_units(f), {"atm_iv_close": 30000000, "iv30_close": 28000000})
+        f = floats_from_frame_inputs({30: (0.3, None, 0.25)}, {30: 0.28, 91: None})
+        self.assertNotIn("skew25", S.scalar_units(f))
+        self.assertNotIn("term_30_91", S.scalar_units(f))
+        f = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {91: 0.2})
+        self.assertNotIn("term_30_91", S.scalar_units(f))
+        self.assertNotIn("iv30_close", S.scalar_units(f))
+
+    def test_zero_valued_scalars_are_records(self):
+        f = floats_from_frame_inputs({30: (0.0, 0.25, 0.25)}, {30: 0.0, 91: 0.0})
+        recs = {r[1]: r for r in S.build_records("U", "stock", 1, f)}
+        self.assertEqual({k: v[5] for k, v in recs.items()},
+                         {"atm_iv_close": 0, "iv30_close": 0, "skew25": 0, "term_30_91": 0})
+
+    def test_type_pre_check_with_any_store(self):
+        class Null:
+            def append(self, *a, **k):
+                raise AssertionError("must not be reached")
+        for rec in (("U/stock/x", "x", 0, "s", "abc", 1), ("U/stock/x", "x", 0, "s", [], 1.0),
+                    ("U/stock/x", "x", 0, "s", [], True), ("U/stock/x", "x", 0, "s", b"1", 1),
+                    ("U/stock/x", "x", 0, "s", None, 1), (5, "x", 0, "s", [], 1), ("U/stock/x", 5, 0, "s", [], 1)):
+            self.assertEqual(tuple(S.append_records(Null(), [rec], "stock")), (0, "malformed_type"), rec)
+        self.assertEqual(S.append_records(FakeStore(), [("U/stock/x", "x", 0, "s", (1, 2), 3)], "stock"), (1, None))
+
+    def test_lane_check_on_a_fresh_store(self):
+        st = real_store(2)
+        d = _dates(2)
+        for sid, ok in (("U/stock/m", True), ("U/etf_index/m", False), ("A/B/etf_index/m", False), ("A/B/stock/m", True),
+                        ("m", True), ("U/m", True), ("U/stock", True), ("U/stock/etf_index", False)):
+            got = S.append_records(st, [(sid, "atm_iv_close", 0, d[0], [], 1)], "stock")
+            self.assertEqual(got[1], None if ok else "lane_mismatch", sid)
+        for lane in (None, 5, b"stock", ["stock"]):
+            self.assertEqual(S.append_records(st, [("U/stock/m2", "m2", 0, d[0], [], 1)], lane)[1], "malformed_type")
+
+    def test_lane_check_with_three_or_more_ids(self):
+        st = real_store(2)
+        d = _dates(2)
+        recs = [("U/stock/a", "a", 0, d[0], [], 1), ("U/stock/b", "b", 0, d[0], [], 1),
+                ("U/etf_index/c", "c", 0, d[0], [], 1)]
+        got = S.append_records(st, recs, "stock")
+        self.assertEqual(tuple(got), (0, "lane_mismatch"))
+        self.assertEqual(len(st), 0)
+
+    def test_non_strict_calendar_accepts_unknown_sessions(self):
+        st = HistoryStore(Calendar([(d, 390) for d in _dates(2)]), k=20, strict_calendar=False)
+        got = S.append_records(st, [("U/stock/atm_iv_close", "atm_iv_close", 0, "1999-01-01", [], 1)], "stock")
+        self.assertEqual(tuple(got), (1, None))
+        strict = real_store(2)
+        got = S.append_records(strict, [("U/stock/atm_iv_close", "atm_iv_close", 0, "1999-01-01", [], 1)], "stock")
+        self.assertEqual(tuple(got), (0, "session_not_in_calendar"))
+
+    def test_success_is_not_partial_and_other_lanes_append(self):
+        st = HistoryStore(Calendar([(d, 390) for d in _dates(3)]), k=20)
+        d = _dates(3)
+        recs = records_for(0, d, lane="etf_index")
+        got = S.append_records(st, recs, "etf_index")
+        self.assertEqual(tuple(got), (7, None))
+        self.assertFalse(got.partial)
+        self.assertEqual((got.committed, got.code), (7, None))
+        self.assertEqual(S.append_records(st, recs, "etf_index")[1], "duplicate_session")
+        r = MH.scalar_baseline(st, "U/etf_index/skew25_fwd", "skew25_fwd", d[1], min_sessions=1, lane="etf_index",
+                               delta_convention="forward")
+        self.assertEqual((r.status, r.value["n"]), ("available", 1))
+
+    def test_keyboard_interrupt_propagates(self):
+        class Stop:
+            def append(self, *a, **k):
+                raise KeyboardInterrupt()
+        with self.assertRaises(KeyboardInterrupt):
+            S.append_records(Stop(), records_for(0, _dates(2)))
+
+        class Interrupting(dict):
+            def get(self, *a):
+                raise KeyboardInterrupt()
+        with self.assertRaises(KeyboardInterrupt):
+            S.scalar_units(Interrupting())
+        with self.assertRaises(KeyboardInterrupt):
+            S.minute_values_from_floats(Interrupting())
+
+    def test_hostile_objects_raising_any_exception(self):
+        for exc in (TypeError, ValueError, KeyError, AttributeError, RuntimeError, ZeroDivisionError, OSError):
+            class Bad(dict):
+                def __getitem__(self, k):
+                    raise exc("x")
+
+                def get(self, *a):
+                    raise exc("x")
+
+                def items(self):
+                    raise exc("x")
+
+            class BadList:
+                def __iter__(self):
+                    raise exc("x")
+            good = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {30: 0.28, 91: 0.2})
+            self.assertEqual(S.scalar_units(Bad(), Bad()), {})
+            self.assertEqual(S.minute_values_from_floats(Bad()), (None, None))
+            self.assertEqual(S.minute_values_from_floats({"expiries": Bad(), "tenors": Bad()}), (None, None))
+            self.assertEqual(S.build_records("U", "stock", 1, Bad(), Bad(), minute_floats=[Bad()]), [])
+            recs = S.build_records("U", "stock", 1, good, Bad(), minute_columns=(BadList(), BadList()))
+            self.assertEqual([r[1] for r in recs][0], "atm_iv_close")
+            self.assertEqual(S.grid_units(BadList()), [])
+            self.assertEqual(S.grid_units([0.1, Bad()]), [10000000, 0])
+
+    def test_empty_minute_floats(self):
+        close = floats_from_frame_inputs({30: (0.3, 0.5, 0.25)}, {})
+        self.assertEqual([r[1] for r in S.build_records("U", "stock", 1, close, minute_floats=[])],
+                         ["atm_iv_close", "skew25"])
+
+
 class W08(unittest.TestCase):
-    """Perf W08 (M3A-B6): 252 sessions x 103 names x 7 series = 181,692 records BUILT from minute columns, then handed
-    to a NULL store: W08 gates the series build only (the real store append belongs to S02's B6 gate; the end-to-end
-    figure with a real HistoryStore is printed as informational). The workload is realistic: random full-precision
-    IV floats (not smooth), a different column per name and session. Floor 25,000 records/s at p5, hard 5,000."""
+    """Perf W08 (M3A-B6): 252 sessions x 103 names x up to 7 series BUILT from minute columns, then handed to a NULL
+    store: W08 gates the build of the records at >= 25,000 records/s (p5); the real-store append is S02's B6 gate and
+    build + append is reported with a hard limit of 5,000 (informational against 25,000). The gated workload is
+    realistic: random full-precision IV floats with 1 to 5 percent unavailable minutes per column (runs and singles,
+    denser in the first 30 minutes of a session) and one fully unavailable iv30 column per 20 names; the all-float
+    rate is printed beside it. Floor 25,000, hard 5,000."""
 
     SESSIONS = 2
 
-    def _workload(self):
+    @staticmethod
+    def holes(rnd, col):
+        n = len(col)
+        want = max(1, round(n * rnd.uniform(0.01, 0.05)))
+        placed = 0
+        while placed < want:
+            if rnd.random() < 0.5:                           # the opening minutes
+                i, length = rnd.randrange(0, 30), rnd.choice((1, 1, 2, 3, 5))
+            else:
+                i, length = rnd.randrange(0, n), rnd.choice((1, 1, 1, 2, 4, 8))
+            for k in range(i, min(n, i + length)):
+                if col[k] is not None:
+                    col[k] = None
+                    placed += 1
+        return col
+
+    def _workload(self, mixed):
         rnd = random.Random(808)
         names = ["SYN%03d" % i for i in range(103)]
-        cols = [([rnd.uniform(0.1, 1.0) for _ in range(390)], [rnd.uniform(0.1, 1.0) for _ in range(390)])
-                for _ in range(self.SESSIONS * len(names))]
+        cols = []
+        for s in range(self.SESSIONS):
+            for i in range(len(names)):
+                a = [rnd.uniform(0.1, 1.0) for _ in range(390)]
+                b = [rnd.uniform(0.1, 1.0) for _ in range(390)]
+                if mixed:
+                    self.holes(rnd, a)
+                    self.holes(rnd, b)
+                    if i % 20 == 0:
+                        b = [None] * 390
+                cols.append((a, b))
 
         def u():
             return rnd.uniform(0.1, 1.0)
@@ -766,43 +1281,50 @@ class W08(unittest.TestCase):
         rates.sort()
         return rates
 
-    def test_w08_throughput(self):
-        names, cols, closes = self._workload()
+    @staticmethod
+    def p5(rates):
+        return rates[max(0, math.ceil(0.05 * len(rates)) - 1)]
+
+    def _gate(self, mixed):
+        names, cols, closes = self._workload(mixed)
 
         class Null:
             def append(self, *a, **k):
                 pass
-        # TODO: use m3a_harness.best_of once the perf-smoke chore (PR 123) is on main; this local loop is the same
-        # rule: best of up to 3 attempts, floors unchanged.
-        best = None
-        for _ in range(3):
-            rates = self._measure(names, cols, closes, Null())
-            p5 = rates[max(0, math.ceil(0.05 * len(rates)) - 1)]
-            if best is None or p5 > best[0]:
-                best = (p5, rates)
-            if p5 >= W08_FLOOR:
-                break
-        p5, rates = best
-        full_n = 252 * 103 * 7
-        self.assertEqual(full_n, 181692)
-        med = statistics.median(rates)
-        print("\nW08 records/s: p5 %.0f p50 %.0f min %.0f (budget >= %.0f, hard %.0f); full set %d records ~ %.2f s at p50"
-              % (p5, med, rates[0], W08_FLOOR, W08_HARD, full_n, full_n / med))
+        # smoke rule (GATE_BUDGETS section 8 rule 7): best of up to 3 attempts, floors unchanged
+        return H.best_of(lambda: self._measure(names, cols, closes, Null()),
+                         lambda a, b: a if self.p5(a) >= self.p5(b) else b,
+                         lambda r: self.p5(r) >= W08_FLOOR)
+
+    def test_w08_throughput_mixed_workload(self):
+        rates, used = self._gate(True)
+        p5 = self.p5(rates)
+        self.assertEqual(252 * 103 * 7, 181692)
+        print("\nW08 records/s, mixed workload (1-5 percent unavailable minutes, 1 fully unavailable iv30 per 20 names): "
+              "p5 %.0f p50 %.0f min %.0f (budget >= %.0f, hard %.0f; %d attempt(s))"
+              % (p5, statistics.median(rates), rates[0], W08_FLOOR, W08_HARD, used))
         self.assertGreaterEqual(p5, W08_HARD)
         self.assertGreaterEqual(p5, W08_FLOOR)
 
+    def test_w08_informational_all_float(self):
+        rates, used = self._gate(False)
+        print("W08 informational, all-float workload: p5 %.0f p50 %.0f min %.0f records/s"
+              % (self.p5(rates), statistics.median(rates), rates[0]))
+        self.assertGreaterEqual(self.p5(rates), W08_HARD)
+
     def test_w08_informational_end_to_end(self):
-        """Not gated: build + append into a real HistoryStore (the append gate is S02's B6): 103 names x 2 sessions."""
-        names, cols, closes = self._workload()
+        """Not gated at 25,000 (hard limit 5,000): build + append into a real HistoryStore, 103 names x 2 sessions."""
+        names, cols, closes = self._workload(True)
         dates = _dates(2)
         rates = []
         for _ in range(3):
             st = HistoryStore(Calendar([(d, 390) for d in dates]), k=20)
             n, dt = self._run(names, cols, closes, st, dates)
             rates.append(n / dt)
-            self.assertEqual(len(st), 7 * 103)
-        print("W08 informational, build + real HistoryStore append, cold 2-session run (%d records, best of 3): %.0f records/s (median %.0f)"
-              % (n, max(rates), statistics.median(rates)))
+            self.assertEqual(len(st), n // 2)
+        print("W08 informational, build + real HistoryStore append, cold 2-session run (%d records, best of 3): "
+              "%.0f records/s (median %.0f)" % (n, max(rates), statistics.median(rates)))
+        self.assertGreaterEqual(max(rates), W08_HARD)
 
 
 if __name__ == "__main__":
