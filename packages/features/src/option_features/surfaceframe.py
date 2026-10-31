@@ -19,7 +19,8 @@ Calls
     stats         optional dict; receives "evaluations" (delta evaluations of the frame, M3A-B12 counter) and
                   "floats" (R-189): {"expiries": {days: {atm_iv, put25_iv, call25_iv}}, "tenors": {tenor: iv}}, the
                   UNROUNDED binary64 values behind the frame text, keyed like `frame`, None where the frame is null
-                  (derived series difference these and round once, R-48, R-181)
+                  (derived series difference these and round once, R-48, R-181);
+                  floats["available"] (bool, R-197) is True exactly when the result status is "available"
 
 Result (IO contract section 8, R-141, R-142): value null; frame = {"expiries": {days: {status, reason, forward,
 atm_iv, put25_iv: {status, reason, value}, call25_iv: {...}}}, "tenors": {tenor: {status, reason, iv, method,
@@ -347,6 +348,8 @@ def _side(status, reason, value):
 
 def surface_frame(contracts, spot, rate, dividend_yield, cutoff_ns, params=None, chain=None, contract_ivs=None,
                   stats=None):
+    if stats is not None:
+        stats.pop("floats", None)            # a reused stats dict never keeps a previous call's floats (R-197)
     if params is not None and not isinstance(params, dict):
         return Result.invalid(OUTPUT_ID, "malformed_type", evaluation_ns=cutoff_ns)
     try:
@@ -433,6 +436,8 @@ def surface_frame(contracts, spot, rate, dividend_yield, cutoff_ns, params=None,
         reason = "no_eligible_contract"
     if reason is None:
         reason = tenor_fail or side_fail
+    if stats is not None:
+        stats["floats"]["available"] = reason is None     # R-197: True exactly when the result status is "available"
     if reason is not None:
         return Result.unavailable(OUTPUT_ID, None, None, ev, reason, params=echo, coverage=coverage, lane=lane,
                                   frame=frame)
