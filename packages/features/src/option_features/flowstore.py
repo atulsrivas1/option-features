@@ -64,7 +64,8 @@ class _Rec:
 
 _FULL_IDX = {}
 _INT_ONLY = frozenset((int,))
-_FITS_Q = frozenset("bBhHiIlq")      # array formats whose every value fits int64
+# array formats whose every value fits int64 on every platform (no "L" / "Q": unsigned, or size varies by platform)
+_FITS_Q = frozenset("bBhHiIlq")
 
 
 def _full_idx(n):
@@ -179,8 +180,11 @@ def _m3a_values(x, memo):
 
 def _m3a_record(r):
     """True when a batch element names an M3a series (never raises: anything odd is left to append_record)."""
-    sid = getattr(r, "series_id", None)
-    return type(sid) is str and _is_m3a_series(sid)
+    try:
+        sid = getattr(r, "series_id", None)
+        return type(sid) is str and _is_m3a_series(sid)
+    except Exception:                    # the per-record loop raises the same error at the same point as before M3a
+        return False
 
 
 def _own(x, memo):
@@ -472,13 +476,25 @@ class HistoryStore:
             raise ValueError("k must be in 1..%d for series %r" % (cap, series_id))
         rings = [r for key, r in self._rings.items() if key[0] == series_id]
         trimmed = [(r, dict(list(r.recs.items())[len(r.recs) - k:])) for r in rings if len(r.recs) > k]  # pure
-        self._series_k[series_id] = k
-        for r in rings:
-            r.m3a = None                              # rebuilt on the next M3a read with the new k
-        for r, kept in trimmed:
-            r.recs = kept
-            r.views.clear()
+        old_k = self._series_k.get(series_id)
+        old = [(r, r.recs) for r in rings]
+        try:
+            self._series_k[series_id] = k
+            for r in rings:
+                r.m3a = None                          # rebuilt on the next M3a read with the new k
+            for r, kept in trimmed:
+                r.recs = kept
+                r.views.clear()
+                self._chash = None
+        except BaseException:                         # all-or-nothing: put back k, the records and a fresh layout
+            if old_k is None:
+                self._series_k.pop(series_id, None)
+            else:
+                self._series_k[series_id] = old_k
+            for r, recs in old:
+                r.recs, r.m3a, r.views = recs, None, {}
             self._chash = None
+            raise
 
     def k_of(self, series_id):
         """Retention of a series id: its add_series k, else the store k."""
@@ -576,11 +592,13 @@ class HistoryStore:
         any error every ring it touched is restored (a ring the batch created is removed). A batch with no M3a series
         is the plain loop (records before a failing one stay), exactly as before M3a."""
         memo = {}
-        if isinstance(records, (list, tuple)) and not any(_m3a_record(r) for r in records):
+        listlike = isinstance(records, (list, tuple))
+        pre = listlike and any(_m3a_record(r) for r in records)
+        if listlike and not pre:
             for r in records:
                 self.append_record(r, complete, lane, memo)
             return
-        saved, seen_m3a = {}, False
+        saved, seen_m3a = {}, pre
         try:
             for r in records:
                 seen_m3a = seen_m3a or _m3a_record(r)
@@ -664,19 +682,24 @@ class HistoryStore:
                 evicted = (first, recs.pop(first))
             if ring.m3a is not None:
                 ring.m3a.push(rec)
+            self._chash = None
+            if new:
+                self._rings[key] = ring
+            elif ring.views:
+                ring.views.clear()
         except BaseException:
             recs.pop(sid, None)
             if evicted is not None:
                 ring.recs = {evicted[0]: evicted[1], **recs}
             ring.m3a = None                             # never half-updated: rebuilt from ring.recs on the next read
-            ring.views.clear()
+            if new:
+                self._rings.pop(key, None)
             self._chash = None
+            try:
+                ring.views = {}
+            except BaseException:
+                pass
             raise
-        self._chash = None
-        if new:
-            self._rings[key] = ring
-        elif ring.views:
-            ring.views.clear()
 
     def _new_cols(self, series_id):
         mins = self.calendar.minutes
@@ -712,12 +735,15 @@ class HistoryStore:
                     ring.m3a.seal(session_id)
                 rec.complete = True
                 rec.sha = None
+                self._chash = None
+                ring.views.clear()
             except BaseException:
                 rec.complete = False
+                rec.sha = None
                 ring.m3a = None                       # rebuilt from ring.recs on the next read
+                self._chash = None
+                ring.views = {}
                 raise
-            self._chash = None
-            ring.views.clear()
         return True
 
     # ------------------------------------------------------------------ reads
